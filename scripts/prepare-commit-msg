@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# 为提交信息自动追加统一声明（中文注释）
+# 用法：复制到 .git/hooks/prepare-commit-msg 并赋予可执行权限
+
+MSG_FILE="$1"
+COMMIT_SOURCE="$2"
+
+# 对于 merge/revert 等自动生成的消息，不强制追加
+if [[ "$COMMIT_SOURCE" == "merge" || "$COMMIT_SOURCE" == "squash" || "$COMMIT_SOURCE" == "commit" ]]; then
+  exit 0
+fi
+
+FOOTER="本地提交代码由 Codex 生成"
+
+if ! grep -Fq "$FOOTER" "$MSG_FILE"; then
+  printf "\n\n%s\n" "$FOOTER" >> "$MSG_FILE"
+fi
+

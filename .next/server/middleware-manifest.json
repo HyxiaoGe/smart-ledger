@@ -1,0 +1,31 @@
+{
+  "version": 3,
+  "middleware": {},
+  "functions": {
+    "/api/analyze/stream/route": {
+      "files": [
+        "server/middleware-build-manifest.js",
+        "server/middleware-react-loadable-manifest.js",
+        "server/next-font-manifest.js",
+        "server/interception-route-rewrite-manifest.js",
+        "server/edge-runtime-webpack.js",
+        "server/app/api/analyze/stream/route.js"
+      ],
+      "name": "app/api/analyze/stream/route",
+      "page": "/api/analyze/stream/route",
+      "matchers": [
+        {
+          "regexp": "^/api/analyze/stream$",
+          "originalSource": "/api/analyze/stream"
+        }
+      ],
+      "wasm": [],
+      "assets": [],
+      "env": {
+        "__NEXT_BUILD_ID": "development",
+        "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "d8bjgpTiozhciR3PTltrzHT+uO2Y8Ufjt7P9qrHZVnk="
+      }
+    }
+  },
+  "sortedMiddleware": []
+}

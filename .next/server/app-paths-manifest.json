@@ -1,0 +1,6 @@
+{
+  "/api/analyze/stream/route": "app/api/analyze/stream/route.js",
+  "/page": "app/page.js",
+  "/add/page": "app/add/page.js",
+  "/records/page": "app/records/page.js"
+}
