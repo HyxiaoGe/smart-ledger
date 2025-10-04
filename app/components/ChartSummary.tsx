@@ -1,6 +1,7 @@
 "use client";
 // 图表区优化：更美观的主题化样式、圆角、渐变、图例与自定义 Tooltip（中文注释）
-import { AreaChart, Area, LineChart, Line, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
+import { useState } from 'react';
+import { AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/EmptyState';
 import { formatCurrency } from '@/lib/format';
@@ -55,15 +56,19 @@ function CustomTooltip({ active, payload, label, currency, kind }: any) {
 
 export function ChartSummary({
   trend,
-  pie,
-  compare,
+  pieMonth,
+  pieRange,
+  defaultMode = 'month',
   currency
 }: {
   trend: { name: string; expense: number }[];
-  pie: { name: string; value: number }[];
-  compare: { name: string; income: number; expense: number }[];
+  pieMonth: { name: string; value: number }[];
+  pieRange?: { name: string; value: number }[];
+  defaultMode?: 'month' | 'range';
   currency: string;
 }) {
+  const [pieMode, setPieMode] = useState<'month' | 'range'>(defaultMode);
+  const pie = pieMode === 'range' && pieRange ? pieRange : pieMonth;
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <Card>
@@ -97,7 +102,15 @@ export function ChartSummary({
 
       <Card>
         <CardHeader>
-          <Title text="类别占比" />
+          <div className="flex items-center justify-between">
+            <Title text="类别占比" />
+            {pieRange && (
+              <div className="flex gap-1 text-xs">
+                <button className={`h-7 px-2 rounded-md border ${pieMode==='range'?'bg-muted':''}`} onClick={() => setPieMode('range')}>今日</button>
+                <button className={`h-7 px-2 rounded-md border ${pieMode==='month'?'bg-muted':''}`} onClick={() => setPieMode('month')}>本月</button>
+              </div>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           {pie.length === 0 ? (
@@ -122,30 +135,7 @@ export function ChartSummary({
         </CardContent>
       </Card>
 
-      <Card className="md:col-span-2">
-        <CardHeader>
-          <Title text="收支对比" />
-        </CardHeader>
-        <CardContent>
-          {compare.length === 0 ? (
-            <EmptyState description="暂无可比较的收支数据" />
-          ) : (
-            <div className="w-full h-[260px]">
-              <ResponsiveContainer>
-                <BarChart data={compare} margin={{ left: 8, right: 8, top: 8, bottom: 8 }} barGap={10} barCategoryGap="24%">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="name" tickLine={false} axisLine={false} />
-                  <YAxis tickFormatter={(v) => currencyTick(v, currency)} tickLine={false} axisLine={false} width={80} />
-                  <Tooltip content={<CustomTooltip currency={currency} kind="compare" />} />
-                  <Legend verticalAlign="bottom" height={24} />
-                  <Bar dataKey="income" name="收入" fill="#10B981" radius={[6, 6, 0, 0]} />
-                  <Bar dataKey="expense" name="支出" fill="#EF4444" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {null}
     </div>
   );
 }

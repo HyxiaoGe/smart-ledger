@@ -3,12 +3,17 @@
 import { ChartSummary } from './components/ChartSummary';
 import { AiAnalyzeButton } from './components/AiAnalyze';
 import Link from 'next/link';
+export const revalidate = 0;
+export const dynamic = 'force-dynamic';
 import { supabase } from '@/lib/supabaseClient';
 import { DEFAULT_CURRENCY, SUPPORTED_CURRENCIES } from '@/lib/config';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MonthPicker } from '@/components/MonthPicker';
-import { parseMonthStr, formatMonth, shiftMonth } from '@/lib/date';
+// import { MonthPicker } from '@/components/MonthPicker';
+import { RangePicker } from '@/components/RangePicker';
+import { CurrencySelect } from '@/components/CurrencySelect';
+import { parseMonthStr, formatMonth, shiftMonth, getQuickRange } from '@/lib/date';
+import { TopExpenses } from '@/components/TopExpenses';
 
 function monthRange(date = new Date()) {
   const start = new Date(date.getFullYear(), date.getMonth(), 1);
@@ -30,6 +35,7 @@ async function loadMonthData(currency: string, date: Date) {
   const cur = await supabase
     .from('transactions')
     .select('type, category, amount, date, currency')
+    .is('deleted_at', null)
     .gte('date', start)
     .lt('date', end)
     .eq('currency', currency);
@@ -37,6 +43,7 @@ async function loadMonthData(currency: string, date: Date) {
   const prev = await supabase
     .from('transactions')
     .select('type, amount, date, currency')
+    .is('deleted_at', null)
     .gte('date', prevStart)
     .lt('date', prevEnd)
     .eq('currency', currency);
@@ -80,10 +87,11 @@ async function loadMonthData(currency: string, date: Date) {
   return { income, expense, balance, trend, pie, compare };
 }
 
-export default async function HomePage({ searchParams }: { searchParams?: { currency?: string; month?: string } }) {
+export default async function HomePage({ searchParams }: { searchParams?: { currency?: string; month?: string; range?: string } }) {
   const currency = SUPPORTED_CURRENCIES.some((c) => c.code === (searchParams?.currency || ''))
     ? (searchParams!.currency as string)
     : DEFAULT_CURRENCY;
+  const rangeParam = (searchParams?.range as string) || 'today';
   const monthParam = searchParams?.month;
   const baseDate = parseMonthStr(monthParam || formatMonth(new Date())) || new Date();
   const monthLabel = formatMonth(baseDate);
@@ -91,6 +99,31 @@ export default async function HomePage({ searchParams }: { searchParams?: { curr
   const next = formatMonth(shiftMonth(baseDate, 1));
   const { income, expense, balance, trend, pie, compare } = await loadMonthData(currency, baseDate);
   const sym = symbolOf(currency);
+  // 日/快捷范围汇总
+  const { start: rStart, end: rEnd, label: rLabel } = getQuickRange(rangeParam as any, monthLabel);
+  const curRange = await supabase
+    .from('transactions')
+    .select('type, category, amount, date, currency')
+    .is('deleted_at', null)
+    .gte('date', rStart)
+    .lt('date', rEnd)
+    .eq('currency', currency);
+  const rRows = curRange.data || [];
+  const rSum = (arr: any[], pred: (r: any) => boolean) => arr.filter(pred).reduce((a, b) => a + Number(b.amount || 0), 0);
+  const rincome = rSum(rRows, (r) => r.type === 'income');
+  const rexpense = rSum(rRows, (r) => r.type === 'expense');
+  const rbalance = rincome - rexpense;
+  const topQ = await supabase
+    .from('transactions')
+    .select('id, type, category, amount, date, note, currency')
+    .is('deleted_at', null)
+    .gte('date', rStart)
+    .lt('date', rEnd)
+    .eq('currency', currency)
+    .eq('type', 'expense')
+    .order('amount', { ascending: false })
+    .limit(10);
+  const top10 = (topQ.data || []) as any[];
   return (
     <div className="space-y-6">
       <div className="flex gap-3 items-center justify-between">
@@ -100,42 +133,48 @@ export default async function HomePage({ searchParams }: { searchParams?: { curr
           <AiAnalyzeButton currency={currency} month={monthLabel} />
         </div>
         <div className="flex items-center gap-4">
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             <span className="text-sm text-muted-foreground">币种</span>
-            {SUPPORTED_CURRENCIES.map((c) => (
-              <Link key={c.code} href={`/?currency=${c.code}&month=${monthLabel}`}>
-                <Button variant={currency === c.code ? 'default' : 'secondary'}>{c.code}</Button>
-              </Link>
-            ))}
+            <CurrencySelect value={currency} month={monthLabel} range={rangeParam} />
           </div>
           <div className="flex gap-2 items-center">
-            <span className="text-sm text-muted-foreground">月份</span>
-            <Link href={`/?currency=${currency}&month=${prev}`}><Button variant="secondary">上月</Button></Link>
-            <Link href={`/?currency=${currency}&month=${formatMonth(new Date())}`}><Button variant="secondary">当月</Button></Link>
-            <Link href={`/?currency=${currency}&month=${next}`}><Button variant="secondary">下月</Button></Link>
-            <MonthPicker />
+            <span className="text-sm text-muted-foreground">范围</span>
+            <RangePicker />
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {rangeParam !== 'month' && (
+          <Card>
+            <CardHeader><CardTitle className="text-sm text-muted-foreground">{rLabel}支出</CardTitle></CardHeader>
+            <CardContent className="pt-0 text-2xl font-bold">{`${sym}${rexpense.toFixed(2)}`}</CardContent>
+          </Card>
+        )}
         <Card>
           <CardHeader><CardTitle className="text-sm text-muted-foreground">本月支出</CardTitle></CardHeader>
           <CardContent className="pt-0 text-2xl font-bold">{`${sym}${expense.toFixed(2)}`}</CardContent>
         </Card>
-        <Card>
-          <CardHeader><CardTitle className="text-sm text-muted-foreground">本月收入</CardTitle></CardHeader>
-          <CardContent className="pt-0 text-2xl font-bold">{`${sym}${income.toFixed(2)}`}</CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle className="text-sm text-muted-foreground">本月结余</CardTitle></CardHeader>
-          <CardContent className="pt-0 text-2xl font-bold">{`${sym}${balance.toFixed(2)}`}</CardContent>
-        </Card>
       </div>
 
       <section className="space-y-2">
-        <h2 className="text-lg font-semibold">图表概览（{monthLabel}，{currency}）</h2>
-        <ChartSummary trend={trend} pie={pie} compare={compare} currency={currency} />
+        <h2 className="text-lg font-semibold">图表概览（{currency}）</h2>
+        <ChartSummary trend={trend} pieMonth={pie} pieRange={(rRows as any[]).length? (() => { const by=new Map<string,number>(); (rRows as any[]).forEach((r:any)=>{ if(r.type==='expense'){ by.set(r.category,(by.get(r.category)||0)+Number(r.amount||0)); }}); return Array.from(by.entries()).map(([name,value])=>({name,value})); })() : []} defaultMode={rangeParam!=='month'?'range':'month'} currency={currency} />
+      </section>
+
+      <section className="space-y-2">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Top 10 支出（{currency}）</h2>
+          <div className="flex gap-1 text-xs">
+            <Link href={`/?currency=${currency}&range=today&month=${monthLabel}`}><Button variant={rangeParam!=='month'?'default':'secondary'} size="sm">今日</Button></Link>
+            <Link href={`/?currency=${currency}&range=month&month=${monthLabel}`}><Button variant={rangeParam==='month'?'default':'secondary'} size="sm">本月</Button></Link>
+          </div>
+        </div>
+        <Card>
+          <CardContent className="pt-4">
+            <TopExpenses items={top10 as any} currency={currency} />
+          </CardContent>
+        </Card>
       </section>
     </div>
   );

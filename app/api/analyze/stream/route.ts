@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 提示词：要求严格 Markdown 结构与中文输出
-    const sys = `你是一名中文财务助理。请严格按以下 Markdown 模板输出（每段之间空一行，不要使用代码块或表格）：\n\n---\n### 📊 本月财务概览\n- 总收入：{千分位金额} {币种}\n- 总支出：{千分位金额} {币种}\n- 结余：{千分位金额} {币种}\n\n---\n### 🔝 三大支出类别\n1. 类别：金额 {币种}（占比x%）\n2. 类别：金额 {币种}（占比x%）\n3. 类别：金额 {币种}（占比x%）\n\n---\n### 📈 与上月变化\n- 简述环比变化（若无上月数据则说明原因）\n\n---\n### 💡 简短建议\n- 两条以内可执行建议\n`;
+    const sys = `你是一名中文财务助理。请严格按以下 Markdown 模板输出（每段之间空一行，不要使用代码块或表格）。仅关注“支出”，不要输出收入与结余：\n\n---\n### 📊 本期支出概览\n- 本期总支出：{千分位金额} {币种}\n\n---\n### 🔝 三大支出类别\n1. 类别：金额 {币种}（占比x%）\n2. 类别：金额 {币种}（占比x%）\n3. 类别：金额 {币种}（占比x%）\n\n---\n### 📈 与上期变化（支出）\n- 简述支出较上期的变化（若无上期数据则说明原因）\n\n---\n### 💡 简短建议\n- 两条以内可执行建议\n`;
     const user = `币种: ${currency || 'CNY'}\n月份: ${month}\n数据(JSON): ${JSON.stringify(transactions).slice(0, 4000)}`;
 
     // 请求上游（OpenAI/DeepSeek 兼容）的流式接口
@@ -118,6 +118,7 @@ export async function GET(req: NextRequest) {
       const { data, error } = await supabase
         .from('transactions')
         .select('type, category, amount, date, currency')
+        .is('deleted_at', null)
         .gte('date', start)
         .lt('date', end)
         .eq('currency', currency);
@@ -145,7 +146,7 @@ export async function GET(req: NextRequest) {
       return new Response(stream, { headers: sseHeaders });
     }
 
-    const sys = `你是一名中文财务助理。请严格按以下 Markdown 模板输出（每段之间空一行，不要使用代码块或表格）：\n\n---\n### 📊 本月财务概览\n- 总收入：{千分位金额} {币种}\n- 总支出：{千分位金额} {币种}\n- 结余：{千分位金额} {币种}\n\n---\n### 🔝 三大支出类别\n1. 类别：金额 {币种}（占比x%）\n2. 类别：金额 {币种}（占比x%）\n3. 类别：金额 {币种}（占比x%）\n\n---\n### 📈 与上月变化\n- 简述环比变化（若无上月数据则说明原因）\n\n---\n### 💡 简短建议\n- 两条以内可执行建议\n`;
+    const sys = `你是一名中文财务助理。请严格按以下 Markdown 模板输出（每段之间空一行，不要使用代码块或表格）。仅关注“支出”，不要输出收入与结余：\n\n---\n### 📊 本期支出概览\n- 本期总支出：{千分位金额} {币种}\n\n---\n### 🔝 三大支出类别\n1. 类别：金额 {币种}（占比x%）\n2. 类别：金额 {币种}（占比x%）\n3. 类别：金额 {币种}（占比x%）\n\n---\n### 📈 与上期变化（支出）\n- 简述支出较上期的变化（若无上期数据则说明原因）\n\n---\n### 💡 简短建议\n- 两条以内可执行建议\n`;
     const user = `币种: ${currency}\n月份: ${month}\n数据(JSON): ${JSON.stringify(rows).slice(0, 4000)}`;
 
     const upstream = await fetch(`${conf.baseUrl}/chat/completions`, {

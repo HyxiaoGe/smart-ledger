@@ -17,9 +17,9 @@ export const PRESET_CATEGORIES: { key: string; label: string; color?: string; ic
   { key: 'rent', label: '房租', color: '#3B82F6', icon: '🏠' },
   { key: 'utilities', label: '水电', color: '#0EA5E9', icon: '💡' },
   { key: 'daily', label: '日常开销', color: '#F59E0B', icon: '🧺' },
-  { key: 'subscription', label: '订阅', color: '#EF4444', icon: '📦' }
+  { key: 'subscription', label: '订阅', color: '#EF4444', icon: '📦' },
+  { key: 'other', label: '其他', color: '#6B7280', icon: '📁' }
 ];
 
 // AI 服务首选：DeepSeek（可通过环境变量切换）
 export const DEFAULT_AI_PROVIDER = 'deepseek' as const;
-

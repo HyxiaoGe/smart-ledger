@@ -11,5 +11,10 @@ if (!url || !anonKey) {
   console.warn('[supabase] 缺少 NEXT_PUBLIC_SUPABASE_URL 或 NEXT_PUBLIC_SUPABASE_ANON_KEY');
 }
 
-export const supabase = createClient(url ?? '', anonKey ?? '');
-
+export const supabase = createClient(url ?? '', anonKey ?? '', {
+  global: {
+    fetch: (input: RequestInfo, init?: RequestInit) => {
+      return fetch(input as any, { ...(init || {}), cache: 'no-store' });
+    }
+  }
+});

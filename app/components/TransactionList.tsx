@@ -39,6 +39,7 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
         setLoading(true);
         let q = supabase.from('transactions').select('*').order('date', { ascending: false });
         if (start && end) q = q.gte('date', start).lt('date', end);
+        q = q.eq('type', 'expense').is('deleted_at', null);
         const { data, error } = await q.limit(50);
         if (!error && data) setRows(data as Row[]);
         if (!error && (data?.length || 0) < 50) setHasMore(false);
@@ -76,22 +77,38 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
   async function removeRow(r: Row) {
     setLoading(true);
     setError('');
-    const { error } = await supabase.from('transactions').delete().eq('id', r.id);
-    if (error) setError(error.message);
-    else {
-      setRows((rs) => rs.filter((x) => x.id !== r.id));
+    // 先尝试软删除；若列不存在或 RLS 拒绝，再回退物理删除（保证用户体验）
+    const soft = await supabase
+      .from('transactions')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', r.id)
+      .select();
+    if (soft.error) {
+      // 回退为物理删除
+      const hard = await supabase.from('transactions').delete().eq('id', r.id);
+      if (hard.error) {
+        setError(soft.error.message || hard.error.message);
+        setLoading(false);
+        return;
+      }
+      setRecentlyDeleted(null); // 物理删除无法撤销
+    } else if (!soft.data || soft.data.length === 0) {
+      // 未命中记录，直接刷新列表
+      setLoading(false);
+      return;
+    } else {
       setRecentlyDeleted(r);
     }
+    setRows((rs) => rs.filter((x) => x.id !== r.id));
     setLoading(false);
   }
 
   async function undoDelete() {
     if (!recentlyDeleted) return;
     setLoading(true);
-    const { id, ...payload } = recentlyDeleted;
-    // 使用原 id 恢复（需 service-level 权限方可设置 id）。客户端 anon 无法指定 id，这里重新插入一条。
-    const { data, error } = await supabase.from('transactions').insert([payload]).select();
-    if (!error && data) setRows((rs) => [data[0] as Row, ...rs]);
+    const { id } = recentlyDeleted;
+    const { error } = await supabase.from('transactions').update({ deleted_at: null }).eq('id', id);
+    if (!error) setRows((rs) => [recentlyDeleted as Row, ...rs]);
     setRecentlyDeleted(null);
     setLoading(false);
   }
@@ -114,6 +131,7 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
     setLoading(true);
     let q = supabase.from('transactions').select('*').order('date', { ascending: false });
     if (start && end) q = q.gte('date', start).lt('date', end);
+    q = q.eq('type', 'expense').is('deleted_at', null);
     const offset = rows.length;
     // Supabase range 是包含端点，使用 offset..offset+limit-1
     const { data, error } = await q.range(offset, offset + 49);

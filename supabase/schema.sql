@@ -11,6 +11,7 @@ create table if not exists public.transactions (
   amount numeric(12,2) not null check (amount >= 0),
   note text,
   date date not null,
+  deleted_at timestamptz,
   currency text not null default 'CNY' check (currency in ('CNY','USD')),
   created_at timestamptz not null default now()
 );
@@ -19,6 +20,7 @@ create table if not exists public.transactions (
 create index if not exists idx_transactions_date on public.transactions (date desc);
 create index if not exists idx_transactions_type on public.transactions (type);
 create index if not exists idx_transactions_category on public.transactions (category);
+create index if not exists idx_transactions_deleted_at on public.transactions (deleted_at);
 
 -- 行级安全策略：允许 anon 角色读写（演示用；生产请改为用户隔离）
 alter table public.transactions enable row level security;
@@ -46,4 +48,3 @@ begin
     create policy allow_anon_delete on public.transactions for delete to anon using (true);
   end if;
 end $$;
-
