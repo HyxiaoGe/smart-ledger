@@ -33,20 +33,65 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
   const [confirmRow, setConfirmRow] = useState<Row | null>(null);
 
   // 首次加载：若 initialRows 为空，则从客户端拉取
+  // 当 start 或 end 参数变化时也需要重新获取数据
   useEffect(() => {
-    if (initialRows.length === 0) {
+    if (initialRows.length === 0 && start) {
       (async () => {
         setLoading(true);
-        let q = supabase.from('transactions').select('*').order('date', { ascending: false });
-        if (start && end) q = q.gte('date', start).lt('date', end);
-        q = q.eq('type', 'expense').is('deleted_at', null);
-        const { data, error } = await q.limit(50);
+        // 判断是否为单日查询
+        const isSingleDay = start === end || (end && new Date(end).getTime() - new Date(start).getTime() === 86400000);
+        let query = supabase.from('transactions').select('*').order('date', { ascending: false });
+        
+        if (start && end) {
+          if (isSingleDay) {
+            // 单日查询使用等值比较
+            query = query.eq('date', start);
+          } else {
+            // 多日查询使用范围比较
+            query = query.gte('date', start).lt('date', end);
+          }
+        }
+        
+        query = query.eq('type', 'expense').is('deleted_at', null);
+        const { data, error } = await query.limit(50);
         if (!error && data) setRows(data as Row[]);
         if (!error && (data?.length || 0) < 50) setHasMore(false);
         setLoading(false);
       })();
     }
-  }, [initialRows]);
+  }, [initialRows, start, end]);
+
+  // 当 start 或 end 参数变化且 initialRows 不为空时，需要重新获取数据
+  useEffect(() => {
+    if (initialRows.length > 0 && start) {
+      (async () => {
+        setLoading(true);
+        // 判断是否为单日查询
+        const isSingleDay = start === end || (end && new Date(end).getTime() - new Date(start).getTime() === 86400000);
+        
+        let query = supabase.from('transactions').select('*');
+        
+        if (start && end) {
+          if (isSingleDay) {
+            // 单日查询使用等值比较
+            query = query.eq('date', start);
+          } else {
+            // 多日查询使用范围比较
+            query = query.gte('date', start).lt('date', end);
+          }
+        }
+        
+        const { data, error } = await query
+          .eq('type', 'expense')
+          .is('deleted_at', null)
+          .order('date', { ascending: false })
+          .limit(50);
+        if (!error && data) setRows(data as Row[]);
+        if (!error && (data?.length || 0) < 50) setHasMore(false);
+        setLoading(false);
+      })();
+    }
+  }, [start, end]);
 
   function startEdit(r: Row) {
     setEditingId(r.id);

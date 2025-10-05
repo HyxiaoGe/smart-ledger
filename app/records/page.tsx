@@ -10,7 +10,30 @@ import { MonthPicker } from '@/components/MonthPicker';
 import { RangePicker } from '@/components/RangePicker';
 import { MonthlyExpenseSummary } from '@/components/MonthlyExpenseSummary';
 
-async function fetchTransactions(month?: string) {
+async function fetchTransactions(month?: string, range?: string) {
+  // 根据范围参数筛选数据
+  if (range && range !== 'month') {
+    const qr = getQuickRange(range as any, month);
+    let query = supabase
+      .from('transactions')
+      .select('*')
+      .is('deleted_at', null)
+      .eq('type', 'expense');
+      
+    // 对于单日查询，使用等值比较；对于多日查询，使用范围比较
+    if (range === 'today' || range === 'yesterday') {
+      query = query.eq('date', qr.start);
+    } else {
+      query = query.gte('date', qr.start).lt('date', qr.end);
+    }
+    
+    const { data, error } = await query
+      .order('date', { ascending: false })
+      .limit(50);
+    if (error) throw error;
+    return { data: data ?? [], monthLabel: qr.label } as const;
+  }
+  
   // 可选的月份筛选（YYYY-MM），默认当前月；不筛选则返回全部
   const d = parseMonthStr(month || formatMonth(new Date()));
   if (!d) {
@@ -42,13 +65,13 @@ async function fetchTransactions(month?: string) {
 export default async function RecordsPage({ searchParams }: { searchParams?: { month?: string; range?: string } }) {
   const month = searchParams?.month;
   const range = (searchParams?.range as string) || 'today';
-  const { data: rows, monthLabel } = await fetchTransactions(month);
+  const { data: rows, monthLabel } = await fetchTransactions(month, range);
   const cur = parseMonthStr(month || formatMonth(new Date())) || new Date();
   const prev = formatMonth(shiftMonth(cur, -1));
   const next = formatMonth(shiftMonth(cur, 1));
   const startMonth = new Date(cur.getFullYear(), cur.getMonth(), 1).toISOString().slice(0, 10);
   const endMonth = new Date(cur.getFullYear(), cur.getMonth() + 1, 1).toISOString().slice(0, 10);
-  const qr = getQuickRange(range as any, monthLabel);
+  const qr = getQuickRange(range as any, month); // 修复：应该传递原始的month参数，而不是monthLabel
   const start = range === 'month' ? startMonth : qr.start;
   const end = range === 'month' ? endMonth : qr.end;
   const rangeLabel = range === 'month' ? monthLabel : qr.label;
