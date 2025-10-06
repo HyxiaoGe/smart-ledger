@@ -128,7 +128,7 @@ export function AiAnalyzeButton({ currency = 'CNY', month }: { currency?: string
               <button className="inline-flex h-8 px-3 items-center rounded-md border text-sm" onClick={onClose}>关闭</button>
             </div>
             <div className="p-4 space-y-3">
-              {loading && <p className="text-sm text-muted-foreground">分析中（流式输出）…</p>}
+              {loading && <p className="text-sm text-muted-foreground">分析中…</p>}
               {error && <p className="text-red-600 text-sm">{error}</p>}
               <div className="min-h-[80px] max-h-[60vh] overflow-auto pr-1">
                 <MarkdownView text={normalized} />
@@ -160,17 +160,6 @@ export function AiAnalyzeButton({ currency = 'CNY', month }: { currency?: string
                     }
                   }}
                 >{copied ? '已复制' : '复制Markdown'}</button>
-                <button
-                  className="inline-flex h-8 px-3 items-center rounded-md border text-sm"
-                  onClick={async () => {
-                    const key = `${currency}|${monthStr}`;
-                    try { await idbRemove(key); cacheRef.current.delete(key); } catch {}
-                  }}
-                >清除此月缓存</button>
-                <button
-                  className="inline-flex h-8 px-3 items-center rounded-md border text-sm"
-                  onClick={async () => { try { await idbClearAll(); cacheRef.current.clear(); } catch {} }}
-                >清空全部缓存</button>
                 <button
                   className="inline-flex h-8 px-3 items-center rounded-md border text-sm"
                   onClick={async () => {

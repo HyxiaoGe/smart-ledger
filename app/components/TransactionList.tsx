@@ -208,7 +208,7 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
     <div className="rounded-lg border bg-card text-card-foreground shadow-md">
       <div className="flex flex-col gap-3 p-4 border-b md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-2">
-          <Input placeholder="搜索 分类/类型（支持中文）" value={query} onChange={(e) => setQuery(e.target.value)} className="w-[260px]" />
+          <Input placeholder="搜索 分类/类型" value={query} onChange={(e) => setQuery(e.target.value)} className="w-[260px]" />
           {query && (
             <Button variant="secondary" onClick={() => setQuery('')}>清空</Button>
           )}

@@ -54,14 +54,3 @@ export async function idbRemove(key: string): Promise<void> {
     req.onerror = () => reject(req.error || new Error('IndexedDB 删除失败'));
   });
 }
-
-export async function idbClearAll(): Promise<void> {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction('ai_summaries', 'readwrite');
-    const store = tx.objectStore('ai_summaries');
-    const req = store.clear();
-    req.onsuccess = () => resolve();
-    req.onerror = () => reject(req.error || new Error('IndexedDB 清理失败'));
-  });
-}
