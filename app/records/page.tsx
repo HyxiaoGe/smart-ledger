@@ -6,32 +6,49 @@ export const revalidate = 0;
 export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { MonthPicker } from '@/components/MonthPicker';
-import { RangePicker } from '@/components/RangePicker';
+import { EnhancedRangePicker } from '@/components/EnhancedRangePicker';
 import { MonthlyExpenseSummary } from '@/components/MonthlyExpenseSummary';
 
-async function fetchTransactions(month?: string, range?: string) {
+async function fetchTransactions(month?: string, range?: string, startDate?: string, endDate?: string) {
   // 根据范围参数筛选数据
   if (range && range !== 'month') {
-    const qr = getQuickRange(range as any, month);
+    let dateRange;
+
+    if (range === 'custom' && startDate && endDate) {
+      // 自定义日期范围
+      dateRange = { start: startDate, end: endDate, label: `${startDate} - ${endDate}` };
+    } else {
+      // 快捷选项
+      dateRange = getQuickRange(range as any, month);
+    }
+
     let query = supabase
       .from('transactions')
       .select('*')
       .is('deleted_at', null)
       .eq('type', 'expense');
-      
+
     // 对于单日查询，使用等值比较；对于多日查询，使用范围比较
-    if (range === 'today' || range === 'yesterday') {
-      query = query.eq('date', qr.start);
+    if ((range === 'today' || range === 'yesterday') && dateRange.start === dateRange.end) {
+      query = query.eq('date', dateRange.start);
     } else {
-      query = query.gte('date', qr.start).lt('date', qr.end);
+      if (range === 'custom') {
+        // 自定义日期范围：需要包含结束日期，所以加1天
+        const endDate = new Date(dateRange.end);
+        endDate.setDate(endDate.getDate() + 1);
+        const endDateStr = endDate.toISOString().slice(0, 10);
+        query = query.gte('date', dateRange.start).lt('date', endDateStr);
+      } else {
+        // 快捷选项：getQuickRange 的 end 已经是下一天，直接使用
+        query = query.gte('date', dateRange.start).lt('date', dateRange.end);
+      }
     }
-    
+
     const { data, error } = await query
       .order('date', { ascending: false })
       .limit(50);
     if (error) throw error;
-    return { data: data ?? [], monthLabel: qr.label } as const;
+    return { data: data ?? [], monthLabel: dateRange.label } as const;
   }
   
   // 可选的月份筛选（YYYY-MM），默认当前月；不筛选则返回全部
@@ -62,29 +79,36 @@ async function fetchTransactions(month?: string, range?: string) {
   return { data: data ?? [], monthLabel: formatMonth(d) } as const;
 }
 
-export default async function RecordsPage({ searchParams }: { searchParams?: { month?: string; range?: string } }) {
+export default async function RecordsPage({ searchParams }: { searchParams?: { month?: string; range?: string; start?: string; end?: string } }) {
   const month = searchParams?.month;
   const range = (searchParams?.range as string) || 'today';
-  const { data: rows, monthLabel } = await fetchTransactions(month, range);
-  const cur = parseMonthStr(month || formatMonth(new Date())) || new Date();
-  const prev = formatMonth(shiftMonth(cur, -1));
-  const next = formatMonth(shiftMonth(cur, 1));
-  const startMonth = new Date(cur.getFullYear(), cur.getMonth(), 1).toISOString().slice(0, 10);
-  const endMonth = new Date(cur.getFullYear(), cur.getMonth() + 1, 1).toISOString().slice(0, 10);
-  const qr = getQuickRange(range as any, month); // 修复：应该传递原始的month参数，而不是monthLabel
-  const start = range === 'month' ? startMonth : qr.start;
-  const end = range === 'month' ? endMonth : qr.end;
-  const rangeLabel = range === 'month' ? monthLabel : qr.label;
+  const start = searchParams?.start;
+  const end = searchParams?.end;
+  const { data: rows, monthLabel } = await fetchTransactions(month, range, start, end);
+  let queryStart, queryEnd, rangeLabel;
+  if (range === 'month') {
+    // 当月范围：1号到今天
+    const today = new Date();
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    queryStart = monthStart.toISOString().slice(0, 10);
+    queryEnd = today.toISOString().slice(0, 10);
+    rangeLabel = monthLabel;
+  } else if (range === 'custom' && searchParams?.start && searchParams?.end) {
+    queryStart = searchParams.start;
+    queryEnd = searchParams.end;
+    rangeLabel = `${queryStart} - ${queryEnd}`;
+  } else {
+    const qr = getQuickRange(range as any, month);
+    queryStart = qr.start;
+    queryEnd = qr.end;
+    rangeLabel = qr.label;
+  }
   return (
     <div className="grid">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">账单列表（{rangeLabel}）</h1>
-        <div className="flex items-center gap-2">
-          <Link href={`/records?month=${prev}`}><Button variant="secondary">上月</Button></Link>
-          <Link href={`/records?month=${formatMonth(new Date())}`}><Button variant="secondary">当月</Button></Link>
-          <Link href={`/records?month=${next}`}><Button variant="secondary">下月</Button></Link>
-          <MonthPicker />
-          <RangePicker />
+        <div className="flex items-center">
+          <EnhancedRangePicker />
         </div>
       </div>
       {range === 'month' ? (
@@ -105,7 +129,7 @@ export default async function RecordsPage({ searchParams }: { searchParams?: { m
           })()}
         </div>
       ) : (
-        <TransactionList initialRows={rows as any} start={start} end={end} />
+        <TransactionList initialRows={rows as any} start={queryStart} end={queryEnd} />
       )}
     </div>
   );

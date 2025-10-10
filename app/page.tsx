@@ -10,7 +10,7 @@ import { DEFAULT_CURRENCY, SUPPORTED_CURRENCIES } from '@/lib/config';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 // import { MonthPicker } from '@/components/MonthPicker';
-import { RangePicker } from '@/components/RangePicker';
+import { EnhancedRangePicker } from '@/components/EnhancedRangePicker';
 import { CurrencySelect } from '@/components/CurrencySelect';
 import { parseMonthStr, formatMonth, shiftMonth, getQuickRange } from '@/lib/date';
 import { TopExpenses } from '@/components/TopExpenses';
@@ -87,27 +87,61 @@ async function loadMonthData(currency: string, date: Date) {
   return { income, expense, balance, trend, pie, compare };
 }
 
-export default async function HomePage({ searchParams }: { searchParams?: { currency?: string; month?: string; range?: string } }) {
+export default async function HomePage({ searchParams }: { searchParams?: { currency?: string; month?: string; range?: string; start?: string; end?: string } }) {
   const currency = SUPPORTED_CURRENCIES.some((c) => c.code === (searchParams?.currency || ''))
     ? (searchParams!.currency as string)
     : DEFAULT_CURRENCY;
   const rangeParam = (searchParams?.range as string) || 'today';
   const monthParam = searchParams?.month;
+  const startParam = searchParams?.start;
+  const endParam = searchParams?.end;
   const baseDate = parseMonthStr(monthParam || formatMonth(new Date())) || new Date();
   const monthLabel = formatMonth(baseDate);
   const prev = formatMonth(shiftMonth(baseDate, -1));
   const next = formatMonth(shiftMonth(baseDate, 1));
   const { income, expense, balance, trend, pie, compare } = await loadMonthData(currency, baseDate);
   const sym = symbolOf(currency);
-  // 日/快捷范围汇总
-  const { start: rStart, end: rEnd, label: rLabel } = getQuickRange(rangeParam as any, monthLabel);
-  const curRange = await supabase
+
+  // 日/快捷范围汇总 - 支持自定义日期范围
+  let rStart, rEnd, rLabel;
+  if (rangeParam === 'custom' && startParam && endParam) {
+    // 自定义日期范围
+    rStart = startParam;
+    rEnd = endParam;
+    rLabel = `${startParam} - ${endParam}`;
+  } else {
+    // 快捷选项
+    const quickRange = getQuickRange(rangeParam as any, monthLabel);
+    rStart = quickRange.start;
+    rEnd = quickRange.end;
+    rLabel = quickRange.label;
+  }
+  // 处理日期范围查询：如果是单日查询，使用等值比较；如果是多日查询，使用范围比较并包含结束日期
+  let query = supabase
     .from('transactions')
     .select('type, category, amount, date, currency')
     .is('deleted_at', null)
-    .gte('date', rStart)
-    .lt('date', rEnd)
     .eq('currency', currency);
+
+  // 判断是否为单日查询
+  const isSingleDay = (rangeParam === 'today' || rangeParam === 'yesterday') || (rStart === rEnd);
+
+  if (isSingleDay) {
+    query = query.eq('date', rStart);
+  } else {
+    if (rangeParam === 'custom') {
+      // 自定义日期范围：需要包含结束日期，所以加1天
+      const endDate = new Date(rEnd);
+      endDate.setDate(endDate.getDate() + 1);
+      const endDateStr = endDate.toISOString().slice(0, 10);
+      query = query.gte('date', rStart).lt('date', endDateStr);
+    } else {
+      // 快捷选项：getQuickRange 的 end 已经是下一天，直接使用
+      query = query.gte('date', rStart).lt('date', rEnd);
+    }
+  }
+
+  const curRange = await query;
   const rRows = curRange.data || [];
   const rSum = (arr: any[], pred: (r: any) => boolean) => arr.filter(pred).reduce((a, b) => a + Number(b.amount || 0), 0);
   const rincome = rSum(rRows, (r) => r.type === 'income');
@@ -139,7 +173,7 @@ export default async function HomePage({ searchParams }: { searchParams?: { curr
           </div>
           <div className="flex gap-2 items-center">
             <span className="text-sm text-muted-foreground">范围</span>
-            <RangePicker />
+            <EnhancedRangePicker />
           </div>
         </div>
       </div>

@@ -2,6 +2,193 @@
 @tailwind components;
 @tailwind utilities;
 
+@import "react-day-picker/style.css";
+
+/* 自定义日期选择器样式 */
+.rdp-modern {
+  --rdp-cell-size: 32px;
+  --rdp-caption-font-size: 14px;
+  --rdp-accent-color: #2c6ecb;
+  --rdp-background-color: #f8fafc;
+  --rdp-border-radius: 8px;
+}
+
+.rdp-enhanced {
+  --rdp-cell-size: 30px;
+  --rdp-caption-font-size: 13px;
+  --rdp-accent-color: #3b82f6;
+  --rdp-background-color: #ffffff;
+  --rdp-border-radius: 12px;
+  --rdp-outline: 2px solid #3b82f6;
+  --rdp-outline-selected: 2px solid #1d4ed8;
+}
+
+/* 增强版日期选择器样式 */
+.rdp-enhanced .rdp-root {
+  background: transparent;
+}
+
+.rdp-enhanced .rdp-caption {
+  padding: 12px 0 8px 0;
+  color: #374151;
+  font-weight: 600;
+}
+
+.rdp-enhanced .rdp-caption_label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.rdp-enhanced .rdp-nav {
+  padding: 0 8px;
+}
+
+.rdp-enhanced .rdp-nav_button {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.rdp-enhanced .rdp-nav_button:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  transform: scale(1.05);
+}
+
+.rdp-enhanced .rdp-head {
+  padding: 0 8px 8px 8px;
+}
+
+.rdp-enhanced .rdp-head_row {
+  font-weight: 500;
+}
+
+.rdp-enhanced .rdp-head_cell {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+  padding: 8px 0;
+}
+
+.rdp-enhanced .rdp-body {
+  padding: 0 8px 12px 8px;
+}
+
+.rdp-enhanced .rdp-row {
+  margin-bottom: 4px;
+}
+
+.rdp-enhanced .rdp-cell {
+  padding: 2px;
+}
+
+.rdp-enhanced .rdp-button {
+  width: var(--rdp-cell-size);
+  height: var(--rdp-cell-size);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  background: white;
+  color: #374151;
+}
+
+.rdp-enhanced .rdp-button:hover:not([disabled]):not(.rdp-selected) {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+  transform: scale(1.05);
+}
+
+.rdp-enhanced .rdp-selected {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  font-weight: 600;
+  border-color: #1d4ed8;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+.rdp-enhanced .rdp-selected:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+.rdp-enhanced .rdp-today:not(.rdp-selected) {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fbbf24;
+  font-weight: 600;
+}
+
+.rdp-enhanced .rdp-today.rdp-selected {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border-color: #1d4ed8;
+}
+
+.rdp-enhanced .rdp-range_start {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.rdp-enhanced .rdp-range_end {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
+.rdp-enhanced .rdp-range_middle {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+.rdp-enhanced .rdp-outside {
+  color: #d1d5db;
+  opacity: 0.6;
+}
+
+.rdp-enhanced .rdp-disabled {
+  color: #e5e7eb;
+  opacity: 0.5;
+}
+
+.rdp-enhanced .rdp-outside:hover {
+  background: transparent;
+}
+
+/* 原有样式保留 */
+.rdp-modern .rdp-caption {
+  padding: 8px 0;
+}
+
+.rdp-modern .rdp-nav {
+  padding: 0 4px;
+}
+
+.rdp-modern .rdp-button {
+  border-radius: 6px;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.rdp-modern .rdp-button:hover:not([disabled]) {
+  background-color: #e5e7eb;
+}
+
+.rdp-modern .rdp-selected {
+  background-color: var(--rdp-accent-color);
+  color: white;
+  font-weight: 500;
+}
+
+.rdp-modern .rdp-today {
+  background-color: #f3f4f6;
+  font-weight: 600;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
