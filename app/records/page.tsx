@@ -1,6 +1,6 @@
 // 账单列表页（中文注释）
 import { supabase } from '@/lib/supabaseClient';
-import { TransactionList } from '@/components/TransactionList';
+import { EnhancedTransactionGroupedList } from '@/components/EnhancedTransactionGroupedList';
 import { parseMonthStr, formatMonth, shiftMonth, getQuickRange } from '@/lib/date';
 export const revalidate = 0;
 export const dynamic = 'force-dynamic';
@@ -129,7 +129,11 @@ export default async function RecordsPage({ searchParams }: { searchParams?: { m
           })()}
         </div>
       ) : (
-        <TransactionList initialRows={rows as any} start={queryStart} end={queryEnd} />
+        <div className="mt-4">
+          <EnhancedTransactionGroupedList
+            initialTransactions={rows as any}
+          />
+        </div>
       )}
     </div>
   );
