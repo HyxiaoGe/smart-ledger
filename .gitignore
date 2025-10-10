@@ -33,3 +33,7 @@ supabase/.temp/
 # Docker 本地覆盖
 docker-compose.override.yml
 
+# Git 本地配置
+.gitmessage
+.gitconfig
+
