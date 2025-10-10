@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DateInput } from '@/components/DateInput';
 
 export default function AddPage() {
   const router = useRouter();
@@ -18,7 +19,7 @@ export default function AddPage() {
   const [amount, setAmount] = useState<number>(0);
   const [amountText, setAmountText] = useState<string>('0');
   const [note, setNote] = useState<string>('');
-  const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState<Date>(new Date());
   const [currency, setCurrency] = useState<Currency>(DEFAULT_CURRENCY as Currency);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
@@ -48,7 +49,7 @@ export default function AddPage() {
       }
       setAmount(amt);
       const { error } = await supabase.from('transactions').insert([
-        { type, category, amount: amt, note, date, currency }
+        { type, category, amount: amt, note, date: date.toISOString().slice(0, 10), currency }
       ]);
       if (error) throw error;
       router.push('/');
@@ -112,7 +113,11 @@ export default function AddPage() {
             </div>
             <div>
               <Label>日期 <span className="text-destructive">*</span></Label>
-              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+              <DateInput
+                selected={date}
+                onSelect={setDate}
+                placeholder="选择日期"
+              />
             </div>
           </div>
           <div>
