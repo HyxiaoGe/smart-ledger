@@ -1,9 +1,14 @@
 "use client";
 // 增强版交易分组列表组件（客户端支持编辑和删除）
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { TransactionGroupedList, TransactionGroup } from '@/components/TransactionGroupedList';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { CategoryChip } from '@/components/CategoryChip';
+import { PRESET_CATEGORIES } from '@/lib/config';
+import { formatCurrency } from '@/lib/format';
 
 type Transaction = {
   id: string;
@@ -25,17 +30,49 @@ export function EnhancedTransactionGroupedList({
   className
 }: EnhancedTransactionGroupedListProps) {
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
+
+  // 当 initialTransactions 发生变化时更新本地状态
+  useEffect(() => {
+    setTransactions(initialTransactions);
+  }, [initialTransactions]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [recentlyDeleted, setRecentlyDeleted] = useState<Transaction | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState<Partial<Transaction>>({});
+  const [confirmRow, setConfirmRow] = useState<Transaction | null>(null);
 
   async function handleEdit(transaction: Transaction) {
-    // 这里可以实现编辑功能，暂时先console
-    console.log('编辑交易:', transaction);
-    // TODO: 实现编辑功能，可能需要打开一个对话框或跳转到编辑页面
+    setEditingId(transaction.id);
+    setForm({ ...transaction });
+  }
+
+  async function saveEdit() {
+    if (!editingId) return;
+    setLoading(true);
+    setError('');
+    const patch = { ...form };
+    delete (patch as any).id;
+    if (patch.amount !== undefined && !(Number(patch.amount) > 0)) {
+      setError('金额必须大于 0');
+      setLoading(false);
+      return;
+    }
+    const { error } = await supabase.from('transactions').update(patch).eq('id', editingId);
+    if (error) setError(error.message);
+    else {
+      setTransactions((ts) => ts.map((t) => (t.id === editingId ? { ...t, ...(form as Transaction) } : t)));
+      setEditingId(null);
+      setForm({});
+    }
+    setLoading(false);
   }
 
   async function handleDelete(transaction: Transaction) {
+    setConfirmRow(transaction);
+  }
+
+  async function confirmDelete(transaction: Transaction) {
     setLoading(true);
     setError('');
 
@@ -95,6 +132,107 @@ export function EnhancedTransactionGroupedList({
     setLoading(false);
   }
 
+  // 渲染编辑表单
+  function renderEditForm(transaction: Transaction) {
+    return (
+      <div className="grid gap-3 mt-3 p-3 bg-muted/30 rounded-lg">
+        <Input
+          type="date"
+          value={(form.date as string) || transaction.date}
+          onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
+        />
+        <select
+          className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+          value={(form.type as string) || transaction.type}
+          onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as Transaction['type'] }))}
+        >
+          <option value="expense">支出</option>
+          <option value="income">收入</option>
+        </select>
+        <select
+          className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+          value={(form.category as string) || transaction.category}
+          onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+        >
+          {PRESET_CATEGORIES.map((c) => (
+            <option key={c.key} value={c.key}>
+              {c.icon ? `${c.icon} ` : ''}{c.label}
+            </option>
+          ))}
+        </select>
+        <Input
+          type="number"
+          inputMode="decimal"
+          value={String(form.amount ?? transaction.amount ?? '')}
+          onChange={(e) => setForm((f) => ({ ...f, amount: parseFloat(e.target.value) || 0 }))}
+        />
+        <select
+          className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+          value={form.currency as string || transaction.currency || 'CNY'}
+          onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value }))}
+        >
+          <option value="CNY">CNY</option>
+          <option value="USD">USD</option>
+        </select>
+        <Input
+          value={(form.note as string) || transaction.note || ''}
+          onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
+          placeholder="备注"
+        />
+        <div className="flex gap-2">
+          <Button variant="secondary" onClick={() => { setEditingId(null); setForm({}); }}>
+            取消
+          </Button>
+          <Button onClick={saveEdit} disabled={loading}>
+            保存
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // 自定义交易项渲染器
+  function renderTransactionItem(transaction: Transaction) {
+    const isEditing = editingId === transaction.id;
+
+    return (
+      <div key={transaction.id} className="border-l-2 border-l-blue-200">
+        {!isEditing ? (
+          <>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-muted-foreground">
+                  {transaction.currency || 'CNY'}
+                </span>
+                <CategoryChip category={transaction.category} />
+                {transaction.note && (
+                  <span className="text-sm text-muted-foreground truncate max-w-[200px]" title={transaction.note}>
+                    {transaction.note}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-semibold">
+                  {formatCurrency(Number(transaction.amount || 0), transaction.currency || 'CNY')}
+                </span>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="sm" onClick={() => handleEdit(transaction)} disabled={loading}>
+                    编辑
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => handleDelete(transaction)} disabled={loading}>
+                    删除
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          renderEditForm(transaction)
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className={className}>
       {error && (
@@ -124,10 +262,24 @@ export function EnhancedTransactionGroupedList({
         </div>
       )}
 
+      {confirmRow && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onMouseDown={(e) => { if (e.target === e.currentTarget) setConfirmRow(null); }}>
+          <div className="rounded-lg border bg-card text-card-foreground shadow-sm w-full max-w-sm z-50" role="dialog" aria-modal="true" onMouseDown={(e) => e.stopPropagation()}>
+            <div className="p-4 border-b font-semibold">确认删除</div>
+            <div className="p-4 text-sm text-muted-foreground">确定要删除这条记录吗？删除后可在短时间内"撤销"。</div>
+            <div className="p-4 flex justify-end gap-2 border-t">
+              <Button variant="secondary" onClick={() => setConfirmRow(null)}>取消</Button>
+              <Button variant="destructive" onClick={async () => { const row = confirmRow; setConfirmRow(null); if (row) await confirmDelete(row); }}>确认删除</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <TransactionGroupedList
         transactions={transactions}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        renderTransactionItem={renderTransactionItem}
       />
     </div>
   );

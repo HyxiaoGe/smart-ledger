@@ -9,6 +9,7 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CategoryChip } from '@/components/CategoryChip';
 import { formatCurrency } from '@/lib/format';
+import { PRESET_CATEGORIES } from '@/lib/config';
 import type { TransactionType } from '@/types/transaction';
 
 type Transaction = {
@@ -33,13 +34,15 @@ interface TransactionGroupedListProps {
   onEdit?: (transaction: Transaction) => void;
   onDelete?: (transaction: Transaction) => void;
   className?: string;
+  renderTransactionItem?: (transaction: Transaction) => React.ReactNode;
 }
 
 export function TransactionGroupedList({
   transactions,
   onEdit,
   onDelete,
-  className
+  className,
+  renderTransactionItem
 }: TransactionGroupedListProps) {
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
 
@@ -149,12 +152,16 @@ export function TransactionGroupedList({
             <div>
               <div className="text-lg font-semibold">主要支出</div>
               <div className="text-sm text-muted-foreground">
-                {stats.topCategories.map(([category, amount]) => (
-                  <div key={category} className="flex justify-between items-center gap-2">
-                    <span className="truncate flex-1">{category}</span>
-                    <span className="font-medium">¥{amount.toFixed(2)}</span>
-                  </div>
-                ))}
+                {stats.topCategories.map(([category, amount]) => {
+                  const categoryMeta = PRESET_CATEGORIES.find((c) => c.key === category);
+                  const categoryLabel = categoryMeta?.label || category;
+                  return (
+                    <div key={category} className="flex justify-between items-center gap-2">
+                      <span className="truncate flex-1">{categoryLabel}</span>
+                      <span className="font-medium">¥{amount.toFixed(2)}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -220,35 +227,41 @@ export function TransactionGroupedList({
                     {group.transactions.map((transaction: Transaction) => (
                       <div
                         key={transaction.id}
-                        className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors border-l-2 border-l-blue-200"
+                        className="hover:bg-muted/50 rounded-lg transition-colors"
                       >
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <CategoryChip category={transaction.category} />
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium truncate">{transaction.note || '无备注'}</div>
+                        {renderTransactionItem ? (
+                          renderTransactionItem(transaction)
+                        ) : (
+                          <div className="flex items-center justify-between p-3 border-l-2 border-l-blue-200">
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <CategoryChip category={transaction.category} />
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium truncate">{transaction.note || '无备注'}</div>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="font-semibold">
+                                ¥{formatCurrency(Number(transaction.amount || 0), transaction.currency || 'CNY')}
+                              </div>
+                              <div className="flex gap-1 mt-1">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => onEdit?.(transaction)}
+                                >
+                                  编辑
+                                </Button>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => onDelete?.(transaction)}
+                                >
+                                  删除
+                                </Button>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-semibold">
-                            ¥{formatCurrency(Number(transaction.amount || 0), transaction.currency || 'CNY')}
-                          </div>
-                          <div className="flex gap-1 mt-1">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => onEdit?.(transaction)}
-                            >
-                              编辑
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => onDelete?.(transaction)}
-                            >
-                              删除
-                            </Button>
-                          </div>
-                        </div>
+                        )}
                       </div>
                     ))}
                   </div>
