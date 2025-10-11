@@ -150,15 +150,16 @@ export function TransactionGroupedList({
               <div className="text-sm text-muted-foreground">平均</div>
             </div>
             <div>
-              <div className="text-lg font-semibold">主要支出</div>
-              <div className="text-sm text-muted-foreground">
+              <div className="text-2xl font-bold">-</div>
+              <div className="text-sm text-muted-foreground">主要支出</div>
+              <div className="text-xs text-muted-foreground mt-1">
                 {stats.topCategories.map(([category, amount]) => {
                   const categoryMeta = PRESET_CATEGORIES.find((c) => c.key === category);
                   const categoryLabel = categoryMeta?.label || category;
                   return (
                     <div key={category} className="flex justify-between items-center gap-2">
-                      <span className="truncate flex-1">{categoryLabel}</span>
-                      <span className="font-medium">¥{amount.toFixed(2)}</span>
+                      <span className="truncate flex-1 text-xs">{categoryLabel}</span>
+                      <span className="font-medium text-xs">¥{amount.toFixed(2)}</span>
                     </div>
                   );
                 })}

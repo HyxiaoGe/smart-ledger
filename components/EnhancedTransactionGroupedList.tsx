@@ -7,6 +7,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CategoryChip } from '@/components/CategoryChip';
+import { DateInput } from '@/components/DateInput';
 import { PRESET_CATEGORIES } from '@/lib/config';
 import { formatCurrency } from '@/lib/format';
 
@@ -136,10 +137,10 @@ export function EnhancedTransactionGroupedList({
   function renderEditForm(transaction: Transaction) {
     return (
       <div className="grid gap-3 mt-3 p-3 bg-muted/30 rounded-lg">
-        <Input
-          type="date"
-          value={(form.date as string) || transaction.date}
-          onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
+        <DateInput
+          selected={new Date((form.date as string) || transaction.date)}
+          onSelect={(date) => setForm((f) => ({ ...f, date: date?.toISOString().slice(0, 10) }))}
+          placeholder="选择日期"
         />
         <select
           className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
