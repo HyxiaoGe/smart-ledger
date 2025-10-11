@@ -10,6 +10,8 @@ import { CategoryChip } from '@/components/CategoryChip';
 import { DateInput } from '@/components/DateInput';
 import { PRESET_CATEGORIES } from '@/lib/config';
 import { formatCurrency } from '@/lib/format';
+import { Badge } from '@/components/ui/badge';
+import { Edit, Trash2 } from 'lucide-react';
 
 type Transaction = {
   id: string;
@@ -136,56 +138,93 @@ export function EnhancedTransactionGroupedList({
   // 渲染编辑表单
   function renderEditForm(transaction: Transaction) {
     return (
-      <div className="grid gap-3 mt-3 p-3 bg-muted/30 rounded-lg">
-        <DateInput
-          selected={new Date((form.date as string) || transaction.date)}
-          onSelect={(date) => setForm((f) => ({ ...f, date: date?.toISOString().slice(0, 10) }))}
-          placeholder="选择日期"
-        />
-        <select
-          className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
-          value={(form.type as string) || transaction.type}
-          onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as Transaction['type'] }))}
-        >
-          <option value="expense">支出</option>
-          <option value="income">收入</option>
-        </select>
-        <select
-          className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
-          value={(form.category as string) || transaction.category}
-          onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-        >
-          {PRESET_CATEGORIES.map((c) => (
-            <option key={c.key} value={c.key}>
-              {c.icon ? `${c.icon} ` : ''}{c.label}
-            </option>
-          ))}
-        </select>
-        <Input
-          type="number"
-          inputMode="decimal"
-          value={String(form.amount ?? transaction.amount ?? '')}
-          onChange={(e) => setForm((f) => ({ ...f, amount: parseFloat(e.target.value) || 0 }))}
-        />
-        <select
-          className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
-          value={form.currency as string || transaction.currency || 'CNY'}
-          onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value }))}
-        >
-          <option value="CNY">CNY</option>
-          <option value="USD">USD</option>
-        </select>
-        <Input
-          value={(form.note as string) || transaction.note || ''}
-          onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
-          placeholder="备注"
-        />
-        <div className="flex gap-2">
-          <Button variant="secondary" onClick={() => { setEditingId(null); setForm({}); }}>
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">日期</label>
+            <DateInput
+              selected={new Date((form.date as string) || transaction.date)}
+              onSelect={(date) => setForm((f) => ({ ...f, date: date?.toISOString().slice(0, 10) }))}
+              placeholder="选择日期"
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">类型</label>
+            <select
+              className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm focus:border-blue-500 focus:ring-blue-500"
+              value={(form.type as string) || transaction.type}
+              onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as Transaction['type'] }))}
+            >
+              <option value="expense">支出</option>
+              <option value="income">收入</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">分类</label>
+            <select
+              className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm focus:border-blue-500 focus:ring-blue-500"
+              value={(form.category as string) || transaction.category}
+              onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+            >
+              {PRESET_CATEGORIES.map((c) => (
+                <option key={c.key} value={c.key}>
+                  {c.icon ? `${c.icon} ` : ''}{c.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">金额</label>
+            <Input
+              type="number"
+              inputMode="decimal"
+              value={String(form.amount ?? transaction.amount ?? '')}
+              onChange={(e) => setForm((f) => ({ ...f, amount: parseFloat(e.target.value) || 0 }))}
+              className="h-10"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">币种</label>
+            <select
+              className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm focus:border-blue-500 focus:ring-blue-500"
+              value={form.currency as string || transaction.currency || 'CNY'}
+              onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value }))}
+            >
+              <option value="CNY">CNY</option>
+              <option value="USD">USD</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">备注</label>
+            <Input
+              value={(form.note as string) || transaction.note || ''}
+              onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
+              placeholder="请输入备注信息"
+              className="h-10"
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3 pt-2 border-t">
+          <Button
+            variant="outline"
+            onClick={() => { setEditingId(null); setForm({}); }}
+            className="min-w-[80px]"
+          >
             取消
           </Button>
-          <Button onClick={saveEdit} disabled={loading}>
-            保存
+          <Button
+            onClick={saveEdit}
+            disabled={loading}
+            className="min-w-[80px] bg-blue-600 hover:bg-blue-700"
+          >
+            {loading ? '保存中...' : '保存'}
           </Button>
         </div>
       </div>
@@ -197,38 +236,83 @@ export function EnhancedTransactionGroupedList({
     const isEditing = editingId === transaction.id;
 
     return (
-      <div key={transaction.id} className="border-l-2 border-l-blue-200">
+      <div key={transaction.id} className="group">
         {!isEditing ? (
-          <>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-muted-foreground">
+          <div
+            className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 hover:border-blue-300 relative overflow-hidden cursor-pointer"
+            onClick={() => handleEdit(transaction)}
+          >
+            {/* 左侧装饰条 */}
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-400 to-blue-600"></div>
+
+            <div className="flex items-center justify-between pl-4">
+              {/* 左侧信息 */}
+              <div className="flex items-center gap-4 flex-1 min-w-0">
+                {/* 分类图标和名称 */}
+                <div className="flex items-center gap-2">
+                  <CategoryChip category={transaction.category} />
+                </div>
+
+                {/* 备注信息 */}
+                <div className="flex-1 min-w-0">
+                  {transaction.note ? (
+                    <p className="text-gray-700 font-medium truncate" title={transaction.note}>
+                      {transaction.note}
+                    </p>
+                  ) : (
+                    <p className="text-gray-400 italic">无备注</p>
+                  )}
+                </div>
+
+                {/* 币种标识 */}
+                <Badge variant="outline" className="text-xs">
                   {transaction.currency || 'CNY'}
-                </span>
-                <CategoryChip category={transaction.category} />
-                {transaction.note && (
-                  <span className="text-sm text-muted-foreground truncate max-w-[200px]" title={transaction.note}>
-                    {transaction.note}
-                  </span>
-                )}
+                </Badge>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="font-semibold">
-                  {formatCurrency(Number(transaction.amount || 0), transaction.currency || 'CNY')}
-                </span>
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="sm" onClick={() => handleEdit(transaction)} disabled={loading}>
-                    编辑
+
+              {/* 右侧金额和操作 */}
+              <div className="flex items-center gap-4">
+                {/* 金额显示 */}
+                <div className="text-right">
+                  <div className="text-xl font-bold text-red-600">
+                    -{formatCurrency(Number(transaction.amount || 0), transaction.currency || 'CNY')}
+                  </div>
+                </div>
+
+                {/* 操作按钮 */}
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEdit(transaction);
+                    }}
+                    disabled={loading}
+                    className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                  >
+                    <Edit className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => handleDelete(transaction)} disabled={loading}>
-                    删除
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(transaction);
+                    }}
+                    disabled={loading}
+                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
             </div>
-          </>
+          </div>
         ) : (
-          renderEditForm(transaction)
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 shadow-sm">
+            {renderEditForm(transaction)}
+          </div>
         )}
       </div>
     );

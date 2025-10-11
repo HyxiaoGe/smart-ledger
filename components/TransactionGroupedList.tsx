@@ -136,7 +136,7 @@ export function TransactionGroupedList({
           <CardTitle className="text-lg">账单概览</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          <div className="grid grid-cols-3 md:grid-cols-3 gap-4 text-center">
             <div>
               <div className="text-2xl font-bold text-primary">¥{stats.totalAmount.toFixed(2)}</div>
               <div className="text-sm text-muted-foreground">总支出</div>
@@ -149,21 +149,21 @@ export function TransactionGroupedList({
               <div className="text-2xl font-bold">¥{stats.avgAmount.toFixed(2)}</div>
               <div className="text-sm text-muted-foreground">平均</div>
             </div>
-            <div>
-              <div className="text-2xl font-bold">-</div>
-              <div className="text-sm text-muted-foreground">主要支出</div>
-              <div className="text-xs text-muted-foreground mt-1">
-                {stats.topCategories.map(([category, amount]) => {
-                  const categoryMeta = PRESET_CATEGORIES.find((c) => c.key === category);
-                  const categoryLabel = categoryMeta?.label || category;
-                  return (
-                    <div key={category} className="flex justify-between items-center gap-2">
-                      <span className="truncate flex-1 text-xs">{categoryLabel}</span>
-                      <span className="font-medium text-xs">¥{amount.toFixed(2)}</span>
-                    </div>
-                  );
-                })}
-              </div>
+          </div>
+
+          <div className="mt-4 pt-4 border-t">
+            <div className="text-lg font-semibold mb-2">主要支出分类</div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+              {stats.topCategories.map(([category, amount]) => {
+                const categoryMeta = PRESET_CATEGORIES.find((c) => c.key === category);
+                const categoryLabel = categoryMeta?.label || category;
+                return (
+                  <div key={category} className="flex justify-between items-center gap-2 p-3 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+                    <span className="truncate flex-1 text-sm font-medium text-gray-700">{categoryLabel}</span>
+                    <span className="font-semibold text-sm text-red-600">¥{amount.toFixed(2)}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </CardContent>
