@@ -1,5 +1,4 @@
 "use client";
-// 统一日期选择器组件（基于 react-day-picker，中文注释）
 import { DayPicker } from "react-day-picker";
 import { zhCN } from "date-fns/locale";
 import * as React from "react";

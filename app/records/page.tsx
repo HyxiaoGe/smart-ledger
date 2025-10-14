@@ -1,4 +1,3 @@
-// 账单列表页（中文注释）
 import { supabase } from '@/lib/supabaseClient';
 import { EnhancedTransactionGroupedList } from '@/components/EnhancedTransactionGroupedList';
 import { parseMonthStr, formatMonth, shiftMonth, getQuickRange } from '@/lib/date';

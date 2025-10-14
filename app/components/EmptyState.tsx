@@ -1,4 +1,3 @@
-// 通用空态组件（中文注释）
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 

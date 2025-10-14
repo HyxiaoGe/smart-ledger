@@ -1,5 +1,4 @@
 "use client";
-// Top10 支出排行（中文注释）：展示所选范围内的前十笔支出
 import { CategoryChip } from '@/components/CategoryChip';
 import { formatCurrency } from '@/lib/format';
 

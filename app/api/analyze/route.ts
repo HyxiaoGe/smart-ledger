@@ -1,8 +1,3 @@
-// AI 分析接口（中文注释）
-// POST /api/analyze
-// 入参：{ month: "YYYY-MM", transactions: Transaction[] }
-// 出参：{ summary: string }
-
 import { NextRequest } from 'next/server';
 import { chat } from '@/lib/aiClient';
 

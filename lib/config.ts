@@ -1,5 +1,3 @@
-// 全局配置：预设类别、币种与 AI 首选项（中文注释）
-
 export const SUPPORTED_CURRENCIES = [
   { code: 'CNY', symbol: '¥', name: '人民币' },
   { code: 'USD', symbol: '$', name: '美元' }

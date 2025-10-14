@@ -1,5 +1,4 @@
 "use client";
-// 可点击的日期输入组件（中文注释）
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
@@ -14,13 +13,15 @@ export interface DateInputProps {
   onSelect?: (date: Date) => void;
   className?: string;
   placeholder?: string;
+  disabled?: boolean;
 }
 
 export function DateInput({
   selected,
   onSelect,
   className,
-  placeholder = "选择日期"
+  placeholder = "选择日期",
+  disabled = false
 }: DateInputProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -32,7 +33,9 @@ export function DateInput({
   };
 
   const handleButtonClick = () => {
-    setIsOpen(!isOpen);
+    if (!disabled) {
+      setIsOpen(!isOpen);
+    }
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
@@ -47,6 +50,7 @@ export function DateInput({
         variant="outline"
         onClick={handleButtonClick}
         className="w-full justify-between text-left font-normal"
+        disabled={disabled}
       >
         <span className="flex items-center gap-2">
           <CalendarIcon className="h-4 w-4" />

@@ -1,4 +1,3 @@
-// 金额与币种格式化工具（中文注释）
 import { SUPPORTED_CURRENCIES } from '@/lib/config';
 
 export function currencySymbol(code: string): string {

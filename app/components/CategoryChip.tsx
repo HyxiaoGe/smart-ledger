@@ -1,4 +1,3 @@
-// 类别徽章（中文注释）：根据预设类别展示图标与颜色
 import { PRESET_CATEGORIES } from '@/lib/config';
 import { Badge } from '@/components/ui/badge';
 
