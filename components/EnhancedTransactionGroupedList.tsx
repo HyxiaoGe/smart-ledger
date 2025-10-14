@@ -54,7 +54,7 @@ export function EnhancedTransactionGroupedList({
     if (!editingId) return;
     setLoading(true);
     setError('');
-    const patch = { ...form };
+    const patch = { ...form, type: 'expense' }; // 强制设置为支出类型
     delete (patch as any).id;
     if (patch.amount !== undefined && !(Number(patch.amount) > 0)) {
       setError('金额必须大于 0');
@@ -64,7 +64,7 @@ export function EnhancedTransactionGroupedList({
     const { error } = await supabase.from('transactions').update(patch).eq('id', editingId);
     if (error) setError(error.message);
     else {
-      setTransactions((ts) => ts.map((t) => (t.id === editingId ? { ...t, ...(form as Transaction) } : t)));
+      setTransactions((ts) => ts.map((t) => (t.id === editingId ? { ...t, ...(form as Transaction), type: 'expense' } : t)));
       setEditingId(null);
       setForm({});
     }
@@ -150,14 +150,10 @@ export function EnhancedTransactionGroupedList({
           </div>
           <div>
             <label className="text-sm font-medium text-gray-700 mb-1 block">类型</label>
-            <select
-              className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm focus:border-blue-500 focus:ring-blue-500"
-              value={(form.type as string) || transaction.type}
-              onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as Transaction['type'] }))}
-            >
-              <option value="expense">支出</option>
-              <option value="income">收入</option>
-            </select>
+            <div className="h-10 w-full rounded-md border border-gray-300 bg-gray-50 px-3 text-sm flex items-center text-red-600">
+              支出
+            </div>
+            <input type="hidden" name="type" value="expense" />
           </div>
         </div>
 

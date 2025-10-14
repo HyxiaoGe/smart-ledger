@@ -1,5 +1,4 @@
 "use client";
-// 交易列表组件（中文注释）：支持编辑、删除与撤销（Undo），并应用 shadcn 样式
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
@@ -102,7 +101,7 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
     if (!editingId) return;
     setLoading(true);
     setError('');
-    const patch = { ...form };
+    const patch = { ...form, type: 'expense' }; // 强制设置为支出类型
     delete (patch as any).id;
     if (patch.amount !== undefined && !(Number(patch.amount) > 0)) {
       setError('金额必须大于 0');
@@ -112,7 +111,7 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
     const { error } = await supabase.from('transactions').update(patch).eq('id', editingId);
     if (error) setError(error.message);
     else {
-      setRows((rs) => rs.map((r) => (r.id === editingId ? { ...r, ...(form as Row) } : r)));
+      setRows((rs) => rs.map((r) => (r.id === editingId ? { ...r, ...(form as Row), type: 'expense' } : r)));
       setEditingId(null);
       setForm({});
     }
@@ -275,15 +274,7 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
                   ) : r.date}
                 </td>
                 <td className="px-4 py-2">
-                  {editingId === r.id ? (
-                    <select className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm" value={form.type as string}
-                      onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as Row['type'] }))}>
-                      <option value="expense">支出</option>
-                      <option value="income">收入</option>
-                    </select>
-                  ) : (
-                    <span className={r.type === 'income' ? 'text-emerald-600' : 'text-red-600'}>{r.type === 'income' ? '收入' : '支出'}</span>
-                  )}
+                  <span className="text-red-600">支出</span>
                 </td>
                 <td className="px-4 py-2">
                   {editingId === r.id ? (
@@ -343,8 +334,8 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
               <div key={r.id} className="rounded-lg border p-4 hover:shadow transition bg-background">
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-muted-foreground">{r.date}</div>
-                  <div className={r.type === 'income' ? 'text-emerald-600 text-xs font-medium' : 'text-red-600 text-xs font-medium'}>
-                    {r.type === 'income' ? '收入' : '支出'}
+                  <div className="text-red-600 text-xs font-medium">
+                    支出
                   </div>
                 </div>
                 <div className="mt-2 flex items-center justify-between">
@@ -371,11 +362,7 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
                   <div className="mt-3 grid gap-2">
                     <Input type="date" value={(form.date as string) || r.date}
                       onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))} />
-                    <select className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm" value={(form.type as string) || r.type}
-                      onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as Row['type'] }))}>
-                      <option value="expense">支出</option>
-                      <option value="income">收入</option>
-                    </select>
+                    <input type="hidden" value="expense" />
                     <select className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm" value={(form.category as string) || r.category}
                       onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}>
                       {PRESET_CATEGORIES.map((c) => (

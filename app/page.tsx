@@ -1,14 +1,13 @@
-// 首页：汇总 + 图表 + AI 分析（中文注释）
-// 移除未使用的 SummaryCard 组件导入
+// 首页：汇总 + 图表 + AI 分析
 import { ChartSummary } from './components/ChartSummary';
 import { AiAnalyzeButton } from './components/AiAnalyze';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 export const revalidate = 0;
 export const dynamic = 'force-dynamic';
 import { supabase } from '@/lib/supabaseClient';
 import { DEFAULT_CURRENCY, SUPPORTED_CURRENCIES } from '@/lib/config';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 // import { MonthPicker } from '@/components/MonthPicker';
 import { EnhancedRangePicker } from '@/components/EnhancedRangePicker';
 import { CurrencySelect } from '@/components/CurrencySelect';
@@ -161,11 +160,7 @@ export default async function HomePage({ searchParams }: { searchParams?: { curr
   return (
     <div className="space-y-6">
       <div className="flex gap-3 items-center justify-between">
-        <div className="flex gap-3">
-          <Link href="/add"><Button>添加账单</Button></Link>
-          <Link href="/records"><Button variant="secondary">查看账单</Button></Link>
-          <AiAnalyzeButton currency={currency} month={monthLabel} />
-        </div>
+        <AiAnalyzeButton currency={currency} month={monthLabel} />
         <div className="flex items-center gap-4">
           <div className="flex gap-2 items-center">
             <span className="text-sm text-muted-foreground">币种</span>
@@ -193,15 +188,31 @@ export default async function HomePage({ searchParams }: { searchParams?: { curr
 
       <section className="space-y-2">
         <h2 className="text-lg font-semibold">图表概览（{currency}）</h2>
-        <ChartSummary trend={trend} pieMonth={pie} pieRange={(rRows as any[]).length? (() => { const by=new Map<string,number>(); (rRows as any[]).forEach((r:any)=>{ if(r.type==='expense'){ by.set(r.category,(by.get(r.category)||0)+Number(r.amount||0)); }}); return Array.from(by.entries()).map(([name,value])=>({name,value})); })() : []} defaultMode={rangeParam!=='month'?'range':'month'} currency={currency} />
+        <ChartSummary trend={trend} pieMonth={pie} pieRange={(rRows as any[]).length? (() => { const by=new Map<string,number>(); (rRows as any[]).forEach((r:any)=>{ if(r.type==='expense'){ by.set(r.category,(by.get(r.category)||0)+Number(r.amount||0)); }}); return Array.from(by.entries()).map(([name,value])=>({name,value})); })() : []} currency={currency} />
       </section>
 
       <section className="space-y-2">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Top 10 支出（{currency}）</h2>
           <div className="flex gap-1 text-xs">
-            <Link href={`/?currency=${currency}&range=today&month=${monthLabel}`}><Button variant={rangeParam!=='month'?'default':'secondary'} size="sm">今日</Button></Link>
-            <Link href={`/?currency=${currency}&range=month&month=${monthLabel}`}><Button variant={rangeParam==='month'?'default':'secondary'} size="sm">本月</Button></Link>
+            <Link href={`/?currency=${currency}&range=today&month=${monthLabel}`}>
+              <Button
+                variant={rangeParam!=='month'?'default':'outline'}
+                size="sm"
+                className={rangeParam!=='month' ? '' : 'text-gray-600 hover:text-gray-800'}
+              >
+                今日
+              </Button>
+            </Link>
+            <Link href={`/?currency=${currency}&range=month&month=${monthLabel}`}>
+              <Button
+                variant={rangeParam==='month'?'default':'outline'}
+                size="sm"
+                className={rangeParam==='month' ? '' : 'text-gray-600 hover:text-gray-800'}
+              >
+                本月
+              </Button>
+            </Link>
           </div>
         </div>
         <Card>

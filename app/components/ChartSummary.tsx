@@ -1,6 +1,6 @@
 "use client";
-// 图表区优化：更美观的主题化样式、圆角、渐变、图例与自定义 Tooltip（中文注释）
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/EmptyState';
@@ -67,8 +67,24 @@ export function ChartSummary({
   defaultMode?: 'month' | 'range';
   currency: string;
 }) {
-  const [pieMode, setPieMode] = useState<'month' | 'range'>(defaultMode);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const rangeParam = searchParams.get('range') || 'today';
+  const monthParam = searchParams.get('month') || '';
+  const currencyParam = searchParams.get('currency') || '';
+
+  // 将range参数映射为pieMode
+  const pieMode = rangeParam === 'month' ? 'month' : 'range';
   const pie = pieMode === 'range' && pieRange ? pieRange : pieMonth;
+
+  // 处理按钮点击，更新URL参数
+  const handleModeChange = (mode: 'month' | 'range') => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('range', mode === 'month' ? 'month' : 'today');
+    if (monthParam) newParams.set('month', monthParam);
+    if (currencyParam) newParams.set('currency', currencyParam);
+    router.push(`/?${newParams.toString()}`);
+  };
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <Card>
@@ -106,8 +122,18 @@ export function ChartSummary({
             <Title text="类别占比" />
             {pieRange && (
               <div className="flex gap-1 text-xs">
-                <button className={`h-7 px-2 rounded-md border ${pieMode==='range'?'bg-muted':''}`} onClick={() => setPieMode('range')}>今日</button>
-                <button className={`h-7 px-2 rounded-md border ${pieMode==='month'?'bg-muted':''}`} onClick={() => setPieMode('month')}>本月</button>
+                <button
+                  className={`h-7 px-2 rounded-md border ${pieMode==='range'?'bg-muted':''}`}
+                  onClick={() => handleModeChange('range')}
+                >
+                  今日
+                </button>
+                <button
+                  className={`h-7 px-2 rounded-md border ${pieMode==='month'?'bg-muted':''}`}
+                  onClick={() => handleModeChange('month')}
+                >
+                  本月
+                </button>
               </div>
             )}
           </div>
