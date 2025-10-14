@@ -1,7 +1,3 @@
-#!/usr/bin/env bash
-# 为提交信息自动追加统一声明（中文注释）
-# 用法：复制到 .git/hooks/prepare-commit-msg 并赋予可执行权限
-
 MSG_FILE="$1"
 COMMIT_SOURCE="$2"
 
