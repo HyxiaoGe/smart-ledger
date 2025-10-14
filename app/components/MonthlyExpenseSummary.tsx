@@ -1,4 +1,3 @@
-// 月度支出汇总（中文注释）：按天汇总支出合计与笔数
 export function MonthlyExpenseSummary({ items, currency }: { items: { date: string; total: number; count: number }[]; currency: string }) {
   if (!items || items.length === 0) return <div className="text-sm text-muted-foreground">本月暂无支出</div>;
   return (
