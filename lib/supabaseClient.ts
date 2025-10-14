@@ -13,8 +13,8 @@ if (!url || !anonKey) {
 
 export const supabase = createClient(url ?? '', anonKey ?? '', {
   global: {
-    fetch: (input: RequestInfo, init?: RequestInit) => {
-      return fetch(input as any, { ...(init || {}), cache: 'no-store' });
+    fetch: (input: any, init?: RequestInit) => {
+      return fetch(input, { ...(init || {}), cache: 'no-store' });
     }
   }
 });

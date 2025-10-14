@@ -1,5 +1,3 @@
-// 日期工具（中文注释）：提供按月范围、格式化与相邻月份计算
-
 export function monthRange(date = new Date()) {
   const start = new Date(date.getFullYear(), date.getMonth(), 1);
   const end = new Date(date.getFullYear(), date.getMonth() + 1, 1);
@@ -29,7 +27,6 @@ export function shiftMonth(d: Date, delta: number): Date {
   return new Date(d.getFullYear(), d.getMonth() + delta, 1);
 }
 
-// 新增：日维度与快捷范围（中文注释）
 export function todayISO(now = new Date()): string {
   // 使用本地时间格式化日期，避免时区问题
   const year = now.getFullYear();

@@ -1,6 +1,4 @@
 "use client";
-// AI 分析按钮与弹窗（中文注释）
-// 从 Supabase 拉取当月交易数据，调用 /api/analyze，显示摘要结果
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { DEFAULT_CURRENCY } from '@/lib/config';

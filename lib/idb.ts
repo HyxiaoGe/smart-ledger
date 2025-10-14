@@ -1,6 +1,3 @@
-// IndexedDB 简易封装（仅在浏览器端使用；中文注释）
-// 提供 get/set/remove，使用单一数据库 smart-ledger，表 ai_summaries，主键 key
-
 let dbPromise: Promise<IDBDatabase> | null = null;
 
 function openDB(): Promise<IDBDatabase> {

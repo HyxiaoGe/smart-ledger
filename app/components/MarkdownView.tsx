@@ -1,4 +1,3 @@
-// Markdown 渲染器（中文注释）：使用 react-markdown + remark-gfm，并应用简洁的层次化样式
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';

@@ -1,5 +1,4 @@
 "use client";
-// 币种下拉选择（中文注释）：客户端组件，切换后通过路由参数跳转
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { SUPPORTED_CURRENCIES } from '@/lib/config';
 

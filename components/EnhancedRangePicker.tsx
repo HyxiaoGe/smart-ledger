@@ -1,5 +1,4 @@
 "use client";
-// 增强版范围选择器（中文注释）：快捷按钮 + 自定义日期范围
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { format, addDays, startOfMonth, endOfMonth, subDays } from "date-fns";
