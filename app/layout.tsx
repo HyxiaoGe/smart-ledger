@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import './globals.css';
 import Navigation from '@/components/Navigation';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export const metadata: Metadata = {
   title: 'Smart Ledger',
@@ -23,7 +24,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Navigation />
           </div>
         </header>
-        <main className="container py-6">{children}</main>
+        <main className="container py-6">
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
+        </main>
       </body>
     </html>
   );

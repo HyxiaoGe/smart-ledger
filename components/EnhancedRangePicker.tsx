@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CalendarIcon, X } from "lucide-react";
 import { DatePicker } from "@/components/DatePicker";
+import { ComponentErrorBoundary } from "@/components/ErrorBoundary";
 import { cn } from "@/lib/utils";
 
 const QUICK_OPTIONS = [
@@ -57,7 +58,7 @@ export function EnhancedRangePicker({ className, onRangeChange }: EnhancedRangeP
 
   // 从 URL 参数解析当前范围
   const current = useMemo(() => {
-    const rangeKey = search.get('range') as keyof typeof QUICK_OPTIONS | 'custom';
+    const rangeKey = search.get('range') as 'today' | 'yesterday' | 'last7' | 'month' | 'custom';
     const startStr = search.get('start');
     const endStr = search.get('end');
 
@@ -72,12 +73,12 @@ export function EnhancedRangePicker({ className, onRangeChange }: EnhancedRangeP
     const option = QUICK_OPTIONS.find(opt => opt.key === rangeKey);
     if (option) {
       const range = option.getRange();
-      return { ...range, key: option.key as const };
+      return { ...range, key: option.key };
     }
 
     // 默认返回今日
     const today = QUICK_OPTIONS[0].getRange();
-    return { ...today, key: 'today' as const };
+    return { ...today, key: QUICK_OPTIONS[0].key };
   }, [search]);
 
   // 更新 URL 参数
@@ -99,11 +100,11 @@ export function EnhancedRangePicker({ className, onRangeChange }: EnhancedRangeP
       sp.delete('end');
     }
 
-    router.push(`${pathname}?${sp.toString()}`);
+    router.push(pathname + '?' + sp.toString() as any);
   }, [router, pathname, search]);
 
   // 处理快捷选项点击
-  const handleQuickOption = useCallback((option: typeof QUICK_OPTIONS[0]) => {
+  const handleQuickOption = useCallback((option: typeof QUICK_OPTIONS[number]) => {
     const range = option.getRange();
 
     // 根据选项类型设置日历显示
@@ -150,14 +151,34 @@ export function EnhancedRangePicker({ className, onRangeChange }: EnhancedRangeP
   }, [updateURL, onRangeChange]);
 
   // 处理自定义日期范围选择
-  const handleCustomRangeSelect = useCallback((range: { from?: Date; to?: Date }) => {
-    setCustomRange(range);
+  const handleCustomRangeSelect = useCallback((range: { from?: Date; to?: Date } | undefined) => {
+    try {
+      if (!range) {
+        return;
+      }
 
-    if (range.from && range.to) {
-      const dateRange = { start: range.from, end: range.to };
-      setIsOpen(false);
-      updateURL(dateRange, 'custom');
-      onRangeChange?.(dateRange);
+      // 验证range对象的结构
+      if (typeof range !== 'object' || range === null) {
+        console.warn('Invalid range object received:', range);
+        return;
+      }
+
+      setCustomRange(range);
+
+      if (range.from && range.to) {
+        // 验证日期对象
+        if (!(range.from instanceof Date) || !(range.to instanceof Date)) {
+          console.warn('Invalid date objects in range:', range);
+          return;
+        }
+
+        const dateRange = { start: range.from, end: range.to };
+        setIsOpen(false);
+        updateURL(dateRange, 'custom');
+        onRangeChange?.(dateRange);
+      }
+    } catch (error) {
+      console.error('Error in handleCustomRangeSelect:', error);
     }
   }, [updateURL, onRangeChange]);
 
@@ -270,14 +291,22 @@ export function EnhancedRangePicker({ className, onRangeChange }: EnhancedRangeP
 
                 {/* 日期选择器容器 */}
                 <div className="bg-gradient-to-br from-blue-50/50 to-indigo-50/30 rounded-xl p-4 border border-blue-100">
-                  <DatePicker
-                    mode="range"
-                    selected={customRange}
-                    onSelect={handleCustomRangeSelect}
-                    locale={zhCN}
-                    defaultMonth={calendarMonth || current.start}
-                    className="mx-auto rdp-enhanced"
-                  />
+                  <ComponentErrorBoundary
+                    fallback={
+                      <div className="text-center py-8 text-sm text-gray-500">
+                        日期选择器加载失败，请刷新页面重试
+                      </div>
+                    }
+                  >
+                    <DatePicker
+                      mode="range"
+                      selected={customRange as { from?: Date; to?: Date } | undefined}
+                      onSelect={handleCustomRangeSelect}
+                      locale={zhCN}
+                      defaultMonth={calendarMonth || current.start}
+                      className="mx-auto rdp-enhanced"
+                    />
+                  </ComponentErrorBoundary>
                 </div>
 
                 {/* 提示文字 */}
