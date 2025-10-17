@@ -12,6 +12,7 @@ import { PRESET_CATEGORIES } from '@/lib/config';
 import { formatCurrency } from '@/lib/format';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2 } from 'lucide-react';
+import { dataSync } from '@/lib/dataSync';
 
 type Transaction = {
   id: string;
@@ -64,9 +65,43 @@ export function EnhancedTransactionGroupedList({
     const { error } = await supabase.from('transactions').update(patch).eq('id', editingId);
     if (error) setError(error.message);
     else {
-      setTransactions((ts) => ts.map((t) => (t.id === editingId ? { ...t, ...(form as Transaction), type: 'expense' } : t)));
+      const updatedTransaction = { ...form, type: 'expense' } as Transaction;
+      setTransactions((ts) => ts.map((t) => (t.id === editingId ? { ...t, ...updatedTransaction } : t)));
       setEditingId(null);
       setForm({});
+
+      // 验证更新是否真正成功
+      const verifyUpdate = async () => {
+        try {
+          const { data: verifyData, error: verifyError } = await supabase
+            .from('transactions')
+            .select('*')
+            .eq('id', editingId)
+            .single();
+
+          if (verifyError || !verifyData) {
+            console.error('验证更新失败：', verifyError);
+            return null;
+          }
+
+          console.log('验证更新成功：', verifyData);
+          return verifyData;
+        } catch (error) {
+          console.error('验证更新时发生错误：', error);
+          return null;
+        }
+      };
+
+      // 异步验证更新结果
+      verifyUpdate().then((verifiedData) => {
+        if (verifiedData) {
+          // 只有验证成功后才触发同步事件
+          dataSync.notifyTransactionUpdated(verifiedData, true);
+          console.log('已触发账单更新同步事件：', verifiedData);
+        } else {
+          console.warn('更新验证失败，不触发同步事件');
+        }
+      });
     }
     setLoading(false);
   }
@@ -105,6 +140,48 @@ export function EnhancedTransactionGroupedList({
       }
 
       setTransactions((ts) => ts.filter((t) => t.id !== transaction.id));
+
+      // 验证删除是否真正成功
+      const verifyDelete = async () => {
+        try {
+          const { data: verifyData, error: verifyError } = await supabase
+            .from('transactions')
+            .select('id, deleted_at')
+            .eq('id', transaction.id)
+            .single();
+
+          if (verifyError) {
+            // 如果查询失败，可能是记录已被物理删除
+            console.log('记录可能已被物理删除：', verifyError);
+            return { deleted: true, transaction };
+          }
+
+          if (verifyData && verifyData.deleted_at) {
+            console.log('验证软删除成功：', verifyData);
+            return { deleted: true, transaction, deletedAt: verifyData.deleted_at };
+          } else if (verifyData && !verifyData.deleted_at) {
+            console.warn('软删除验证失败，记录仍存在：', verifyData);
+            return { deleted: false, transaction };
+          }
+
+          return { deleted: false, transaction };
+        } catch (error) {
+          console.error('验证删除时发生错误：', error);
+          return { deleted: false, transaction };
+        }
+      };
+
+      // 异步验证删除结果
+      verifyDelete().then((result) => {
+        if (result.deleted) {
+          // 只有验证成功后才触发同步事件
+          dataSync.notifyTransactionDeleted(result.transaction, true);
+          console.log('已触发账单删除同步事件：', result);
+        } else {
+          console.warn('删除验证失败，不触发同步事件');
+        }
+      });
+
     } catch (err) {
       setError('删除失败，请重试');
     }

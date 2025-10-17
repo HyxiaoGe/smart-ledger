@@ -13,6 +13,7 @@ import { EnhancedRangePicker } from '@/components/EnhancedRangePicker';
 import { CurrencySelect } from '@/components/CurrencySelect';
 import { parseMonthStr, formatMonth, shiftMonth, getQuickRange } from '@/lib/date';
 import { TopExpenses } from '@/components/TopExpenses';
+import { HomeStats } from '@/components/HomeStats';
 
 function monthRange(date = new Date()) {
   const start = new Date(date.getFullYear(), date.getMonth(), 1);
@@ -173,18 +174,15 @@ export default async function HomePage({ searchParams }: { searchParams?: { curr
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {rangeParam !== 'month' && (
-          <Card>
-            <CardHeader><CardTitle className="text-sm text-muted-foreground">{rLabel}支出</CardTitle></CardHeader>
-            <CardContent className="pt-0 text-2xl font-bold">{`${sym}${rexpense.toFixed(2)}`}</CardContent>
-          </Card>
-        )}
-        <Card>
-          <CardHeader><CardTitle className="text-sm text-muted-foreground">本月支出</CardTitle></CardHeader>
-          <CardContent className="pt-0 text-2xl font-bold">{`${sym}${expense.toFixed(2)}`}</CardContent>
-        </Card>
-      </div>
+      <HomeStats
+        initialIncome={income}
+        initialExpense={expense}
+        initialBalance={balance}
+        initialRangeExpense={rexpense}
+        currency={currency}
+        rangeLabel={rLabel}
+        monthLabel={monthLabel}
+      />
 
       <section className="space-y-2">
         <h2 className="text-lg font-semibold">图表概览（{currency}）</h2>

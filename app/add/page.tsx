@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DateInput } from '@/components/DateInput';
 import { SmartNoteInput } from '@/components/SmartNoteInput';
+import { dataSync } from '@/lib/dataSync';
 
 export default function AddPage() {
   const router = useRouter();
@@ -95,6 +96,45 @@ export default function AddPage() {
       if (transactionError) throw transactionError;
 
       console.log('交易记录保存成功：', submissionId);
+
+      // 验证插入是否真正成功（可选的二次确认）
+      const verifyInsert = async () => {
+        try {
+          const { data: verifyData, error: verifyError } = await supabase
+            .from('transactions')
+            .select('id, type, category, amount, date, currency')
+            .eq('type', type)
+            .eq('category', category)
+            .eq('amount', amt)
+            .eq('date', date.toISOString().slice(0, 10))
+            .eq('currency', currency)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+          if (verifyError || !verifyData) {
+            console.error('验证插入失败：', verifyError);
+            return null;
+          }
+
+          console.log('验证插入成功：', verifyData);
+          return verifyData;
+        } catch (error) {
+          console.error('验证插入时发生错误：', error);
+          return null;
+        }
+      };
+
+      // 异步验证插入结果
+      verifyInsert().then((verifiedData) => {
+        if (verifiedData) {
+          // 只有验证成功后才触发同步事件
+          dataSync.notifyTransactionAdded(verifiedData, true);
+          console.log('已触发账单添加同步事件：', verifiedData);
+        } else {
+          console.warn('插入验证失败，不触发同步事件');
+        }
+      });
 
       // 如果有备注，异步更新常用备注（不阻塞用户操作）
       if (note && note.trim()) {
