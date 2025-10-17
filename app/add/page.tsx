@@ -25,6 +25,7 @@ export default function AddPage() {
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submittingId, setSubmittingId] = useState<string | null>(null);
   const invalidAmount = (() => parseAmount(amountText) <= 0)();
 
   function formatThousand(n: number) {
@@ -40,11 +41,17 @@ export default function AddPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    // 防止重复提交
+    // 防止重复提交 - 多重检查
     if (loading || isSubmitted) {
+      console.log('阻止重复提交：loading 或 isSubmitted 为 true');
       return;
     }
 
+    // 生成唯一的提交ID
+    const submissionId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+    // 原子性地设置提交状态
+    setSubmittingId(submissionId);
     setLoading(true);
     setError('');
     setSuccess('');
@@ -60,18 +67,34 @@ export default function AddPage() {
       }
       setAmount(amt);
 
+      // 检查是否是当前有效的提交ID（防止竞态条件）
+      if (submittingId !== submissionId) {
+        console.log('阻止过期的提交请求：', submissionId);
+        return;
+      }
+
       // 立即标记为已提交，防止重复提交
       setIsSubmitted(true);
 
-      // 显示保存中状态
-      setSuccess('正在保存...');
+      // 显示保存中状态，包含提交ID便于调试
+      setSuccess(`正在保存... [${submissionId.slice(-6)}]`);
+
+      console.log('开始提交交易记录：', { type, category, amount: amt, date: date.toISOString().slice(0, 10), currency, submissionId });
 
       // 异步保存交易记录
       const { error: transactionError } = await supabase.from('transactions').insert([
         { type, category, amount: amt, note, date: date.toISOString().slice(0, 10), currency }
       ]);
 
+      // 再次检查提交ID
+      if (submittingId !== submissionId) {
+        console.log('提交完成后发现ID已过期：', submissionId);
+        return;
+      }
+
       if (transactionError) throw transactionError;
+
+      console.log('交易记录保存成功：', submissionId);
 
       // 如果有备注，异步更新常用备注（不阻塞用户操作）
       if (note && note.trim()) {
@@ -82,10 +105,12 @@ export default function AddPage() {
       setSuccess('✅ 账单保存成功！');
 
     } catch (err: any) {
+      console.error('提交失败：', { error: err.message, submissionId });
       setError(err.message || '提交失败');
       setIsSubmitted(false);
     } finally {
       setLoading(false);
+      setSubmittingId(null);
     }
   }
 
@@ -100,6 +125,7 @@ export default function AddPage() {
     setError('');
     setSuccess('');
     setIsSubmitted(false);
+    setSubmittingId(null);
     // type 固定为 'expense'，无需重置
   }
 
