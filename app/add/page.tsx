@@ -39,9 +39,16 @@ export default function AddPage() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    // 防止重复提交
+    if (loading || isSubmitted) {
+      return;
+    }
+
     setLoading(true);
     setError('');
     setSuccess('');
+
     try {
       const amt = parseAmount(amountText);
       // type 固定为 'expense'，无需验证
@@ -53,17 +60,17 @@ export default function AddPage() {
       }
       setAmount(amt);
 
+      // 立即标记为已提交，防止重复提交
+      setIsSubmitted(true);
+
+      // 显示保存中状态
+      setSuccess('正在保存...');
+
       // 异步保存交易记录
-      const savePromise = supabase.from('transactions').insert([
+      const { error: transactionError } = await supabase.from('transactions').insert([
         { type, category, amount: amt, note, date: date.toISOString().slice(0, 10), currency }
       ]);
 
-      // 立即显示保存中状态
-      setSuccess('正在保存...');
-      setIsSubmitted(true);
-
-      // 等待保存完成
-      const { error: transactionError } = await savePromise;
       if (transactionError) throw transactionError;
 
       // 如果有备注，异步更新常用备注（不阻塞用户操作）
