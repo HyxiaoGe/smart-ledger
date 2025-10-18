@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import type { TransactionType, Currency } from '@/types/transaction';
 import { PRESET_CATEGORIES, SUPPORTED_CURRENCIES, DEFAULT_CURRENCY } from '@/lib/config';
@@ -25,8 +25,10 @@ export default function AddPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [submittingId, setSubmittingId] = useState<string | null>(null);
+
+  // 防抖相关
+  const submitTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastSubmitTimeRef = useRef<number>(0);
   const invalidAmount = (() => parseAmount(amountText) <= 0)();
 
   function formatThousand(n: number) {
@@ -39,123 +41,98 @@ export default function AddPage() {
     return isNaN(n) ? 0 : n;
   }
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-
-    // 防止重复提交 - 多重检查
-    if (loading || isSubmitted) {
-      console.log('阻止重复提交：loading 或 isSubmitted 为 true');
-      return;
-    }
-
-    // 生成唯一的提交ID
-    const submissionId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-    // 原子性地设置提交状态
-    setSubmittingId(submissionId);
+  // 防抖提交函数
+  const debouncedSubmit = useCallback(async (formData: {
+    amt: number;
+    category: string;
+    note: string;
+    date: Date;
+    currency: Currency;
+  }) => {
     setLoading(true);
     setError('');
     setSuccess('');
 
     try {
-      const amt = parseAmount(amountText);
-      // type 固定为 'expense'，无需验证
-      if (!category || !date) {
-        throw new Error('请完整填写必填项');
-      }
-      if (!(amt > 0)) {
-        throw new Error('金额必须大于 0');
-      }
-      setAmount(amt);
-
-      // 检查是否是当前有效的提交ID（防止竞态条件）
-      if (submittingId !== submissionId) {
-        console.log('阻止过期的提交请求：', submissionId);
-        return;
-      }
-
-      // 立即标记为已提交，防止重复提交
-      setIsSubmitted(true);
-
-      // 显示保存中状态，包含提交ID便于调试
-      setSuccess(`正在保存... [${submissionId.slice(-6)}]`);
-
-      console.log('开始提交交易记录：', { type, category, amount: amt, date: date.toISOString().slice(0, 10), currency, submissionId });
-
-      // 异步保存交易记录
+      // 保存交易记录
       const { error: transactionError } = await supabase.from('transactions').insert([
-        { type, category, amount: amt, note, date: date.toISOString().slice(0, 10), currency }
+        {
+          type,
+          category: formData.category,
+          amount: formData.amt,
+          note: formData.note,
+          date: formData.date.toISOString().slice(0, 10),
+          currency: formData.currency
+        }
       ]);
-
-      // 再次检查提交ID
-      if (submittingId !== submissionId) {
-        console.log('提交完成后发现ID已过期：', submissionId);
-        return;
-      }
 
       if (transactionError) throw transactionError;
 
-      console.log('交易记录保存成功：', submissionId);
-
-      // 验证插入是否真正成功（可选的二次确认）
-      const verifyInsert = async () => {
-        try {
-          const { data: verifyData, error: verifyError } = await supabase
-            .from('transactions')
-            .select('id, type, category, amount, date, currency')
-            .eq('type', type)
-            .eq('category', category)
-            .eq('amount', amt)
-            .eq('date', date.toISOString().slice(0, 10))
-            .eq('currency', currency)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .single();
-
-          if (verifyError || !verifyData) {
-            console.error('验证插入失败：', verifyError);
-            return null;
-          }
-
-          console.log('验证插入成功：', verifyData);
-          return verifyData;
-        } catch (error) {
-          console.error('验证插入时发生错误：', error);
-          return null;
-        }
-      };
-
-      // 异步验证插入结果
-      verifyInsert().then((verifiedData) => {
-        if (verifiedData) {
-          // 只有验证成功后才触发同步事件
-          dataSync.notifyTransactionAdded(verifiedData, true);
-          console.log('已触发账单添加同步事件：', verifiedData);
-        } else {
-          console.warn('插入验证失败，不触发同步事件');
-        }
+      // 触发同步事件
+      dataSync.notifyTransactionAdded({
+        type,
+        category: formData.category,
+        amount: formData.amt,
+        note: formData.note,
+        date: formData.date.toISOString().slice(0, 10),
+        currency: formData.currency
       });
 
-      // 如果有备注，异步更新常用备注（不阻塞用户操作）
-      if (note && note.trim()) {
-        updateCommonNote(note.trim(), amt).catch(console.error);
+      // 更新常用备注
+      if (formData.note && formData.note.trim()) {
+        updateCommonNote(formData.note.trim(), formData.amt).catch(console.error);
       }
 
-      // 保存成功
       setSuccess('✅ 账单保存成功！');
 
     } catch (err: any) {
-      console.error('提交失败：', { error: err.message, submissionId });
       setError(err.message || '提交失败');
-      setIsSubmitted(false);
     } finally {
       setLoading(false);
-      setSubmittingId(null);
+      lastSubmitTimeRef.current = 0; // 重置时间戳，允许下次提交
     }
+  }, []);
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    // 防抖处理：500ms内只允许一次提交
+    const now = Date.now();
+    if (now - lastSubmitTimeRef.current < 500) {
+      return;
+    }
+    lastSubmitTimeRef.current = now;
+
+    // 清除之前的定时器
+    if (submitTimeoutRef.current) {
+      clearTimeout(submitTimeoutRef.current);
+    }
+
+    const amt = parseAmount(amountText);
+    if (!category || !date) {
+      setError('请完整填写必填项');
+      return;
+    }
+    if (!(amt > 0)) {
+      setError('金额必须大于 0');
+      return;
+    }
+
+    // 使用防抖提交
+    submitTimeoutRef.current = setTimeout(() => {
+      debouncedSubmit({ amt, category, note, date, currency });
+    }, 200); // 200ms 延迟
   }
 
   // 重置表单
   function resetForm() {
+    // 清理防抖状态
+    if (submitTimeoutRef.current) {
+      clearTimeout(submitTimeoutRef.current);
+      submitTimeoutRef.current = null;
+    }
+    lastSubmitTimeRef.current = 0;
+
     setCategory('food');
     setAmount(0);
     setAmountText('0');
@@ -164,9 +141,6 @@ export default function AddPage() {
     setCurrency(DEFAULT_CURRENCY as Currency);
     setError('');
     setSuccess('');
-    setIsSubmitted(false);
-    setSubmittingId(null);
-    // type 固定为 'expense'，无需重置
   }
 
   // 继续添加下一笔
@@ -217,7 +191,7 @@ export default function AddPage() {
               className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              disabled={isSubmitted}
+              disabled={loading}
             >
               {PRESET_CATEGORIES.map((c) => (
                 <option key={c.key} value={c.key}>
@@ -241,7 +215,7 @@ export default function AddPage() {
               }}
               onBlur={() => setAmountText(formatThousand(parseAmount(amountText)))}
               className={invalidAmount ? 'border-destructive' : undefined}
-              disabled={isSubmitted}
+              disabled={loading}
             />
             {invalidAmount && <p className="mt-1 text-sm text-destructive">金额必须大于 0</p>}
           </div>
@@ -252,7 +226,7 @@ export default function AddPage() {
                 className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50"
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value as Currency)}
-                disabled={isSubmitted}
+                disabled={loading}
               >
                 {SUPPORTED_CURRENCIES.map((c) => (
                   <option key={c.code} value={c.code as string}>{c.name}</option>
@@ -265,7 +239,7 @@ export default function AddPage() {
                 selected={date}
                 onSelect={setDate}
                 placeholder="选择日期"
-                disabled={isSubmitted}
+                disabled={loading}
               />
             </div>
           </div>
@@ -275,7 +249,7 @@ export default function AddPage() {
               value={note}
               onChange={setNote}
               placeholder="可选"
-              disabled={isSubmitted}
+              disabled={loading}
             />
           </div>
           {error && <p className="text-red-600 text-sm">{error}</p>}
@@ -283,7 +257,7 @@ export default function AddPage() {
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <p className="text-green-800 text-sm font-medium">{success}</p>
 
-              {isSubmitted && (
+              {success && (
                 <div className="mt-3 flex gap-2">
                   <Button
                     onClick={continueAdding}
@@ -305,7 +279,7 @@ export default function AddPage() {
             </div>
           )}
 
-          {!isSubmitted && (
+          {!success && (
             <div>
               <Button
                 type="submit"
