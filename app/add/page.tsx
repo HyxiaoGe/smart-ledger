@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import type { TransactionType, Currency } from '@/types/transaction';
 import { PRESET_CATEGORIES, SUPPORTED_CURRENCIES, DEFAULT_CURRENCY } from '@/lib/config';
@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DateInput } from '@/components/DateInput';
 import { SmartNoteInput } from '@/components/SmartNoteInput';
 import { dataSync } from '@/lib/dataSync';
+import { ProgressToast } from '@/components/ProgressToast';
 
 export default function AddPage() {
   const router = useRouter();
@@ -24,11 +25,12 @@ export default function AddPage() {
   const [currency, setCurrency] = useState<Currency>(DEFAULT_CURRENCY as Currency);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
-  const [success, setSuccess] = useState<string>('');
+  const [showToast, setShowToast] = useState(false);
 
   // 防抖相关
   const submitTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastSubmitTimeRef = useRef<number>(0);
+  const isSubmittingRef = useRef<boolean>(false); // 强制提交状态
   const invalidAmount = (() => parseAmount(amountText) <= 0)();
 
   function formatThousand(n: number) {
@@ -51,22 +53,60 @@ export default function AddPage() {
   }) => {
     setLoading(true);
     setError('');
-    setSuccess('');
 
     try {
-      // 保存交易记录
-      const { error: transactionError } = await supabase.from('transactions').insert([
-        {
-          type,
-          category: formData.category,
-          amount: formData.amt,
-          note: formData.note,
-          date: formData.date.toISOString().slice(0, 10),
-          currency: formData.currency
-        }
-      ]);
+      // 先查询是否存在相同业务记录
+      const { data: existingRecord, error: queryError } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('type', type)
+        .eq('category', formData.category)
+        .eq('date', formData.date.toISOString().slice(0, 10))
+        .eq('currency', formData.currency)
+        .eq('note', formData.note)
+        .single();
 
-      if (transactionError) throw transactionError;
+      let transactionError;
+
+      if (existingRecord) {
+        // 存在相同记录，累加金额
+        const { error: updateError } = await supabase
+          .from('transactions')
+          .update({
+            amount: existingRecord.amount + formData.amt
+          })
+          .eq('id', existingRecord.id);
+
+        transactionError = updateError;
+        console.log(`累加金额: ${existingRecord.amount} + ${formData.amt} = ${existingRecord.amount + formData.amt}`);
+      } else {
+        // 不存在，插入新记录
+        const { error: insertError } = await supabase
+          .from('transactions')
+          .insert([{
+            type,
+            category: formData.category,
+            amount: formData.amt,
+            note: formData.note,
+            date: formData.date.toISOString().slice(0, 10),
+            currency: formData.currency
+          }]);
+
+        transactionError = insertError;
+        console.log(`插入新记录: ${formData.amt}`);
+      }
+
+      // 处理查询和更新/插入错误
+      if (queryError && queryError.code !== 'PGRST116') { // PGRST116表示没有找到记录
+        throw queryError;
+      }
+
+      if (transactionError) {
+        throw transactionError;
+      }
+
+      // 显示Toast成功提示（带进度条）
+      setShowToast(true);
 
       // 触发同步事件
       dataSync.notifyTransactionAdded({
@@ -74,7 +114,7 @@ export default function AddPage() {
         category: formData.category,
         amount: formData.amt,
         note: formData.note,
-        date: formData.date.toISOString().slice(0, 10),
+        date: formData.date.toISOString(),
         currency: formData.currency
       });
 
@@ -83,25 +123,45 @@ export default function AddPage() {
         updateCommonNote(formData.note.trim(), formData.amt).catch(console.error);
       }
 
-      setSuccess('✅ 账单保存成功！');
+      // 延迟重置表单，让用户看到成功提示
+      setTimeout(() => {
+        resetForm();
+      }, 500);
 
     } catch (err: any) {
       setError(err.message || '提交失败');
     } finally {
       setLoading(false);
       lastSubmitTimeRef.current = 0; // 重置时间戳，允许下次提交
+      isSubmittingRef.current = false; // 重置提交状态
     }
   }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    e.stopPropagation(); // 阻止事件冒泡
+
+    console.log('onSubmit被调用');
+
+    // 强制防重复提交检查
+    if (isSubmittingRef.current || loading) {
+      console.log('提交被阻止：正在提交中', { isSubmitting: isSubmittingRef.current, loading });
+      return;
+    }
 
     // 防抖处理：500ms内只允许一次提交
     const now = Date.now();
     if (now - lastSubmitTimeRef.current < 500) {
+      console.log('提交被阻止：防抖时间内', { now, lastSubmit: lastSubmitTimeRef.current });
       return;
     }
+
+    // 立即设置提交状态，防止重复
+    isSubmittingRef.current = true;
     lastSubmitTimeRef.current = now;
+    setLoading(true);
+
+    console.log('提交状态已设置，开始处理表单');
 
     // 清除之前的定时器
     if (submitTimeoutRef.current) {
@@ -111,10 +171,14 @@ export default function AddPage() {
     const amt = parseAmount(amountText);
     if (!category || !date) {
       setError('请完整填写必填项');
+      isSubmittingRef.current = false;
+      setLoading(false);
       return;
     }
     if (!(amt > 0)) {
       setError('金额必须大于 0');
+      isSubmittingRef.current = false;
+      setLoading(false);
       return;
     }
 
@@ -132,6 +196,7 @@ export default function AddPage() {
       submitTimeoutRef.current = null;
     }
     lastSubmitTimeRef.current = 0;
+    isSubmittingRef.current = false;
 
     setCategory('food');
     setAmount(0);
@@ -140,19 +205,25 @@ export default function AddPage() {
     setDate(new Date());
     setCurrency(DEFAULT_CURRENCY as Currency);
     setError('');
-    setSuccess('');
   }
+
+  // 组件卸载时清理
+  React.useEffect(() => {
+    return () => {
+      // 组件卸载时清理所有定时器和状态
+      if (submitTimeoutRef.current) {
+        clearTimeout(submitTimeoutRef.current);
+      }
+      isSubmittingRef.current = false;
+    };
+  }, []);
 
   // 继续添加下一笔
   function continueAdding() {
     resetForm();
   }
 
-  // 返回首页
-  function goHome() {
-    router.push('/');
-  }
-
+  
   // 异步更新常用备注
   async function updateCommonNote(noteContent: string, amount: number) {
     try {
@@ -179,107 +250,90 @@ export default function AddPage() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>添加账单</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={onSubmit} className="space-y-4">
-          <div>
-            <Label>分类 <span className="text-destructive">*</span></Label>
-            <select
-              className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              disabled={loading}
-            >
-              {PRESET_CATEGORIES.map((c) => (
-                <option key={c.key} value={c.key}>
-                  {c.icon ? `${c.icon} ` : ''}{c.label}
-                </option>
-              ))}
-            </select>
-            <div className="mt-2">
-              <CategoryChip category={category} />
-            </div>
-          </div>
-          <div>
-            <Label>金额 <span className="text-destructive">*</span></Label>
-            <Input
-              placeholder="例如：1,234.56"
-              value={amountText}
-              onChange={(e) => {
-                const raw = e.target.value;
-                // 允许输入数字、小数点与逗号
-                if (/^[0-9.,]*$/.test(raw)) setAmountText(raw);
-              }}
-              onBlur={() => setAmountText(formatThousand(parseAmount(amountText)))}
-              className={invalidAmount ? 'border-destructive' : undefined}
-              disabled={loading}
-            />
-            {invalidAmount && <p className="mt-1 text-sm text-destructive">金额必须大于 0</p>}
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <>
+      {showToast && (
+        <ProgressToast
+          message="账单保存成功！"
+          duration={3000}
+          onClose={() => setShowToast(false)}
+        />
+      )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>添加账单</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={onSubmit} className="space-y-4">
             <div>
-              <Label>币种 <span className="text-destructive">*</span></Label>
+              <Label>分类 <span className="text-destructive">*</span></Label>
               <select
                 className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50"
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value as Currency)}
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
                 disabled={loading}
               >
-                {SUPPORTED_CURRENCIES.map((c) => (
-                  <option key={c.code} value={c.code as string}>{c.name}</option>
+                {PRESET_CATEGORIES.map((c) => (
+                  <option key={c.key} value={c.key}>
+                    {c.icon ? `${c.icon} ` : ''}{c.label}
+                  </option>
                 ))}
               </select>
+              <div className="mt-2">
+                <CategoryChip category={category} />
+              </div>
             </div>
             <div>
-              <Label>日期 <span className="text-destructive">*</span></Label>
-              <DateInput
-                selected={date}
-                onSelect={setDate}
-                placeholder="选择日期"
+              <Label>金额 <span className="text-destructive">*</span></Label>
+              <Input
+                placeholder="例如：1,234.56"
+                value={amountText}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  // 允许输入数字、小数点与逗号
+                  if (/^[0-9.,]*$/.test(raw)) setAmountText(raw);
+                }}
+                onBlur={() => setAmountText(formatThousand(parseAmount(amountText)))}
+                className={invalidAmount ? 'border-destructive' : undefined}
+                disabled={loading}
+              />
+              {invalidAmount && <p className="mt-1 text-sm text-destructive">金额必须大于 0</p>}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>币种 <span className="text-destructive">*</span></Label>
+                <select
+                  className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50"
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value as Currency)}
+                  disabled={loading}
+                >
+                  {SUPPORTED_CURRENCIES.map((c) => (
+                    <option key={c.code} value={c.code as string}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <Label>日期 <span className="text-destructive">*</span></Label>
+                <DateInput
+                  selected={date}
+                  onSelect={setDate}
+                  placeholder="选择日期"
+                  disabled={loading}
+                />
+              </div>
+            </div>
+            <div>
+              <Label>备注</Label>
+              <SmartNoteInput
+                value={note}
+                onChange={setNote}
+                placeholder="可选"
                 disabled={loading}
               />
             </div>
-          </div>
-          <div>
-            <Label>备注</Label>
-            <SmartNoteInput
-              value={note}
-              onChange={setNote}
-              placeholder="可选"
-              disabled={loading}
-            />
-          </div>
-          {error && <p className="text-red-600 text-sm">{error}</p>}
-          {success && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <p className="text-green-800 text-sm font-medium">{success}</p>
+            {error && <p className="text-red-600 text-sm">{error}</p>}
 
-              {success && (
-                <div className="mt-3 flex gap-2">
-                  <Button
-                    onClick={continueAdding}
-                    variant="outline"
-                    size="sm"
-                    className="border-green-500 text-green-600 hover:bg-green-50"
-                  >
-                    继续添加
-                  </Button>
-                  <Button
-                    onClick={goHome}
-                    variant="success"
-                    size="sm"
-                  >
-                    返回首页
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {!success && (
             <div>
               <Button
                 type="submit"
@@ -289,9 +343,9 @@ export default function AddPage() {
                 {loading ? '保存中...' : '保存账单'}
               </Button>
             </div>
-          )}
-        </form>
-      </CardContent>
-    </Card>
+          </form>
+        </CardContent>
+      </Card>
+    </>
   );
 }

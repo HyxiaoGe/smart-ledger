@@ -58,7 +58,7 @@ export function SmartNoteInput({
   const fetchCommonNotes = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/common-notes?limit=20');
+      const response = await fetch('/api/common-notes?limit=10');
       if (response.ok) {
         const { data } = await response.json();
         setLocalCache(data);

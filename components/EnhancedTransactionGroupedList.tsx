@@ -13,6 +13,7 @@ import { formatCurrency } from '@/lib/format';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2 } from 'lucide-react';
 import { dataSync } from '@/lib/dataSync';
+import { ProgressToast } from '@/components/ProgressToast';
 
 type Transaction = {
   id: string;
@@ -45,6 +46,9 @@ export function EnhancedTransactionGroupedList({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<Partial<Transaction>>({});
   const [confirmRow, setConfirmRow] = useState<Transaction | null>(null);
+  const [showEditToast, setShowEditToast] = useState(false);
+  const [showDeleteToast, setShowDeleteToast] = useState(false);
+  const [showUndoToast, setShowUndoToast] = useState(false);
 
   async function handleEdit(transaction: Transaction) {
     setEditingId(transaction.id);
@@ -69,6 +73,7 @@ export function EnhancedTransactionGroupedList({
       setTransactions((ts) => ts.map((t) => (t.id === editingId ? { ...t, ...updatedTransaction } : t)));
       setEditingId(null);
       setForm({});
+      setShowEditToast(true);
 
       // 验证更新是否真正成功
       const verifyUpdate = async () => {
@@ -140,6 +145,7 @@ export function EnhancedTransactionGroupedList({
       }
 
       setTransactions((ts) => ts.filter((t) => t.id !== transaction.id));
+      setShowDeleteToast(true);
 
       // 验证删除是否真正成功
       const verifyDelete = async () => {
@@ -203,6 +209,7 @@ export function EnhancedTransactionGroupedList({
         setTransactions((ts) => [recentlyDeleted, ...ts].sort((a, b) =>
           new Date(b.date).getTime() - new Date(a.date).getTime()
         ));
+        setShowUndoToast(true);
       }
     } catch (err) {
       setError('撤销失败，请重试');
@@ -392,7 +399,30 @@ export function EnhancedTransactionGroupedList({
   }
 
   return (
-    <div className={className}>
+    <>
+      {showEditToast && (
+        <ProgressToast
+          message="账单修改成功！"
+          duration={3000}
+          onClose={() => setShowEditToast(false)}
+        />
+      )}
+      {showDeleteToast && (
+        <ProgressToast
+          message="账单删除成功！"
+          duration={3000}
+          onClose={() => setShowDeleteToast(false)}
+        />
+      )}
+      {showUndoToast && (
+        <ProgressToast
+          message="账单已恢复！"
+          duration={3000}
+          onClose={() => setShowUndoToast(false)}
+        />
+      )}
+
+      <div className={className}>
       {error && (
         <div className="mb-4">
           <Alert variant="destructive">
@@ -440,5 +470,6 @@ export function EnhancedTransactionGroupedList({
         renderTransactionItem={renderTransactionItem}
       />
     </div>
+    </>
   );
 }
