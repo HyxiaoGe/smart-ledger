@@ -1,19 +1,23 @@
 "use client";
-import { useState, useMemo } from 'react';
-import { format, isSameDay, startOfMonth, endOfMonth, isWithinInterval, subDays } from 'date-fns';
-import { zhCN } from 'date-fns/locale';
+// 交易分组列表组件（客户端支持编辑和删除）
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabaseClient';
+import { TransactionGroupedList, TransactionGroup } from '@/components/TransactionGroupedList';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChevronDown, ChevronRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
 import { CategoryChip } from '@/components/CategoryChip';
-import { formatCurrency } from '@/lib/format';
+import { DateInput } from '@/components/DateInput';
 import { PRESET_CATEGORIES } from '@/lib/config';
-import type { TransactionType } from '@/types/transaction';
+import { formatCurrency } from '@/lib/format';
+import { Badge } from '@/components/ui/badge';
+import { Edit, Trash2 } from 'lucide-react';
+import { dataSync } from '@/lib/dataSync';
+import { ProgressToast } from '@/components/ProgressToast';
 
 type Transaction = {
   id: string;
-  type: TransactionType;
+  type: 'income' | 'expense';
   category: string;
   amount: number;
   currency?: string;
@@ -21,259 +25,451 @@ type Transaction = {
   date: string;
 };
 
-export interface TransactionGroup {
-  date: string;
-  total: number;
-  count: number;
-  transactions: Transaction[];
-}
-
 interface TransactionGroupedListProps {
-  transactions: Transaction[];
-  onEdit?: (transaction: Transaction) => void;
-  onDelete?: (transaction: Transaction) => void;
+  initialTransactions: Transaction[];
   className?: string;
-  renderTransactionItem?: (transaction: Transaction) => React.ReactNode;
 }
 
 export function TransactionGroupedList({
-  transactions,
-  onEdit,
-  onDelete,
-  className,
-  renderTransactionItem
+  initialTransactions,
+  className
 }: TransactionGroupedListProps) {
-  const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
+  const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
 
-  // 按日期分组交易
-  const groupedTransactions = useMemo(() => {
-    const groups = new Map<string, TransactionGroup>();
+  // 当 initialTransactions 发生变化时更新本地状态
+  useEffect(() => {
+    setTransactions(initialTransactions);
+  }, [initialTransactions]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>('');
+  const [recentlyDeleted, setRecentlyDeleted] = useState<Transaction | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState<Partial<Transaction>>({});
+  const [confirmRow, setConfirmRow] = useState<Transaction | null>(null);
+  const [showEditToast, setShowEditToast] = useState(false);
+  const [showDeleteToast, setShowDeleteToast] = useState(false);
+  const [showUndoToast, setShowUndoToast] = useState(false);
 
-    transactions.forEach(transaction => {
-      const date = transaction.date;
-      if (!groups.has(date)) {
-        groups.set(date, {
-          date,
-          total: 0,
-          count: 0,
-          transactions: []
-        });
+  async function handleEdit(transaction: Transaction) {
+    setEditingId(transaction.id);
+    setForm({ ...transaction });
+  }
+
+  async function saveEdit() {
+    if (!editingId) return;
+    setLoading(true);
+    setError('');
+    const patch = { ...form, type: 'expense' }; // 强制设置为支出类型
+    delete (patch as any).id;
+    if (patch.amount !== undefined && !(Number(patch.amount) > 0)) {
+      setError('金额必须大于 0');
+      setLoading(false);
+      return;
+    }
+    const { error } = await supabase.from('transactions').update(patch).eq('id', editingId);
+    if (error) setError(error.message);
+    else {
+      const updatedTransaction = { ...form, type: 'expense' } as Transaction;
+      setTransactions((ts) => ts.map((t) => (t.id === editingId ? { ...t, ...updatedTransaction } : t)));
+      setEditingId(null);
+      setForm({});
+      setShowEditToast(true);
+
+      // 验证更新是否真正成功
+      const verifyUpdate = async () => {
+        try {
+          const { data: verifyData, error: verifyError } = await supabase
+            .from('transactions')
+            .select('*')
+            .eq('id', editingId)
+            .single();
+
+          if (verifyError || !verifyData) {
+            console.error('验证更新失败：', verifyError);
+            return null;
+          }
+
+          console.log('验证更新成功：', verifyData);
+          return verifyData;
+        } catch (error) {
+          console.error('验证更新时发生错误：', error);
+          return null;
+        }
+      };
+
+      // 异步验证更新结果
+      verifyUpdate().then((verifiedData) => {
+        if (verifiedData) {
+          // 只有验证成功后才触发同步事件
+          dataSync.notifyTransactionUpdated(verifiedData, true);
+          console.log('已触发账单更新同步事件：', verifiedData);
+        } else {
+          console.warn('更新验证失败，不触发同步事件');
+        }
+      });
+    }
+    setLoading(false);
+  }
+
+  async function handleDelete(transaction: Transaction) {
+    setConfirmRow(transaction);
+  }
+
+  async function confirmDelete(transaction: Transaction) {
+    setLoading(true);
+    setError('');
+
+    try {
+      // 先尝试软删除；若列不存在或 RLS 拒绝，再回退物理删除
+      const soft = await supabase
+        .from('transactions')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', transaction.id)
+        .select();
+
+      if (soft.error) {
+        // 回退为物理删除
+        const hard = await supabase.from('transactions').delete().eq('id', transaction.id);
+        if (hard.error) {
+          setError(soft.error.message || hard.error.message);
+          setLoading(false);
+          return;
+        }
+        setRecentlyDeleted(null); // 物理删除无法撤销
+      } else if (!soft.data || soft.data.length === 0) {
+        // 未命中记录，直接刷新列表
+        setLoading(false);
+        return;
+      } else {
+        setRecentlyDeleted(transaction);
       }
 
-      const group = groups.get(date)!;
-      group.total += Number(transaction.amount || 0);
-      group.count += 1;
-      group.transactions.push(transaction);
-    });
+      setTransactions((ts) => ts.filter((t) => t.id !== transaction.id));
+      setShowDeleteToast(true);
 
-    // 转换为数组并按日期排序
-    return Array.from(groups.values())
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [transactions]);
+      // 验证删除是否真正成功
+      const verifyDelete = async () => {
+        try {
+          const { data: verifyData, error: verifyError } = await supabase
+            .from('transactions')
+            .select('id, deleted_at')
+            .eq('id', transaction.id)
+            .single();
 
-  // 计算统计信息
-  const stats = useMemo(() => {
-    const totalAmount = transactions.reduce((sum, t) => sum + Number(t.amount || 0), 0);
-    const totalCount = transactions.length;
-    const avgAmount = totalCount > 0 ? totalAmount / totalCount : 0;
+          if (verifyError) {
+            // 如果查询失败，可能是记录已被物理删除
+            console.log('记录可能已被物理删除：', verifyError);
+            return { deleted: true, transaction };
+          }
 
-    // 计算分类统计
-    const categoryStats = new Map<string, number>();
-    transactions.forEach(t => {
-      categoryStats.set(t.category, (categoryStats.get(t.category) || 0) + Number(t.amount || 0));
-    });
+          if (verifyData && verifyData.deleted_at) {
+            console.log('验证软删除成功：', verifyData);
+            return { deleted: true, transaction, deletedAt: verifyData.deleted_at };
+          } else if (verifyData && !verifyData.deleted_at) {
+            console.warn('软删除验证失败，记录仍存在：', verifyData);
+            return { deleted: false, transaction };
+          }
 
-    const topCategories = Array.from(categoryStats.entries())
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3);
+          return { deleted: false, transaction };
+        } catch (error) {
+          console.error('验证删除时发生错误：', error);
+          return { deleted: false, transaction };
+        }
+      };
 
-    return {
-      totalAmount,
-      totalCount,
-      avgAmount,
-      topCategories
-    };
-  }, [transactions]);
+      // 异步验证删除结果
+      verifyDelete().then((result) => {
+        if (result.deleted) {
+          // 只有验证成功后才触发同步事件
+          dataSync.notifyTransactionDeleted(result.transaction, true);
+          console.log('已触发账单删除同步事件：', result);
+        } else {
+          console.warn('删除验证失败，不触发同步事件');
+        }
+      });
 
-  const toggleDateExpansion = (date: string) => {
-    const newExpanded = new Set(expandedDates);
-    if (newExpanded.has(date)) {
-      newExpanded.delete(date);
-    } else {
-      newExpanded.add(date);
+    } catch (err) {
+      setError('删除失败，请重试');
     }
-    setExpandedDates(newExpanded);
-  };
 
-  const expandAll = () => {
-    setExpandedDates(new Set(groupedTransactions.map(g => g.date)));
-  };
+    setLoading(false);
+  }
 
-  const collapseAll = () => {
-    setExpandedDates(new Set());
-  };
+  async function handleUndo() {
+    if (!recentlyDeleted) return;
+    setLoading(true);
 
-  const isToday = (date: string) => {
-    return isSameDay(new Date(date), new Date());
-  };
+    try {
+      const { error } = await supabase
+        .from('transactions')
+        .update({ deleted_at: null })
+        .eq('id', recentlyDeleted.id);
 
-  const isYesterday = (date: string) => {
-    return isSameDay(new Date(date), subDays(new Date(), 1));
-  };
+      if (!error) {
+        setTransactions((ts) => [recentlyDeleted, ...ts].sort((a, b) =>
+          new Date(b.date).getTime() - new Date(a.date).getTime()
+        ));
+        setShowUndoToast(true);
+      }
+    } catch (err) {
+      setError('撤销失败，请重试');
+    }
 
-  const getRelativeLabel = (date: string) => {
-    if (isToday(date)) return '今天';
-    if (isYesterday(date)) return '昨天';
-    return '';
-  };
+    setRecentlyDeleted(null);
+    setLoading(false);
+  }
 
-  return (
-    <div className={cn("space-y-4", className)}>
-      {/* 统计概览卡片 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">账单概览</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-3 md:grid-cols-3 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold text-primary">¥{stats.totalAmount.toFixed(2)}</div>
-              <div className="text-sm text-muted-foreground">总支出</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold">{stats.totalCount}</div>
-              <div className="text-sm text-muted-foreground">笔数</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold">¥{stats.avgAmount.toFixed(2)}</div>
-              <div className="text-sm text-muted-foreground">平均</div>
-            </div>
+  // 渲染编辑表单
+  function renderEditForm(transaction: Transaction) {
+    return (
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">日期</label>
+            <DateInput
+              selected={new Date((form.date as string) || transaction.date)}
+              onSelect={(date) => setForm((f) => ({ ...f, date: date?.toISOString().slice(0, 10) }))}
+              placeholder="选择日期"
+            />
           </div>
-
-          <div className="mt-4 pt-4 border-t">
-            <div className="text-lg font-semibold mb-2">主要支出分类</div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-              {stats.topCategories.map(([category, amount]) => {
-                const categoryMeta = PRESET_CATEGORIES.find((c) => c.key === category);
-                const categoryLabel = categoryMeta?.label || category;
-                return (
-                  <div key={category} className="flex justify-between items-center gap-2 p-3 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
-                    <span className="truncate flex-1 text-sm font-medium text-gray-700">{categoryLabel}</span>
-                    <span className="font-semibold text-sm text-red-600">¥{amount.toFixed(2)}</span>
-                  </div>
-                );
-              })}
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">类型</label>
+            <div className="h-10 w-full rounded-md border border-gray-300 bg-gray-50 px-3 text-sm flex items-center text-red-600">
+              支出
             </div>
+            <input type="hidden" name="type" value="expense" />
           </div>
-        </CardContent>
-      </Card>
-
-      {/* 操作按钮 */}
-      <div className="flex justify-between items-center">
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={expandAll}>
-            展开全部
-          </Button>
-          <Button variant="outline" size="sm" onClick={collapseAll}>
-            收起全部
-          </Button>
         </div>
-        <div className="text-sm text-muted-foreground">
-          共 {groupedTransactions.length} 天
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">分类</label>
+            <select
+              className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm focus:border-blue-500 focus:ring-blue-500"
+              value={(form.category as string) || transaction.category}
+              onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+            >
+              {PRESET_CATEGORIES.map((c) => (
+                <option key={c.key} value={c.key}>
+                  {c.icon ? `${c.icon} ` : ''}{c.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">金额</label>
+            <Input
+              type="number"
+              inputMode="decimal"
+              value={String(form.amount ?? transaction.amount ?? '')}
+              onChange={(e) => setForm((f) => ({ ...f, amount: parseFloat(e.target.value) || 0 }))}
+              className="h-10"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">币种</label>
+            <select
+              className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm focus:border-blue-500 focus:ring-blue-500"
+              value={form.currency as string || transaction.currency || 'CNY'}
+              onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value }))}
+            >
+              <option value="CNY">CNY</option>
+              <option value="USD">USD</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">备注</label>
+            <Input
+              value={(form.note as string) || transaction.note || ''}
+              onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
+              placeholder="请输入备注信息"
+              className="h-10"
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3 pt-2 border-t">
+          <Button
+            variant="outline"
+            onClick={() => { setEditingId(null); setForm({}); }}
+            className="min-w-[80px]"
+          >
+            取消
+          </Button>
+          <Button
+            onClick={saveEdit}
+            disabled={loading}
+            className="min-w-[80px] bg-blue-600 hover:bg-blue-700"
+          >
+            {loading ? '保存中...' : '保存'}
+          </Button>
         </div>
       </div>
+    );
+  }
 
-      {/* 分组列表 */}
-      <div className="space-y-2">
-        {groupedTransactions.map((group) => {
-          const isExpanded = expandedDates.has(group.date);
-          const relativeLabel = getRelativeLabel(group.date);
+  // 自定义交易项渲染器
+  function renderTransactionItem(transaction: Transaction) {
+    const isEditing = editingId === transaction.id;
 
-          return (
-            <Card key={group.date} className="overflow-hidden">
-              <CardHeader
-                className="cursor-pointer hover:bg-muted/50 transition-colors"
-                onClick={() => toggleDateExpansion(group.date)}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={cn(
-                      "transition-transform duration-200",
-                      isExpanded && "rotate-90"
-                    )}>
-                      <ChevronRight className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{group.date}</span>
-                        {relativeLabel && (
-                          <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-                            {relativeLabel}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-lg font-semibold">¥{group.total.toFixed(2)}</div>
-                    <div className="text-xs text-muted-foreground">{group.count}笔</div>
+    return (
+      <div key={transaction.id} className="group">
+        {!isEditing ? (
+          <div
+            className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 hover:border-blue-300 relative overflow-hidden cursor-pointer"
+            onClick={() => handleEdit(transaction)}
+          >
+            {/* 左侧装饰条 */}
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-400 to-blue-600"></div>
+
+            <div className="flex items-center justify-between pl-4">
+              {/* 左侧信息 */}
+              <div className="flex items-center gap-4 flex-1 min-w-0">
+                {/* 分类图标和名称 */}
+                <div className="flex items-center gap-2">
+                  <CategoryChip category={transaction.category} />
+                </div>
+
+                {/* 备注信息 */}
+                <div className="flex-1 min-w-0">
+                  {transaction.note ? (
+                    <p className="text-gray-700 font-medium truncate" title={transaction.note}>
+                      {transaction.note}
+                    </p>
+                  ) : (
+                    <p className="text-gray-400 italic">无备注</p>
+                  )}
+                </div>
+
+                {/* 币种标识 */}
+                <Badge variant="outline" className="text-xs">
+                  {transaction.currency || 'CNY'}
+                </Badge>
+              </div>
+
+              {/* 右侧金额和操作 */}
+              <div className="flex items-center gap-4">
+                {/* 金额显示 */}
+                <div className="text-right">
+                  <div className="text-xl font-bold text-red-600">
+                    -{formatCurrency(Number(transaction.amount || 0), transaction.currency || 'CNY')}
                   </div>
                 </div>
-              </CardHeader>
 
-              {isExpanded && (
-                <CardContent className="pt-0">
-                  <div className="space-y-2">
-                    {group.transactions.map((transaction: Transaction) => (
-                      <div
-                        key={transaction.id}
-                        className="hover:bg-muted/50 rounded-lg transition-colors"
-                      >
-                        {renderTransactionItem ? (
-                          renderTransactionItem(transaction)
-                        ) : (
-                          <div className="flex items-center justify-between p-3 border-l-2 border-l-blue-200">
-                            <div className="flex items-center gap-3 flex-1 min-w-0">
-                              <CategoryChip category={transaction.category} />
-                              <div className="flex-1 min-w-0">
-                                <div className="font-medium truncate">{transaction.note || '无备注'}</div>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <div className="font-semibold">
-                                ¥{formatCurrency(Number(transaction.amount || 0), transaction.currency || 'CNY')}
-                              </div>
-                              <div className="flex gap-1 mt-1">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => onEdit?.(transaction)}
-                                >
-                                  编辑
-                                </Button>
-                                <Button
-                                  variant="destructive"
-                                  size="sm"
-                                  onClick={() => onDelete?.(transaction)}
-                                >
-                                  删除
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              )}
-            </Card>
-          );
-        })}
+                {/* 操作按钮 */}
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEdit(transaction);
+                    }}
+                    disabled={loading}
+                    className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(transaction);
+                    }}
+                    disabled={loading}
+                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 shadow-sm">
+            {renderEditForm(transaction)}
+          </div>
+        )}
       </div>
+    );
+  }
 
-      {/* 加载更多 */}
-      {/* 这里可以添加加载更多的逻辑 */}
+  return (
+    <>
+      {showEditToast && (
+        <ProgressToast
+          message="账单修改成功！"
+          duration={3000}
+          onClose={() => setShowEditToast(false)}
+        />
+      )}
+      {showDeleteToast && (
+        <ProgressToast
+          message="账单删除成功！"
+          duration={3000}
+          onClose={() => setShowDeleteToast(false)}
+        />
+      )}
+      {showUndoToast && (
+        <ProgressToast
+          message="账单已恢复！"
+          duration={3000}
+          onClose={() => setShowUndoToast(false)}
+        />
+      )}
+
+      <div className={className}>
+      {error && (
+        <div className="mb-4">
+          <Alert variant="destructive">
+            <AlertTitle>操作失败</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        </div>
+      )}
+
+      {recentlyDeleted && (
+        <div className="mb-4">
+          <Alert>
+            <AlertTitle>删除成功</AlertTitle>
+            <AlertDescription className="flex items-center justify-between">
+              <span>已删除一条记录。</span>
+              <button
+                onClick={handleUndo}
+                disabled={loading}
+                className="text-sm underline hover:no-underline disabled:opacity-50"
+              >
+                撤销
+              </button>
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
+
+      {confirmRow && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onMouseDown={(e) => { if (e.target === e.currentTarget) setConfirmRow(null); }}>
+          <div className="rounded-lg border bg-card text-card-foreground shadow-sm w-full max-w-sm z-50" role="dialog" aria-modal="true" onMouseDown={(e) => e.stopPropagation()}>
+            <div className="p-4 border-b font-semibold">确认删除</div>
+            <div className="p-4 text-sm text-muted-foreground">确定要删除这条记录吗？删除后可在短时间内"撤销"。</div>
+            <div className="p-4 flex justify-end gap-2 border-t">
+              <Button variant="secondary" onClick={() => setConfirmRow(null)}>取消</Button>
+              <Button variant="destructive" onClick={async () => { const row = confirmRow; setConfirmRow(null); if (row) await confirmDelete(row); }}>确认删除</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <TransactionGroupedList
+        transactions={transactions}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        renderTransactionItem={renderTransactionItem}
+      />
     </div>
+    </>
   );
 }

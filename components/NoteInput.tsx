@@ -1,4 +1,4 @@
-// 智能备注输入组件 - 支持联想输入和常用备注选择
+// 备注输入组件 - 支持联想输入和常用备注选择
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -6,7 +6,7 @@ import type { CommonNote } from '@/types/transaction';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 
-interface SmartNoteInputProps {
+interface NoteInputProps {
   value?: string;
   onChange?: (value: string) => void;
   placeholder?: string;
@@ -14,7 +14,7 @@ interface SmartNoteInputProps {
   disabled?: boolean;
 }
 
-export function SmartNoteInput({
+export function NoteInput({
   value = '',
   onChange,
   placeholder = '可选',

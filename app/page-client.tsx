@@ -5,7 +5,7 @@ import { ChartSummary } from './components/ChartSummary';
 import { AiAnalyzeButton } from './components/AiAnalyze';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { EnhancedRangePicker } from '@/components/EnhancedRangePicker';
+import { RangePicker } from '@/components/RangePicker';
 import { CurrencySelect } from '@/components/CurrencySelect';
 import { TopExpenses } from '@/components/TopExpenses';
 import { HomeStats } from '@/components/HomeStats';
@@ -278,7 +278,7 @@ function HomePageContent() {
           </div>
           <div className="flex gap-2 items-center">
             <span className="text-sm text-muted-foreground">范围</span>
-            <EnhancedRangePicker />
+            <RangePicker />
           </div>
         </div>
       </div>

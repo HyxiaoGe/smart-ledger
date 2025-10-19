@@ -42,12 +42,12 @@ const QUICK_OPTIONS = [
   }
 ] as const;
 
-export interface EnhancedRangePickerProps {
+export interface RangePickerProps {
   className?: string;
   onRangeChange?: (range: { start: Date; end: Date } | null) => void;
 }
 
-export function EnhancedRangePicker({ className, onRangeChange }: EnhancedRangePickerProps) {
+export function RangePicker({ className, onRangeChange }: RangePickerProps) {
   const router = useRouter();
   const pathname = usePathname();
   const search = useSearchParams();

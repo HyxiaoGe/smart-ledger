@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DateInput } from '@/components/DateInput';
-import { SmartNoteInput } from '@/components/SmartNoteInput';
+import { NoteInput } from '@/components/NoteInput';
 import { dataSync } from '@/lib/dataSync';
 import { ProgressToast } from '@/components/ProgressToast';
 
@@ -325,7 +325,7 @@ export default function AddPage() {
             </div>
             <div>
               <Label>备注</Label>
-              <SmartNoteInput
+              <NoteInput
                 value={note}
                 onChange={setNote}
                 placeholder="可选"

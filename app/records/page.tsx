@@ -1,11 +1,11 @@
 import { supabase } from '@/lib/supabaseClient';
-import { EnhancedTransactionGroupedList } from '@/components/EnhancedTransactionGroupedList';
+import { TransactionGroupedList } from '@/components/TransactionGroupedList';
 import { parseMonthStr, formatMonth, shiftMonth, getQuickRange } from '@/lib/date';
 export const revalidate = 0;
 export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { EnhancedRangePicker } from '@/components/EnhancedRangePicker';
+import { RangePicker } from '@/components/RangePicker';
 import { MonthlyExpenseSummary } from '@/components/MonthlyExpenseSummary';
 
 async function fetchTransactions(month?: string, range?: string, startDate?: string, endDate?: string) {
@@ -107,7 +107,7 @@ export default async function RecordsPage({ searchParams }: { searchParams?: { m
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">账单列表（{rangeLabel}）</h1>
         <div className="flex items-center">
-          <EnhancedRangePicker />
+          <RangePicker />
         </div>
       </div>
       {range === 'month' ? (
@@ -129,7 +129,7 @@ export default async function RecordsPage({ searchParams }: { searchParams?: { m
         </div>
       ) : (
         <div className="mt-4">
-          <EnhancedTransactionGroupedList
+          <TransactionGroupedList
             initialTransactions={rows as any}
           />
         </div>

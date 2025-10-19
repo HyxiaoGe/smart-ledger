@@ -49,11 +49,13 @@ smart-ledger/
 ├── components/                  # 共享组件
 │   ├── ui/                     # UI基础组件
 │   ├── Navigation.tsx         # 导航组件
-│   ├── SmartNoteInput.tsx     # 智能备注输入
+│   ├── NoteInput.tsx          # 备注输入组件
 │   └── ...
 ├── lib/                        # 工具库
 │   ├── supabaseClient.ts      # Supabase客户端
 │   ├── config.ts              # 配置文件
+│   ├── taskQueue.ts           # 通用任务队列管理器
+│   ├── dataSync.ts            # 跨页面数据同步
 │   └── ...
 ├── types/                      # TypeScript类型定义
 └── supabase/                   # 数据库配置
