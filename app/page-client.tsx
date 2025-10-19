@@ -242,7 +242,7 @@ function HomePageContent() {
       try {
         setLoading(true);
         setError(null);
-        const pageData = await loadPageData(currency, monthLabel, rangeParam, startParam, endParam);
+        const pageData = await loadPageData(currency, monthLabel, rangeParam, startParam || undefined, endParam || undefined);
         setData(pageData);
       } catch (err) {
         console.error('Failed to load page data:', err);

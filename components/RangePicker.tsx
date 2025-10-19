@@ -300,7 +300,9 @@ export function RangePicker({ className, onRangeChange }: RangePickerProps) {
                   >
                     <DatePicker
                       mode="range"
-                      selected={customRange as { from?: Date; to?: Date } | undefined}
+                      selected={customRange && customRange.from && customRange.to ?
+                        { from: customRange.from, to: customRange.to } :
+                        undefined}
                       onSelect={handleCustomRangeSelect}
                       locale={zhCN}
                       defaultMonth={calendarMonth || current.start}

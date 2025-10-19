@@ -13,7 +13,7 @@ export function CurrencySelect({ value, month, range }: { value: string; month: 
     sp.set('currency', c);
     if (month) sp.set('month', month);
     if (range) sp.set('range', range);
-    router.push(`${pathname}?${sp.toString()}`);
+    router.push(`${pathname}?${sp.toString()}` as any);
   }
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 import { DayPicker } from "react-day-picker";
-import { zhCN } from "date-fns/locale";
+import { zhCN, Locale } from "date-fns/locale";
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
@@ -42,22 +42,30 @@ export function DatePicker({
         className
       )}>
         <div className="text-sm font-medium text-center mb-2">
-          {selected ? selected.toLocaleDateString('zh-CN', {
-            month: 'long',
-            day: 'numeric',
-            weekday: 'short'
-          }) : '选择日期'}
+          {selected && typeof selected === 'object' && 'from' in selected ?
+            `${selected.from.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'short' })} - ${selected.to.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'short' })}` :
+            selected && !(selected instanceof Date) && Array.isArray(selected) ?
+              '多选日期' :
+              selected instanceof Date ?
+                selected.toLocaleDateString('zh-CN', {
+                  month: 'long',
+                  day: 'numeric',
+                  weekday: 'short'
+                }) :
+                '选择日期'
+          }
         </div>
         <div className="flex justify-center items-center gap-2">
           <button
             type="button"
             onClick={() => {
-              const newDate = new Date(selected || new Date());
+              const currentDate = selected instanceof Date ? selected : new Date();
+              const newDate = new Date(currentDate);
               newDate.setDate(newDate.getDate() - 1);
               onSelect?.(newDate);
             }}
             className="h-8 w-8 rounded-md border bg-background hover:bg-accent flex items-center justify-center text-sm"
-            disabled={disabled?.includes(new Date((selected || new Date()).getTime() - 24 * 60 * 60 * 1000))}
+            disabled={disabled?.includes(new Date((selected instanceof Date ? selected : new Date()).getTime() - 24 * 60 * 60 * 1000))}
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -68,7 +76,7 @@ export function DatePicker({
             onClick={() => onSelect?.(new Date())}
             className={cn(
               "h-8 w-8 rounded-md border flex items-center justify-center text-sm font-medium",
-              selected?.toDateString() === new Date().toDateString()
+              selected instanceof Date && selected.toDateString() === new Date().toDateString()
                 ? "bg-primary text-primary-foreground border-primary"
                 : "bg-background hover:bg-accent border-border"
             )}
@@ -78,7 +86,8 @@ export function DatePicker({
           <button
             type="button"
             onClick={() => {
-              const newDate = new Date(selected || new Date());
+              const currentDate = selected instanceof Date ? selected : new Date();
+              const newDate = new Date(currentDate);
               newDate.setDate(newDate.getDate() + 1);
               onSelect?.(newDate);
             }}
@@ -109,7 +118,7 @@ export function DatePicker({
         compact ? "rdp-compact" : "",
         className
       )}
-      {...props}
+      {...(props as any)}
     />
   );
 }

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { DEFAULT_CURRENCY } from '@/lib/config';
 import { MarkdownView } from '@/components/MarkdownView';
-import { idbGet, idbSet, idbRemove, idbClearAll } from '@/lib/idb';
+import { idbGet, idbSet, idbRemove } from '@/lib/idb';
 import { formatMonth } from '@/lib/date';
 
 export function AiAnalyzeButton({ currency = 'CNY', month }: { currency?: string; month?: string }) {

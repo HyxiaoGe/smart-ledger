@@ -20,7 +20,7 @@ export function NoteInput({
   placeholder = '可选',
   className = '',
   disabled = false
-}: SmartNoteInputProps) {
+}: NoteInputProps) {
   const [suggestions, setSuggestions] = useState<CommonNote[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

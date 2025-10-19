@@ -17,10 +17,15 @@ export function MarkdownView({ text }: { text: string }) {
           li: ({ node, ...props }) => <li {...props} className="my-0.5" />,
           hr: (props) => <hr {...props} className="my-3 border-border" />,
           strong: (props) => <strong {...props} className="font-semibold" />,
-          code: ({ inline, ...props }) => inline ? (
-            <code {...props} className="rounded bg-muted px-1 py-0.5 text-xs" />
-          ) : (
-            <code {...props} className="block rounded bg-muted p-2 text-xs" />
+          code: ({ className, children, ...props }: any) => (
+            <code className={`${className || ''} rounded bg-muted px-1 py-0.5 text-xs`} {...props}>
+              {children}
+            </code>
+          ),
+          pre: ({ className, children, ...props }: any) => (
+            <pre className={`${className || ''} block rounded bg-muted p-2 text-xs overflow-x-auto`} {...props}>
+              {children}
+            </pre>
           )
         }}>
         {text || ''}

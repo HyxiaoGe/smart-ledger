@@ -2,7 +2,6 @@
 // 交易分组列表组件（客户端支持编辑和删除）
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { TransactionGroupedList, TransactionGroup } from '@/components/TransactionGroupedList';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -463,12 +462,9 @@ export function TransactionGroupedList({
         </div>
       )}
 
-      <TransactionGroupedList
-        transactions={transactions}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        renderTransactionItem={renderTransactionItem}
-      />
+      <div className="space-y-4">
+        {transactions.map(renderTransactionItem)}
+      </div>
     </div>
     </>
   );

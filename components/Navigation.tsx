@@ -21,7 +21,7 @@ export default function Navigation() {
         return (
           <Link
             key={item.href}
-            href={item.href}
+            href={item.href as any}
             className={cn(
               "relative px-3 py-2 text-sm font-medium transition-all duration-200 rounded-lg group",
               isActive
