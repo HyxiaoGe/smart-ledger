@@ -9,10 +9,11 @@ import { RangePicker } from '@/components/RangePicker';
 import { MonthlyExpenseSummary } from '@/components/MonthlyExpenseSummary';
 
 async function fetchTransactions(month?: string, range?: string, startDate?: string, endDate?: string) {
+  let dateRange;
+  let query;
+
   // 根据范围参数筛选数据
   if (range && range !== 'month') {
-    let dateRange;
-
     if (range === 'custom' && startDate && endDate) {
       // 自定义日期范围
       dateRange = { start: startDate, end: endDate, label: `${startDate} - ${endDate}` };
@@ -21,7 +22,7 @@ async function fetchTransactions(month?: string, range?: string, startDate?: str
       dateRange = getQuickRange(range as any, month);
     }
 
-    let query = supabase
+    query = supabase
       .from('transactions')
       .select('*')
       .is('deleted_at', null)
@@ -42,40 +43,48 @@ async function fetchTransactions(month?: string, range?: string, startDate?: str
         query = query.gte('date', dateRange.start).lt('date', dateRange.end);
       }
     }
+  } else {
+    // 处理月份查询或默认情况
+    let d;
+    if (range === 'month') {
+      // 当选择"当月"时，使用当前月份
+      d = new Date();
+    } else {
+      // 其他情况使用month参数
+      d = parseMonthStr(month || formatMonth(new Date()));
+    }
 
-    const { data, error } = await query
-      .order('date', { ascending: false })
-      .limit(50);
-    if (error) throw error;
-    return { data: data ?? [], monthLabel: dateRange.label } as const;
-  }
-  
-  // 可选的月份筛选（YYYY-MM），默认当前月；不筛选则返回全部
-  const d = parseMonthStr(month || formatMonth(new Date()));
-  if (!d) {
-    const { data, error } = await supabase
+    if (!d) {
+      // 如果无法解析月份，返回全部数据
+      query = supabase
+        .from('transactions')
+        .select('*')
+        .is('deleted_at', null)
+        .eq('type', 'expense')
+        .order('date', { ascending: false });
+      const { data, error } = await query;
+      if (error) throw error;
+      return { data: data ?? [], monthLabel: '全部' } as const;
+    }
+
+    // 月份查询：从1号到月底
+    const start = new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0, 10);
+    const end = new Date(d.getFullYear(), d.getMonth() + 1, 1).toISOString().slice(0, 10);
+    dateRange = { start, end, label: formatMonth(d) };
+
+    query = supabase
       .from('transactions')
       .select('*')
       .is('deleted_at', null)
       .eq('type', 'expense')
-      .order('date', { ascending: false })
-      .limit(50);
-    if (error) throw error;
-    return { data: data ?? [], monthLabel: '全部' } as const;
+      .gte('date', start)
+      .lt('date', end)
+      .order('date', { ascending: false });
   }
-  const start = new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0, 10);
-  const end = new Date(d.getFullYear(), d.getMonth() + 1, 1).toISOString().slice(0, 10);
-  const { data, error } = await supabase
-    .from('transactions')
-    .select('*')
-    .is('deleted_at', null)
-    .eq('type', 'expense')
-    .gte('date', start)
-    .lt('date', end)
-    .order('date', { ascending: false })
-    .limit(50);
+
+  const { data, error } = await query;
   if (error) throw error;
-  return { data: data ?? [], monthLabel: formatMonth(d) } as const;
+  return { data: data ?? [], monthLabel: dateRange.label } as const;
 }
 
 export default async function RecordsPage({ searchParams }: { searchParams?: { month?: string; range?: string; start?: string; end?: string } }) {
@@ -84,56 +93,96 @@ export default async function RecordsPage({ searchParams }: { searchParams?: { m
   const start = searchParams?.start;
   const end = searchParams?.end;
   const { data: rows, monthLabel } = await fetchTransactions(month, range, start, end);
-  let queryStart, queryEnd, rangeLabel;
-  if (range === 'month') {
-    // 当月范围：1号到今天
-    const today = new Date();
-    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-    queryStart = monthStart.toISOString().slice(0, 10);
-    queryEnd = today.toISOString().slice(0, 10);
-    rangeLabel = monthLabel;
-  } else if (range === 'custom' && searchParams?.start && searchParams?.end) {
-    queryStart = searchParams.start;
-    queryEnd = searchParams.end;
-    rangeLabel = `${queryStart} - ${queryEnd}`;
-  } else {
-    const qr = getQuickRange(range as any, month);
-    queryStart = qr.start;
-    queryEnd = qr.end;
-    rangeLabel = qr.label;
+
+  // 获取昨日数据用于趋势分析（仅在单日查询时）
+  let yesterdayData: any[] = [];
+  if (range === 'today' || range === 'yesterday') {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().slice(0, 10);
+
+    const { data } = await supabase
+      .from('transactions')
+      .select('*')
+      .is('deleted_at', null)
+      .eq('type', 'expense')
+      .eq('date', yesterdayStr)
+      .order('date', { ascending: false });
+
+    yesterdayData = data || [];
   }
+
+  // 获取当月累计数据用于月度预算进度（始终基于当月数据）
+  const today = new Date();
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0, 10);
+  const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 1).toISOString().slice(0, 10);
+
+  const { data: monthData } = await supabase
+    .from('transactions')
+    .select('*')
+    .is('deleted_at', null)
+    .eq('type', 'expense')
+    .gte('date', monthStart)
+    .lt('date', monthEnd)
+    .order('date', { ascending: false });
+
+  // 计算当月累计数据
+  const monthDaily = new Map<string, { total: number; count: number }>();
+  for (const r of monthData || []) {
+    const key = r.date;
+    const cur = monthDaily.get(key) || { total: 0, count: 0 };
+    monthDaily.set(key, { total: cur.total + Number(r.amount || 0), count: cur.count + 1 });
+  }
+  const monthItems = Array.from(monthDaily.entries())
+    .map(([date, v]) => ({ date, total: v.total, count: v.count }));
+
+  const monthTotalAmount = monthItems.reduce((sum, item) => sum + item.total, 0);
+  const monthTotalCount = monthItems.reduce((sum, item) => sum + item.count, 0);
   return (
     <div className="grid">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">账单列表（{rangeLabel}）</h1>
+        <h1 className="text-xl font-semibold">账单列表（{monthLabel}）</h1>
         <div className="flex items-center">
           <RangePicker />
         </div>
       </div>
-      {range === 'month' ? (
-        <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-4">
-          {(() => {
-            // 在服务端对本月数据进行聚合（仅支出）
-            const daily = new Map<string, { total: number; count: number }>();
-            for (const r of rows as any[]) {
-              if (r.type !== 'expense') continue;
-              const key = r.date;
-              const cur = daily.get(key) || { total: 0, count: 0 };
-              daily.set(key, { total: cur.total + Number(r.amount || 0), count: cur.count + 1 });
-            }
-            const items = Array.from(daily.entries())
-              .sort((a, b) => (a[0] < b[0] ? 1 : -1))
-              .map(([date, v]) => ({ date, total: v.total, count: v.count }));
-            return <MonthlyExpenseSummary items={items} currency={'CNY'} />;
-          })()}
-        </div>
-      ) : (
-        <div className="mt-4">
-          <TransactionGroupedList
-            initialTransactions={rows as any}
-          />
-        </div>
-      )}
+      {/* 统计面板 - 所有范围都显示 */}
+      <div className="mb-6">
+        {(() => {
+          // 在服务端对当前查询范围数据进行聚合（仅支出）
+          const daily = new Map<string, { total: number; count: number }>();
+          for (const r of rows as any[]) {
+            if (r.type !== 'expense') continue;
+            const key = r.date;
+            const cur = daily.get(key) || { total: 0, count: 0 };
+            daily.set(key, { total: cur.total + Number(r.amount || 0), count: cur.count + 1 });
+          }
+          const items = Array.from(daily.entries())
+            .sort((a, b) => (a[0] < b[0] ? 1 : -1))
+            .map(([date, v]) => ({ date, total: v.total, count: v.count }));
+
+          // 过滤出支出交易记录
+          const expenseTransactions = (rows as any[]).filter(r => r.type === 'expense');
+
+          return <MonthlyExpenseSummary
+            items={items}
+            transactions={expenseTransactions}
+            yesterdayTransactions={yesterdayData}
+            monthTotalAmount={monthTotalAmount}
+            monthTotalCount={monthTotalCount}
+            currency={'CNY'}
+            dateRange={monthLabel}
+            rangeType={range}
+          />;
+        })()}
+      </div>
+
+      {/* 交易明细列表 */}
+      <div className="mt-4">
+        <TransactionGroupedList
+          initialTransactions={rows as any}
+        />
+      </div>
     </div>
   );
 }
