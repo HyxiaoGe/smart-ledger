@@ -237,22 +237,24 @@ export function NoteInput({
                 <div
                   key={suggestion.id}
                   onClick={() => handleSuggestionClick(suggestion)}
-                  className={`px-3 py-2 text-sm cursor-pointer border-b border-gray-100 last:border-b-0 flex items-center justify-between group ${
+                  className={`px-3 py-2 text-sm cursor-pointer border-b border-gray-100 last:border-b-0 group ${
                     index === selectedSuggestionIndex
                       ? 'bg-blue-50 border-blue-200'
                       : 'hover:bg-gray-50'
                   }`}
                 >
-                  <span className="truncate">{suggestion.content}</span>
-                  <div className="flex items-center gap-2 ml-2">
-                    {suggestion.usage_count > 5 && (
-                      <Badge variant="outline" className="text-xs">
-                        热门
-                      </Badge>
-                    )}
-                    <span className="text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                      {suggestion.usage_count}次
-                    </span>
+                  <div className="flex items-center justify-between w-full">
+                    <span className="truncate flex-1 mr-2">{suggestion.content}</span>
+                    <div className="flex items-center gap-2 flex-shrink-0 min-w-[80px] justify-end">
+                      {suggestion.usage_count > 5 && (
+                        <Badge variant="outline" className="text-xs whitespace-nowrap">
+                          热门
+                        </Badge>
+                      )}
+                      <span className="text-xs text-gray-400 group-hover:text-gray-500 transition-colors whitespace-nowrap w-[35px] text-right">
+                        {suggestion.usage_count}次
+                      </span>
+                    </div>
                   </div>
                 </div>
               ))}
