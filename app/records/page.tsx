@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { RangePicker } from '@/components/RangePicker';
 import { MonthlyExpenseSummary } from '@/components/MonthlyExpenseSummary';
+import { CategoryStatistics } from '@/components/CategoryStatistics';
 
 async function fetchTransactions(month?: string, range?: string, startDate?: string, endDate?: string) {
   let dateRange;
@@ -139,46 +140,55 @@ export default async function RecordsPage({ searchParams }: { searchParams?: { m
   const monthTotalAmount = monthItems.reduce((sum, item) => sum + item.total, 0);
   const monthTotalCount = monthItems.reduce((sum, item) => sum + item.count, 0);
   return (
-    <div className="grid">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">账单列表（{monthLabel}）</h1>
         <div className="flex items-center">
           <RangePicker />
         </div>
       </div>
+
       {/* 统计面板 - 所有范围都显示 */}
-      <div className="mb-6">
-        {(() => {
-          // 在服务端对当前查询范围数据进行聚合（仅支出）
-          const daily = new Map<string, { total: number; count: number }>();
-          for (const r of rows as any[]) {
-            if (r.type !== 'expense') continue;
-            const key = r.date;
-            const cur = daily.get(key) || { total: 0, count: 0 };
-            daily.set(key, { total: cur.total + Number(r.amount || 0), count: cur.count + 1 });
-          }
-          const items = Array.from(daily.entries())
-            .sort((a, b) => (a[0] < b[0] ? 1 : -1))
-            .map(([date, v]) => ({ date, total: v.total, count: v.count }));
+      {(() => {
+        // 在服务端对当前查询范围数据进行聚合（仅支出）
+        const daily = new Map<string, { total: number; count: number }>();
+        for (const r of rows as any[]) {
+          if (r.type !== 'expense') continue;
+          const key = r.date;
+          const cur = daily.get(key) || { total: 0, count: 0 };
+          daily.set(key, { total: cur.total + Number(r.amount || 0), count: cur.count + 1 });
+        }
+        const items = Array.from(daily.entries())
+          .sort((a, b) => (a[0] < b[0] ? 1 : -1))
+          .map(([date, v]) => ({ date, total: v.total, count: v.count }));
 
-          // 过滤出支出交易记录
-          const expenseTransactions = (rows as any[]).filter(r => r.type === 'expense');
+        // 过滤出支出交易记录
+        const expenseTransactions = (rows as any[]).filter(r => r.type === 'expense');
 
-          return <MonthlyExpenseSummary
-            items={items}
-            transactions={expenseTransactions}
-            yesterdayTransactions={yesterdayData}
-            monthTotalAmount={monthTotalAmount}
-            monthTotalCount={monthTotalCount}
-            currency={'CNY'}
-            dateRange={monthLabel}
-            rangeType={range}
-          />;
-        })()}
-      </div>
+        return (
+          <>
+            <MonthlyExpenseSummary
+              items={items}
+              transactions={expenseTransactions}
+              yesterdayTransactions={yesterdayData}
+              monthTotalAmount={monthTotalAmount}
+              monthTotalCount={monthTotalCount}
+              currency={'CNY'}
+              dateRange={monthLabel}
+              rangeType={range}
+            />
+
+            {/* 分类统计组件 */}
+            <CategoryStatistics
+              transactions={expenseTransactions}
+              currency={'CNY'}
+            />
+          </>
+        );
+      })()}
 
       {/* 交易明细列表 */}
-      <div className="mt-4">
+      <div>
         <TransactionGroupedList
           initialTransactions={rows as any}
         />
