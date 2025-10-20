@@ -193,9 +193,7 @@ export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTrans
             </div>
           </div>
         </div>
-        {/* 添加与分类统计的间隔 */}
-        <div className="h-6"></div>
-      </div>
+        </div>
     );
   }
 
@@ -425,10 +423,7 @@ export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTrans
           </div>
         </div>
       </div>
-      {/* 添加与分类统计的间隔 */}
-      <div className="h-6"></div>
       </div>
-    </div>
   );
 }
 

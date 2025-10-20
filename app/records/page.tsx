@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { RangePicker } from '@/components/RangePicker';
 import { MonthlyExpenseSummary } from '@/components/MonthlyExpenseSummary';
 import { CategoryStatistics } from '@/components/CategoryStatistics';
+import { CollapsibleTransactionList } from '@/components/CollapsibleTransactionList';
 
 async function fetchTransactions(month?: string, range?: string, startDate?: string, endDate?: string) {
   let dateRange;
@@ -187,12 +188,11 @@ export default async function RecordsPage({ searchParams }: { searchParams?: { m
         );
       })()}
 
-      {/* 交易明细列表 */}
-      <div>
-        <TransactionGroupedList
-          initialTransactions={rows as any}
-        />
-      </div>
+      {/* 交易明细列表 - 带收纳功能 */}
+      <CollapsibleTransactionList
+        initialTransactions={rows as any}
+        totalCount={rows.length}
+      />
     </div>
   );
 }
