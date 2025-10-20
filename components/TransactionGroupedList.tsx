@@ -462,8 +462,55 @@ export function TransactionGroupedList({
         </div>
       )}
 
-      <div className="space-y-4">
-        {transactions.map(renderTransactionItem)}
+      <div className="space-y-6">
+        {(() => {
+          // 按日期分组交易
+          const groupedTransactions = transactions.reduce((groups, transaction) => {
+            const date = transaction.date;
+            if (!groups[date]) {
+              groups[date] = [];
+            }
+            groups[date].push(transaction);
+            return groups;
+          }, {} as Record<string, Transaction[]>);
+
+          // 对日期进行排序（最新的在前）
+          const sortedDates = Object.keys(groupedTransactions).sort((a, b) =>
+            new Date(b).getTime() - new Date(a).getTime()
+          );
+
+          return sortedDates.map(date => (
+            <div key={date} className="space-y-3">
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-gray-800">
+                  {new Date(date + 'T00:00:00').toLocaleDateString('zh-CN', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </h3>
+                <div className="text-sm text-gray-500">
+                  共 {groupedTransactions[date].length} 笔，总计：
+                  <span className="font-semibold text-red-600 ml-1">
+                    -{formatCurrency(
+                      groupedTransactions[date].reduce((sum, t) => sum + Number(t.amount || 0), 0),
+                      groupedTransactions[date][0]?.currency || 'CNY'
+                    )}
+                  </span>
+                </div>
+              </div>
+              <div className="space-y-3">
+                {groupedTransactions[date].map(renderTransactionItem)}
+              </div>
+            </div>
+          ));
+        })()}
+        {transactions.length === 0 && (
+          <div className="text-center py-12 text-gray-500">
+            <div className="text-lg">暂无账单记录</div>
+            <div className="text-sm mt-2">点击"添加账单"开始记录您的支出</div>
+          </div>
+        )}
       </div>
     </div>
     </>
