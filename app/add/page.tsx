@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DateInput } from '@/components/DateInput';
 import { NoteInput } from '@/components/NoteInput';
-import { dataSync } from '@/lib/dataSync';
+import { dataSync, markTransactionsDirty } from '@/lib/dataSync';
 import { ProgressToast } from '@/components/ProgressToast';
 
 export default function AddPage() {
@@ -117,6 +117,16 @@ export default function AddPage() {
         date: formData.date.toISOString(),
         currency: formData.currency
       });
+      markTransactionsDirty();
+      console.log('[sync] add/page 提交完成，已写入 markTransactionsDirty');
+      fetch('/api/revalidate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tag: 'transactions' }),
+        cache: 'no-store'
+      })
+        .then(() => console.log('[sync] add/page revalidate 请求完成'))
+        .catch((err) => console.error('failed to revalidate transactions', err));
 
       // 更新常用备注
       if (formData.note && formData.note.trim()) {

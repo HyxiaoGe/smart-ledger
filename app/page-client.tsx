@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import React from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { Route } from 'next';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { ChartSummary } from './components/ChartSummary';
@@ -12,6 +12,18 @@ import { CurrencySelect } from '@/components/CurrencySelect';
 import { TopExpenses } from '@/components/TopExpenses';
 import { HomeStats } from '@/components/HomeStats';
 import type { PageData } from './home-page-data';
+import { dataSync, consumeTransactionsDirty, peekTransactionsDirty } from '@/lib/dataSync';
+
+const REFRESH_DELAYS_MS = [1500, 3500, 6000];
+const TEXT = {
+  currency: '币种',
+  range: '范围',
+  refreshing: '同步最新数据中...',
+  chartsTitle: '图表概览',
+  topTitle: 'Top 10 支出',
+  today: '今日',
+  month: '本月'
+} as const;
 
 type HomePageClientProps = {
   data: PageData;
@@ -35,7 +47,143 @@ export default function HomePageClient({ data, currency, rangeParam, monthLabel 
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const refreshTimer = useRef<NodeJS.Timeout | null>(null);
+  const refreshIndex = useRef(0);
+  const queueActive = useRef(false);
+  const latestSnapshot = useRef({
+    income: data.income,
+    expense: data.expense,
+    balance: data.balance,
+    rangeExpense: data.rangeExpense
+  });
+
   const pieRange = data.rangeRows?.length ? buildRangePie(data.rangeRows) : [];
+
+  const clearTimer = useCallback(() => {
+    if (refreshTimer.current) {
+      clearTimeout(refreshTimer.current);
+      refreshTimer.current = null;
+      console.log('[sync] cleared pending timer');
+    }
+  }, []);
+
+  const stopQueue = useCallback((options?: { consume?: boolean }) => {
+    clearTimer();
+    queueActive.current = false;
+    refreshIndex.current = 0;
+    setIsRefreshing(false);
+    console.log('[sync] stopped refresh queue');
+    if (options?.consume) {
+      consumeTransactionsDirty();
+      console.log('[sync] consumed dirty flag after successful refresh');
+    }
+  }, [clearTimer]);
+
+  const scheduleNext = useCallback(() => {
+    if (!queueActive.current) return;
+    if (refreshIndex.current >= REFRESH_DELAYS_MS.length) {
+      console.log('[sync] reached retry limit');
+      stopQueue();
+      return;
+    }
+
+    const delay = REFRESH_DELAYS_MS[refreshIndex.current];
+    clearTimer();
+    console.log('[sync] schedule attempt', refreshIndex.current + 1, 'after', delay, 'ms');
+    refreshTimer.current = setTimeout(() => {
+      if (!queueActive.current) return;
+      console.log('[sync] run attempt', refreshIndex.current + 1);
+      router.refresh();
+      refreshIndex.current += 1;
+      scheduleNext();
+    }, delay);
+  }, [router, clearTimer, stopQueue]);
+
+  const startQueue = useCallback(() => {
+    queueActive.current = true;
+    refreshIndex.current = 0;
+    setIsRefreshing(true);
+    console.log('[sync] start refresh queue');
+    scheduleNext();
+  }, [scheduleNext]);
+
+  const triggerQueue = useCallback((reason: string) => {
+    const hasDirty = peekTransactionsDirty();
+    console.log('[sync] trigger queue, reason =', reason, 'dirty?', hasDirty, 'queueActive?', queueActive.current);
+    if (!hasDirty && reason !== 'event') {
+      if (!queueActive.current) {
+        console.log('[sync] skip queue trigger (no dirty flag)');
+      }
+      if (queueActive.current) {
+        refreshIndex.current = 0;
+        scheduleNext();
+      }
+      return;
+    }
+    if (queueActive.current) {
+      refreshIndex.current = 0;
+      scheduleNext();
+    } else {
+      startQueue();
+    }
+  }, [scheduleNext, startQueue]);
+
+  useEffect(() => {
+    const handler = (event: any) => {
+      console.log('[sync] received dataSync event', event?.type);
+      triggerQueue('event');
+    };
+
+    const offAdded = dataSync.onEvent('transaction_added', handler);
+    const offUpdated = dataSync.onEvent('transaction_updated', handler);
+    const offDeleted = dataSync.onEvent('transaction_deleted', handler);
+
+    if (peekTransactionsDirty()) {
+      console.log('[sync] dirty flag detected on mount');
+      triggerQueue('mount');
+    }
+
+    return () => {
+      offAdded();
+      offUpdated();
+      offDeleted();
+      stopQueue();
+    };
+  }, [triggerQueue, stopQueue]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onVisibility = () => {
+      if (!document.hidden && peekTransactionsDirty()) {
+        console.log('[sync] visibilitychange detected dirty flag');
+        triggerQueue('visibility');
+      }
+    };
+    window.addEventListener('visibilitychange', onVisibility);
+    return () => window.removeEventListener('visibilitychange', onVisibility);
+  }, [triggerQueue]);
+
+  useEffect(() => {
+    const snapshot = latestSnapshot.current;
+    const changed =
+      snapshot.income !== data.income ||
+      snapshot.expense !== data.expense ||
+      snapshot.balance !== data.balance ||
+      snapshot.rangeExpense !== data.rangeExpense;
+
+    if (changed) {
+      latestSnapshot.current = {
+        income: data.income,
+        expense: data.expense,
+        balance: data.balance,
+        rangeExpense: data.rangeExpense
+      };
+      console.log('[sync] snapshot changed, stop queue');
+      stopQueue({ consume: true });
+    }
+  }, [data.income, data.expense, data.balance, data.rangeExpense, stopQueue]);
 
   const updateRange = (nextRange: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -56,11 +204,12 @@ export default function HomePageClient({ data, currency, rangeParam, monthLabel 
         <AiAnalyzeButton currency={currency} month={monthLabel} />
         <div className="flex items-center gap-4">
           <div className="flex gap-2 items-center">
-            <span className="text-sm text-muted-foreground">币种</span>
+            <span className="text-sm text-muted-foreground">{TEXT.currency}</span>
             <CurrencySelect value={currency} month={monthLabel} range={rangeParam} />
           </div>
+          {isRefreshing && <span className="text-xs text-blue-500 animate-pulse">{TEXT.refreshing}</span>}
           <div className="flex gap-2 items-center">
-            <span className="text-sm text-muted-foreground">范围</span>
+            <span className="text-sm text-muted-foreground">{TEXT.range}</span>
             <RangePicker />
           </div>
         </div>
@@ -77,13 +226,13 @@ export default function HomePageClient({ data, currency, rangeParam, monthLabel 
       />
 
       <section className="space-y-2">
-        <h2 className="text-lg font-semibold">图表概览（{currency}）</h2>
+        <h2 className="text-lg font-semibold">{`${TEXT.chartsTitle} (${currency})`}</h2>
         <ChartSummary trend={data.trend} pieMonth={data.pie} pieRange={pieRange} currency={currency} />
       </section>
 
       <section className="space-y-2">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Top 10 支出（{currency}）</h2>
+          <h2 className="text-lg font-semibold">{`${TEXT.topTitle} (${currency})`}</h2>
           <div className="flex gap-1 text-xs">
             <Button
               variant={rangeParam !== 'month' ? 'default' : 'outline'}
@@ -91,7 +240,7 @@ export default function HomePageClient({ data, currency, rangeParam, monthLabel 
               className={rangeParam !== 'month' ? '' : 'text-gray-600 hover:text-gray-800'}
               onClick={() => updateRange('today')}
             >
-              今日
+              {TEXT.today}
             </Button>
             <Button
               variant={rangeParam === 'month' ? 'default' : 'outline'}
@@ -99,7 +248,7 @@ export default function HomePageClient({ data, currency, rangeParam, monthLabel 
               className={rangeParam === 'month' ? '' : 'text-gray-600 hover:text-gray-800'}
               onClick={() => updateRange('month')}
             >
-              本月
+              {TEXT.month}
             </Button>
           </div>
         </div>
