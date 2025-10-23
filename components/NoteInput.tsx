@@ -6,7 +6,7 @@ import type { CommonNote } from '@/types/transaction';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 
-interface NoteInputProps {
+export interface NoteInputProps {
   value?: string;
   onChange?: (value: string) => void;
   placeholder?: string;
@@ -29,6 +29,7 @@ export function NoteInput({
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout>();
+  const needsRemoteFetchRef = useRef(false);
 
   // 加载本地缓存的常用备注
   useEffect(() => {
@@ -37,7 +38,7 @@ export function NoteInput({
 
   // 本地缓存加载
   const loadLocalCache = async () => {
-    let shouldFetchRemotely = true;
+    let needsRemoteFetch = true;
 
     try {
       const cached = localStorage.getItem('common-notes-cache');
@@ -46,16 +47,14 @@ export function NoteInput({
         // 缓存1天内有效
         if (Date.now() - timestamp < 24 * 60 * 60 * 1000) {
           setLocalCache(data);
-          shouldFetchRemotely = false;
+          needsRemoteFetch = false;
         }
       }
     } catch {
-      shouldFetchRemotely = true;
+      needsRemoteFetch = true;
     }
 
-    if (shouldFetchRemotely) {
-      await fetchCommonNotes();
-    }
+    needsRemoteFetchRef.current = needsRemoteFetch;
   };
 
   // 从服务器获取常用备注
@@ -71,9 +70,13 @@ export function NoteInput({
           data,
           timestamp: Date.now()
         }));
+        needsRemoteFetchRef.current = false;
+      } else {
+        needsRemoteFetchRef.current = true;
       }
     } catch {
       // ignore fetch errors to keep UI responsive
+      needsRemoteFetchRef.current = true;
     } finally {
       setIsLoading(false);
     }
@@ -104,6 +107,11 @@ export function NoteInput({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     onChange?.(newValue);
+
+    if (needsRemoteFetchRef.current && !isLoading) {
+      needsRemoteFetchRef.current = false;
+      void fetchCommonNotes();
+    }
 
     // 清除之前的防抖定时器
     if (debounceTimerRef.current) {
@@ -148,6 +156,10 @@ export function NoteInput({
   const handleFocus = () => {
     setShowSuggestions(true);
     setSelectedSuggestionIndex(-1);
+    if (needsRemoteFetchRef.current && !isLoading) {
+      needsRemoteFetchRef.current = false;
+      void fetchCommonNotes();
+    }
     // 在焦点时显示默认建议
     if (!value.trim()) {
       setSuggestions(localCache.slice(0, 8));

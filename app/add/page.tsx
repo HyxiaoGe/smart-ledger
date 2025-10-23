@@ -5,14 +5,31 @@ import type { TransactionType, Currency } from '@/types/transaction';
 import { PRESET_CATEGORIES, SUPPORTED_CURRENCIES, DEFAULT_CURRENCY } from '@/lib/config';
 import { CategoryChip } from '@/components/CategoryChip';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
+import type { DateInputProps } from '@/components/DateInput';
+import type { NoteInputProps } from '@/components/NoteInput';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DateInput } from '@/components/DateInput';
-import { NoteInput } from '@/components/NoteInput';
 import { dataSync, markTransactionsDirty } from '@/lib/dataSync';
 import { ProgressToast } from '@/components/ProgressToast';
+
+const DateInput = dynamic<DateInputProps>(
+  () => import('@/components/DateInput').then((mod) => mod.DateInput),
+  {
+    ssr: false,
+    loading: () => <div className="h-9 w-full animate-pulse rounded-md bg-muted" />
+  }
+);
+
+const NoteInput = dynamic<NoteInputProps>(
+  () => import('@/components/NoteInput').then((mod) => mod.NoteInput),
+  {
+    ssr: false,
+    loading: () => <div className="h-9 w-full animate-pulse rounded-md bg-muted" />
+  }
+);
 
 export default function AddPage() {
   const router = useRouter();
