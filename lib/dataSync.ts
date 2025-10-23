@@ -81,8 +81,8 @@ export class DataSyncManager {
       setTimeout(() => {
         localStorage.removeItem(STORAGE_KEY);
       }, 100);
-    } catch (error) {
-      console.error('Failed to trigger sync event:', error);
+    } catch {
+      // ignore storage write failures
     }
 
     // 同时通知当前页面的监听器
@@ -146,8 +146,8 @@ export class DataSyncManager {
       try {
         const syncEvent: SyncEvent = JSON.parse(event.newValue);
         this.notifyListeners(syncEvent);
-      } catch (error) {
-        console.error('Failed to parse sync event:', error);
+      } catch {
+        // ignore malformed sync events
       }
     }
   }
@@ -161,22 +161,13 @@ export class DataSyncManager {
       callbacks.forEach(callback => {
         try {
           callback(event);
-        } catch (error) {
-          console.error('Error in sync event callback:', error);
+        } catch {
+          // ignore listener failures
         }
       });
     }
   }
 
-  /**
-   * 清理所有监听器
-   */
-  cleanup() {
-    this.listeners.clear();
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('storage', this.handleStorageEvent.bind(this));
-    }
-  }
 }
 
 // 导出单例实例
@@ -188,9 +179,8 @@ export function markTransactionsDirty() {
   if (typeof window === 'undefined') return;
   try {
     window.localStorage.setItem(DIRTY_KEY, String(Date.now()));
-    console.log('[sync] 标记 transactions dirty');
-  } catch (error) {
-    console.error('failed to mark transactions dirty', error);
+  } catch {
+    // ignore storage write failures
   }
 }
 
@@ -200,12 +190,10 @@ export function consumeTransactionsDirty() {
     const value = window.localStorage.getItem(DIRTY_KEY);
     if (value) {
       window.localStorage.removeItem(DIRTY_KEY);
-      console.log('[sync] consume dirty flag -> true');
       return true;
     }
-    console.log('[sync] consume dirty flag -> false');
-  } catch (error) {
-    console.error('failed to consume transactions dirty', error);
+  } catch {
+    return false;
   }
   return false;
 }
@@ -213,11 +201,7 @@ export function consumeTransactionsDirty() {
 export function peekTransactionsDirty() {
   if (typeof window === 'undefined') return false;
   try {
-    const result = Boolean(window.localStorage.getItem(DIRTY_KEY));
-    if (result) {
-      console.log('[sync] peek dirty flag => true');
-    }
-    return result;
+    return Boolean(window.localStorage.getItem(DIRTY_KEY));
   } catch {
     return false;
   }

@@ -84,14 +84,11 @@ export function TransactionGroupedList({
             .single();
 
           if (verifyError || !verifyData) {
-            console.error('验证更新失败：', verifyError);
             return null;
           }
 
-          console.log('验证更新成功：', verifyData);
           return verifyData;
-        } catch (error) {
-          console.error('验证更新时发生错误：', error);
+        } catch {
           return null;
         }
       };
@@ -101,9 +98,6 @@ export function TransactionGroupedList({
         if (verifiedData) {
           // 只有验证成功后才触发同步事件
           dataSync.notifyTransactionUpdated(verifiedData, true);
-          console.log('已触发账单更新同步事件：', verifiedData);
-        } else {
-          console.warn('更新验证失败，不触发同步事件');
         }
       });
     }
@@ -157,21 +151,15 @@ export function TransactionGroupedList({
 
           if (verifyError) {
             // 如果查询失败，可能是记录已被物理删除
-            console.log('记录可能已被物理删除：', verifyError);
             return { deleted: true, transaction };
           }
 
           if (verifyData && verifyData.deleted_at) {
-            console.log('验证软删除成功：', verifyData);
             return { deleted: true, transaction, deletedAt: verifyData.deleted_at };
-          } else if (verifyData && !verifyData.deleted_at) {
-            console.warn('软删除验证失败，记录仍存在：', verifyData);
-            return { deleted: false, transaction };
           }
 
           return { deleted: false, transaction };
-        } catch (error) {
-          console.error('验证删除时发生错误：', error);
+        } catch {
           return { deleted: false, transaction };
         }
       };
@@ -181,9 +169,6 @@ export function TransactionGroupedList({
         if (result.deleted) {
           // 只有验证成功后才触发同步事件
           dataSync.notifyTransactionDeleted(result.transaction, true);
-          console.log('已触发账单删除同步事件：', result);
-        } else {
-          console.warn('删除验证失败，不触发同步事件');
         }
       });
 

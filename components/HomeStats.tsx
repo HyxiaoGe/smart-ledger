@@ -84,19 +84,11 @@ export function HomeStats({
 
     setRangeExpense(initialRangeExpense);
     setExpense(initialExpense);
-
-    console.log('[sync] HomeStats props updated', {
-      initialIncome,
-      initialExpense,
-      initialBalance,
-      initialRangeExpense
-    });
   }, [initialIncome, initialExpense, initialBalance, initialRangeExpense]);
 
   const refreshStats = async () => {
     const now = Date.now();
     if (now - lastUpdate < 1000) {
-      console.log('[sync] HomeStats skip refresh (cooldown)');
       return;
     }
 
@@ -108,9 +100,8 @@ export function HomeStats({
       setIncome(newData.income);
       setExpense(newData.expense);
       setBalance(newData.balance);
-      console.log('[sync] HomeStats refreshed from Supabase', newData);
-    } catch (error) {
-      console.error('[sync] HomeStats refresh failed', error);
+    } catch {
+      setLastUpdate(0);
     } finally {
       setIsRefreshing(false);
     }
@@ -119,8 +110,9 @@ export function HomeStats({
   useDataSync(
     'transaction_added',
     (event) => {
-      console.log('[sync] HomeStats transaction_added', event);
-      if (event.confirmed) refreshStats();
+      if (event.confirmed) {
+        void refreshStats();
+      }
     },
     []
   );
@@ -128,8 +120,9 @@ export function HomeStats({
   useDataSync(
     'transaction_deleted',
     (event) => {
-      console.log('[sync] HomeStats transaction_deleted', event);
-      if (event.confirmed) refreshStats();
+      if (event.confirmed) {
+        void refreshStats();
+      }
     },
     []
   );
@@ -137,8 +130,9 @@ export function HomeStats({
   useDataSync(
     'transaction_updated',
     (event) => {
-      console.log('[sync] HomeStats transaction_updated', event);
-      if (event.confirmed) refreshStats();
+      if (event.confirmed) {
+        void refreshStats();
+      }
     },
     []
   );

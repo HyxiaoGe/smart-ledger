@@ -65,7 +65,6 @@ export default function HomePageClient({ data, currency, rangeParam, monthLabel 
     if (refreshTimer.current) {
       clearTimeout(refreshTimer.current);
       refreshTimer.current = null;
-      console.log('[sync] cleared pending timer');
     }
   }, []);
 
@@ -74,27 +73,22 @@ export default function HomePageClient({ data, currency, rangeParam, monthLabel 
     queueActive.current = false;
     refreshIndex.current = 0;
     setIsRefreshing(false);
-    console.log('[sync] stopped refresh queue');
     if (options?.consume) {
       consumeTransactionsDirty();
-      console.log('[sync] consumed dirty flag after successful refresh');
     }
   }, [clearTimer]);
 
   const scheduleNext = useCallback(() => {
     if (!queueActive.current) return;
     if (refreshIndex.current >= REFRESH_DELAYS_MS.length) {
-      console.log('[sync] reached retry limit');
       stopQueue();
       return;
     }
 
     const delay = REFRESH_DELAYS_MS[refreshIndex.current];
     clearTimer();
-    console.log('[sync] schedule attempt', refreshIndex.current + 1, 'after', delay, 'ms');
     refreshTimer.current = setTimeout(() => {
       if (!queueActive.current) return;
-      console.log('[sync] run attempt', refreshIndex.current + 1);
       router.refresh();
       refreshIndex.current += 1;
       scheduleNext();
@@ -105,17 +99,12 @@ export default function HomePageClient({ data, currency, rangeParam, monthLabel 
     queueActive.current = true;
     refreshIndex.current = 0;
     setIsRefreshing(true);
-    console.log('[sync] start refresh queue');
     scheduleNext();
   }, [scheduleNext]);
 
   const triggerQueue = useCallback((reason: string) => {
     const hasDirty = peekTransactionsDirty();
-    console.log('[sync] trigger queue, reason =', reason, 'dirty?', hasDirty, 'queueActive?', queueActive.current);
     if (!hasDirty && reason !== 'event') {
-      if (!queueActive.current) {
-        console.log('[sync] skip queue trigger (no dirty flag)');
-      }
       if (queueActive.current) {
         refreshIndex.current = 0;
         scheduleNext();
@@ -132,7 +121,6 @@ export default function HomePageClient({ data, currency, rangeParam, monthLabel 
 
   useEffect(() => {
     const handler = (event: any) => {
-      console.log('[sync] received dataSync event', event?.type);
       triggerQueue('event');
     };
 
@@ -141,7 +129,6 @@ export default function HomePageClient({ data, currency, rangeParam, monthLabel 
     const offDeleted = dataSync.onEvent('transaction_deleted', handler);
 
     if (peekTransactionsDirty()) {
-      console.log('[sync] dirty flag detected on mount');
       triggerQueue('mount');
     }
 
@@ -157,7 +144,6 @@ export default function HomePageClient({ data, currency, rangeParam, monthLabel 
     if (typeof window === 'undefined') return;
     const onVisibility = () => {
       if (!document.hidden && peekTransactionsDirty()) {
-        console.log('[sync] visibilitychange detected dirty flag');
         triggerQueue('visibility');
       }
     };
@@ -180,7 +166,6 @@ export default function HomePageClient({ data, currency, rangeParam, monthLabel 
         balance: data.balance,
         rangeExpense: data.rangeExpense
       };
-      console.log('[sync] snapshot changed, stop queue');
       stopQueue({ consume: true });
     }
   }, [data.income, data.expense, data.balance, data.rangeExpense, stopQueue]);

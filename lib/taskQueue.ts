@@ -76,7 +76,6 @@ export class TaskQueue {
 
     // 检查去重
     if (this.isDuplicate(task.type, task.key, now)) {
-      console.log(`跳过重复任务: ${task.type}:${task.key}`);
       return '';
     }
 
@@ -145,8 +144,6 @@ export class TaskQueue {
     this.notifyListeners('progress', pendingTask);
 
     try {
-      console.log(`开始处理任务: ${pendingTask.type}:${pendingTask.id}`);
-
       // 执行任务
       await pendingTask.executor(pendingTask.data);
 
@@ -155,18 +152,13 @@ export class TaskQueue {
       this.config.onTaskComplete?.(pendingTask);
       this.notifyListeners('complete', pendingTask);
 
-      console.log(`任务完成: ${pendingTask.type}:${pendingTask.id}`);
-
     } catch (error: any) {
       pendingTask.lastError = error.message || '未知错误';
       pendingTask.retryCount++;
 
-      console.error(`任务失败: ${pendingTask.type}:${pendingTask.id}`, error);
-
       if (pendingTask.retryCount < pendingTask.maxRetries) {
         // 重试
         pendingTask.status = 'pending';
-        console.log(`${pendingTask.retryCount}/${pendingTask.maxRetries} 次重试: ${pendingTask.id}`);
 
         // 延迟重试
         this.retryTimer = setTimeout(() => {
@@ -178,7 +170,6 @@ export class TaskQueue {
         pendingTask.status = 'failed';
         this.config.onTaskFailed?.(pendingTask);
         this.notifyListeners('failed', pendingTask);
-        console.log(`任务最终失败: ${pendingTask.type}:${pendingTask.id}`);
       }
     }
 
@@ -226,8 +217,8 @@ export class TaskQueue {
     this.listeners[event].forEach(callback => {
       try {
         callback(task);
-      } catch (error) {
-        console.error(`监听器回调错误 (${event}):`, error);
+      } catch {
+        // ignore listener errors
       }
     });
   }
@@ -250,8 +241,8 @@ export class TaskQueue {
           timestamp: Date.now()
         };
         localStorage.setItem(this.config.storageKey, JSON.stringify(data));
-      } catch (error) {
-        console.error('保存队列失败:', error);
+      } catch {
+        // ignore persistence failures
       }
     }
   }
@@ -271,8 +262,8 @@ export class TaskQueue {
             task.status !== 'completed' && task.timestamp > oneHourAgo
           );
         }
-      } catch (error) {
-        console.error('加载队列失败:', error);
+      } catch {
+        // ignore persistence failures
       }
     }
   }

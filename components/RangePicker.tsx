@@ -152,34 +152,21 @@ export function RangePicker({ className, onRangeChange }: RangePickerProps) {
 
   // 处理自定义日期范围选择
   const handleCustomRangeSelect = useCallback((range: { from?: Date; to?: Date } | undefined) => {
-    try {
-      if (!range) {
-        return;
-      }
-
-      // 验证range对象的结构
-      if (typeof range !== 'object' || range === null) {
-        console.warn('Invalid range object received:', range);
-        return;
-      }
-
-      setCustomRange(range);
-
-      if (range.from && range.to) {
-        // 验证日期对象
-        if (!(range.from instanceof Date) || !(range.to instanceof Date)) {
-          console.warn('Invalid date objects in range:', range);
-          return;
-        }
-
-        const dateRange = { start: range.from, end: range.to };
-        setIsOpen(false);
-        updateURL(dateRange, 'custom');
-        onRangeChange?.(dateRange);
-      }
-    } catch (error) {
-      console.error('Error in handleCustomRangeSelect:', error);
+    if (!range || typeof range !== 'object') {
+      return;
     }
+
+    setCustomRange(range);
+
+    const { from, to } = range;
+    if (!from || !to || !(from instanceof Date) || !(to instanceof Date)) {
+      return;
+    }
+
+    const dateRange = { start: from, end: to };
+    setIsOpen(false);
+    updateURL(dateRange, 'custom');
+    onRangeChange?.(dateRange);
   }, [updateURL, onRangeChange]);
 
   // 清除自定义范围
@@ -332,11 +319,6 @@ export function RangePicker({ className, onRangeChange }: RangePickerProps) {
 
   // 同步当前选中范围到日历组件
   useEffect(() => {
-    // 添加调试信息
-    const today = new Date();
-    console.log('当前日期:', today.toISOString().slice(0, 10));
-    console.log('current:', current);
-
     if (current.key !== 'custom') {
       // 快捷选项：根据类型设置不同的显示
       if (current.key === 'today' || current.key === 'yesterday') {

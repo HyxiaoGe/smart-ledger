@@ -30,13 +30,11 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query;
 
     if (error) {
-      console.error('Error fetching common notes:', error);
       return NextResponse.json({ error: 'Failed to fetch common notes' }, { status: 500 });
     }
 
     return NextResponse.json({ data: data || [] });
-  } catch (error) {
-    console.error('Unexpected error:', error);
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -61,7 +59,6 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 = not found
-      console.error('Error checking existing note:', fetchError);
       return NextResponse.json({ error: 'Failed to check existing note' }, { status: 500 });
     }
 
@@ -78,13 +75,12 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (updateError) {
-        console.error('Error updating common note:', updateError);
         return NextResponse.json({ error: 'Failed to update common note' }, { status: 500 });
       }
 
       // 异步更新AI分析数据（不阻塞响应）
       if (amount) {
-        updateAnalytics(existingNote.id, amount).catch(console.error);
+        void updateAnalytics(existingNote.id, amount);
       }
 
       return NextResponse.json({ data: updatedNote });
@@ -101,19 +97,17 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (insertError) {
-        console.error('Error creating common note:', insertError);
         return NextResponse.json({ error: 'Failed to create common note' }, { status: 500 });
       }
 
       // 异步创建AI分析数据（不阻塞响应）
       if (amount) {
-        createAnalytics(newNote.id, amount).catch(console.error);
+        void createAnalytics(newNote.id, amount);
       }
 
       return NextResponse.json({ data: newNote });
     }
-  } catch (error) {
-    console.error('Unexpected error:', error);
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -150,8 +144,8 @@ async function updateAnalytics(noteId: string, amount: number) {
           confidence_score: 0.5 // 初始置信度
         });
     }
-  } catch (error) {
-    console.error('Error updating analytics:', error);
+  } catch {
+    // ignore analytics update failures
   }
 }
 
@@ -165,7 +159,7 @@ async function createAnalytics(noteId: string, amount: number) {
         typical_amount: amount,
         confidence_score: 0.5 // 初始置信度
       });
-  } catch (error) {
-    console.error('Error creating analytics:', error);
+  } catch {
+    // ignore analytics creation failures
   }
 }

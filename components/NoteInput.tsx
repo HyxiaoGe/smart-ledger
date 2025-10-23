@@ -37,6 +37,8 @@ export function NoteInput({
 
   // 本地缓存加载
   const loadLocalCache = async () => {
+    let shouldFetchRemotely = true;
+
     try {
       const cached = localStorage.getItem('common-notes-cache');
       if (cached) {
@@ -44,13 +46,15 @@ export function NoteInput({
         // 缓存1天内有效
         if (Date.now() - timestamp < 24 * 60 * 60 * 1000) {
           setLocalCache(data);
-          return;
+          shouldFetchRemotely = false;
         }
       }
-      // 如果没有缓存或缓存过期，从服务器加载
+    } catch {
+      shouldFetchRemotely = true;
+    }
+
+    if (shouldFetchRemotely) {
       await fetchCommonNotes();
-    } catch (error) {
-      console.error('Error loading local cache:', error);
     }
   };
 
@@ -68,8 +72,8 @@ export function NoteInput({
           timestamp: Date.now()
         }));
       }
-    } catch (error) {
-      console.error('Error fetching common notes:', error);
+    } catch {
+      // ignore fetch errors to keep UI responsive
     } finally {
       setIsLoading(false);
     }
@@ -127,8 +131,8 @@ export function NoteInput({
         const { data } = await response.json();
         setSuggestions(data);
       }
-    } catch (error) {
-      console.error('Error searching from server:', error);
+    } catch {
+      // ignore search errors to keep existing suggestions
     }
   };
 

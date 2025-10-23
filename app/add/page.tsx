@@ -78,7 +78,6 @@ export default function AddPage() {
           .eq('id', existingRecord.id);
 
         transactionError = updateError;
-        console.log(`累加金额: ${existingRecord.amount} + ${formData.amt} = ${existingRecord.amount + formData.amt}`);
       } else {
         // 不存在，插入新记录
         const { error: insertError } = await supabase
@@ -93,7 +92,6 @@ export default function AddPage() {
           }]);
 
         transactionError = insertError;
-        console.log(`插入新记录: ${formData.amt}`);
       }
 
       // 处理查询和更新/插入错误
@@ -118,19 +116,16 @@ export default function AddPage() {
         currency: formData.currency
       });
       markTransactionsDirty();
-      console.log('[sync] add/page 提交完成，已写入 markTransactionsDirty');
-      fetch('/api/revalidate', {
+      void fetch('/api/revalidate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tag: 'transactions' }),
         cache: 'no-store'
-      })
-        .then(() => console.log('[sync] add/page revalidate 请求完成'))
-        .catch((err) => console.error('failed to revalidate transactions', err));
+      }).catch(() => {});
 
       // 更新常用备注
       if (formData.note && formData.note.trim()) {
-        updateCommonNote(formData.note.trim(), formData.amt).catch(console.error);
+        void updateCommonNote(formData.note.trim(), formData.amt);
       }
 
       // 延迟重置表单，让用户看到成功提示
@@ -151,18 +146,15 @@ export default function AddPage() {
     e.preventDefault();
     e.stopPropagation(); // 阻止事件冒泡
 
-    console.log('onSubmit被调用');
 
     // 强制防重复提交检查
     if (isSubmittingRef.current || loading) {
-      console.log('提交被阻止：正在提交中', { isSubmitting: isSubmittingRef.current, loading });
       return;
     }
 
     // 防抖处理：500ms内只允许一次提交
     const now = Date.now();
     if (now - lastSubmitTimeRef.current < 500) {
-      console.log('提交被阻止：防抖时间内', { now, lastSubmit: lastSubmitTimeRef.current });
       return;
     }
 
@@ -171,7 +163,6 @@ export default function AddPage() {
     lastSubmitTimeRef.current = now;
     setLoading(true);
 
-    console.log('提交状态已设置，开始处理表单');
 
     // 清除之前的定时器
     if (submitTimeoutRef.current) {
@@ -228,12 +219,6 @@ export default function AddPage() {
     };
   }, []);
 
-  // 继续添加下一笔
-  function continueAdding() {
-    resetForm();
-  }
-
-  
   // 异步更新常用备注
   async function updateCommonNote(noteContent: string, amount: number) {
     try {
@@ -248,14 +233,12 @@ export default function AddPage() {
         })
       });
 
-      if (!response.ok) {
-        console.error('Failed to update common note');
-      } else {
+      if (response.ok) {
         // 清除本地缓存，强制下次重新获取最新数据
         localStorage.removeItem('common-notes-cache');
       }
-    } catch (error) {
-      console.error('Error updating common note:', error);
+    } catch {
+      // ignore note update failures
     }
   }
 

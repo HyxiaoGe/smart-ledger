@@ -33,14 +33,12 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
   const [confirmRow, setConfirmRow] = useState<Row | null>(null);
 
   const triggerRevalidate = () => {
-    fetch('/api/revalidate', {
+    void fetch('/api/revalidate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ tag: 'transactions' }),
       cache: 'no-store'
-    })
-      .then(() => console.log('[sync] transaction_list revalidate done'))
-      .catch((err) => console.error('failed to revalidate transactions', err));
+    }).catch(() => {});
   };
 
   useEffect(() => {
@@ -118,7 +116,6 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
       setEditingId(null);
       setForm({});
       markTransactionsDirty();
-      console.log('[sync] transaction_list save -> mark dirty');
       triggerRevalidate();
       dataSync.notifyTransactionUpdated({ ...(form as Row), id: editingId });
     }
@@ -149,7 +146,6 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
     }
     setRows((rs) => rs.filter((x) => x.id !== r.id));
     markTransactionsDirty();
-    console.log('[sync] transaction_list delete -> mark dirty');
     triggerRevalidate();
     dataSync.notifyTransactionDeleted({ id: r.id });
     setLoading(false);
@@ -163,7 +159,6 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
     if (!error) {
       setRows((rs) => [recentlyDeleted as Row, ...rs]);
       markTransactionsDirty();
-      console.log('[sync] transaction_list undo -> mark dirty');
       triggerRevalidate();
       dataSync.notifyTransactionUpdated(recentlyDeleted as Row);
     }

@@ -7,11 +7,10 @@ const url = process.env.NEXT_PUBLIC_SUPABASE_URL as string | undefined;
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string | undefined;
 
 if (!url || !anonKey) {
-  // 在开发阶段以 console.warn 提示，方便本地调试
-  console.warn('[supabase] 缺少 NEXT_PUBLIC_SUPABASE_URL 或 NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  throw new Error('NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be provided');
 }
 
-export const supabase = createClient(url ?? '', anonKey ?? '', {
+export const supabase = createClient(url, anonKey, {
   global: {
     fetch: (input: any, init?: RequestInit) => {
       return fetch(input, { ...(init || {}), cache: 'no-store' });
