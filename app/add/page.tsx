@@ -14,12 +14,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { dataSync, markTransactionsDirty } from '@/lib/dataSync';
 import { ProgressToast } from '@/components/ProgressToast';
+import { SkeletonBlock } from '@/components/Skeletons';
 
 const DateInput = dynamic<DateInputProps>(
   () => import('@/components/DateInput').then((mod) => mod.DateInput),
   {
     ssr: false,
-    loading: () => <div className="h-9 w-full animate-pulse rounded-md bg-muted" />
+    loading: () => <SkeletonBlock className="h-9 w-full" />
   }
 );
 
@@ -27,7 +28,7 @@ const NoteInput = dynamic<NoteInputProps>(
   () => import('@/components/NoteInput').then((mod) => mod.NoteInput),
   {
     ssr: false,
-    loading: () => <div className="h-9 w-full animate-pulse rounded-md bg-muted" />
+    loading: () => <SkeletonBlock className="h-9 w-full" />
   }
 );
 

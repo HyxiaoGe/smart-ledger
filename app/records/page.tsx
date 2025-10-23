@@ -1,19 +1,22 @@
 import { unstable_cache } from 'next/cache';
+import dynamic from 'next/dynamic';
 import { supabase } from '@/lib/supabaseClient';
 import { parseMonthStr, formatMonth, getQuickRange } from '@/lib/date';
+import { partitionExpenseTransactions } from '@/lib/records';
 export const revalidate = 60;
-import dynamic from 'next/dynamic';
 import { RangePicker } from '@/components/RangePicker';
 import { CollapsibleTransactionList } from '@/components/CollapsibleTransactionList';
+import { SkeletonBlock, SkeletonGrid } from '@/components/Skeletons';
 
 const SummaryModule = dynamic(
   () => import('@/components/MonthlyExpenseSummary').then((mod) => mod.MonthlyExpenseSummary),
   {
     loading: () => (
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="h-60 rounded-xl bg-muted animate-pulse" />
-        <div className="h-60 rounded-xl bg-muted animate-pulse" />
-      </div>
+      <SkeletonGrid
+        count={2}
+        className="grid gap-4 md:grid-cols-2"
+        itemClassName="h-60 rounded-xl"
+      />
     )
   }
 );
@@ -21,7 +24,7 @@ const SummaryModule = dynamic(
 const CategoryModule = dynamic(
   () => import('@/components/CategoryStatistics').then((mod) => mod.CategoryStatistics),
   {
-    loading: () => <div className="h-96 rounded-xl bg-muted animate-pulse" />
+    loading: () => <SkeletonBlock className="h-96 rounded-xl" />
   }
 );
 
@@ -202,20 +205,7 @@ export default async function RecordsPage({ searchParams }: { searchParams?: { m
 
       {/* 统计面板 - 所有范围都显示 */}
       {(() => {
-        // 在服务端对当前查询范围数据进行聚合（仅支出）
-        const daily = new Map<string, { total: number; count: number }>();
-        for (const r of rows as any[]) {
-          if (r.type !== 'expense') continue;
-          const key = r.date;
-          const cur = daily.get(key) || { total: 0, count: 0 };
-          daily.set(key, { total: cur.total + Number(r.amount || 0), count: cur.count + 1 });
-        }
-        const items = Array.from(daily.entries())
-          .sort((a, b) => (a[0] < b[0] ? 1 : -1))
-          .map(([date, v]) => ({ date, total: v.total, count: v.count }));
-
-        // 过滤出支出交易记录
-        const expenseTransactions = (rows as any[]).filter(r => r.type === 'expense');
+        const { dailyItems: items, expenseTransactions } = partitionExpenseTransactions(rows as any[]);
 
         return (
           <>
