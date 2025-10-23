@@ -1,11 +1,34 @@
 // 常用备注API路由
-import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import type { CommonNote } from '@/types/transaction';
+import { supabaseServerClient } from '@/lib/supabaseServer';
+import { unstable_cache, revalidateTag } from 'next/cache';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+export const runtime = 'nodejs';
+
+const supabase = supabaseServerClient;
+
+const fetchCommonNotesCached = unstable_cache(
+  async (searchValue: string | null, limitValue: number): Promise<CommonNote[]> => {
+    let query = supabase
+      .from('common_notes')
+      .select('*')
+      .eq('is_active', true)
+      .order('usage_count', { ascending: false })
+      .limit(limitValue);
+
+    if (searchValue) {
+      query = query.ilike('content', `%${searchValue}%`);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      throw error;
+    }
+    return data ?? [];
+  },
+  ['common-notes'],
+  { revalidate: 60, tags: ['common-notes'] }
 );
 
 // GET - 获取常用备注列表
@@ -13,27 +36,13 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const limitParam = parseInt(searchParams.get('limit') || '10', 10);
+    const limit = Number.isFinite(limitParam) ? Math.max(1, Math.min(limitParam, 50)) : 10;
 
-    let query = supabase
-      .from('common_notes')
-      .select('*')
-      .eq('is_active', true)
-      .order('usage_count', { ascending: false })
-      .limit(limit);
+    const trimmedSearch = search?.trim() || null;
+    const data = await fetchCommonNotesCached(trimmedSearch, limit);
 
-    // 如果有搜索关键词，添加模糊匹配
-    if (search && search.trim()) {
-      query = query.ilike('content', `%${search.trim()}%`);
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      return NextResponse.json({ error: 'Failed to fetch common notes' }, { status: 500 });
-    }
-
-    return NextResponse.json({ data: data || [] });
+    return NextResponse.json({ data });
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -83,6 +92,7 @@ export async function POST(request: NextRequest) {
         void updateAnalytics(existingNote.id, amount);
       }
 
+      revalidateTag('common-notes');
       return NextResponse.json({ data: updatedNote });
     } else {
       // 创建新备注
@@ -105,6 +115,7 @@ export async function POST(request: NextRequest) {
         void createAnalytics(newNote.id, amount);
       }
 
+      revalidateTag('common-notes');
       return NextResponse.json({ data: newNote });
     }
   } catch {
