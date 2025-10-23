@@ -29,6 +29,9 @@
       "@/components/*": [
         "components/*",
         "app/components/*"
+      ],
+      "@/hooks/*": [
+        "hooks/*"
       ]
     },
     "plugins": [

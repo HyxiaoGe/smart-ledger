@@ -5,6 +5,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import type { CommonNote } from '@/types/transaction';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { useCommonNotes } from '@/hooks/useCommonNotes';
 
 export interface NoteInputProps {
   value?: string;
@@ -23,74 +24,12 @@ export function NoteInput({
 }: NoteInputProps) {
   const [suggestions, setSuggestions] = useState<CommonNote[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [localCache, setLocalCache] = useState<CommonNote[]>([]);
+  const { localCache, isLoading, ensureFreshList, searchRemote } = useCommonNotes();
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout>();
-  const needsRemoteFetchRef = useRef(false);
-  const initialFetchControllerRef = useRef<AbortController | null>(null);
-  const searchControllerRef = useRef<AbortController | null>(null);
-
-  // 加载本地缓存的常用备注
-  useEffect(() => {
-    loadLocalCache();
-  }, []);
-
-  // 本地缓存加载
-  const loadLocalCache = async () => {
-    let needsRemoteFetch = true;
-
-    try {
-      const cached = localStorage.getItem('common-notes-cache');
-      if (cached) {
-        const { data, timestamp } = JSON.parse(cached);
-        // 缓存1天内有效
-        if (Date.now() - timestamp < 24 * 60 * 60 * 1000) {
-          setLocalCache(data);
-          needsRemoteFetch = false;
-        }
-      }
-    } catch {
-      needsRemoteFetch = true;
-    }
-
-    needsRemoteFetchRef.current = needsRemoteFetch;
-  };
-
-  // 从服务器获取常用备注
-  const fetchCommonNotes = async () => {
-    try {
-      setIsLoading(true);
-      if (initialFetchControllerRef.current) {
-        initialFetchControllerRef.current.abort();
-      }
-      const controller = new AbortController();
-      initialFetchControllerRef.current = controller;
-      const response = await fetch('/api/common-notes?limit=10', { signal: controller.signal });
-      if (response.ok) {
-        const { data } = await response.json();
-        setLocalCache(data);
-        // 更新本地缓存
-        localStorage.setItem('common-notes-cache', JSON.stringify({
-          data,
-          timestamp: Date.now()
-        }));
-        needsRemoteFetchRef.current = false;
-      } else {
-        needsRemoteFetchRef.current = true;
-      }
-    } catch (error: any) {
-      if (error?.name === 'AbortError') {
-        return;
-      }
-      // ignore fetch errors to keep UI responsive
-      needsRemoteFetchRef.current = true;
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const latestQueryRef = useRef('');
 
   // 本地搜索函数 - 零网络请求
   const searchInLocalCache = useCallback((query: string): CommonNote[] => {
@@ -118,11 +57,7 @@ export function NoteInput({
     const newValue = e.target.value;
     onChange?.(newValue);
 
-    if (needsRemoteFetchRef.current && !isLoading) {
-      needsRemoteFetchRef.current = false;
-      void fetchCommonNotes();
-    }
-
+    void ensureFreshList();
     // 清除之前的防抖定时器
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
@@ -134,33 +69,18 @@ export function NoteInput({
     setSelectedSuggestionIndex(-1);
 
     // 如果有输入内容且本地搜索结果较少，尝试从服务器搜索
-    if (newValue.trim() && results.length < 3) {
+    const trimmed = newValue.trim();
+    if (trimmed && results.length < 3) {
+      latestQueryRef.current = trimmed;
       debounceTimerRef.current = setTimeout(() => {
-        searchFromServer(newValue.trim());
+        searchRemote(trimmed).then((remote) => {
+          if (latestQueryRef.current !== trimmed) return;
+          if (remote.length > 0) {
+            setSuggestions(remote);
+            setSelectedSuggestionIndex(-1);
+          }
+        });
       }, 300);
-    }
-  };
-
-  // 从服务器搜索（仅在本地的结果不够时）
-  const searchFromServer = async (query: string) => {
-    try {
-      if (searchControllerRef.current) {
-        searchControllerRef.current.abort();
-      }
-      const controller = new AbortController();
-      searchControllerRef.current = controller;
-      const response = await fetch(`/api/common-notes?search=${encodeURIComponent(query)}&limit=6`, {
-        signal: controller.signal
-      });
-      if (response.ok) {
-        const { data } = await response.json();
-        setSuggestions(data);
-      }
-    } catch (error: any) {
-      if (error?.name === 'AbortError') {
-        return;
-      }
-      // ignore search errors to keep existing suggestions
     }
   };
 
@@ -176,10 +96,8 @@ export function NoteInput({
   const handleFocus = () => {
     setShowSuggestions(true);
     setSelectedSuggestionIndex(-1);
-    if (needsRemoteFetchRef.current && !isLoading) {
-      needsRemoteFetchRef.current = false;
-      void fetchCommonNotes();
-    }
+    latestQueryRef.current = value.trim();
+    void ensureFreshList();
     // 在焦点时显示默认建议
     if (!value.trim()) {
       setSuggestions(localCache.slice(0, 8));
@@ -237,14 +155,14 @@ export function NoteInput({
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      if (initialFetchControllerRef.current) {
-        initialFetchControllerRef.current.abort();
-      }
-      if (searchControllerRef.current) {
-        searchControllerRef.current.abort();
-      }
     };
   }, [containerRef]);
+
+  useEffect(() => {
+    if (!value.trim()) {
+      setSuggestions(localCache.slice(0, 8));
+    }
+  }, [localCache, value]);
 
   return (
     <div ref={containerRef} className="relative">

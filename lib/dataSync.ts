@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { removeItem, writeJSON, readString, writeString } from '@/lib/storage';
 
 /**
  * 跨页面数据同步工具
@@ -74,16 +75,11 @@ export class DataSyncManager {
     this.lastEventTime = now;
 
     // 存储到 localStorage（触发 storage 事件）
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(syncEvent));
-
-      // 立即清除，避免重复触发
-      setTimeout(() => {
-        localStorage.removeItem(STORAGE_KEY);
-      }, 100);
-    } catch {
-      // ignore storage write failures
-    }
+    writeJSON(STORAGE_KEY, syncEvent);
+    // 立即清除，避免重复触�?
+    setTimeout(() => {
+      removeItem(STORAGE_KEY);
+    }, 100);
 
     // 同时通知当前页面的监听器
     this.notifyListeners(syncEvent);
@@ -177,34 +173,22 @@ const DIRTY_KEY = 'smart-ledger-transactions-dirty';
 
 export function markTransactionsDirty() {
   if (typeof window === 'undefined') return;
-  try {
-    window.localStorage.setItem(DIRTY_KEY, String(Date.now()));
-  } catch {
-    // ignore storage write failures
-  }
+  writeString(DIRTY_KEY, String(Date.now()));
 }
 
 export function consumeTransactionsDirty() {
   if (typeof window === 'undefined') return false;
-  try {
-    const value = window.localStorage.getItem(DIRTY_KEY);
-    if (value) {
-      window.localStorage.removeItem(DIRTY_KEY);
-      return true;
-    }
-  } catch {
-    return false;
+  const value = readString(DIRTY_KEY, '');
+  if (value) {
+    removeItem(DIRTY_KEY);
+    return true;
   }
   return false;
 }
 
 export function peekTransactionsDirty() {
   if (typeof window === 'undefined') return false;
-  try {
-    return Boolean(window.localStorage.getItem(DIRTY_KEY));
-  } catch {
-    return false;
-  }
+  return Boolean(readString(DIRTY_KEY, ''));
 }
 
 // 导出便捷 Hook

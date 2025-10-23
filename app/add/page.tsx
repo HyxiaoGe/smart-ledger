@@ -14,6 +14,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { dataSync, markTransactionsDirty } from '@/lib/dataSync';
 import { ProgressToast } from '@/components/ProgressToast';
+import { commonNotesService } from '@/lib/services/commonNotes';
+import { invalidateCommonNotesCache } from '@/hooks/useCommonNotes';
 import { SkeletonBlock } from '@/components/Skeletons';
 
 const DateInput = dynamic<DateInputProps>(
@@ -240,21 +242,8 @@ export default function AddPage() {
   // 异步更新常用备注
   async function updateCommonNote(noteContent: string, amount: number) {
     try {
-      const response = await fetch('/api/common-notes', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          content: noteContent,
-          amount: amount
-        })
-      });
-
-      if (response.ok) {
-        // 清除本地缓存，强制下次重新获取最新数据
-        localStorage.removeItem('common-notes-cache');
-      }
+      await commonNotesService.upsert({ content: noteContent, amount });
+      invalidateCommonNotesCache();
     } catch {
       // ignore note update failures
     }

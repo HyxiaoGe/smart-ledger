@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import type { Route } from 'next';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { ChartSummary } from './components/ChartSummary';
@@ -13,6 +13,7 @@ import { TopExpenses } from '@/components/TopExpenses';
 import { HomeStats } from '@/components/HomeStats';
 import type { PageData } from './home-page-data';
 import { dataSync, consumeTransactionsDirty, peekTransactionsDirty } from '@/lib/dataSync';
+import { useRefreshQueue } from '@/hooks/useTransactionsSync';
 
 const REFRESH_DELAYS_MS = [1500, 3500, 6000];
 const TEXT = {
@@ -47,11 +48,14 @@ export default function HomePageClient({ data, currency, rangeParam, monthLabel 
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const refreshCallback = useCallback(() => router.refresh(), [router]);
+  const { isRefreshing, triggerQueue, stopQueue } = useRefreshQueue({
+    delays: REFRESH_DELAYS_MS,
+    refresh: refreshCallback,
+    peekDirty: peekTransactionsDirty,
+    consumeDirty: consumeTransactionsDirty
+  });
 
-  const refreshTimer = useRef<NodeJS.Timeout | null>(null);
-  const refreshIndex = useRef(0);
-  const queueActive = useRef(false);
   const latestSnapshot = useRef({
     income: data.income,
     expense: data.expense,
@@ -60,64 +64,6 @@ export default function HomePageClient({ data, currency, rangeParam, monthLabel 
   });
 
   const pieRange = data.rangeRows?.length ? buildRangePie(data.rangeRows) : [];
-
-  const clearTimer = useCallback(() => {
-    if (refreshTimer.current) {
-      clearTimeout(refreshTimer.current);
-      refreshTimer.current = null;
-    }
-  }, []);
-
-  const stopQueue = useCallback((options?: { consume?: boolean }) => {
-    clearTimer();
-    queueActive.current = false;
-    refreshIndex.current = 0;
-    setIsRefreshing(false);
-    if (options?.consume) {
-      consumeTransactionsDirty();
-    }
-  }, [clearTimer]);
-
-  const scheduleNext = useCallback(() => {
-    if (!queueActive.current) return;
-    if (refreshIndex.current >= REFRESH_DELAYS_MS.length) {
-      stopQueue();
-      return;
-    }
-
-    const delay = REFRESH_DELAYS_MS[refreshIndex.current];
-    clearTimer();
-    refreshTimer.current = setTimeout(() => {
-      if (!queueActive.current) return;
-      router.refresh();
-      refreshIndex.current += 1;
-      scheduleNext();
-    }, delay);
-  }, [router, clearTimer, stopQueue]);
-
-  const startQueue = useCallback(() => {
-    queueActive.current = true;
-    refreshIndex.current = 0;
-    setIsRefreshing(true);
-    scheduleNext();
-  }, [scheduleNext]);
-
-  const triggerQueue = useCallback((reason: string) => {
-    const hasDirty = peekTransactionsDirty();
-    if (!hasDirty && reason !== 'event') {
-      if (queueActive.current) {
-        refreshIndex.current = 0;
-        scheduleNext();
-      }
-      return;
-    }
-    if (queueActive.current) {
-      refreshIndex.current = 0;
-      scheduleNext();
-    } else {
-      startQueue();
-    }
-  }, [scheduleNext, startQueue]);
 
   useEffect(() => {
     const handler = (event: any) => {

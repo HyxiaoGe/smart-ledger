@@ -1,5 +1,7 @@
 "use client";
 
+import { readJSON, writeJSON, removeItem } from '@/lib/storage';
+
 /**
  * 通用任务队列管理器
  * 支持去重、重试、持久化等功能
@@ -234,38 +236,31 @@ export class TaskQueue {
    * 保存到localStorage
    */
   private saveToStorage() {
-    if (typeof window !== 'undefined' && this.config.storageKey) {
-      try {
-        const data = {
-          queue: this.queue.filter(task => task.status !== 'completed'), // 不保存已完成任务
-          timestamp: Date.now()
-        };
-        localStorage.setItem(this.config.storageKey, JSON.stringify(data));
-      } catch {
-        // ignore persistence failures
-      }
-    }
+    const key = this.config.storageKey;
+    if (!key) return;
+
+    const data = {
+      queue: this.queue.filter(task => task.status !== 'completed'), // 不保存已完成任务
+      timestamp: Date.now()
+    };
+    writeJSON(key, data);
   }
 
   /**
    * 从localStorage加载
    */
   private loadFromStorage() {
-    if (typeof window !== 'undefined' && this.config.storageKey) {
-      try {
-        const data = localStorage.getItem(this.config.storageKey);
-        if (data) {
-          const parsed = JSON.parse(data);
-          // 只恢复未完成的任务，且只恢复最近1小时内的任务
-          const oneHourAgo = Date.now() - 60 * 60 * 1000;
-          this.queue = parsed.queue.filter((task: QueueTask) =>
-            task.status !== 'completed' && task.timestamp > oneHourAgo
-          );
-        }
-      } catch {
-        // ignore persistence failures
-      }
-    }
+    const key = this.config.storageKey;
+    if (!key) return;
+
+    const payload = readJSON<{ queue: QueueTask[]; timestamp: number } | null>(key, null);
+    if (!payload) return;
+
+    // 只恢复未完成的任务，且只恢复最近1小时内的任务
+    const oneHourAgo = Date.now() - 60 * 60 * 1000;
+    this.queue = payload.queue.filter(task =>
+      task.status !== 'completed' && task.timestamp > oneHourAgo
+    );
   }
 
   /**
@@ -322,9 +317,7 @@ export class TaskQueue {
    */
   destroy() {
     this.clearQueue();
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(this.config.storageKey || 'task-queue');
-    }
+    removeItem(this.config.storageKey || 'task-queue');
   }
 }
 
