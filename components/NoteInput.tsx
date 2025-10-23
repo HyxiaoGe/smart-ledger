@@ -30,6 +30,8 @@ export function NoteInput({
   const containerRef = useRef<HTMLDivElement>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout>();
   const needsRemoteFetchRef = useRef(false);
+  const initialFetchControllerRef = useRef<AbortController | null>(null);
+  const searchControllerRef = useRef<AbortController | null>(null);
 
   // 加载本地缓存的常用备注
   useEffect(() => {
@@ -61,7 +63,12 @@ export function NoteInput({
   const fetchCommonNotes = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/common-notes?limit=10');
+      if (initialFetchControllerRef.current) {
+        initialFetchControllerRef.current.abort();
+      }
+      const controller = new AbortController();
+      initialFetchControllerRef.current = controller;
+      const response = await fetch('/api/common-notes?limit=10', { signal: controller.signal });
       if (response.ok) {
         const { data } = await response.json();
         setLocalCache(data);
@@ -74,7 +81,10 @@ export function NoteInput({
       } else {
         needsRemoteFetchRef.current = true;
       }
-    } catch {
+    } catch (error: any) {
+      if (error?.name === 'AbortError') {
+        return;
+      }
       // ignore fetch errors to keep UI responsive
       needsRemoteFetchRef.current = true;
     } finally {
@@ -134,12 +144,22 @@ export function NoteInput({
   // 从服务器搜索（仅在本地的结果不够时）
   const searchFromServer = async (query: string) => {
     try {
-      const response = await fetch(`/api/common-notes?search=${encodeURIComponent(query)}&limit=6`);
+      if (searchControllerRef.current) {
+        searchControllerRef.current.abort();
+      }
+      const controller = new AbortController();
+      searchControllerRef.current = controller;
+      const response = await fetch(`/api/common-notes?search=${encodeURIComponent(query)}&limit=6`, {
+        signal: controller.signal
+      });
       if (response.ok) {
         const { data } = await response.json();
         setSuggestions(data);
       }
-    } catch {
+    } catch (error: any) {
+      if (error?.name === 'AbortError') {
+        return;
+      }
       // ignore search errors to keep existing suggestions
     }
   };
@@ -215,7 +235,15 @@ export function NoteInput({
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      if (initialFetchControllerRef.current) {
+        initialFetchControllerRef.current.abort();
+      }
+      if (searchControllerRef.current) {
+        searchControllerRef.current.abort();
+      }
+    };
   }, [containerRef]);
 
   return (
