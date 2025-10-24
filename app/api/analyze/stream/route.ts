@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
       'Content-Type': 'text/event-stream; charset=utf-8',
       'Cache-Control': 'no-cache, no-transform',
       Connection: 'keep-alive',
-      // 某些代理需要显式关闭缓�?
+      // 某些代理需要显式关闭缓冲
       'X-Accel-Buffering': 'no'
     } as const;
 
@@ -22,14 +22,12 @@ export async function POST(req: NextRequest) {
       const writer = writable.getWriter();
       const encoder = new TextEncoder();
       await writer.write(encoder.encode('retry: 1000\n\n'));
-      await writer.write(
-        encoder.encode(`data: （开发提示）未配�?AI API Key，返回占位分析结果。\n\n`)
-      );
+      await writer.write(encoder.encode(`data: （开发提示）未配置 AI API Key，返回占位分析结果。\n\n`));
       await writer.close();
       return new Response(readable, { headers: sseHeaders });
     }
 
-    const sys = `你是一名中文财务助理。请严格按以�?Markdown 模板输出（每段之间空一行，不要使用代码块或表格）。仅关注“支出”，不要输出收入与结余：\n\n---\n### 📊 本期支出概览\n- 本期总支出：{千分位金额} {币种}\n\n---\n### 🔝 三大支出类别\n1. 类别：金�?{币种}（占比x%）\n2. 类别：金�?{币种}（占比x%）\n3. 类别：金�?{币种}（占比x%）\n\n---\n### 📈 与上期变化（支出）\n- 简述支出较上期的变化（若无上期数据则说明原因）\n\n---\n### 💡 简短建议\n- 两条以内可执行建议\n`;
+    const sys = `你是一名中文财务助理。请严格按以下 Markdown 模板输出（每段之间空一行，不要使用代码块或表格）。仅关注“支出”，不要输出收入与结余：\n\n---\n### 📊 本期支出概览\n- 本期总支出：{千分位金额} {币种}\n\n---\n### 🔝 三大支出类别\n1. 类别：金额 {币种}（占比x%）\n2. 类别：金额 {币种}（占比x%）\n3. 类别：金额 {币种}（占比x%）\n\n---\n### 📈 与上期变化（支出）\n- 简述支出较上期的变化（若无上期数据则说明原因）\n\n---\n### 💡 简短建议\n- 两条以内可执行建议\n`;
     const user = `币种: ${currency || 'CNY'}\n月份: ${month}\n数据(JSON): ${JSON.stringify(transactions).slice(0, 4000)}`;
 
     // 请求上游（OpenAI/DeepSeek 兼容）的流式接口
@@ -52,13 +50,10 @@ export async function POST(req: NextRequest) {
 
     if (!upstream.ok || !upstream.body) {
       const text = await upstream.text();
-      return new Response(`AI 请求失败�?{upstream.status} ${text}`, {
-        status: 500,
-        headers: { 'Content-Type': 'text/plain; charset=utf-8' }
-      });
+      return new Response(`AI 请求失败：${upstream.status} ${text}`, { status: 500, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
     }
 
-    // 解析上游 SSE，并通过 TransformStream 逐段转发（含心跳�?
+    // 解析上游 SSE，并通过 TransformStream 逐段转发（含心跳）
     const { readable, writable } = new TransformStream();
     const writer = writable.getWriter();
     const decoder = new TextDecoder();
@@ -71,7 +66,7 @@ export async function POST(req: NextRequest) {
     (async () => {
       try {
         await writer.write(encoder.encode('retry: 1000\n\n'));
-        for (;;) {
+        while (true) {
           const { value, done } = await reader.read();
           if (done) break;
           buffer += decoder.decode(value, { stream: true });
@@ -86,9 +81,7 @@ export async function POST(req: NextRequest) {
               const json = JSON.parse(data);
               const delta = json?.choices?.[0]?.delta?.content;
               if (delta) await writer.write(encoder.encode(`data: ${delta}\n\n`));
-            } catch {
-              /* ignore JSON parsing errors */
-            }
+            } catch {}
           }
         }
       } finally {
@@ -100,10 +93,7 @@ export async function POST(req: NextRequest) {
 
     return new Response(readable, { headers: sseHeaders });
   } catch (err: any) {
-    return new Response(err?.message || '分析失败', {
-      status: 500,
-      headers: { 'Content-Type': 'text/plain; charset=utf-8' }
-    });
+    return new Response(err?.message || '分析失败', { status: 500, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
   }
 }
 
@@ -114,11 +104,9 @@ export async function GET(req: NextRequest) {
     const month = searchParams.get('month') || '';
     const currency = searchParams.get('currency') || 'CNY';
 
-    // 拉取指定月份与币种的数据（服务端执行，便于使�?EventSource�?
+    // 拉取指定月份与币种的数据（服务端执行，便于使用 EventSource）
     const start = month ? `${month}-01` : undefined;
-    const end = month
-      ? new Date(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 1).toISOString().slice(0, 10)
-      : undefined;
+    const end = month ? new Date(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 1).toISOString().slice(0, 10) : undefined;
     let rows: any[] = [];
     if (start && end) {
       const { data, error } = await supabase
@@ -145,16 +133,14 @@ export async function GET(req: NextRequest) {
         start(controller) {
           const encoder = new TextEncoder();
           controller.enqueue(encoder.encode('retry: 1000\n\n'));
-          controller.enqueue(
-            encoder.encode(`data: （开发提示）未配�?AI API Key，返回占位分析结果。\n\n`)
-          );
+          controller.enqueue(encoder.encode(`data: （开发提示）未配置 AI API Key，返回占位分析结果。\n\n`));
           controller.close();
         }
       });
       return new Response(stream, { headers: sseHeaders });
     }
 
-    const sys = `你是一名中文财务助理。请严格按以�?Markdown 模板输出（每段之间空一行，不要使用代码块或表格）。仅关注“支出”，不要输出收入与结余：\n\n---\n### 📊 本期支出概览\n- 本期总支出：{千分位金额} {币种}\n\n---\n### 🔝 三大支出类别\n1. 类别：金�?{币种}（占比x%）\n2. 类别：金�?{币种}（占比x%）\n3. 类别：金�?{币种}（占比x%）\n\n---\n### 📈 与上期变化（支出）\n- 简述支出较上期的变化（若无上期数据则说明原因）\n\n---\n### 💡 简短建议\n- 两条以内可执行建议\n`;
+    const sys = `你是一名中文财务助理。请严格按以下 Markdown 模板输出（每段之间空一行，不要使用代码块或表格）。仅关注“支出”，不要输出收入与结余：\n\n---\n### 📊 本期支出概览\n- 本期总支出：{千分位金额} {币种}\n\n---\n### 🔝 三大支出类别\n1. 类别：金额 {币种}（占比x%）\n2. 类别：金额 {币种}（占比x%）\n3. 类别：金额 {币种}（占比x%）\n\n---\n### 📈 与上期变化（支出）\n- 简述支出较上期的变化（若无上期数据则说明原因）\n\n---\n### 💡 简短建议\n- 两条以内可执行建议\n`;
     const user = `币种: ${currency}\n月份: ${month}\n数据(JSON): ${JSON.stringify(rows).slice(0, 4000)}`;
 
     const upstream = await fetch(`${conf.baseUrl}/chat/completions`, {
@@ -176,10 +162,7 @@ export async function GET(req: NextRequest) {
 
     if (!upstream.ok || !upstream.body) {
       const text = await upstream.text();
-      return new Response(`AI 请求失败�?{upstream.status} ${text}`, {
-        status: 500,
-        headers: { 'Content-Type': 'text/plain; charset=utf-8' }
-      });
+      return new Response(`AI 请求失败：${upstream.status} ${text}`, { status: 500, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
     }
 
     const { readable, writable } = new TransformStream();
@@ -194,7 +177,7 @@ export async function GET(req: NextRequest) {
     (async () => {
       try {
         await writer.write(encoder.encode('retry: 1000\n\n'));
-        for (;;) {
+        while (true) {
           const { value, done } = await reader.read();
           if (done) break;
           buffer += decoder.decode(value, { stream: true });
@@ -209,9 +192,7 @@ export async function GET(req: NextRequest) {
               const json = JSON.parse(data);
               const delta = json?.choices?.[0]?.delta?.content;
               if (delta) await writer.write(encoder.encode(`data: ${delta}\n\n`));
-            } catch {
-              /* ignore JSON parsing errors */
-            }
+            } catch {}
           }
         }
       } finally {
@@ -223,9 +204,6 @@ export async function GET(req: NextRequest) {
 
     return new Response(readable, { headers: sseHeaders });
   } catch (err: any) {
-    return new Response(err?.message || '分析失败', {
-      status: 500,
-      headers: { 'Content-Type': 'text/plain; charset=utf-8' }
-    });
+    return new Response(err?.message || '分析失败', { status: 500, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
   }
 }

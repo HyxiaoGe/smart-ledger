@@ -1,12 +1,11 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 import { TransactionGroupedList } from '@/components/TransactionGroupedList';
-import { List, ChevronDown, ChevronUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ChevronDown, ChevronUp, List } from 'lucide-react';
 
-type Transaction = {
+interface Transaction {
   id: string;
   type: 'income' | 'expense';
   category: string;
@@ -14,58 +13,83 @@ type Transaction = {
   currency?: string;
   note?: string;
   date: string;
-};
+}
 
-type CollapsibleTransactionListProps = {
+interface CollapsibleTransactionListProps {
   initialTransactions: Transaction[];
   totalCount: number;
   className?: string;
-};
+}
 
 export function CollapsibleTransactionList({
   initialTransactions,
   totalCount,
   className
 }: CollapsibleTransactionListProps) {
-  const [expanded, setExpanded] = useState(totalCount <= 10);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // 当交易数量较少时默认展开，较多时默认收起
+  const defaultExpanded = totalCount <= 10;
 
   return (
-    <Card className={className}>
-      <CardContent className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <List className="h-5 w-5 text-muted-foreground" />
-            <h3 className="text-lg font-semibold text-foreground">�˵���ϸ</h3>
-            <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
-              �� {totalCount} ��
-            </span>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setExpanded((prev) => !prev)}
-            className="flex items-center gap-2"
-          >
-            {expanded ? '������ϸ' : 'չ����ϸ'}
-            {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-          </Button>
+    <div className={className}>
+      {/* 控制按钮 */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <List className="h-5 w-5 text-gray-600" />
+          <h3 className="text-lg font-semibold text-gray-800">
+            账单明细
+          </h3>
+          <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+            共 {totalCount} 笔
+          </span>
         </div>
 
-        {expanded ? (
-          <TransactionGroupedList initialTransactions={initialTransactions} />
-        ) : (
-          <div className="rounded-md border border-dashed border-border bg-muted/40 py-8 text-center text-sm text-muted-foreground">
-            �˵���ϸ�����𣬵����չ����ϸ����ť�鿴��ϸ��¼��
-          </div>
-        )}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="flex items-center gap-2 hover:bg-gray-50 transition-colors duration-200"
+        >
+          <span className="text-sm">
+            {isExpanded ? '收起明细' : '展开明细'}
+          </span>
+          {isExpanded ? (
+            <ChevronUp className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
+        </Button>
+      </div>
 
-        {totalCount === 0 && (
-          <div className="rounded-md border border-dashed border-border bg-muted/30 py-12 text-center text-sm text-muted-foreground">
-            �����˵���¼������������˵�����ʼ��¼֧����
+      {/* 交易列表 */}
+      {isExpanded && (
+        <div className="animate-in slide-in-from-top-2 duration-200">
+          <TransactionGroupedList
+            initialTransactions={initialTransactions}
+          />
+        </div>
+      )}
+
+      {/* 收起状态的提示 */}
+      {!isExpanded && totalCount > 0 && (
+        <div className="text-center py-8 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="text-gray-500">
+            <div className="text-sm mb-2">账单明细已收起</div>
+            <div className="text-xs text-gray-400">
+              点击"展开明细"按钮查看所有账单记录
+            </div>
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </div>
+      )}
+
+      {/* 无数据状态 */}
+      {!isExpanded && totalCount === 0 && (
+        <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="text-lg">暂无账单记录</div>
+          <div className="text-sm mt-2">点击"添加账单"开始记录您的支出</div>
+        </div>
+      )}
+    </div>
   );
 }

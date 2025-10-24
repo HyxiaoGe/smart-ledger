@@ -1,10 +1,12 @@
-/* eslint-disable */
-'use client';
-
-import React, { useCallback } from 'react';
+"use client";
+import { useState } from 'react';
+import { format } from 'date-fns';
+import { zhCN } from 'date-fns/locale';
 import { CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { DatePicker } from '@/components/DatePicker';
 
 export interface DateInputProps {
   selected?: Date;
@@ -18,33 +20,72 @@ export function DateInput({
   selected,
   onSelect,
   className,
-  placeholder = 'ѡ������',
+  placeholder = "选择日期",
   disabled = false
 }: DateInputProps) {
-  const handleChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      if (!event.target.value) return;
-      const next = new Date(event.target.value);
-      if (!Number.isNaN(next.getTime())) {
-        onSelect?.(next);
-      }
-    },
-    [onSelect]
-  );
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      onSelect?.(date);
+      setIsOpen(false); // 选择后自动关闭
+    }
+  };
+
+  const handleButtonClick = () => {
+    if (!disabled) {
+      setIsOpen(!isOpen);
+    }
+  };
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
 
   return (
-    <div className={cn('flex items-center gap-2', className)}>
-      <Button type="button" variant="outline" className="w-full justify-start" disabled={disabled}>
-        <CalendarIcon className="mr-2 h-4 w-4" />
-        {selected ? selected.toLocaleDateString('zh-CN') : placeholder}
-      </Button>
-      <input
-        type="date"
-        className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+    <div className={cn("relative", className)}>
+      {/* 触发按钮 */}
+      <Button
+        type="button"
+        variant="outline"
+        onClick={handleButtonClick}
+        className="w-full justify-between text-left font-normal"
         disabled={disabled}
-        value={selected ? selected.toISOString().slice(0, 10) : ''}
-        onChange={handleChange}
-      />
+      >
+        <span className="flex items-center gap-2">
+          <CalendarIcon className="h-4 w-4" />
+          {selected ? format(selected, 'yyyy年MM月dd日', { locale: zhCN }) : placeholder}
+        </span>
+        <span className="text-muted-foreground">
+          {isOpen ? '收起' : '展开'}
+        </span>
+      </Button>
+
+      {/* 弹出日历 */}
+      {isOpen && (
+        <>
+          {/* 遮罩层 */}
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setIsOpen(false)}
+          />
+
+          {/* 日历面板 */}
+          <Card
+            className="absolute top-full left-0 right-0 z-50 mt-1 shadow-lg"
+            onClick={handleCardClick}
+          >
+            <CardContent className="p-2">
+              <DatePicker
+                mode="single"
+                selected={selected}
+                onSelect={handleDateSelect}
+                className="mx-auto rdp-enhanced"
+              />
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   );
 }
