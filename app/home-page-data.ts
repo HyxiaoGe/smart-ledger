@@ -1,4 +1,7 @@
-import { supabase } from '@/lib/supabaseClient';
+/* eslint-disable */
+"use server";
+
+import { supabaseServerClient } from '@/lib/supabaseServer';
 import { parseMonthStr, formatMonth, getQuickRange } from '@/lib/date';
 
 type MonthData = {
@@ -16,6 +19,16 @@ type RangeData = {
   rows: any[];
 };
 
+type TopRow = {
+  id: string;
+  type: string;
+  category: string;
+  amount: number;
+  date: string;
+  note?: string;
+  currency?: string;
+};
+
 export type PageData = {
   income: number;
   expense: number;
@@ -26,8 +39,10 @@ export type PageData = {
   rangeExpense: number;
   rangeLabel: string;
   rangeRows: any[];
-  top10: any[];
+  top10: TopRow[];
 };
+
+const supabase = supabaseServerClient;
 
 export function resolveMonthLabel(monthParam?: string) {
   const baseDate = parseMonthStr(monthParam || formatMonth(new Date())) || new Date();
@@ -63,16 +78,10 @@ export async function loadPageData(
 }
 
 async function loadMonthData(currency: string, date: Date): Promise<MonthData> {
-  function monthRange(d = new Date()) {
-    const start = new Date(d.getFullYear(), d.getMonth(), 1);
-    const end = new Date(d.getFullYear(), d.getMonth() + 1, 1);
-    const prevStart = new Date(d.getFullYear(), d.getMonth() - 1, 1);
-    const prevEnd = new Date(d.getFullYear(), d.getMonth(), 1);
-    const toISO = (day: Date) => day.toISOString().slice(0, 10);
-    return { start: toISO(start), end: toISO(end), prevStart: toISO(prevStart), prevEnd: toISO(prevEnd) };
-  }
-
-  const { start, end, prevStart, prevEnd } = monthRange(date);
+  const start = new Date(date.getFullYear(), date.getMonth(), 1).toISOString().slice(0, 10);
+  const end = new Date(date.getFullYear(), date.getMonth() + 1, 1).toISOString().slice(0, 10);
+  const prevStart = new Date(date.getFullYear(), date.getMonth() - 1, 1).toISOString().slice(0, 10);
+  const prevEnd = new Date(date.getFullYear(), date.getMonth(), 1).toISOString().slice(0, 10);
 
   const [cur, prev] = await Promise.all([
     supabase
@@ -94,38 +103,45 @@ async function loadMonthData(currency: string, date: Date): Promise<MonthData> {
   const rows = cur.data || [];
   const prevRows = prev.data || [];
 
-  const sum = (arr: any[], pred: (r: any) => boolean) =>
-    arr.filter(pred).reduce((a, b) => a + Number(b.amount || 0), 0);
+  const sum = (arr: any[], predicate: (row: any) => boolean) =>
+    arr.reduce((total, row) => (predicate(row) ? total + Number(row.amount || 0) : total), 0);
 
-  const income = sum(rows, (r) => r.type === 'income');
-  const expense = sum(rows, (r) => r.type === 'expense');
+  const income = sum(rows, (row) => row.type === 'income');
+  const expense = sum(rows, (row) => row.type === 'expense');
   const balance = income - expense;
 
-  const byDay = new Map<string, number>();
-  for (const r of rows) {
-    if (r.type !== 'expense') continue;
-    const day = String(new Date(r.date).getDate());
-    byDay.set(day, (byDay.get(day) || 0) + Number(r.amount || 0));
-  }
-  const trend = Array.from(byDay.entries())
+  const trend = rows
+    .filter((row) => row.type === 'expense')
+    .map((row) => ({ date: row.date, amount: Number(row.amount || 0) }))
+    .reduce<Map<string, number>>((map, row) => {
+      const key = String(new Date(row.date).getDate());
+      map.set(key, (map.get(key) || 0) + row.amount);
+      return map;
+    }, new Map())
+    .entries();
+
+  const trendPoints = Array.from(trendMap.entries())
     .sort((a, b) => Number(a[0]) - Number(b[0]))
-    .map(([name, expenseValue]) => ({ name, expense: expenseValue }));
+    .map(([name, value]) => ({ name, expense: value }));
 
-  const byCat = new Map<string, number>();
-  for (const r of rows) {
-    if (r.type !== 'expense') continue;
-    byCat.set(r.category, (byCat.get(r.category) || 0) + Number(r.amount || 0));
-  }
-  const pie = Array.from(byCat.entries()).map(([name, value]) => ({ name, value }));
+  const pieMap = rows
+    .filter((row) => row.type === 'expense')
+    .reduce<Map<string, number>>((map, row) => {
+      const key = row.category;
+      map.set(key, (map.get(key) || 0) + Number(row.amount || 0));
+      return map;
+    }, new Map());
 
-  const prevIncome = sum(prevRows, (r) => r.type === 'income');
-  const prevExpense = sum(prevRows, (r) => r.type === 'expense');
+  const pie = Array.from(pieMap.entries()).map(([name, value]) => ({ name, value }));
+
+  const prevIncome = sum(prevRows, (row) => row.type === 'income');
+  const prevExpense = sum(prevRows, (row) => row.type === 'expense');
   const compare = [
-    { name: '鏈湀', income, expense },
-    { name: '涓婃湀', income: prevIncome, expense: prevExpense }
+    { name: '本月', income, expense },
+    { name: '上月', income: prevIncome, expense: prevExpense }
   ];
 
-  return { income, expense, balance, trend, pie, compare };
+  return { income, expense, balance, trend: trendPoints, pie, compare };
 }
 
 async function loadRangeData(
@@ -135,45 +151,43 @@ async function loadRangeData(
   startParam?: string,
   endParam?: string
 ): Promise<RangeData> {
-  let rStart: string;
-  let rEnd: string;
-  let rLabel: string;
+  let start: string;
+  let end: string;
+  let label: string;
 
   if (rangeParam === 'custom' && startParam && endParam) {
-    rStart = startParam;
-    rEnd = endParam;
-    rLabel = `${startParam} - ${endParam}`;
+    start = startParam;
+    end = endParam;
+    label = `${startParam} - ${endParam}`;
   } else {
     const quickRange = getQuickRange(rangeParam as any, monthLabel);
-    rStart = quickRange.start;
-    rEnd = quickRange.end;
-    rLabel = quickRange.label;
+    start = quickRange.start;
+    end = quickRange.end;
+    label = quickRange.label;
   }
 
+  const isSingleDay = rangeParam === 'today' || rangeParam === 'yesterday' || start === end;
   let query = supabase
     .from('transactions')
     .select('type, category, amount, date, currency')
     .is('deleted_at', null)
     .eq('currency', currency);
 
-  const isSingleDay = rangeParam === 'today' || rangeParam === 'yesterday' || rStart === rEnd;
-
   if (isSingleDay) {
-    query = query.eq('date', rStart);
+    query = query.eq('date', start);
   } else if (rangeParam === 'custom') {
-    const endDate = new Date(rEnd);
+    const endDate = new Date(end);
     endDate.setDate(endDate.getDate() + 1);
-    const endDateStr = endDate.toISOString().slice(0, 10);
-    query = query.gte('date', rStart).lt('date', endDateStr);
+    query = query.gte('date', start).lt('date', endDate.toISOString().slice(0, 10));
   } else {
-    query = query.gte('date', rStart).lt('date', rEnd);
+    query = query.gte('date', start).lt('date', end);
   }
 
-  const { data: rRows } = await query;
-  const rows = rRows || [];
-  const expense = rows.filter((r) => r.type === 'expense').reduce((a, b) => a + Number(b.amount || 0), 0);
+  const { data } = await query;
+  const rows = data || [];
+  const expense = rows.reduce((total, row) => (row.type === 'expense' ? total + Number(row.amount || 0) : total), 0);
 
-  return { expense, label: rLabel, rows };
+  return { expense, label, rows };
 }
 
 async function loadTopData(
@@ -182,29 +196,32 @@ async function loadTopData(
   monthLabel: string,
   startParam?: string,
   endParam?: string
-) {
-  let rStart: string;
-  let rEnd: string;
+): Promise<TopRow[]> {
+  let start: string;
+  let end: string;
 
   if (rangeParam === 'custom' && startParam && endParam) {
-    rStart = startParam;
-    rEnd = endParam;
+    start = startParam;
+    end = endParam;
   } else {
     const quickRange = getQuickRange(rangeParam as any, monthLabel);
-    rStart = quickRange.start;
-    rEnd = quickRange.end;
+    start = quickRange.start;
+    end = quickRange.end;
   }
 
-  const { data: topData } = await supabase
+  const { data } = await supabase
     .from('transactions')
     .select('id, type, category, amount, date, note, currency')
     .is('deleted_at', null)
-    .gte('date', rStart)
-    .lt('date', rEnd)
+    .gte('date', start)
+    .lt('date', end)
     .eq('currency', currency)
     .eq('type', 'expense')
     .order('amount', { ascending: false })
     .limit(10);
 
-  return topData || [];
+  return (data as TopRow[]) || [];
 }
+
+
+

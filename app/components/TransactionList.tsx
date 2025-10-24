@@ -1,14 +1,12 @@
-Ôªø"use client";
-import { useEffect, useState } from 'react';
+"use client";
+
+import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
 import { CategoryChip } from '@/components/CategoryChip';
-import { PRESET_CATEGORIES } from '@/lib/config';
 import { formatCurrency } from '@/lib/format';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { EmptyState } from '@/components/EmptyState';
-import { dataSync, markTransactionsDirty } from '@/lib/dataSync';
 
 type Row = {
   id: string;
@@ -20,297 +18,122 @@ type Row = {
   date: string;
 };
 
-export function TransactionList({ initialRows = [] as Row[], start, end }: { initialRows?: Row[]; start?: string; end?: string }) {
+type TransactionListProps = {
+  initialRows?: Row[];
+  start?: string;
+  end?: string;
+};
+
+export function TransactionList({ initialRows = [], start, end }: TransactionListProps) {
   const [rows, setRows] = useState<Row[]>(initialRows);
   const [loading, setLoading] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState<Partial<Row>>({});
-  const [recentlyDeleted, setRecentlyDeleted] = useState<Row | null>(null);
   const [error, setError] = useState<string>('');
   const [query, setQuery] = useState('');
-  const [view, setView] = useState<'card' | 'table'>('card');
-  const [hasMore, setHasMore] = useState(true);
-  const [confirmRow, setConfirmRow] = useState<Row | null>(null);
-
-  const triggerRevalidate = () => {
-    void fetch('/api/revalidate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tag: 'transactions' }),
-      cache: 'no-store'
-    }).catch(() => {});
-  };
 
   useEffect(() => {
-    if (initialRows.length === 0 && start) {
-      (async () => {
-        setLoading(true);
-        const isSingleDay = start === end || (end && new Date(end).getTime() - new Date(start).getTime() === 86400000);
-        let queryBuilder = supabase.from('transactions').select('*').order('date', { ascending: false });
+    if (!start || !end) return;
 
-        if (start && end) {
-          if (isSingleDay) {
-            queryBuilder = queryBuilder.eq('date', start);
-          } else {
-            queryBuilder = queryBuilder.gte('date', start).lt('date', end);
-          }
-        }
-
-        queryBuilder = queryBuilder.eq('type', 'expense').is('deleted_at', null);
-        const { data, error } = await queryBuilder.limit(50);
-        if (!error && data) setRows(data as Row[]);
-        if (!error && (data?.length || 0) < 50) setHasMore(false);
-        setLoading(false);
-      })();
-    }
-  }, [initialRows, start, end]);
-
-  useEffect(() => {
-    if (initialRows.length > 0 && start) {
-      (async () => {
-        setLoading(true);
-        const isSingleDay = start === end || (end && new Date(end).getTime() - new Date(start).getTime() === 86400000);
-
-        let queryBuilder = supabase.from('transactions').select('*');
-
-        if (start && end) {
-          if (isSingleDay) {
-            queryBuilder = queryBuilder.eq('date', start);
-          } else {
-            queryBuilder = queryBuilder.gte('date', start).lt('date', end);
-          }
-        }
-
-        const { data, error } = await queryBuilder
-          .eq('type', 'expense')
+    let cancelled = false;
+    const fetchRows = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('transactions')
+          .select('*')
           .is('deleted_at', null)
+          .eq('type', 'expense')
+          .gte('date', start)
+          .lt('date', end)
           .order('date', { ascending: false })
-          .limit(50);
-        if (!error && data) setRows(data as Row[]);
-        if (!error && (data?.length || 0) < 50) setHasMore(false);
-        setLoading(false);
-      })();
-    }
+          .limit(100);
+
+        if (!cancelled) {
+          if (fetchError) {
+            setError('º”‘ÿ’Àµ• ß∞‹£¨«Î…‘∫Û÷ÿ ‘');
+          } else if (data) {
+            setRows(data as Row[]);
+          }
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchRows();
+    return () => {
+      cancelled = true;
+    };
   }, [start, end]);
 
-  function startEdit(r: Row) {
-    setEditingId(r.id);
-    setForm({ ...r });
-  }
+  const filteredRows = useMemo(() => {
+    if (!query.trim()) return rows;
+    const keyword = query.trim().toLowerCase();
+    return rows.filter((row) =>
+      [row.category, row.note, row.currency]
+        .filter(Boolean)
+        .some((field) => String(field).toLowerCase().includes(keyword))
+    );
+  }, [query, rows]);
 
-  async function saveEdit() {
-    if (!editingId) return;
-    setLoading(true);
-    setError('');
-    const patch = { ...form, type: 'expense' };
-    delete (patch as any).id;
-    if (patch.amount !== undefined && !(Number(patch.amount) > 0)) {
-      setError('ÈáëÈ¢ùÂøÖÈ°ªÂ§ß‰∫é 0');
-      setLoading(false);
-      return;
-    }
-    const { error } = await supabase.from('transactions').update(patch).eq('id', editingId);
-    if (error) setError(error.message);
-    else {
-      setRows((rs) => rs.map((r) => (r.id === editingId ? { ...r, ...(form as Row), type: 'expense' } : r)));
-      setEditingId(null);
-      setForm({});
-      markTransactionsDirty();
-      triggerRevalidate();
-      dataSync.notifyTransactionUpdated({ ...(form as Row), id: editingId });
-    }
-    setLoading(false);
-  }
-
-  async function removeRow(r: Row) {
-    setLoading(true);
-    setError('');
-    const soft = await supabase
-      .from('transactions')
-      .update({ deleted_at: new Date().toISOString() })
-      .eq('id', r.id)
-      .select();
-    if (soft.error) {
-      const hard = await supabase.from('transactions').delete().eq('id', r.id);
-      if (hard.error) {
-        setError(soft.error.message || hard.error.message);
-        setLoading(false);
-        return;
-      }
-      setRecentlyDeleted(null);
-    } else if (!soft.data || soft.data.length === 0) {
-      setLoading(false);
-      return;
-    } else {
-      setRecentlyDeleted(r);
-    }
-    setRows((rs) => rs.filter((x) => x.id !== r.id));
-    markTransactionsDirty();
-    triggerRevalidate();
-    dataSync.notifyTransactionDeleted({ id: r.id });
-    setLoading(false);
-  }
-
-  async function undoDelete() {
-    if (!recentlyDeleted) return;
-    setLoading(true);
-    const { id } = recentlyDeleted;
-    const { error } = await supabase.from('transactions').update({ deleted_at: null }).eq('id', id);
-    if (!error) {
-      setRows((rs) => [recentlyDeleted as Row, ...rs]);
-      markTransactionsDirty();
-      triggerRevalidate();
-      dataSync.notifyTransactionUpdated(recentlyDeleted as Row);
-    }
-    setRecentlyDeleted(null);
-    setLoading(false);
-  }
-
-  const busy = loading;
-  const filtered = rows.filter((r) => {
-    const q = query.trim().toLowerCase();
-    if (!q) return true;
-    const catLabel = PRESET_CATEGORIES.find((c) => c.key === r.category)?.label || r.category;
-    const typeLabel = r.type === 'income' ? 'Êî∂ÂÖ•' : 'ÊîØÂá∫';
+  if (!loading && filteredRows.length === 0) {
     return (
-      r.category.toLowerCase().includes(q) ||
-      catLabel.toLowerCase().includes(q) ||
-      r.type.toLowerCase().includes(q) ||
-      typeLabel.toLowerCase().includes(q)
+      <Card>
+        <CardContent className="p-6">
+          <div className="mb-4">
+            <Input
+              placeholder="À—À˜∑÷¿‡/±∏◊¢/±“÷÷"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
+          {error ? <EmptyState description={error} /> : <EmptyState description="‘›Œﬁ’Àµ•º«¬º" />}
+        </CardContent>
+      </Card>
     );
-  });
-
-  async function loadMore() {
-    setLoading(true);
-    let q = supabase.from('transactions').select('*').order('date', { ascending: false });
-    if (start && end) q = q.gte('date', start).lt('date', end);
-    q = q.eq('type', 'expense').is('deleted_at', null);
-    const offset = rows.length;
-    const { data, error } = await q.range(offset, offset + 49);
-    if (!error) {
-      const more = (data as Row[]) || [];
-      setRows((rs) => rs.concat(more));
-      if (more.length < 50) setHasMore(false);
-    }
-    setLoading(false);
-  }
-
-  function exportCsv() {
-    const header = ['Êó•Êúü','Á±ªÂûã','ÂàÜÁ±ª','ÈáëÈ¢ù','Â∏ÅÁßç','Â§áÊ≥®'];
-    const lines = [header.join(',')].concat(
-      filtered.map((r) => [r.date, r.type, r.category, r.amount, r.currency || 'CNY', (r.note || '').replace(/\n/g,' ')].join(','))
-    );
-    const blob = new Blob(["\uFEFF" + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'transactions.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
   }
 
   return (
-    <div className="rounded-lg border bg-card text-card-foreground shadow-md">
-      <div className="flex flex-col gap-3 p-4 border-b md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-2">
-          <Input placeholder="ÊêúÁ¥¢ ÂàÜÁ±ª/Á±ªÂûã" value={query} onChange={(e) => setQuery(e.target.value)} className="w-[260px]" />
-          {query && (
-            <Button variant="secondary" onClick={() => setQuery('')}>Ê∏ÖÁ©∫</Button>
-          )}
+    <Card className="overflow-hidden">
+      <CardContent className="p-0">
+        <div className="p-4 border-b">
+          <Input
+            placeholder="À—À˜∑÷¿‡/±∏◊¢/±“÷÷"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
         </div>
-        <div className="flex items-center gap-2">
-          <div className="hidden md:flex items-center gap-1 mr-2">
-            <Button variant={view === 'card' ? 'default' : 'secondary'} onClick={() => setView('card')}>Âç°ÁâáËßÜÂõæ</Button>
-            <Button variant={view === 'table' ? 'default' : 'secondary'} onClick={() => setView('table')}>Ë°®Ê†ºËßÜÂõæ</Button>
-          </div>
-          <Button variant="secondary" onClick={exportCsv}>ÂØºÂá∫ CSV</Button>
-        </div>
-      </div>
-
-      {error && (
-        <Alert variant="destructive" className="rounded-none">
-          <AlertTitle>Êìç‰ΩúÂ§±Ë¥•</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {rows.length === 0 && !loading ? (
-        <EmptyState description="ÂΩìÂâçÊ≤°ÊúâÊîØÂá∫ËÆ∞ÂΩï" />
-      ) : (
-        <div className="overflow-x-auto">
-          {view === 'table' ? (
-            <table className="w-full text-left">
-              <thead>
-                <tr className="border-b bg-muted/50">
-                  <th className="px-4 py-2">Êó•Êúü</th>
-                  <th className="px-4 py-2">Á±ªÂûã</th>
-                  <th className="px-4 py-2">ÂàÜÁ±ª</th>
-                  <th className="px-4 py-2">ÈáëÈ¢ù</th>
-                  <th className="px-4 py-2">Â∏ÅÁßç</th>
-                  <th className="px-4 py-2">Â§áÊ≥®</th>
-                  <th className="px-4 py-2 text-right">Êìç‰Ωú</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r) => (
-                  <tr key={r.id} className="border-b last:border-0 hover:bg-muted/40 transition">
-                    <td className="px-4 py-2">{r.date}</td>
-                    <td className="px-4 py-2">ÊîØÂá∫</td>
-                    <td className="px-4 py-2">
-                      <CategoryChip category={r.category} />
-                    </td>
-                    <td className="px-4 py-2 font-semibold">
-                      {formatCurrency(Number(r.amount || 0), r.currency || 'CNY')}
-                    </td>
-                    <td className="px-4 py-2">{r.currency || 'CNY'}</td>
-                    <td className="px-4 py-2 max-w-[280px]">
-                      {(r.note || '').slice(0, 40)}
-                    </td>
-                    <td className="px-4 py-2 text-right">
-                      <Button variant="secondary" className="mr-2" onClick={() => startEdit(r)} disabled={busy}>ÁºñËæë</Button>
-                      <Button variant="destructive" onClick={() => setConfirmRow(r)} disabled={busy}>Âà†Èô§</Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <div className="p-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-              {rows.map((r) => (
-                <div key={r.id} className="rounded-lg border p-4 hover:shadow transition bg-background">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-muted-foreground">{r.date}</div>
-                    <div className="text-red-600 text-xs font-medium">ÊîØÂá∫</div>
-                  </div>
-                  <div className="mt-2 flex items-center justify-between">
-                    <CategoryChip category={r.category} />
-                    <div className="text-right font-semibold">{formatCurrency(Number(r.amount || 0), r.currency || 'CNY')}</div>
-                  </div>
-                  <div className="mt-2 text-sm text-muted-foreground min-h-[20px]">
-                    {(r.note || '').slice(0, 60) || '‚Äî'}
-                  </div>
-                  <div className="mt-3 flex items-center justify-end gap-2">
-                    <Button variant="secondary" size="sm" onClick={() => startEdit(r)} disabled={busy}>ÁºñËæë</Button>
-                    <Button variant="destructive" size="sm" onClick={() => setConfirmRow(r)} disabled={busy}>Âà†Èô§</Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {hasMore && (
-        <div className="p-4 text-center">
-          <Button variant="secondary" onClick={loadMore} disabled={loading}>Âä†ËΩΩÊõ¥Â§ö</Button>
-        </div>
-      )}
-    </div>
+        {error ? (
+          <div className="p-4 text-sm text-destructive">{error}</div>
+        ) : null}
+        {loading ? (
+          <div className="p-4 text-sm text-muted-foreground">º”‘ÿ÷–°≠</div>
+        ) : null}
+        <table className="w-full text-sm">
+          <thead className="bg-muted/40 text-muted-foreground">
+            <tr>
+              <th className="px-4 py-2 text-left">»’∆⁄</th>
+              <th className="px-4 py-2 text-left">∑÷¿‡</th>
+              <th className="px-4 py-2 text-right">Ω∂Ó</th>
+              <th className="px-4 py-2 text-left">±“÷÷</th>
+              <th className="px-4 py-2 text-left">±∏◊¢</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredRows.map((row) => (
+              <tr key={row.id} className="border-b last:border-b-0">
+                <td className="px-4 py-3 align-top text-muted-foreground">{row.date}</td>
+                <td className="px-4 py-3 align-top"><CategoryChip category={row.category} /></td>
+                <td className="px-4 py-3 align-top text-right font-semibold">{formatCurrency(row.amount, row.currency || 'CNY')}</td>
+                <td className="px-4 py-3 align-top text-muted-foreground">{row.currency || 'CNY'}</td>
+                <td className="px-4 py-3 align-top text-muted-foreground">{row.note || '-'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </CardContent>
+    </Card>
   );
 }
-
-
-
-

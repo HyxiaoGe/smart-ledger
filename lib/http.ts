@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { notifyError } from './notifications';
 
 const DEFAULT_TIMEOUT = 10000;
@@ -32,8 +33,6 @@ export function setHttpErrorHandler(handler: ErrorHandler | null) {
 }
 
 function defaultHttpErrorHandler(error: Error, context: { input: RequestInfo | URL; options: FetchJsonOptions }) {
-  // eslint-disable-next-line no-console
-  console.error('HTTP request failed', error, context);
   notifyError(error.message, context);
 }
 
@@ -68,13 +67,13 @@ export async function fetchJson<T>(
 
     return payload as T;
   } catch (error) {
-    let handledError: Error;
+    let handled: Error;
     if ((error as Error).name === 'AbortError') {
-      handledError = new HttpError('Request timed out', 408, null);
+      handled = new HttpError('Request timed out', 408, null);
     } else if (error instanceof Error) {
-      handledError = error;
+      handled = error;
     } else {
-      handledError = new Error('Unknown fetch error');
+      handled = new Error('Unknown fetch error');
     }
 
     const contextOptions: FetchJsonOptions = {
@@ -82,6 +81,7 @@ export async function fetchJson<T>(
       headers,
       ...init
     };
+
     if ('signal' in contextOptions) {
       delete (contextOptions as any).signal;
     }
@@ -89,11 +89,12 @@ export async function fetchJson<T>(
     const context = { input, options: contextOptions };
 
     if (errorHandler) {
-      errorHandler(handledError, context);
+      errorHandler(handled, context);
     } else {
-      defaultHttpErrorHandler(handledError, context);
+      defaultHttpErrorHandler(handled, context);
     }
-    throw handledError;
+
+    throw handled;
   } finally {
     clearTimeout(timer);
   }

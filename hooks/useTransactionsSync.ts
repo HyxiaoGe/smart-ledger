@@ -17,7 +17,7 @@ export function useRefreshQueue({
   peekDirty,
   consumeDirty
 }: UseRefreshQueueParams) {
-  const refreshTimer = useRef<NodeJS.Timeout | null>(null);
+  const refreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const refreshIndex = useRef(0);
   const queueActive = useRef(false);
   const [isRefreshing, setIsRefreshing] = useState(false);

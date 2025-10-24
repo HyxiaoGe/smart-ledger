@@ -1,27 +1,40 @@
 "use client";
+
+import React from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { SUPPORTED_CURRENCIES } from '@/lib/config';
 
-export function CurrencySelect({ value, month, range }: { value: string; month: string; range: string }) {
+type CurrencySelectProps = {
+  value: string;
+  month: string;
+  range: string;
+};
+
+export function CurrencySelect({ value, month, range }: CurrencySelectProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const search = useSearchParams();
+  const searchParams = useSearchParams();
 
-  function onChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const c = e.target.value;
-    const sp = new URLSearchParams(search?.toString());
-    sp.set('currency', c);
-    if (month) sp.set('month', month);
-    if (range) sp.set('range', range);
-    router.push(`${pathname}?${sp.toString()}` as any);
-  }
+  const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const next = event.target.value;
+    const params = new URLSearchParams(searchParams?.toString());
+    params.set('currency', next);
+    if (month) params.set('month', month);
+    if (range) params.set('range', range);
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   return (
-    <select className="h-9 rounded-md border border-input bg-background px-3 text-sm" value={value} onChange={onChange}>
-      {SUPPORTED_CURRENCIES.map((c) => (
-        <option key={c.code} value={c.code}>{c.code}</option>
+    <select
+      className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+      value={value}
+      onChange={handleChange}
+    >
+      {SUPPORTED_CURRENCIES.map((item) => (
+        <option key={item.code} value={item.code}>
+          {item.code}
+        </option>
       ))}
     </select>
   );
 }
-

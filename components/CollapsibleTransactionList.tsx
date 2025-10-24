@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from 'react';
-import { TransactionGroupedList } from '@/components/TransactionGroupedList';
+import React, { useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronUp, List } from 'lucide-react';
+import { TransactionGroupedList } from '@/components/TransactionGroupedList';
+import { List, ChevronDown, ChevronUp } from 'lucide-react';
 
-interface Transaction {
+type Transaction = {
   id: string;
   type: 'income' | 'expense';
   category: string;
@@ -13,83 +14,58 @@ interface Transaction {
   currency?: string;
   note?: string;
   date: string;
-}
+};
 
-interface CollapsibleTransactionListProps {
+type CollapsibleTransactionListProps = {
   initialTransactions: Transaction[];
   totalCount: number;
   className?: string;
-}
+};
 
 export function CollapsibleTransactionList({
   initialTransactions,
   totalCount,
   className
 }: CollapsibleTransactionListProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  // å½“äº¤æ˜“æ•°é‡è¾ƒå°‘æ—¶é»˜è®¤å±•å¼€ï¼Œè¾ƒå¤šæ—¶é»˜è®¤æ”¶èµ·
-  const defaultExpanded = totalCount <= 10;
+  const [expanded, setExpanded] = useState(totalCount <= 10);
 
   return (
-    <div className={className}>
-      {/* æ§åˆ¶æŒ‰é’® */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <List className="h-5 w-5 text-gray-600" />
-          <h3 className="text-lg font-semibold text-gray-800">
-            è´¦å•æ˜ç»†
-          </h3>
-          <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-            å…± {totalCount} ç¬”
-          </span>
-        </div>
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-2 hover:bg-gray-50 transition-colors duration-200"
-        >
-          <span className="text-sm">
-            {isExpanded ? 'æ”¶èµ·æ˜ç»†' : 'å±•å¼€æ˜ç»†'}
-          </span>
-          {isExpanded ? (
-            <ChevronUp className="h-4 w-4" />
-          ) : (
-            <ChevronDown className="h-4 w-4" />
-          )}
-        </Button>
-      </div>
-
-      {/* äº¤æ˜“åˆ—è¡¨ */}
-      {isExpanded && (
-        <div className="animate-in slide-in-from-top-2 duration-200">
-          <TransactionGroupedList
-            initialTransactions={initialTransactions}
-          />
-        </div>
-      )}
-
-      {/* æ”¶èµ·çŠ¶æ€çš„æç¤º */}
-      {!isExpanded && totalCount > 0 && (
-        <div className="text-center py-8 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="text-gray-500">
-            <div className="text-sm mb-2">è´¦å•æ˜ç»†å·²æ”¶èµ·</div>
-            <div className="text-xs text-gray-400">
-              ç‚¹å‡»"å±•å¼€æ˜ç»†"æŒ‰é’®æŸ¥çœ‹æ‰€æœ‰è´¦å•è®°å½•
-            </div>
+    <Card className={className}>
+      <CardContent className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <List className="h-5 w-5 text-muted-foreground" />
+            <h3 className="text-lg font-semibold text-foreground">ÕËµ¥Ã÷Ï¸</h3>
+            <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+              ¹² {totalCount} ±Ê
+            </span>
           </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setExpanded((prev) => !prev)}
+            className="flex items-center gap-2"
+          >
+            {expanded ? 'ÊÕÆğÃ÷Ï¸' : 'Õ¹¿ªÃ÷Ï¸'}
+            {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </Button>
         </div>
-      )}
 
-      {/* æ— æ•°æ®çŠ¶æ€ */}
-      {!isExpanded && totalCount === 0 && (
-        <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="text-lg">æš‚æ— è´¦å•è®°å½•</div>
-          <div className="text-sm mt-2">ç‚¹å‡»"æ·»åŠ è´¦å•"å¼€å§‹è®°å½•æ‚¨çš„æ”¯å‡º</div>
-        </div>
-      )}
-    </div>
+        {expanded ? (
+          <TransactionGroupedList initialTransactions={initialTransactions} />
+        ) : (
+          <div className="rounded-md border border-dashed border-border bg-muted/40 py-8 text-center text-sm text-muted-foreground">
+            ÕËµ¥Ã÷Ï¸ÒÑÊÕÆğ£¬µã»÷¡¸Õ¹¿ªÃ÷Ï¸¡¹°´Å¥²é¿´ÏêÏ¸¼ÇÂ¼¡£
+          </div>
+        )}
+
+        {totalCount === 0 && (
+          <div className="rounded-md border border-dashed border-border bg-muted/30 py-12 text-center text-sm text-muted-foreground">
+            ÔİÎŞÕËµ¥¼ÇÂ¼£¬µã»÷¡¸Ìí¼ÓÕËµ¥¡¹¿ªÊ¼¼ÇÂ¼Ö§³ö¡£
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

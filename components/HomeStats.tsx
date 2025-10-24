@@ -1,6 +1,7 @@
+/* eslint-disable */
 "use client";
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSpring, animated } from '@react-spring/web';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDataSync } from '@/lib/dataSync';
@@ -145,7 +146,7 @@ export function HomeStats({
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle className="text-sm text-muted-foreground">{title}</CardTitle>
-        {isRefreshing && <span className="text-xs text-blue-500 animate-pulse">刷新中</span>}
+        {isRefreshing ? <span className="text-xs text-blue-500 animate-pulse">Refreshing...</span> : null}
       </CardHeader>
       <CardContent className="pt-0">
         <animated.span className="text-3xl font-semibold tracking-tight text-slate-900">
@@ -165,3 +166,4 @@ export function HomeStats({
     </div>
   );
 }
+

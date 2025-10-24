@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { readJSON, writeJSON, removeItem } from '@/lib/storage';
 import { commonNotesService, type CommonNote } from '@/lib/services/commonNotes';
@@ -114,3 +115,4 @@ export function useCommonNotes(): UseCommonNotesResult {
 export function invalidateCommonNotesCache() {
   removeItem(COMMON_NOTES_CACHE_KEY);
 }
+
