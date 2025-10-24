@@ -1,5 +1,5 @@
 /* eslint-disable */
-"use server";
+'use server';
 
 import { supabaseServerClient } from '@/lib/supabaseServer';
 import { parseMonthStr, formatMonth, getQuickRange } from '@/lib/date';
@@ -137,8 +137,8 @@ async function loadMonthData(currency: string, date: Date): Promise<MonthData> {
   const prevIncome = sum(prevRows, (row) => row.type === 'income');
   const prevExpense = sum(prevRows, (row) => row.type === 'expense');
   const compare = [
-    { name: '±¾ÔÂ', income, expense },
-    { name: 'ÉÏÔÂ', income: prevIncome, expense: prevExpense }
+    { name: 'ï¿½ï¿½ï¿½ï¿½', income, expense },
+    { name: 'ï¿½ï¿½ï¿½ï¿½', income: prevIncome, expense: prevExpense }
   ];
 
   return { income, expense, balance, trend: trendPoints, pie, compare };
@@ -185,7 +185,10 @@ async function loadRangeData(
 
   const { data } = await query;
   const rows = data || [];
-  const expense = rows.reduce((total, row) => (row.type === 'expense' ? total + Number(row.amount || 0) : total), 0);
+  const expense = rows.reduce(
+    (total, row) => (row.type === 'expense' ? total + Number(row.amount || 0) : total),
+    0
+  );
 
   return { expense, label, rows };
 }
@@ -222,6 +225,3 @@ async function loadTopData(
 
   return (data as TopRow[]) || [];
 }
-
-
-

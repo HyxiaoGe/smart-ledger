@@ -4,7 +4,12 @@ export function monthRange(date = new Date()) {
   const prevStart = new Date(date.getFullYear(), date.getMonth() - 1, 1);
   const prevEnd = new Date(date.getFullYear(), date.getMonth(), 1);
   const toISO = (d: Date) => d.toISOString().slice(0, 10);
-  return { start: toISO(start), end: toISO(end), prevStart: toISO(prevStart), prevEnd: toISO(prevEnd) };
+  return {
+    start: toISO(start),
+    end: toISO(end),
+    prevStart: toISO(prevStart),
+    prevEnd: toISO(prevEnd)
+  };
 }
 
 export function parseMonthStr(yyyyMM?: string): Date | null {

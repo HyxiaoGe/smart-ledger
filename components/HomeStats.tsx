@@ -1,5 +1,5 @@
 /* eslint-disable */
-"use client";
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import { useSpring, animated } from '@react-spring/web';
@@ -138,23 +138,19 @@ export function HomeStats({
     []
   );
 
-  const renderCard = (
-    title: string,
-    valueSpring: typeof rangeSpring,
-    suffix?: string
-  ) => (
+  const renderCard = (title: string, valueSpring: typeof rangeSpring, suffix?: string) => (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle className="text-sm text-muted-foreground">{title}</CardTitle>
-        {isRefreshing ? <span className="text-xs text-blue-500 animate-pulse">Refreshing...</span> : null}
+        {isRefreshing ? (
+          <span className="text-xs text-blue-500 animate-pulse">Refreshing...</span>
+        ) : null}
       </CardHeader>
       <CardContent className="pt-0">
         <animated.span className="text-3xl font-semibold tracking-tight text-slate-900">
           {valueSpring.value.to((v) => `${sym}${v.toFixed(2)}`)}
         </animated.span>
-        {suffix ? (
-          <p className="mt-2 text-xs text-muted-foreground">{suffix}</p>
-        ) : null}
+        {suffix ? <p className="mt-2 text-xs text-muted-foreground">{suffix}</p> : null}
       </CardContent>
     </Card>
   );
@@ -166,4 +162,3 @@ export function HomeStats({
     </div>
   );
 }
-

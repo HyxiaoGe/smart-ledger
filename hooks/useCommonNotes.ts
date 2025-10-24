@@ -73,29 +73,26 @@ export function useCommonNotes(): UseCommonNotesResult {
     }
   }, [fetchRemoteList, isLoading]);
 
-  const searchRemote = useCallback(
-    async (keyword: string) => {
-      if (!keyword.trim()) return [];
+  const searchRemote = useCallback(async (keyword: string) => {
+    if (!keyword.trim()) return [];
 
-      searchControllerRef.current?.abort();
-      const controller = new AbortController();
-      searchControllerRef.current = controller;
+    searchControllerRef.current?.abort();
+    const controller = new AbortController();
+    searchControllerRef.current = controller;
 
-      try {
-        const { data } = await commonNotesService.search({
-          keyword,
-          signal: controller.signal
-        });
-        return data;
-      } catch (error: any) {
-        if (error?.name === 'AbortError') {
-          return [];
-        }
+    try {
+      const { data } = await commonNotesService.search({
+        keyword,
+        signal: controller.signal
+      });
+      return data;
+    } catch (error: any) {
+      if (error?.name === 'AbortError') {
         return [];
       }
-    },
-    []
-  );
+      return [];
+    }
+  }, []);
 
   const updateLocalCache = useCallback((notes: CommonNote[]) => {
     setLocalCache(notes);
@@ -115,4 +112,3 @@ export function useCommonNotes(): UseCommonNotesResult {
 export function invalidateCommonNotesCache() {
   removeItem(COMMON_NOTES_CACHE_KEY);
 }
-

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -10,9 +10,15 @@ export function MarkdownView({ text }: { text: string }) {
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-          h1: (props) => <h2 {...props} className="text-base font-semibold leading-tight mt-2 mb-1" />,
-          h2: (props) => <h3 {...props} className="text-base font-semibold leading-tight mt-2 mb-1" />,
-          h3: (props) => <h4 {...props} className="text-sm font-semibold leading-tight mt-2 mb-1" />,
+          h1: (props) => (
+            <h2 {...props} className="text-base font-semibold leading-tight mt-2 mb-1" />
+          ),
+          h2: (props) => (
+            <h3 {...props} className="text-base font-semibold leading-tight mt-2 mb-1" />
+          ),
+          h3: (props) => (
+            <h4 {...props} className="text-sm font-semibold leading-tight mt-2 mb-1" />
+          ),
           p: (props) => <p {...props} className="text-sm leading-7" />,
           ul: (props) => <ul {...props} className="list-disc pl-5 space-y-1" />,
           ol: (props) => <ol {...props} className="list-decimal pl-5 space-y-1" />,
@@ -25,7 +31,10 @@ export function MarkdownView({ text }: { text: string }) {
             </code>
           ),
           pre: ({ className, children, ...props }: any) => (
-            <pre className={`${className || ''} block rounded bg-muted p-2 text-xs overflow-x-auto`} {...props}>
+            <pre
+              className={`${className || ''} block rounded bg-muted p-2 text-xs overflow-x-auto`}
+              {...props}
+            >
               {children}
             </pre>
           )

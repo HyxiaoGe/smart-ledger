@@ -67,7 +67,8 @@ export async function POST(request: NextRequest) {
       .eq('is_active', true)
       .single();
 
-    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 = not found
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      // PGRST116 = not found
       return NextResponse.json({ error: 'Failed to check existing note' }, { status: 500 });
     }
 
@@ -147,13 +148,11 @@ async function updateAnalytics(noteId: string, amount: number) {
         .eq('note_id', noteId);
     } else {
       // 创建新的分析数据
-      await supabase
-        .from('note_analytics')
-        .insert({
-          note_id: noteId,
-          typical_amount: amount,
-          confidence_score: 0.5 // 初始置信度
-        });
+      await supabase.from('note_analytics').insert({
+        note_id: noteId,
+        typical_amount: amount,
+        confidence_score: 0.5 // 初始置信度
+      });
     }
   } catch {
     // ignore analytics update failures
@@ -163,13 +162,11 @@ async function updateAnalytics(noteId: string, amount: number) {
 // 异步函数：创建AI分析数据
 async function createAnalytics(noteId: string, amount: number) {
   try {
-    await supabase
-      .from('note_analytics')
-      .insert({
-        note_id: noteId,
-        typical_amount: amount,
-        confidence_score: 0.5 // 初始置信度
-      });
+    await supabase.from('note_analytics').insert({
+      note_id: noteId,
+      typical_amount: amount,
+      confidence_score: 0.5 // 初始置信度
+    });
   } catch {
     // ignore analytics creation failures
   }

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
@@ -50,7 +50,7 @@ export function TransactionList({ initialRows = [], start, end }: TransactionLis
 
         if (!cancelled) {
           if (fetchError) {
-            setError('¼ÓÔØÕËµ¥Ê§°Ü£¬ÇëÉÔºóÖØÊÔ');
+            setError('ï¿½ï¿½ï¿½ï¿½ï¿½Ëµï¿½Ê§ï¿½Ü£ï¿½ï¿½ï¿½ï¿½Ôºï¿½ï¿½ï¿½ï¿½ï¿½');
           } else if (data) {
             setRows(data as Row[]);
           }
@@ -84,12 +84,12 @@ export function TransactionList({ initialRows = [], start, end }: TransactionLis
         <CardContent className="p-6">
           <div className="mb-4">
             <Input
-              placeholder="ËÑË÷·ÖÀà/±¸×¢/±ÒÖÖ"
+              placeholder="ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½×¢/ï¿½ï¿½ï¿½ï¿½"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
           </div>
-          {error ? <EmptyState description={error} /> : <EmptyState description="ÔÝÎÞÕËµ¥¼ÇÂ¼" />}
+          {error ? <EmptyState description={error} /> : <EmptyState description="ï¿½ï¿½ï¿½ï¿½ï¿½Ëµï¿½ï¿½ï¿½Â¼" />}
         </CardContent>
       </Card>
     );
@@ -100,34 +100,36 @@ export function TransactionList({ initialRows = [], start, end }: TransactionLis
       <CardContent className="p-0">
         <div className="p-4 border-b">
           <Input
-            placeholder="ËÑË÷·ÖÀà/±¸×¢/±ÒÖÖ"
+            placeholder="ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½×¢/ï¿½ï¿½ï¿½ï¿½"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
-        {error ? (
-          <div className="p-4 text-sm text-destructive">{error}</div>
-        ) : null}
-        {loading ? (
-          <div className="p-4 text-sm text-muted-foreground">¼ÓÔØÖÐ¡­</div>
-        ) : null}
+        {error ? <div className="p-4 text-sm text-destructive">{error}</div> : null}
+        {loading ? <div className="p-4 text-sm text-muted-foreground">ï¿½ï¿½ï¿½ï¿½ï¿½Ð¡ï¿½</div> : null}
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-muted-foreground">
             <tr>
-              <th className="px-4 py-2 text-left">ÈÕÆÚ</th>
-              <th className="px-4 py-2 text-left">·ÖÀà</th>
-              <th className="px-4 py-2 text-right">½ð¶î</th>
-              <th className="px-4 py-2 text-left">±ÒÖÖ</th>
-              <th className="px-4 py-2 text-left">±¸×¢</th>
+              <th className="px-4 py-2 text-left">ï¿½ï¿½ï¿½ï¿½</th>
+              <th className="px-4 py-2 text-left">ï¿½ï¿½ï¿½ï¿½</th>
+              <th className="px-4 py-2 text-right">ï¿½ï¿½ï¿½</th>
+              <th className="px-4 py-2 text-left">ï¿½ï¿½ï¿½ï¿½</th>
+              <th className="px-4 py-2 text-left">ï¿½ï¿½×¢</th>
             </tr>
           </thead>
           <tbody>
             {filteredRows.map((row) => (
               <tr key={row.id} className="border-b last:border-b-0">
                 <td className="px-4 py-3 align-top text-muted-foreground">{row.date}</td>
-                <td className="px-4 py-3 align-top"><CategoryChip category={row.category} /></td>
-                <td className="px-4 py-3 align-top text-right font-semibold">{formatCurrency(row.amount, row.currency || 'CNY')}</td>
-                <td className="px-4 py-3 align-top text-muted-foreground">{row.currency || 'CNY'}</td>
+                <td className="px-4 py-3 align-top">
+                  <CategoryChip category={row.category} />
+                </td>
+                <td className="px-4 py-3 align-top text-right font-semibold">
+                  {formatCurrency(row.amount, row.currency || 'CNY')}
+                </td>
+                <td className="px-4 py-3 align-top text-muted-foreground">
+                  {row.currency || 'CNY'}
+                </td>
                 <td className="px-4 py-3 align-top text-muted-foreground">{row.note || '-'}</td>
               </tr>
             ))}

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
@@ -60,42 +60,41 @@ export default function AddPage() {
     return Number.isNaN(parsed) ? 0 : parsed;
   }
 
-  const debouncedSubmit = useCallback(async (formData: {
-    amt: number;
-    category: string;
-    note: string;
-    date: Date;
-    currency: Currency;
-  }) => {
-    setLoading(true);
-    setError('');
+  const debouncedSubmit = useCallback(
+    async (formData: {
+      amt: number;
+      category: string;
+      note: string;
+      date: Date;
+      currency: Currency;
+    }) => {
+      setLoading(true);
+      setError('');
 
-    try {
-      const { data: existingRecord, error: queryError } = await supabase
-        .from('transactions')
-        .select('*')
-        .eq('type', type)
-        .eq('category', formData.category)
-        .eq('date', formData.date.toISOString().slice(0, 10))
-        .eq('currency', formData.currency)
-        .eq('note', formData.note)
-        .single();
-
-      let transactionError;
-
-      if (existingRecord) {
-        const { error: updateError } = await supabase
+      try {
+        const { data: existingRecord, error: queryError } = await supabase
           .from('transactions')
-          .update({
-            amount: existingRecord.amount + formData.amt
-          })
-          .eq('id', existingRecord.id);
+          .select('*')
+          .eq('type', type)
+          .eq('category', formData.category)
+          .eq('date', formData.date.toISOString().slice(0, 10))
+          .eq('currency', formData.currency)
+          .eq('note', formData.note)
+          .single();
 
-        transactionError = updateError;
-      } else {
-        const { error: insertError } = await supabase
-          .from('transactions')
-          .insert([
+        let transactionError;
+
+        if (existingRecord) {
+          const { error: updateError } = await supabase
+            .from('transactions')
+            .update({
+              amount: existingRecord.amount + formData.amt
+            })
+            .eq('id', existingRecord.id);
+
+          transactionError = updateError;
+        } else {
+          const { error: insertError } = await supabase.from('transactions').insert([
             {
               type,
               category: formData.category,
@@ -106,96 +105,101 @@ export default function AddPage() {
             }
           ]);
 
-        transactionError = insertError;
+          transactionError = insertError;
+        }
+
+        if (queryError && queryError.code !== 'PGRST116') {
+          throw queryError;
+        }
+
+        if (transactionError) {
+          throw transactionError;
+        }
+
+        setShowToast(true);
+
+        dataSync.notifyTransactionAdded({
+          type,
+          category: formData.category,
+          amount: formData.amt,
+          note: formData.note,
+          date: formData.date.toISOString(),
+          currency: formData.currency
+        });
+        markTransactionsDirty();
+        void fetch('/api/revalidate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tag: 'transactions' }),
+          cache: 'no-store'
+        }).catch(() => undefined);
+
+        if (formData.note && formData.note.trim()) {
+          void updateCommonNote(formData.note.trim(), formData.amt);
+        }
+
+        setTimeout(() => {
+          resetForm();
+        }, 500);
+      } catch (err: any) {
+        setError(err?.message || 'ï¿½á½»Ê§ï¿½ï¿½');
+      } finally {
+        setLoading(false);
+        lastSubmitTimeRef.current = 0;
+        isSubmittingRef.current = false;
+      }
+    },
+    [type]
+  );
+
+  const onSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (isSubmittingRef.current || loading) {
+        return;
       }
 
-      if (queryError && queryError.code !== 'PGRST116') {
-        throw queryError;
+      const now = Date.now();
+      if (now - lastSubmitTimeRef.current < 500) {
+        return;
       }
 
-      if (transactionError) {
-        throw transactionError;
+      isSubmittingRef.current = true;
+      lastSubmitTimeRef.current = now;
+      setLoading(true);
+
+      if (submitTimeoutRef.current) {
+        clearTimeout(submitTimeoutRef.current);
       }
 
-      setShowToast(true);
-
-      dataSync.notifyTransactionAdded({
-        type,
-        category: formData.category,
-        amount: formData.amt,
-        note: formData.note,
-        date: formData.date.toISOString(),
-        currency: formData.currency
-      });
-      markTransactionsDirty();
-      void fetch('/api/revalidate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tag: 'transactions' }),
-        cache: 'no-store'
-      }).catch(() => undefined);
-
-      if (formData.note && formData.note.trim()) {
-        void updateCommonNote(formData.note.trim(), formData.amt);
+      const amt = parseAmount(amountText);
+      if (!category || !date) {
+        setError('ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½');
+        isSubmittingRef.current = false;
+        setLoading(false);
+        return;
+      }
+      if (!(amt > 0)) {
+        setError('ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 0');
+        isSubmittingRef.current = false;
+        setLoading(false);
+        return;
       }
 
-      setTimeout(() => {
-        resetForm();
-      }, 500);
-    } catch (err: any) {
-      setError(err?.message || 'Ìá½»Ê§°Ü');
-    } finally {
-      setLoading(false);
-      lastSubmitTimeRef.current = 0;
-      isSubmittingRef.current = false;
-    }
-  }, [type]);
-
-  const onSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (isSubmittingRef.current || loading) {
-      return;
-    }
-
-    const now = Date.now();
-    if (now - lastSubmitTimeRef.current < 500) {
-      return;
-    }
-
-    isSubmittingRef.current = true;
-    lastSubmitTimeRef.current = now;
-    setLoading(true);
-
-    if (submitTimeoutRef.current) {
-      clearTimeout(submitTimeoutRef.current);
-    }
-
-    const amt = parseAmount(amountText);
-    if (!category || !date) {
-      setError('ÇëÍêÕûÌîÐ´±ØÌîÏî');
-      isSubmittingRef.current = false;
-      setLoading(false);
-      return;
-    }
-    if (!(amt > 0)) {
-      setError('½ð¶î±ØÐë´óÓÚ 0');
-      isSubmittingRef.current = false;
-      setLoading(false);
-      return;
-    }
-
-    submitTimeoutRef.current = setTimeout(() => {
-      debouncedSubmit({
-        amt,
-        category,
-        note,
-        date,
-        currency
-      });
-    }, 200);
-  }, [amountText, category, currency, date, debouncedSubmit, loading, note]);
+      submitTimeoutRef.current = setTimeout(() => {
+        debouncedSubmit({
+          amt,
+          category,
+          note,
+          date,
+          currency
+        });
+      }, 200);
+    },
+    [amountText, category, currency, date, debouncedSubmit, loading, note]
+  );
 
   function resetForm() {
     if (submitTimeoutRef.current) {
@@ -234,21 +238,19 @@ export default function AddPage() {
   return (
     <>
       {showToast && (
-        <ProgressToast
-          message="ÕËµ¥±£´æ³É¹¦£¡"
-          duration={3000}
-          onClose={() => setShowToast(false)}
-        />
+        <ProgressToast message="ï¿½Ëµï¿½ï¿½ï¿½ï¿½ï¿½É¹ï¿½ï¿½ï¿½" duration={3000} onClose={() => setShowToast(false)} />
       )}
 
       <Card>
         <CardHeader>
-          <CardTitle>Ìí¼ÓÕËµ¥</CardTitle>
+          <CardTitle>ï¿½ï¿½ï¿½ï¿½ï¿½Ëµï¿½</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-4">
             <div>
-              <Label>·ÖÀà <span className="text-destructive">*</span></Label>
+              <Label>
+                ï¿½ï¿½ï¿½ï¿½ <span className="text-destructive">*</span>
+              </Label>
               <select
                 className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50"
                 value={category}
@@ -257,7 +259,8 @@ export default function AddPage() {
               >
                 {PRESET_CATEGORIES.map((c) => (
                   <option key={c.key} value={c.key}>
-                    {c.icon ? `${c.icon} ` : ''}{c.label}
+                    {c.icon ? `${c.icon} ` : ''}
+                    {c.label}
                   </option>
                 ))}
               </select>
@@ -266,9 +269,11 @@ export default function AddPage() {
               </div>
             </div>
             <div>
-              <Label>½ð¶î <span className="text-destructive">*</span></Label>
+              <Label>
+                ï¿½ï¿½ï¿½ <span className="text-destructive">*</span>
+              </Label>
               <Input
-                placeholder="ÀýÈç 1,234.56"
+                placeholder="ï¿½ï¿½ï¿½ï¿½ 1,234.56"
                 value={amountText}
                 onChange={(e) => {
                   const raw = e.target.value;
@@ -278,11 +283,13 @@ export default function AddPage() {
                 className={invalidAmount ? 'border-destructive' : undefined}
                 disabled={loading}
               />
-              {invalidAmount && <p className="mt-1 text-sm text-destructive">½ð¶î±ØÐë´óÓÚ 0</p>}
+              {invalidAmount && <p className="mt-1 text-sm text-destructive">ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 0</p>}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label>±ÒÖÖ <span className="text-destructive">*</span></Label>
+                <Label>
+                  ï¿½ï¿½ï¿½ï¿½ <span className="text-destructive">*</span>
+                </Label>
                 <select
                   className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50"
                   value={currency}
@@ -290,34 +297,33 @@ export default function AddPage() {
                   disabled={loading}
                 >
                   {SUPPORTED_CURRENCIES.map((c) => (
-                    <option key={c.code} value={c.code as string}>{c.name}</option>
+                    <option key={c.code} value={c.code as string}>
+                      {c.name}
+                    </option>
                   ))}
                 </select>
               </div>
               <div>
-                <Label>ÈÕÆÚ <span className="text-destructive">*</span></Label>
+                <Label>
+                  ï¿½ï¿½ï¿½ï¿½ <span className="text-destructive">*</span>
+                </Label>
                 <DateInput
                   selected={date}
                   onSelect={setDate}
-                  placeholder="Ñ¡ÔñÈÕÆÚ"
+                  placeholder="Ñ¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"
                   disabled={loading}
                 />
               </div>
             </div>
             <div>
-              <Label>±¸×¢</Label>
-              <NoteInput
-                value={note}
-                onChange={setNote}
-                placeholder="¿ÉÑ¡"
-                disabled={loading}
-              />
+              <Label>ï¿½ï¿½×¢</Label>
+              <NoteInput value={note} onChange={setNote} placeholder="ï¿½ï¿½Ñ¡" disabled={loading} />
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
 
             <div>
               <Button type="submit" disabled={loading} className="w-full">
-                {loading ? '±£´æÖÐ¡­' : '±£´æÕËµ¥'}
+                {loading ? 'ï¿½ï¿½ï¿½ï¿½ï¿½Ð¡ï¿½' : 'ï¿½ï¿½ï¿½ï¿½ï¿½Ëµï¿½'}
               </Button>
             </div>
           </form>

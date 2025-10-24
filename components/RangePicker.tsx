@@ -1,15 +1,15 @@
 /* eslint-disable */
-"use client";
+'use client';
 
 import React, { useMemo } from 'react';
 import { getQuickRange } from '@/lib/date';
 
 const OPTIONS = [
-  { key: 'today', label: '½ñÈÕ' },
-  { key: 'yesterday', label: '×òÈÕ' },
-  { key: 'last7', label: '½ü 7 ÈÕ' },
-  { key: 'month', label: '±¾ÔÂ' },
-  { key: 'custom', label: '×Ô¶¨Òå' }
+  { key: 'today', label: 'ï¿½ï¿½ï¿½ï¿½' },
+  { key: 'yesterday', label: 'ï¿½ï¿½ï¿½ï¿½' },
+  { key: 'last7', label: 'ï¿½ï¿½ 7 ï¿½ï¿½' },
+  { key: 'month', label: 'ï¿½ï¿½ï¿½ï¿½' },
+  { key: 'custom', label: 'ï¿½Ô¶ï¿½ï¿½ï¿½' }
 ] as const;
 
 type RangePickerProps = {
@@ -29,7 +29,7 @@ export function RangePicker({ value, month, onChange }: RangePickerProps) {
     if (value?.start && value?.end) {
       return `${value.start} - ${value.end}`;
     }
-    return 'ÇëÑ¡ÔñÈÕÆÚ·¶Î§';
+    return 'ï¿½ï¿½Ñ¡ï¿½ï¿½ï¿½ï¿½ï¿½Ú·ï¿½Î§';
   }, [selectedKey, value?.start, value?.end, month]);
 
   const handleSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -42,11 +42,12 @@ export function RangePicker({ value, month, onChange }: RangePickerProps) {
     }
   };
 
-  const handleDateChange = (type: 'start' | 'end') => (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (selectedKey !== 'custom') return;
-    const next = { ...value, key: 'custom', [type]: event.target.value };
-    onChange?.(next as { key: string; start?: string; end?: string });
-  };
+  const handleDateChange =
+    (type: 'start' | 'end') => (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (selectedKey !== 'custom') return;
+      const next = { ...value, key: 'custom', [type]: event.target.value };
+      onChange?.(next as { key: string; start?: string; end?: string });
+    };
 
   return (
     <div className="flex flex-col gap-2 text-sm">
@@ -70,7 +71,7 @@ export function RangePicker({ value, month, onChange }: RangePickerProps) {
             value={value?.start ?? ''}
             onChange={handleDateChange('start')}
           />
-          <span>ÖÁ</span>
+          <span>ï¿½ï¿½</span>
           <input
             type="date"
             className="h-9 w-full rounded-md border border-input bg-background px-3"

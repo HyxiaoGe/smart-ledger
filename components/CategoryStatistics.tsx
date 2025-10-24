@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -51,9 +51,7 @@ export function CategoryStatistics({ transactions }: CategoryStatisticsProps) {
   if (stats.length === 0) {
     return (
       <Card>
-        <CardContent className="p-6 text-sm text-muted-foreground">
-          ÔÝÎÞ·ÖÀàÍ³¼ÆÊý¾Ý
-        </CardContent>
+        <CardContent className="p-6 text-sm text-muted-foreground">ï¿½ï¿½ï¿½Þ·ï¿½ï¿½ï¿½Í³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½</CardContent>
       </Card>
     );
   }
@@ -61,21 +59,24 @@ export function CategoryStatistics({ transactions }: CategoryStatisticsProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>·ÖÀàÍ³¼Æ</CardTitle>
+        <CardTitle>ï¿½ï¿½ï¿½ï¿½Í³ï¿½ï¿½</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {visibleStats.map((stat) => {
           const info = getCategoryInfo(stat.category);
           return (
-            <div key={stat.category} className="flex items-center justify-between rounded-md border p-3">
+            <div
+              key={stat.category}
+              className="flex items-center justify-between rounded-md border p-3"
+            >
               <div className="flex items-center gap-3">
                 <span className="text-lg">{info.icon}</span>
                 <div>
                   <div className="font-medium text-foreground">{info.label}</div>
-                  <div className="text-xs text-muted-foreground">{stat.count} ±Ê</div>
+                  <div className="text-xs text-muted-foreground">{stat.count} ï¿½ï¿½</div>
                 </div>
               </div>
-              <Badge variant="outline">£¤{stat.total.toFixed(2)}</Badge>
+              <Badge variant="outline">ï¿½ï¿½{stat.total.toFixed(2)}</Badge>
             </div>
           );
         })}
@@ -85,7 +86,7 @@ export function CategoryStatistics({ transactions }: CategoryStatisticsProps) {
             className="text-xs text-blue-600 underline"
             onClick={() => setVisibleCount((prev) => Math.min(stats.length, prev + 5))}
           >
-            ²é¿´¸ü¶à
+            ï¿½é¿´ï¿½ï¿½ï¿½ï¿½
           </button>
         ) : null}
       </CardContent>

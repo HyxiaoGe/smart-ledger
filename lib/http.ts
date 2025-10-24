@@ -32,7 +32,10 @@ export function setHttpErrorHandler(handler: ErrorHandler | null) {
   errorHandler = handler;
 }
 
-function defaultHttpErrorHandler(error: Error, context: { input: RequestInfo | URL; options: FetchJsonOptions }) {
+function defaultHttpErrorHandler(
+  error: Error,
+  context: { input: RequestInfo | URL; options: FetchJsonOptions }
+) {
   notifyError(error.message, context);
 }
 

@@ -1,5 +1,5 @@
 /* eslint-disable */
-"use client";
+'use client';
 
 import React, { useCallback } from 'react';
 import { CalendarIcon } from 'lucide-react';
@@ -18,7 +18,7 @@ export function DateInput({
   selected,
   onSelect,
   className,
-  placeholder = 'Ñ¡ÔñÈÕÆÚ',
+  placeholder = 'Ñ¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½',
   disabled = false
 }: DateInputProps) {
   const handleChange = useCallback(
@@ -48,5 +48,3 @@ export function DateInput({
     </div>
   );
 }
-
-

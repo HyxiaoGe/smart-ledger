@@ -1,5 +1,5 @@
 /* eslint-disable */
-"use client";
+'use client';
 
 type Task<T> = {
   id: string;
@@ -48,4 +48,3 @@ export class TaskQueue<T = unknown> {
 }
 
 export const taskQueue = new TaskQueue();
-

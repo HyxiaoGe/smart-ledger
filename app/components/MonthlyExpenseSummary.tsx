@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useMemo, useState } from 'react';
 import { TrendingUp, Calendar, DollarSign, BarChart3, TrendingDown, Minus } from 'lucide-react';
@@ -49,7 +49,9 @@ export function MonthlyExpenseSummary({
 
     let actualDays = items.length;
     if (items.length > 1) {
-      const dates = items.map((item) => new Date(item.date)).sort((a, b) => a.getTime() - b.getTime());
+      const dates = items
+        .map((item) => new Date(item.date))
+        .sort((a, b) => a.getTime() - b.getTime());
       const startDate = dates[0];
       const endDate = dates[dates.length - 1];
       actualDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
@@ -89,7 +91,10 @@ export function MonthlyExpenseSummary({
     } | null = null;
 
     if ((rangeType === 'today' || rangeType === 'yesterday') && yesterdayTransactions.length >= 0) {
-      const yesterdayAmount = yesterdayTransactions.reduce((sum, t) => sum + Number(t.amount || 0), 0);
+      const yesterdayAmount = yesterdayTransactions.reduce(
+        (sum, t) => sum + Number(t.amount || 0),
+        0
+      );
       const yesterdayCount = yesterdayTransactions.length;
 
       if (yesterdayAmount > 0 || totalAmount > 0) {
@@ -124,7 +129,15 @@ export function MonthlyExpenseSummary({
       monthProgress: Math.min(monthProgress, 100),
       trend
     };
-  }, [items, transactions, yesterdayTransactions, rangeType, monthTotalAmount, monthTotalCount, monthlyBudget]);
+  }, [
+    items,
+    transactions,
+    yesterdayTransactions,
+    rangeType,
+    monthTotalAmount,
+    monthTotalCount,
+    monthlyBudget
+  ]);
 
   const formatCurrency = (value: number) =>
     value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -133,8 +146,8 @@ export function MonthlyExpenseSummary({
     return (
       <div className="space-y-6">
         <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-8 text-center">
-          <div className="text-lg font-semibold text-gray-800 mb-1">ÔÝÎÞÖ§³öÊý¾Ý</div>
-          <div className="text-sm text-gray-600">¼ÇÂ¼µÚÒ»±ÊÖ§³öºó¼´¿É¿´µ½Í³¼Æ</div>
+          <div className="text-lg font-semibold text-gray-800 mb-1">ï¿½ï¿½ï¿½ï¿½Ö§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½</div>
+          <div className="text-sm text-gray-600">ï¿½ï¿½Â¼ï¿½ï¿½Ò»ï¿½ï¿½Ö§ï¿½ï¿½ï¿½ó¼´¿É¿ï¿½ï¿½ï¿½Í³ï¿½ï¿½</div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -142,12 +155,12 @@ export function MonthlyExpenseSummary({
             <div className="flex items-center gap-3">
               <DollarSign className="h-8 w-8 text-blue-500" />
               <div>
-                <div className="text-xs uppercase text-gray-500">±¾ÆÚÖ§³ö</div>
-                <div className="text-2xl font-semibold text-gray-900">£¤0.00</div>
+                <div className="text-xs uppercase text-gray-500">ï¿½ï¿½ï¿½ï¿½Ö§ï¿½ï¿½</div>
+                <div className="text-2xl font-semibold text-gray-900">ï¿½ï¿½0.00</div>
               </div>
             </div>
             <p className="text-sm text-gray-500 leading-6">
-              ¼ÇÕËºóÕâÀï»áÊµÊ±Õ¹Ê¾±¾ÆÚÖ§³ö¸Å¿ö£¬°ïÖúÄãÕÆÎÕ×Ê½ðÁ÷Ïò¡£
+              ï¿½ï¿½ï¿½Ëºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÊµÊ±Õ¹Ê¾ï¿½ï¿½ï¿½ï¿½Ö§ï¿½ï¿½ï¿½Å¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê½ï¿½ï¿½ï¿½ï¿½ï¿½
             </p>
           </div>
 
@@ -155,12 +168,12 @@ export function MonthlyExpenseSummary({
             <div className="flex items-center gap-3">
               <TrendingUp className="h-8 w-8 text-purple-500" />
               <div>
-                <div className="text-xs uppercase text-gray-500">ÔÂ¶ÈÔ¤Ëã½ø¶È</div>
+                <div className="text-xs uppercase text-gray-500">ï¿½Â¶ï¿½Ô¤ï¿½ï¿½ï¿½ï¿½ï¿½</div>
                 <div className="text-2xl font-semibold text-gray-900">0%</div>
               </div>
             </div>
             <p className="text-sm text-gray-500 leading-6">
-              ÉèÖÃÔÂ¶ÈÔ¤Ëãºó£¬»á×Ô¶¯¼ÆËãÔ¤ËãÏûºÄ½ø¶È£¬ÌáÐÑÄãºÏÀí°²ÅÅÖ§³ö¡£
+              ï¿½ï¿½ï¿½ï¿½ï¿½Â¶ï¿½Ô¤ï¿½ï¿½ó£¬»ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½Ô¤ï¿½ï¿½ï¿½ï¿½ï¿½Ä½ï¿½ï¿½È£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö§ï¿½ï¿½ï¿½ï¿½
             </p>
           </div>
         </div>
@@ -174,32 +187,34 @@ export function MonthlyExpenseSummary({
         <div className="bg-gradient-to-br from-indigo-50 to-blue-100 rounded-xl p-6 shadow-lg border border-indigo-100">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <div className="text-xs text-indigo-600 uppercase">±¾ÆÚÖ§³ö</div>
+              <div className="text-xs text-indigo-600 uppercase">ï¿½ï¿½ï¿½ï¿½Ö§ï¿½ï¿½</div>
               <div className="mt-1 text-2xl font-semibold text-indigo-900">
-                £¤{formatCurrency(statistics.totalAmount)}
+                ï¿½ï¿½{formatCurrency(statistics.totalAmount)}
               </div>
             </div>
             <DollarSign className="h-10 w-10 text-indigo-500" />
           </div>
           <div className="space-y-2 text-sm text-indigo-700">
-            <p>Æ¾¾Ý£º{items.length} Ìì¹² {statistics.totalCount} ±ÊÖ§³ö</p>
-            <p>Æ½¾ùÃ¿ÈÕ£º£¤{formatCurrency(statistics.dailyAverage)}</p>
+            <p>
+              Æ¾ï¿½Ý£ï¿½{items.length} ï¿½ì¹² {statistics.totalCount} ï¿½ï¿½Ö§ï¿½ï¿½
+            </p>
+            <p>Æ½ï¿½ï¿½Ã¿ï¿½Õ£ï¿½ï¿½ï¿½{formatCurrency(statistics.dailyAverage)}</p>
           </div>
         </div>
 
         <div className="bg-gradient-to-br from-emerald-50 to-green-100 rounded-xl p-6 shadow-lg border border-emerald-100">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <div className="text-xs text-emerald-600 uppercase">ÔÂ¶ÈÀÛ¼Æ</div>
+              <div className="text-xs text-emerald-600 uppercase">ï¿½Â¶ï¿½ï¿½Û¼ï¿½</div>
               <div className="mt-1 text-2xl font-semibold text-emerald-900">
-                £¤{formatCurrency(statistics.monthTotalAmount)}
+                ï¿½ï¿½{formatCurrency(statistics.monthTotalAmount)}
               </div>
             </div>
             <Calendar className="h-10 w-10 text-emerald-500" />
           </div>
           <div className="space-y-2 text-sm text-emerald-700">
-            <p>ÊÂÏî£º{monthTotalCount} ±ÊÖ§³öÒÑ¼ÇÂ¼</p>
-            <p>Ô¤Ëã½ø¶È£º{statistics.monthProgress.toFixed(1)}%</p>
+            <p>ï¿½ï¿½ï¿½î£º{monthTotalCount} ï¿½ï¿½Ö§ï¿½ï¿½ï¿½Ñ¼ï¿½Â¼</p>
+            <p>Ô¤ï¿½ï¿½ï¿½ï¿½È£ï¿½{statistics.monthProgress.toFixed(1)}%</p>
           </div>
         </div>
       </div>
@@ -208,29 +223,35 @@ export function MonthlyExpenseSummary({
         <div className="bg-white/80 backdrop-blur rounded-xl border border-gray-100 p-5 shadow-sm">
           <div className="flex items-center gap-3 mb-3">
             <BarChart3 className="h-5 w-5 text-blue-500" />
-            <h4 className="font-semibold text-gray-800">µ¥±Ê×î¸ß</h4>
+            <h4 className="font-semibold text-gray-800">ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½</h4>
           </div>
-          <div className="text-2xl font-bold text-blue-600">£¤{formatCurrency(statistics.maxTransactionAmount)}</div>
-          <p className="text-xs text-gray-500 mt-1">{statistics.maxTransactionDate || 'ÔÝÎÞ¼ÇÂ¼'}</p>
+          <div className="text-2xl font-bold text-blue-600">
+            ï¿½ï¿½{formatCurrency(statistics.maxTransactionAmount)}
+          </div>
+          <p className="text-xs text-gray-500 mt-1">{statistics.maxTransactionDate || 'ï¿½ï¿½ï¿½Þ¼ï¿½Â¼'}</p>
           {statistics.maxTransactionNote ? (
-            <p className="text-xs text-gray-500 mt-1">±¸×¢£º{statistics.maxTransactionNote}</p>
+            <p className="text-xs text-gray-500 mt-1">ï¿½ï¿½×¢ï¿½ï¿½{statistics.maxTransactionNote}</p>
           ) : null}
         </div>
 
         <div className="bg-white/80 backdrop-blur rounded-xl border border-gray-100 p-5 shadow-sm">
           <div className="flex items-center gap-3 mb-3">
             <Minus className="h-5 w-5 text-teal-500" />
-            <h4 className="font-semibold text-gray-800">µ¥±Ê×îµÍ</h4>
+            <h4 className="font-semibold text-gray-800">ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½</h4>
           </div>
-          <div className="text-2xl font-bold text-teal-600">£¤{formatCurrency(statistics.minTransactionAmount)}</div>
+          <div className="text-2xl font-bold text-teal-600">
+            ï¿½ï¿½{formatCurrency(statistics.minTransactionAmount)}
+          </div>
         </div>
 
         <div className="bg-white/80 backdrop-blur rounded-xl border border-gray-100 p-5 shadow-sm">
           <div className="flex items-center gap-3 mb-3">
             <TrendingDown className="h-5 w-5 text-purple-500" />
-            <h4 className="font-semibold text-gray-800">Æ½¾ùµ¥±Ê</h4>
+            <h4 className="font-semibold text-gray-800">Æ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½</h4>
           </div>
-          <div className="text-2xl font-bold text-purple-600">£¤{formatCurrency(statistics.avgTransactionAmount)}</div>
+          <div className="text-2xl font-bold text-purple-600">
+            ï¿½ï¿½{formatCurrency(statistics.avgTransactionAmount)}
+          </div>
         </div>
       </div>
 
@@ -238,11 +259,12 @@ export function MonthlyExpenseSummary({
         <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-6 border border-orange-100">
           <div className="flex items-center gap-3 mb-3">
             <TrendingUp className="h-5 w-5 text-orange-500" />
-            <h4 className="font-semibold text-gray-800">Óë×òÈÕ±È½Ï</h4>
+            <h4 className="font-semibold text-gray-800">ï¿½ï¿½ï¿½ï¿½ï¿½Õ±È½ï¿½</h4>
           </div>
           <p className="text-sm text-orange-700 leading-6">
-            ½ñÈÕÖ§³ö±ä»¯ {statistics.trend.amountChange.toFixed(2)}£¨{statistics.trend.amountChangePercent.toFixed(1)}%£©£¬
-            Ö§³ö±ÊÊý±ä»¯ {statistics.trend.countChange} ±Ê¡£
+            ï¿½ï¿½ï¿½ï¿½Ö§ï¿½ï¿½ï¿½ä»¯ {statistics.trend.amountChange.toFixed(2)}ï¿½ï¿½
+            {statistics.trend.amountChangePercent.toFixed(1)}%ï¿½ï¿½ï¿½ï¿½ Ö§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ä»¯{' '}
+            {statistics.trend.countChange} ï¿½Ê¡ï¿½
           </p>
         </div>
       ) : null}
@@ -251,10 +273,10 @@ export function MonthlyExpenseSummary({
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-purple-600" />
-            <h4 className="font-semibold text-gray-800">ÔÂ¶ÈÔ¤Ëã½ø¶È</h4>
+            <h4 className="font-semibold text-gray-800">ï¿½Â¶ï¿½Ô¤ï¿½ï¿½ï¿½ï¿½ï¿½</h4>
           </div>
           <span className="text-sm text-gray-600">
-            £¤{formatCurrency(statistics.monthTotalAmount)} / £¤{formatCurrency(monthlyBudget)}
+            ï¿½ï¿½{formatCurrency(statistics.monthTotalAmount)} / ï¿½ï¿½{formatCurrency(monthlyBudget)}
           </span>
         </div>
         <div className="relative">
@@ -266,17 +288,15 @@ export function MonthlyExpenseSummary({
           </div>
           <div className="flex justify-between mt-2 text-xs text-gray-500">
             <span>0%</span>
-            <span className="text-purple-600 font-semibold">{statistics.monthProgress.toFixed(1)}%</span>
+            <span className="text-purple-600 font-semibold">
+              {statistics.monthProgress.toFixed(1)}%
+            </span>
             <span>100%</span>
           </div>
         </div>
       </div>
 
-      {dateRange ? (
-        <p className="text-xs text-muted-foreground">
-          Êý¾Ý·¶Î§£º{dateRange}
-        </p>
-      ) : null}
+      {dateRange ? <p className="text-xs text-muted-foreground">ï¿½ï¿½ï¿½Ý·ï¿½Î§ï¿½ï¿½{dateRange}</p> : null}
     </div>
   );
 }

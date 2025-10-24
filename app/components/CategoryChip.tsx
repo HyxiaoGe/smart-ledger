@@ -8,9 +8,10 @@ export function CategoryChip({ category }: { category: string }) {
   const color = meta?.color || '#6B7280';
   return (
     <Badge variant="outline" style={{ borderColor: color, color }}>
-      <span className="mr-1" aria-hidden>{icon}</span>
+      <span className="mr-1" aria-hidden>
+        {icon}
+      </span>
       {label}
     </Badge>
   );
 }
-

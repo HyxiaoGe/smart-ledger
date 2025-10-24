@@ -57,14 +57,14 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
               <AlertTriangle className="h-6 w-6 text-red-600" />
             </div>
-            <CardTitle className="text-lg font-semibold text-foreground">рЁцФЁЖож╢МнС</CardTitle>
+            <CardTitle className="text-lg font-semibold text-foreground">рЁО©╫О©╫О©╫О©╫ж╢О©╫О©╫О©╫</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-sm text-muted-foreground">
-            <p>╨э╠╖г╦ё╛рЁцФ╪стьй╖╟э║ёдЦ©иртЁ╒йтк╒пбрЁцФ╩Р╥╣╩ьйврЁ║ё</p>
+            <p>О©╫э╠О©╫г╦О©╫О©╫рЁО©╫О©╫О©╫О©╫О©╫й╖О©╫э║О©╫О©╫О©╫О©╫О©╫тЁО©╫О©╫О©╫к╒О©╫О©╫рЁО©╫О©╫Р╥╣╩О©╫О©╫О©╫рЁО©╫О©╫</p>
 
             {process.env.NODE_ENV === 'development' && this.state.error ? (
               <details className="rounded-md border bg-muted/40 p-3 text-xs text-left">
-                <summary className="cursor-pointer font-medium text-foreground">╢МнСпео╒</summary>
+                <summary className="cursor-pointer font-medium text-foreground">О©╫О©╫О©╫О©╫О©╫О©╫о╒</summary>
                 <pre className="mt-2 whitespace-pre-wrap text-muted-foreground">
                   {this.state.error.toString()}
                   {this.state.errorInfo?.componentStack}
@@ -75,11 +75,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             <div className="flex items-center gap-3 pt-2">
               <Button onClick={this.handleReset} className="flex-1">
                 <RefreshCw className="mr-2 h-4 w-4" />
-                жьйт
+                О©╫О©╫О©╫О©╫
               </Button>
               <Button onClick={this.handleGoHome} variant="outline" className="flex-1">
                 <Home className="mr-2 h-4 w-4" />
-                ╥╣╩ьйврЁ
+                О©╫О©╫О©╫О©╫О©╫О©╫рЁ
               </Button>
             </div>
           </CardContent>
@@ -89,11 +89,22 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 }
 
-export function ComponentErrorBoundary({ children, fallback }: { children: ReactNode; fallback?: ReactNode }) {
+export function ComponentErrorBoundary({
+  children,
+  fallback
+}: {
+  children: ReactNode;
+  fallback?: ReactNode;
+}) {
   return (
-    <ErrorBoundary fallback={fallback ?? <div className="p-4 text-center text-sm text-muted-foreground">вИ╪Ч╪стьй╖╟эё╛гКит╨Стыйт║ё</div>}>
+    <ErrorBoundary
+      fallback={
+        fallback ?? (
+          <div className="p-4 text-center text-sm text-muted-foreground">О©╫О©╫О©╫О©╫О©╫О©╫О©╫й╖О©╫эёО©╫О©╫О©╫О©╫т╨О©╫О©╫О©╫О©╫т║О©╫</div>
+        )
+      }
+    >
       {children}
     </ErrorBoundary>
   );
 }
-

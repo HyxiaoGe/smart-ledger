@@ -29,4 +29,3 @@ export function subscribeNotifications(listener: Listener) {
 export function notifyError(message: string, detail?: unknown) {
   notify({ type: 'error', message, detail });
 }
-

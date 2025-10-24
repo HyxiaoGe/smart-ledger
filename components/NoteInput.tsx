@@ -1,5 +1,5 @@
 /* eslint-disable */
-"use client";
+'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { CommonNote } from '@/types/transaction';
@@ -18,7 +18,7 @@ type NoteInputProps = {
 export function NoteInput({
   value = '',
   onChange,
-  placeholder = '¿ÉÑ¡',
+  placeholder = 'ï¿½ï¿½Ñ¡',
   className = '',
   disabled = false
 }: NoteInputProps) {
@@ -59,12 +59,14 @@ export function NoteInput({
       }
 
       debounceRef.current = setTimeout(() => {
-        searchRemote(nextValue.trim()).then((remote) => {
-          if (remote.length > 0) {
-            setSuggestions(remote);
-            setActiveIndex(-1);
-          }
-        }).catch(() => undefined);
+        searchRemote(nextValue.trim())
+          .then((remote) => {
+            if (remote.length > 0) {
+              setSuggestions(remote);
+              setActiveIndex(-1);
+            }
+          })
+          .catch(() => undefined);
       }, 300);
     },
     [onChange, searchLocal, searchRemote]
@@ -128,7 +130,7 @@ export function NoteInput({
       {showSuggestions && !disabled && (
         <div className="absolute top-full left-0 right-0 z-50 mt-1 max-h-60 overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg">
           {isLoading ? (
-            <div className="p-3 text-center text-sm text-muted-foreground">¼ÓÔØÖÐ¡­</div>
+            <div className="p-3 text-center text-sm text-muted-foreground">ï¿½ï¿½ï¿½ï¿½ï¿½Ð¡ï¿½</div>
           ) : suggestions.length > 0 ? (
             suggestions.map((suggestion, index) => (
               <button
@@ -144,19 +146,16 @@ export function NoteInput({
               >
                 <span className="truncate mr-3">{suggestion.content}</span>
                 <span className="flex items-center gap-2 text-xs text-muted-foreground">
-                  {suggestion.usage_count > 5 ? (
-                    <Badge variant="outline">³£ÓÃ</Badge>
-                  ) : null}
-                  <span>{suggestion.usage_count} ´Î</span>
+                  {suggestion.usage_count > 5 ? <Badge variant="outline">ï¿½ï¿½ï¿½ï¿½</Badge> : null}
+                  <span>{suggestion.usage_count} ï¿½ï¿½</span>
                 </span>
               </button>
             ))
           ) : (
-            <div className="p-3 text-center text-sm text-muted-foreground">Ã»ÓÐÆ¥ÅäµÄ³£ÓÃ±¸×¢</div>
+            <div className="p-3 text-center text-sm text-muted-foreground">Ã»ï¿½ï¿½Æ¥ï¿½ï¿½Ä³ï¿½ï¿½Ã±ï¿½×¢</div>
           )}
         </div>
       )}
     </div>
   );
 }
-

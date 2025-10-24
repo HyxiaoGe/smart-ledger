@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -35,9 +35,9 @@ export function CollapsibleTransactionList({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <List className="h-5 w-5 text-muted-foreground" />
-            <h3 className="text-lg font-semibold text-foreground">ÕËµ¥Ã÷Ï¸</h3>
+            <h3 className="text-lg font-semibold text-foreground">ï¿½Ëµï¿½ï¿½ï¿½Ï¸</h3>
             <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
-              ¹² {totalCount} ±Ê
+              ï¿½ï¿½ {totalCount} ï¿½ï¿½
             </span>
           </div>
           <Button
@@ -47,7 +47,7 @@ export function CollapsibleTransactionList({
             onClick={() => setExpanded((prev) => !prev)}
             className="flex items-center gap-2"
           >
-            {expanded ? 'ÊÕÆðÃ÷Ï¸' : 'Õ¹¿ªÃ÷Ï¸'}
+            {expanded ? 'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸' : 'Õ¹ï¿½ï¿½ï¿½ï¿½Ï¸'}
             {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </Button>
         </div>
@@ -56,13 +56,13 @@ export function CollapsibleTransactionList({
           <TransactionGroupedList initialTransactions={initialTransactions} />
         ) : (
           <div className="rounded-md border border-dashed border-border bg-muted/40 py-8 text-center text-sm text-muted-foreground">
-            ÕËµ¥Ã÷Ï¸ÒÑÊÕÆð£¬µã»÷¡¸Õ¹¿ªÃ÷Ï¸¡¹°´Å¥²é¿´ÏêÏ¸¼ÇÂ¼¡£
+            ï¿½Ëµï¿½ï¿½ï¿½Ï¸ï¿½ï¿½ï¿½ï¿½ï¿½ð£¬µï¿½ï¿½ï¿½ï¿½Õ¹ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ï¿½ï¿½ï¿½Å¥ï¿½é¿´ï¿½ï¿½Ï¸ï¿½ï¿½Â¼ï¿½ï¿½
           </div>
         )}
 
         {totalCount === 0 && (
           <div className="rounded-md border border-dashed border-border bg-muted/30 py-12 text-center text-sm text-muted-foreground">
-            ÔÝÎÞÕËµ¥¼ÇÂ¼£¬µã»÷¡¸Ìí¼ÓÕËµ¥¡¹¿ªÊ¼¼ÇÂ¼Ö§³ö¡£
+            ï¿½ï¿½ï¿½ï¿½ï¿½Ëµï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ëµï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½Â¼Ö§ï¿½ï¿½ï¿½ï¿½
           </div>
         )}
       </CardContent>

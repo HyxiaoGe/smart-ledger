@@ -13,4 +13,3 @@ export function formatAmount(n: number): string {
 export function formatCurrency(n: number, code: string): string {
   return `${currencySymbol(code)}${formatAmount(n)}`;
 }
-

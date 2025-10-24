@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useMemo } from 'react';
 import type { Route } from 'next';
@@ -34,7 +34,9 @@ type ChartSlice = {
   value: number;
 };
 
-function buildRangePie(rows: Array<{ type: string; category: string; amount: number }>): ChartSlice[] {
+function buildRangePie(
+  rows: Array<{ type: string; category: string; amount: number }>
+): ChartSlice[] {
   const byCategory = new Map<string, number>();
   rows.forEach((row) => {
     if (row.type !== 'expense') return;
@@ -44,12 +46,20 @@ function buildRangePie(rows: Array<{ type: string; category: string; amount: num
   return Array.from(byCategory.entries()).map(([name, value]) => ({ name, value }));
 }
 
-export default function HomePageClient({ data, currency, rangeParam, monthLabel }: HomePageClientProps) {
+export default function HomePageClient({
+  data,
+  currency,
+  rangeParam,
+  monthLabel
+}: HomePageClientProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const pieRange = useMemo(() => (data.rangeRows?.length ? buildRangePie(data.rangeRows) : []), [data.rangeRows]);
+  const pieRange = useMemo(
+    () => (data.rangeRows?.length ? buildRangePie(data.rangeRows) : []),
+    [data.rangeRows]
+  );
 
   const updateRange = (nextRange: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -92,7 +102,12 @@ export default function HomePageClient({ data, currency, rangeParam, monthLabel 
 
       <section className="space-y-2">
         <h2 className="text-lg font-semibold">{`${TEXT.chartsTitle} (${currency})`}</h2>
-        <ChartSummary trend={data.trend} pieMonth={data.pie} pieRange={pieRange} currency={currency} />
+        <ChartSummary
+          trend={data.trend}
+          pieMonth={data.pie}
+          pieRange={pieRange}
+          currency={currency}
+        />
       </section>
 
       <section className="space-y-2">

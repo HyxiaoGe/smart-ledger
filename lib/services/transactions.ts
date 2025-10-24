@@ -66,8 +66,12 @@ export async function listTransactionsByRange(
           return { rows: data ?? [], monthLabel: '全部' } as const;
         }
 
-        const start = new Date(parsedMonth.getFullYear(), parsedMonth.getMonth(), 1).toISOString().slice(0, 10);
-        const end = new Date(parsedMonth.getFullYear(), parsedMonth.getMonth() + 1, 1).toISOString().slice(0, 10);
+        const start = new Date(parsedMonth.getFullYear(), parsedMonth.getMonth(), 1)
+          .toISOString()
+          .slice(0, 10);
+        const end = new Date(parsedMonth.getFullYear(), parsedMonth.getMonth() + 1, 1)
+          .toISOString()
+          .slice(0, 10);
         dateRange = { start, end, label: formatMonth(parsedMonth) };
 
         query = supabase
@@ -123,8 +127,12 @@ export async function getCurrentMonthSummary() {
   const getCached = unstable_cache(
     async () => {
       const today = new Date();
-      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0, 10);
-      const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 1).toISOString().slice(0, 10);
+      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
+        .toISOString()
+        .slice(0, 10);
+      const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 1)
+        .toISOString()
+        .slice(0, 10);
 
       const { data: monthData } = await supabase
         .from('transactions')
@@ -142,7 +150,11 @@ export async function getCurrentMonthSummary() {
         monthDaily.set(key, { total: cur.total + Number(r.amount || 0), count: cur.count + 1 });
       }
 
-      const monthItems = Array.from(monthDaily.entries()).map(([date, v]) => ({ date, total: v.total, count: v.count }));
+      const monthItems = Array.from(monthDaily.entries()).map(([date, v]) => ({
+        date,
+        total: v.total,
+        count: v.count
+      }));
       const monthTotalAmount = monthItems.reduce((sum, item) => sum + item.total, 0);
       const monthTotalCount = monthItems.reduce((sum, item) => sum + item.count, 0);
 

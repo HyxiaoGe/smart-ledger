@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ export function AiAnalyzeButton({ currency, month }: { currency: string; month: 
 
   return (
     <Button type="button" variant="outline" onClick={handleAnalyze}>
-      ÖÇÄÜ·ÖÎö
+      ï¿½ï¿½ï¿½Ü·ï¿½ï¿½ï¿½
     </Button>
   );
 }

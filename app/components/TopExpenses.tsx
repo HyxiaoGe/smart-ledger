@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import { CategoryChip } from '@/components/CategoryChip';
 import { formatCurrency } from '@/lib/format';
 
@@ -23,11 +23,15 @@ export function TopExpenses({ items, currency }: { items: Item[]; currency: stri
           <div className="flex-1">
             <div className="flex items-center justify-between">
               <CategoryChip category={it.category} />
-              <div className="font-semibold">{formatCurrency(Number(it.amount || 0), it.currency || currency)}</div>
+              <div className="font-semibold">
+                {formatCurrency(Number(it.amount || 0), it.currency || currency)}
+              </div>
             </div>
             <div className="mt-1 text-xs text-muted-foreground flex items-center justify-between">
               <span>{it.date}</span>
-              <span className="truncate max-w-[60%]" title={it.note || ''}>{it.note || ''}</span>
+              <span className="truncate max-w-[60%]" title={it.note || ''}>
+                {it.note || ''}
+              </span>
             </div>
           </div>
         </li>
@@ -35,4 +39,3 @@ export function TopExpenses({ items, currency }: { items: Item[]; currency: stri
     </ul>
   );
 }
-

@@ -58,4 +58,3 @@ export async function chat(messages: ChatMessage[]): Promise<string> {
 export function getAiConfig() {
   return { provider, conf: DEFAULTS[provider] };
 }
-

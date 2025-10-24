@@ -1,5 +1,5 @@
 /* eslint-disable */
-"use client";
+'use client';
 
 import { useEffect, useState } from 'react';
 import { removeItem, writeJSON, readString, writeString } from '@/lib/storage';
@@ -148,4 +148,3 @@ export function useDataSync(eventType: SyncType, callback: (event: SyncEvent) =>
 
   return mounted;
 }
-

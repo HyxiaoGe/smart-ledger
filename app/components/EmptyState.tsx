@@ -2,7 +2,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 
 export function EmptyState({
-  title = 'ÔÝÎÞÊý¾Ý',
+  title = 'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½',
   description,
   action,
   className
@@ -13,10 +13,12 @@ export function EmptyState({
   className?: string;
 }) {
   return (
-    <div className={cn(
-      'flex flex-col items-center justify-center gap-2 rounded-lg border p-8 text-center text-sm text-muted-foreground',
-      className
-    )}>
+    <div
+      className={cn(
+        'flex flex-col items-center justify-center gap-2 rounded-lg border p-8 text-center text-sm text-muted-foreground',
+        className
+      )}
+    >
       <div className="text-base font-medium text-foreground">{title}</div>
       {description ? <div>{description}</div> : null}
       {action ? <div className="mt-1">{action}</div> : null}

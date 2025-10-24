@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React from 'react';
 
@@ -13,19 +13,21 @@ export function ChartSummary({ trend, pieMonth, pieRange, currency }: ChartSumma
   return (
     <div className="grid gap-4 md:grid-cols-3 text-sm text-muted-foreground">
       <div className="rounded-lg border bg-white p-4">
-        <div className="text-xs uppercase text-gray-500">Ç÷ÊÆµãÊý</div>
+        <div className="text-xs uppercase text-gray-500">ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿½</div>
         <div className="mt-2 text-2xl font-semibold text-gray-900">{trend.length}</div>
-        <p className="mt-1 text-xs">ÏµÍ³ÔÝÎ´ÆôÓÃÍ¼±í£¬Õ¹Ê¾µ±Ç°Êý¾ÝµÄ»ù´¡Í³¼Æ¡£</p>
+        <p className="mt-1 text-xs">ÏµÍ³ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½ï¿½ï¿½Õ¹Ê¾ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ÝµÄ»ï¿½ï¿½ï¿½Í³ï¿½Æ¡ï¿½</p>
       </div>
       <div className="rounded-lg border bg-white p-4">
-        <div className="text-xs uppercase text-gray-500">ÔÂ¶È·ÖÀàÊý</div>
+        <div className="text-xs uppercase text-gray-500">ï¿½Â¶È·ï¿½ï¿½ï¿½ï¿½ï¿½</div>
         <div className="mt-2 text-2xl font-semibold text-gray-900">{pieMonth.length}</div>
-        <p className="mt-1 text-xs">{pieMonth.length > 0 ? 'Êý¾ÝÒÑ¼ÓÔØ£¬¿ÉÓÃÓÚºóÐø¿ÉÊÓ»¯¡£' : 'ÔÝÎÞ¿ÉÊÓ»¯Êý¾Ý¡£'}</p>
+        <p className="mt-1 text-xs">
+          {pieMonth.length > 0 ? 'ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¼ï¿½ï¿½Ø£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó»ï¿½ï¿½ï¿½' : 'ï¿½ï¿½ï¿½Þ¿ï¿½ï¿½Ó»ï¿½ï¿½ï¿½ï¿½Ý¡ï¿½'}
+        </p>
       </div>
       <div className="rounded-lg border bg-white p-4">
-        <div className="text-xs uppercase text-gray-500">µ±Ç°Çø¼ä·ÖÀàÊý</div>
+        <div className="text-xs uppercase text-gray-500">ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½</div>
         <div className="mt-2 text-2xl font-semibold text-gray-900">{pieRange.length}</div>
-        <p className="mt-1 text-xs">±ÒÖÖ£º{currency}</p>
+        <p className="mt-1 text-xs">ï¿½ï¿½ï¿½Ö£ï¿½{currency}</p>
       </div>
     </div>
   );

@@ -30,14 +30,21 @@ const CategoryModule = dynamic(
   }
 );
 
-export default async function RecordsPage({ searchParams }: { searchParams?: { month?: string; range?: string; start?: string; end?: string } }) {
+export default async function RecordsPage({
+  searchParams
+}: {
+  searchParams?: { month?: string; range?: string; start?: string; end?: string };
+}) {
   const month = searchParams?.month;
   const range = (searchParams?.range as string) || 'today';
   const start = searchParams?.start;
   const end = searchParams?.end;
 
   const [mainResult, yesterdayData, monthSummary] = await Promise.all([
-    listTransactionsByRange(month, range, start, end).catch(() => ({ rows: [], monthLabel: '全部' })),
+    listTransactionsByRange(month, range, start, end).catch(() => ({
+      rows: [],
+      monthLabel: '全部'
+    })),
     listYesterdayTransactions(range).catch(() => []),
     getCurrentMonthSummary().catch(() => ({
       monthItems: [],
@@ -59,7 +66,9 @@ export default async function RecordsPage({ searchParams }: { searchParams?: { m
 
       {/* 统计面板 - 所有范围都显示 */}
       {(() => {
-        const { dailyItems: items, expenseTransactions } = partitionExpenseTransactions(rows as any[]);
+        const { dailyItems: items, expenseTransactions } = partitionExpenseTransactions(
+          rows as any[]
+        );
 
         return (
           <>
@@ -75,19 +84,13 @@ export default async function RecordsPage({ searchParams }: { searchParams?: { m
             />
 
             {/* 分类统计组件 */}
-            <CategoryModule
-              transactions={expenseTransactions}
-              currency={'CNY'}
-            />
+            <CategoryModule transactions={expenseTransactions} currency={'CNY'} />
           </>
         );
       })()}
 
       {/* 交易明细列表 - 带收纳功能 */}
-      <CollapsibleTransactionList
-        initialTransactions={rows as any}
-        totalCount={rows.length}
-      />
+      <CollapsibleTransactionList initialTransactions={rows as any} totalCount={rows.length} />
     </div>
   );
 }

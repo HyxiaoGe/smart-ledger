@@ -5,7 +5,11 @@ export const safeStorage: StorageLike | null =
     ? window.localStorage
     : null;
 
-export function readJSON<T>(key: string, fallback: T, storage: StorageLike | null = safeStorage): T {
+export function readJSON<T>(
+  key: string,
+  fallback: T,
+  storage: StorageLike | null = safeStorage
+): T {
   if (!storage) return fallback;
   try {
     const raw = storage.getItem(key);

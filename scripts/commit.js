@@ -83,13 +83,14 @@ function generateCommitMessage(type, subject, body) {
   if (body) {
     message += '\n\n';
     // 将body转换为项目规范格式（每行以 - 开头）
-    const bodyLines = body.split('\n').filter(line => line.trim());
+    const bodyLines = body.split('\n').filter((line) => line.trim());
     if (bodyLines.length > 0) {
-      message += bodyLines.map(line => `- ${line.trim()}`).join('\n');
+      message += bodyLines.map((line) => `- ${line.trim()}`).join('\n');
     }
   }
 
-  message += '\n\n🤖 Generated with [Claude Code](https://claude.ai/code)\nCo-Authored-By: Claude <noreply@anthropic.com>';
+  message +=
+    '\n\n🤖 Generated with [Claude Code](https://claude.ai/code)\nCo-Authored-By: Claude <noreply@anthropic.com>';
 
   return message;
 }
@@ -133,7 +134,6 @@ async function main() {
     } else {
       console.log('❌ 取消提交');
     }
-
   } catch (error) {
     console.error('❌ 错误:', error.message);
   } finally {

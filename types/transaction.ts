@@ -33,4 +33,3 @@ export interface NoteAnalytics {
   confidence_score: number; // 分析置信度
   updated_at: string;
 }
-

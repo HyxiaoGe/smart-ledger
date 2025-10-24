@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -20,7 +20,7 @@ type TransactionGroupedListProps = {
 
 export function TransactionGroupedList({ initialTransactions }: TransactionGroupedListProps) {
   if (!initialTransactions.length) {
-    return <div className="text-sm text-muted-foreground">ÔÝÎÞÕËµ¥¼ÇÂ¼¡£</div>;
+    return <div className="text-sm text-muted-foreground">ï¿½ï¿½ï¿½ï¿½ï¿½Ëµï¿½ï¿½ï¿½Â¼ï¿½ï¿½</div>;
   }
 
   return (
@@ -30,7 +30,7 @@ export function TransactionGroupedList({ initialTransactions }: TransactionGroup
           <CardContent className="space-y-2 py-4">
             <div className="flex items-center justify-between">
               <div className="text-sm text-muted-foreground">{transaction.date}</div>
-              <div className="text-xs text-rose-500 font-medium">Ö§³ö</div>
+              <div className="text-xs text-rose-500 font-medium">Ö§ï¿½ï¿½</div>
             </div>
             <div className="flex items-center justify-between">
               <div className="text-sm font-medium text-foreground">{transaction.category}</div>
@@ -39,7 +39,7 @@ export function TransactionGroupedList({ initialTransactions }: TransactionGroup
               </div>
             </div>
             {transaction.note ? (
-              <div className="text-xs text-muted-foreground">±¸×¢£º{transaction.note}</div>
+              <div className="text-xs text-muted-foreground">ï¿½ï¿½×¢ï¿½ï¿½{transaction.note}</div>
             ) : null}
           </CardContent>
         </Card>
