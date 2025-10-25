@@ -5,7 +5,6 @@ import {
   listTransactionsByRange,
   listYesterdayTransactions
 } from '@/lib/services/transactions';
-export const revalidate = 60;
 import { RangePicker } from '@/components/RangePicker';
 import { CollapsibleTransactionList } from '@/components/CollapsibleTransactionList';
 import { SkeletonBlock, SkeletonGrid } from '@/components/Skeletons';

@@ -1,5 +1,6 @@
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+
+import React from 'react';
 
 export function EmptyState({ title = '暂无数据', description, action, className }: { title?: string; description?: string; action?: React.ReactNode; className?: string }) {
   return (

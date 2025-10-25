@@ -1,5 +1,4 @@
 "use client";
-import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -58,14 +57,12 @@ export function ChartSummary({
   trend,
   pieMonth,
   pieRange,
-  defaultMode = 'month',
-  currency
+    currency
 }: {
   trend: { name: string; expense: number }[];
   pieMonth: { name: string; value: number }[];
   pieRange?: { name: string; value: number }[];
-  defaultMode?: 'month' | 'range';
-  currency: string;
+    currency: string;
 }) {
   const searchParams = useSearchParams();
   const router = useRouter();

@@ -14,7 +14,7 @@ interface MonthlyExpenseSummaryProps {
   rangeType?: string;
 }
 
-export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTransactions = [], monthTotalAmount = 0, monthTotalCount = 0, currency, dateRange, rangeType }: MonthlyExpenseSummaryProps) {
+export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTransactions = [], monthTotalAmount = 0, monthTotalCount = 0, dateRange, rangeType }: MonthlyExpenseSummaryProps) {
   const [monthlyBudget] = useState(5000); // 默认月预算，后续可以做成可配置
 
   const statistics = useMemo(() => {
@@ -197,11 +197,7 @@ export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTrans
     );
   }
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return `${date.getMonth() + 1}/${date.getDate().toString().padStart(2, '0')}`;
-  };
-
+  
   return (
     <div className="space-y-6">
       {/* 总览卡片 */}

@@ -1,7 +1,5 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
-import { DEFAULT_CURRENCY } from '@/lib/config';
 import { MarkdownView } from '@/components/MarkdownView';
 import { idbGet, idbSet, idbRemove } from '@/lib/idb';
 import { formatMonth } from '@/lib/date';
@@ -37,7 +35,7 @@ export function AiAnalyzeButton({ currency = 'CNY', month }: { currency?: string
 
   function onClose() {
     if (esRef.current) {
-      try { esRef.current.close(); } catch {}
+      try { esRef.current.close(); } catch { /* ignore */ }
       esRef.current = null;
     }
     setLoading(false);
@@ -154,7 +152,7 @@ export function AiAnalyzeButton({ currency = 'CNY', month }: { currency?: string
                         document.body.removeChild(ta);
                         setCopied(true);
                         setTimeout(() => setCopied(false), 1500);
-                      } catch {}
+                      } catch { /* ignore */ }
                     }
                   }}
                 >{copied ? '已复制' : '复制Markdown'}</button>
@@ -162,7 +160,7 @@ export function AiAnalyzeButton({ currency = 'CNY', month }: { currency?: string
                   className="inline-flex h-8 px-3 items-center rounded-md border text-sm"
                   onClick={async () => {
                     const key = `${currency}|${monthStr}`;
-                    try { await idbRemove(key); } catch {}
+                    try { await idbRemove(key); } catch { /* ignore */ }
                     cacheRef.current.delete(key);
                     await run();
                   }}

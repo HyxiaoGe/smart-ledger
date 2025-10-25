@@ -13,7 +13,7 @@ interface CategoryStatisticsProps {
   currency: string;
 }
 
-export function CategoryStatistics({ transactions, currency }: CategoryStatisticsProps) {
+export function CategoryStatistics({ transactions }: CategoryStatisticsProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   // 计算分类统计数据

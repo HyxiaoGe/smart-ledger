@@ -94,7 +94,7 @@ async function loadMonthData(currency: string, date: Date): Promise<MonthData> {
   const rows = cur.data || [];
   const prevRows = prev.data || [];
 
-  const sum = (arr: any[], pred: (r: any) => boolean) =>
+  const sum = (arr: any[], pred: (item: any) => boolean) =>
     arr.filter(pred).reduce((a, b) => a + Number(b.amount || 0), 0);
 
   const income = sum(rows, (r) => r.type === 'income');

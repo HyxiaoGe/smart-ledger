@@ -1,10 +1,9 @@
 "use client";
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import type { TransactionType, Currency } from '@/types/transaction';
 import { PRESET_CATEGORIES, SUPPORTED_CURRENCIES, DEFAULT_CURRENCY } from '@/lib/config';
 import { CategoryChip } from '@/components/CategoryChip';
-import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -15,11 +14,9 @@ import { dataSync, markTransactionsDirty } from '@/lib/dataSync';
 import { ProgressToast } from '@/components/ProgressToast';
 
 export default function AddPage() {
-  const router = useRouter();
   const type: TransactionType = 'expense'; // 固定为支出类型
   const [category, setCategory] = useState<string>('food');
-  const [amount, setAmount] = useState<number>(0);
-  const [amountText, setAmountText] = useState<string>('0');
+    const [amountText, setAmountText] = useState<string>('0');
   const [note, setNote] = useState<string>('');
   const [date, setDate] = useState<Date>(new Date());
   const [currency, setCurrency] = useState<Currency>(DEFAULT_CURRENCY as Currency);
@@ -28,10 +25,11 @@ export default function AddPage() {
   const [showToast, setShowToast] = useState(false);
 
   // 防抖相关
-  const submitTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const submitTimeoutRef = useRef<number | null>(null);
   const lastSubmitTimeRef = useRef<number>(0);
   const isSubmittingRef = useRef<boolean>(false); // 强制提交状态
-  const invalidAmount = (() => parseAmount(amountText) <= 0)();
+  const parsedAmount = useMemo(() => parseAmount(amountText), [amountText]);
+  const invalidAmount = parsedAmount <= 0;
 
   function formatThousand(n: number) {
     return n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
@@ -55,7 +53,7 @@ export default function AddPage() {
     setError('');
 
     try {
-      // 先查询是否存在相同业务记录
+      // 先查询是否存在相同业务记录（包括已删除的）
       const { data: existingRecord, error: queryError } = await supabase
         .from('transactions')
         .select('*')
@@ -69,17 +67,30 @@ export default function AddPage() {
       let transactionError;
 
       if (existingRecord) {
-        // 存在相同记录，累加金额
-        const { error: updateError } = await supabase
-          .from('transactions')
-          .update({
-            amount: existingRecord.amount + formData.amt
-          })
-          .eq('id', existingRecord.id);
+        if (existingRecord.deleted_at) {
+          // 记录已删除，替换为新金额而不是累加
+          const { error: updateError } = await supabase
+            .from('transactions')
+            .update({
+              amount: formData.amt, // 使用新金额，不累加
+              deleted_at: null // 恢复记录
+            })
+            .eq('id', existingRecord.id);
 
-        transactionError = updateError;
+          transactionError = updateError;
+        } else {
+          // 记录未删除，累加金额
+          const { error: updateError } = await supabase
+            .from('transactions')
+            .update({
+              amount: existingRecord.amount + formData.amt
+            })
+            .eq('id', existingRecord.id);
+
+          transactionError = updateError;
+        }
       } else {
-        // 不存在，插入新记录
+        // 不存在任何记录，插入新记录
         const { error: insertError } = await supabase
           .from('transactions')
           .insert([{
@@ -169,7 +180,7 @@ export default function AddPage() {
       clearTimeout(submitTimeoutRef.current);
     }
 
-    const amt = parseAmount(amountText);
+    const amt = parsedAmount;
     if (!category || !date) {
       setError('请完整填写必填项');
       isSubmittingRef.current = false;
@@ -200,8 +211,7 @@ export default function AddPage() {
     isSubmittingRef.current = false;
 
     setCategory('food');
-    setAmount(0);
-    setAmountText('0');
+      setAmountText('0');
     setNote('');
     setDate(new Date());
     setCurrency(DEFAULT_CURRENCY as Currency);
@@ -286,7 +296,7 @@ export default function AddPage() {
                   // 允许输入数字、小数点与逗号
                   if (/^[0-9.,]*$/.test(raw)) setAmountText(raw);
                 }}
-                onBlur={() => setAmountText(formatThousand(parseAmount(amountText)))}
+                onBlur={() => setAmountText(formatThousand(parsedAmount))}
                 className={invalidAmount ? 'border-destructive' : undefined}
                 disabled={loading}
               />

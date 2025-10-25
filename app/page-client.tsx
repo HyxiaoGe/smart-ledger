@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useCallback, useEffect, useRef, useMemo } from 'react';
 import type { Route } from 'next';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { ChartSummary } from './components/ChartSummary';
@@ -12,10 +12,15 @@ import { CurrencySelect } from '@/components/CurrencySelect';
 import { TopExpenses } from '@/components/TopExpenses';
 import { HomeStats } from '@/components/HomeStats';
 import type { PageData } from './home-page-data';
+import { dataSync, consumeTransactionsDirty, peekTransactionsDirty } from '@/lib/dataSync';
+import { useRefreshQueue } from '@/hooks/useTransactionsSync';
+
+const REFRESH_DELAYS_MS = [1500, 3500, 6000];
 
 const TEXT = {
   currency: '币种',
   range: '范围',
+  refreshing: '同步最新数据中...',
   chartsTitle: '图表概览',
   topTitle: 'Top 10 支出',
   today: '今日',
@@ -56,10 +61,79 @@ export default function HomePageClient({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const refreshCallback = useCallback(() => router.refresh(), [router]);
+  const { isRefreshing, triggerQueue, stopQueue } = useRefreshQueue({
+    delays: REFRESH_DELAYS_MS,
+    refresh: refreshCallback,
+    peekDirty: peekTransactionsDirty,
+    consumeDirty: consumeTransactionsDirty
+  });
+
+  const latestSnapshot = useRef({
+    income: data.income,
+    expense: data.expense,
+    balance: data.balance,
+    rangeExpense: data.rangeExpense
+  });
+
   const pieRange = useMemo(
     () => (data.rangeRows?.length ? buildRangePie(data.rangeRows) : []),
     [data.rangeRows]
   );
+
+  // 交易事件监听和自动刷新
+  useEffect(() => {
+    const handler = () => {
+      triggerQueue('event');
+    };
+
+    const offAdded = dataSync.onEvent('transaction_added', handler);
+    const offUpdated = dataSync.onEvent('transaction_updated', handler);
+    const offDeleted = dataSync.onEvent('transaction_deleted', handler);
+
+    if (peekTransactionsDirty()) {
+      triggerQueue('mount');
+    }
+
+    return () => {
+      offAdded();
+      offUpdated();
+      offDeleted();
+      stopQueue();
+    };
+  }, [triggerQueue, stopQueue]);
+
+  // 页面可见性变化时的刷新
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onVisibility = () => {
+      if (!document.hidden && peekTransactionsDirty()) {
+        triggerQueue('visibility');
+      }
+    };
+    window.addEventListener('visibilitychange', onVisibility);
+    return () => window.removeEventListener('visibilitychange', onVisibility);
+  }, [triggerQueue]);
+
+  // 数据变化检测和自动停止刷新队列
+  useEffect(() => {
+    const snapshot = latestSnapshot.current;
+    const changed =
+      snapshot.income !== data.income ||
+      snapshot.expense !== data.expense ||
+      snapshot.balance !== data.balance ||
+      snapshot.rangeExpense !== data.rangeExpense;
+
+    if (changed) {
+      latestSnapshot.current = {
+        income: data.income,
+        expense: data.expense,
+        balance: data.balance,
+        rangeExpense: data.rangeExpense
+      };
+      stopQueue({ consume: true });
+    }
+  }, [data.income, data.expense, data.balance, data.rangeExpense, stopQueue]);
 
   const updateRange = (nextRange: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -83,6 +157,7 @@ export default function HomePageClient({
             <span className="text-sm text-muted-foreground">{TEXT.currency}</span>
             <CurrencySelect value={currency} month={monthLabel} range={rangeParam} />
           </div>
+          {isRefreshing && <span className="text-xs text-blue-500 animate-pulse">{TEXT.refreshing}</span>}
           <div className="flex gap-2 items-center">
             <span className="text-sm text-muted-foreground">{TEXT.range}</span>
             <RangePicker />

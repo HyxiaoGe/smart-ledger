@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { TransactionGroupedList } from '@/components/TransactionGroupedList';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp, List } from 'lucide-react';
+import { dataSync } from '@/lib/dataSync';
 
 interface Transaction {
   id: string;
@@ -26,10 +28,26 @@ export function CollapsibleTransactionList({
   totalCount,
   className
 }: CollapsibleTransactionListProps) {
+  const router = useRouter();
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // 当交易数量较少时默认展开，较多时默认收起
-  const defaultExpanded = totalCount <= 10;
+  // 监听数据同步事件并刷新页面
+  useEffect(() => {
+    const handleTransactionChange = () => {
+      // 刷新页面以获取最新数据
+      router.refresh();
+    };
+
+    const offAdded = dataSync.onEvent('transaction_added', handleTransactionChange);
+    const offUpdated = dataSync.onEvent('transaction_updated', handleTransactionChange);
+    const offDeleted = dataSync.onEvent('transaction_deleted', handleTransactionChange);
+
+    return () => {
+      offAdded();
+      offUpdated();
+      offDeleted();
+    };
+  }, [router]);
 
   return (
     <div className={className}>

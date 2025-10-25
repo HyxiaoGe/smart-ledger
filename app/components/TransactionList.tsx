@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
@@ -6,9 +6,7 @@ import { Input } from '@/components/ui/input';
 import { CategoryChip } from '@/components/CategoryChip';
 import { PRESET_CATEGORIES } from '@/lib/config';
 import { formatCurrency } from '@/lib/format';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { EmptyState } from '@/components/EmptyState';
-import { dataSync, markTransactionsDirty } from '@/lib/dataSync';
 
 type Row = {
   id: string;
@@ -23,24 +21,11 @@ type Row = {
 export function TransactionList({ initialRows = [] as Row[], start, end }: { initialRows?: Row[]; start?: string; end?: string }) {
   const [rows, setRows] = useState<Row[]>(initialRows);
   const [loading, setLoading] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState<Partial<Row>>({});
-  const [recentlyDeleted, setRecentlyDeleted] = useState<Row | null>(null);
-  const [error, setError] = useState<string>('');
-  const [query, setQuery] = useState('');
+    const [query, setQuery] = useState('');
   const [view, setView] = useState<'card' | 'table'>('card');
   const [hasMore, setHasMore] = useState(true);
-  const [confirmRow, setConfirmRow] = useState<Row | null>(null);
-
-  const triggerRevalidate = () => {
-    void fetch('/api/revalidate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tag: 'transactions' }),
-      cache: 'no-store'
-    }).catch(() => {});
-  };
-
+  
+      
   useEffect(() => {
     if (initialRows.length === 0 && start) {
       (async () => {
@@ -57,13 +42,13 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
         }
 
         queryBuilder = queryBuilder.eq('type', 'expense').is('deleted_at', null);
-        const { data, error } = await queryBuilder.limit(50);
-        if (!error && data) setRows(data as Row[]);
-        if (!error && (data?.length || 0) < 50) setHasMore(false);
+        const { data } = await queryBuilder.limit(50);
+        if (data) setRows(data as Row[]);
+        if ((data?.length || 0) < 50) setHasMore(false);
         setLoading(false);
       })();
     }
-  }, [initialRows, start, end]);
+  }, [initialRows.length, start, end]);
 
   useEffect(() => {
     if (initialRows.length > 0 && start) {
@@ -81,91 +66,22 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
           }
         }
 
-        const { data, error } = await queryBuilder
+        const { data } = await queryBuilder
           .eq('type', 'expense')
           .is('deleted_at', null)
           .order('date', { ascending: false })
           .limit(50);
-        if (!error && data) setRows(data as Row[]);
-        if (!error && (data?.length || 0) < 50) setHasMore(false);
+        if (data) setRows(data as Row[]);
+        if ((data?.length || 0) < 50) setHasMore(false);
         setLoading(false);
       })();
     }
   }, [start, end]);
 
-  function startEdit(r: Row) {
-    setEditingId(r.id);
-    setForm({ ...r });
-  }
-
-  async function saveEdit() {
-    if (!editingId) return;
-    setLoading(true);
-    setError('');
-    const patch = { ...form, type: 'expense' };
-    delete (patch as any).id;
-    if (patch.amount !== undefined && !(Number(patch.amount) > 0)) {
-      setError('金额必须大于 0');
-      setLoading(false);
-      return;
-    }
-    const { error } = await supabase.from('transactions').update(patch).eq('id', editingId);
-    if (error) setError(error.message);
-    else {
-      setRows((rs) => rs.map((r) => (r.id === editingId ? { ...r, ...(form as Row), type: 'expense' } : r)));
-      setEditingId(null);
-      setForm({});
-      markTransactionsDirty();
-      triggerRevalidate();
-      dataSync.notifyTransactionUpdated({ ...(form as Row), id: editingId });
-    }
-    setLoading(false);
-  }
-
-  async function removeRow(r: Row) {
-    setLoading(true);
-    setError('');
-    const soft = await supabase
-      .from('transactions')
-      .update({ deleted_at: new Date().toISOString() })
-      .eq('id', r.id)
-      .select();
-    if (soft.error) {
-      const hard = await supabase.from('transactions').delete().eq('id', r.id);
-      if (hard.error) {
-        setError(soft.error.message || hard.error.message);
-        setLoading(false);
-        return;
-      }
-      setRecentlyDeleted(null);
-    } else if (!soft.data || soft.data.length === 0) {
-      setLoading(false);
-      return;
-    } else {
-      setRecentlyDeleted(r);
-    }
-    setRows((rs) => rs.filter((x) => x.id !== r.id));
-    markTransactionsDirty();
-    triggerRevalidate();
-    dataSync.notifyTransactionDeleted({ id: r.id });
-    setLoading(false);
-  }
-
-  async function undoDelete() {
-    if (!recentlyDeleted) return;
-    setLoading(true);
-    const { id } = recentlyDeleted;
-    const { error } = await supabase.from('transactions').update({ deleted_at: null }).eq('id', id);
-    if (!error) {
-      setRows((rs) => [recentlyDeleted as Row, ...rs]);
-      markTransactionsDirty();
-      triggerRevalidate();
-      dataSync.notifyTransactionUpdated(recentlyDeleted as Row);
-    }
-    setRecentlyDeleted(null);
-    setLoading(false);
-  }
-
+  
+  
+  
+  
   const busy = loading;
   const filtered = rows.filter((r) => {
     const q = query.trim().toLowerCase();
@@ -186,12 +102,10 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
     if (start && end) q = q.gte('date', start).lt('date', end);
     q = q.eq('type', 'expense').is('deleted_at', null);
     const offset = rows.length;
-    const { data, error } = await q.range(offset, offset + 49);
-    if (!error) {
-      const more = (data as Row[]) || [];
-      setRows((rs) => rs.concat(more));
-      if (more.length < 50) setHasMore(false);
-    }
+    const { data } = await q.range(offset, offset + 49);
+    const more = (data as Row[]) || [];
+    setRows((rs) => rs.concat(more));
+    if (more.length < 50) setHasMore(false);
     setLoading(false);
   }
 
@@ -229,13 +143,7 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
         </div>
       </div>
 
-      {error && (
-        <Alert variant="destructive" className="rounded-none">
-          <AlertTitle>操作失败</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
+      
       {rows.length === 0 && !loading ? (
         <EmptyState description="当前没有支出记录" />
       ) : (
@@ -269,8 +177,7 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
                       {(r.note || '').slice(0, 40)}
                     </td>
                     <td className="px-4 py-2 text-right">
-                      <Button variant="secondary" className="mr-2" onClick={() => startEdit(r)} disabled={busy}>编辑</Button>
-                      <Button variant="destructive" onClick={() => setConfirmRow(r)} disabled={busy}>删除</Button>
+                                            <Button variant="destructive" disabled={busy}>删除</Button>
                     </td>
                   </tr>
                 ))}
@@ -292,8 +199,7 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
                     {(r.note || '').slice(0, 60) || '—'}
                   </div>
                   <div className="mt-3 flex items-center justify-end gap-2">
-                    <Button variant="secondary" size="sm" onClick={() => startEdit(r)} disabled={busy}>编辑</Button>
-                    <Button variant="destructive" size="sm" onClick={() => setConfirmRow(r)} disabled={busy}>删除</Button>
+                                        <Button variant="destructive" size="sm" disabled={busy}>删除</Button>
                   </div>
                 </div>
               ))}

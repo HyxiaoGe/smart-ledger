@@ -169,6 +169,14 @@ export function TransactionGroupedList({
         if (result.deleted) {
           // 只有验证成功后才触发同步事件
           dataSync.notifyTransactionDeleted(result.transaction, true);
+
+          // 清除缓存以确保实时更新
+          void fetch('/api/revalidate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tag: 'transactions' }),
+            cache: 'no-store'
+          }).catch(() => {});
         }
       });
 
