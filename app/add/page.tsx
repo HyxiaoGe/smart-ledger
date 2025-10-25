@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DateInput } from '@/components/DateInput';
-import { NoteInput } from '@/components/NoteInput';
+import { SmartNoteInput } from '@/components/SmartNoteInput';
 import { dataSync, markTransactionsDirty } from '@/lib/dataSync';
 import { ProgressToast } from '@/components/ProgressToast';
 
@@ -232,6 +232,9 @@ export default function AddPage() {
   // 异步更新常用备注
   async function updateCommonNote(noteContent: string, amount: number) {
     try {
+      // 生成时间上下文
+      const timeContext = generateTimeContext();
+
       const response = await fetch('/api/common-notes', {
         method: 'POST',
         headers: {
@@ -239,7 +242,9 @@ export default function AddPage() {
         },
         body: JSON.stringify({
           content: noteContent,
-          amount: amount
+          amount: amount,
+          category: category,
+          time_context: timeContext.label
         })
       });
 
@@ -250,6 +255,33 @@ export default function AddPage() {
     } catch {
       // ignore note update failures
     }
+  }
+
+  // 生成时间上下文的工具函数
+  function generateTimeContext() {
+    const now = new Date();
+    const hour = now.getHours();
+    const day = now.getDay();
+    const isWeekend = day === 0 || day === 6;
+
+    let timeContext = '';
+    if (hour >= 11 && hour < 14) {
+      timeContext = isWeekend ? '周末午餐时间' : '工作日午餐时间';
+    } else if (hour >= 17 && hour < 21) {
+      timeContext = isWeekend ? '周末晚餐时间' : '工作日晚餐时间';
+    } else if (hour >= 7 && hour < 10) {
+      timeContext = '早餐时间';
+    } else if (hour >= 9 && hour < 18 && !isWeekend) {
+      timeContext = '工作时间';
+    } else {
+      timeContext = '日常时间';
+    }
+
+    return {
+      label: timeContext,
+      hour,
+      isWeekend
+    };
   }
 
   return (
@@ -328,11 +360,18 @@ export default function AddPage() {
             </div>
             <div>
               <Label>备注</Label>
-              <NoteInput
+              <SmartNoteInput
                 value={note}
                 onChange={setNote}
-                placeholder="可选"
+                placeholder="选择分类和金额后，智能提示将自动显示"
                 disabled={loading}
+                category={category}
+                amount={parsedAmount}
+                currency={currency}
+                onSuggestionSelected={(suggestion, type) => {
+                  console.log('用户选择了建议:', suggestion.content, '类型:', type);
+                  // 这里可以添加额外的逻辑，比如统计用户使用建议的偏好
+                }}
               />
             </div>
             {error && <p className="text-red-600 text-sm">{error}</p>}

@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
 // POST - 创建或更新常用备注
 export async function POST(request: NextRequest) {
   try {
-    const { content, amount } = await request.json();
+    const { content, amount, category, time_context } = await request.json();
 
     if (!content || content.trim().length === 0) {
       return NextResponse.json({ error: 'Note content is required' }, { status: 400 });
@@ -73,13 +73,36 @@ export async function POST(request: NextRequest) {
     }
 
     if (existingNote) {
-      // 更新现有备注的使用次数和最后使用时间
+      // 更新现有备注的使用次数和最后使用时间，同时更新智能字段
+      const updateData: any = {
+        usage_count: existingNote.usage_count + 1,
+        last_used: new Date().toISOString()
+      };
+
+      // 更新平均金额
+      if (amount) {
+        const currentAvg = existingNote.avg_amount || 0;
+        const newAvg = ((currentAvg * existingNote.usage_count) + amount) / (existingNote.usage_count + 1);
+        updateData.avg_amount = Math.round(newAvg * 100) / 100;
+      }
+
+      // 更新类别关联度（如果提供了类别）
+      if (category && existingNote.usage_count >= 3) {
+        // 当使用次数较多时，更新类别关联度
+        updateData.category_affinity = category;
+      }
+
+      // 更新上下文标签
+      if (time_context) {
+        const currentTags = existingNote.context_tags || [];
+        if (!currentTags.includes(time_context)) {
+          updateData.context_tags = [...currentTags, time_context];
+        }
+      }
+
       const { data: updatedNote, error: updateError } = await supabase
         .from('common_notes')
-        .update({
-          usage_count: existingNote.usage_count + 1,
-          last_used: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', existingNote.id)
         .select()
         .single();
@@ -96,14 +119,29 @@ export async function POST(request: NextRequest) {
       revalidateTag('common-notes');
       return NextResponse.json({ data: updatedNote });
     } else {
-      // 创建新备注
+      // 创建新备注，包含智能字段
+      const newNoteData: any = {
+        content: trimmedContent,
+        usage_count: 1,
+        last_used: new Date().toISOString()
+      };
+
+      // 添加智能字段
+      if (amount) {
+        newNoteData.avg_amount = amount;
+      }
+
+      if (category) {
+        newNoteData.category_affinity = category;
+      }
+
+      if (time_context) {
+        newNoteData.context_tags = [time_context];
+      }
+
       const { data: newNote, error: insertError } = await supabase
         .from('common_notes')
-        .insert({
-          content: trimmedContent,
-          usage_count: 1,
-          last_used: new Date().toISOString()
-        })
+        .insert(newNoteData)
         .select()
         .single();
 
