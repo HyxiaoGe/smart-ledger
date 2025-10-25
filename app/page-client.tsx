@@ -11,6 +11,7 @@ import { RangePicker } from '@/components/RangePicker';
 import { CurrencySelect } from '@/components/CurrencySelect';
 import { TopExpenses } from '@/components/TopExpenses';
 import { HomeStats } from '@/components/HomeStats';
+import { HomeQuickTransaction } from '@/components/HomeQuickTransaction';
 import type { PageData } from './home-page-data';
 import { dataSync, consumeTransactionsDirty, peekTransactionsDirty } from '@/lib/dataSync';
 import { useRefreshQueue } from '@/hooks/useTransactionsSync';
@@ -213,6 +214,9 @@ export default function HomePageClient({
           </CardContent>
         </Card>
       </section>
+
+      {/* 快速记账悬浮按钮 */}
+      <HomeQuickTransaction />
     </div>
   );
 }

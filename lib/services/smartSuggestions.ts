@@ -37,7 +37,6 @@ export const smartSuggestionsService = {
   }): Promise<void> {
     // 这里可以发送分析数据到后端，用于优化推荐算法
     // 暂时只在本地记录，未来可以扩展
-    console.log('用户选择了建议:', params);
   },
 
   /**
@@ -54,7 +53,6 @@ export const smartSuggestionsService = {
     };
   }): Promise<void> {
     // 记录被忽略的建议，用于调整推荐策略
-    console.log('用户忽略了建议:', params);
   }
 };
 

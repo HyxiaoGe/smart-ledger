@@ -149,8 +149,6 @@ class SuggestionLearningManager {
           learning_data: dataToSend
         })
       });
-
-      console.log('学习数据发送成功:', dataToSend.length, '条记录');
     } catch (error) {
       console.error('学习数据发送失败:', error);
       // 发送失败时重新加入队列

@@ -10,8 +10,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DateInput } from '@/components/DateInput';
 import { SmartNoteInput } from '@/components/SmartNoteInput';
+import { AIPredictionPanel } from '@/components/AIPredictionPanel';
 import { dataSync, markTransactionsDirty } from '@/lib/dataSync';
 import { ProgressToast } from '@/components/ProgressToast';
+import type { TransactionPrediction, QuickTransactionSuggestion } from '@/lib/services/aiPrediction';
 
 export default function AddPage() {
   const type: TransactionType = 'expense'; // 固定为支出类型
@@ -23,6 +25,7 @@ export default function AddPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [showToast, setShowToast] = useState(false);
+  const [showAIPrediction, setShowAIPrediction] = useState(true);
 
   // 防抖相关
   const submitTimeoutRef = useRef<number | null>(null);
@@ -200,6 +203,48 @@ export default function AddPage() {
     }, 200); // 200ms 延迟
   }
 
+  // 处理AI预测选择
+  const handlePredictionSelect = useCallback((prediction: TransactionPrediction | QuickTransactionSuggestion) => {
+    let updatedCategory = category;
+    let updatedAmount = parsedAmount;
+    let updatedNote = note;
+
+    if ('predictedCategory' in prediction && prediction.predictedCategory) {
+      updatedCategory = prediction.predictedCategory;
+      setCategory(updatedCategory);
+    }
+
+    if ('predictedAmount' in prediction && prediction.predictedAmount) {
+      updatedAmount = prediction.predictedAmount;
+      setAmountText(formatThousand(updatedAmount));
+    }
+
+    if ('suggestedNote' in prediction && prediction.suggestedNote) {
+      updatedNote = prediction.suggestedNote;
+      setNote(updatedNote);
+    } else if ('note' in prediction && prediction.note) {
+      updatedNote = prediction.note;
+      setNote(updatedNote);
+    }
+
+    // 如果是快速建议且有完整数据，可以自动提交
+    if ('category' in prediction && 'amount' in prediction && 'note' in prediction) {
+      const quickSuggestion = prediction as QuickTransactionSuggestion;
+      setCategory(quickSuggestion.category);
+      setAmountText(formatThousand(quickSuggestion.amount));
+      setNote(quickSuggestion.note);
+
+      // 自动聚焦到备注输入框让用户确认
+      setTimeout(() => {
+        const noteInput = document.querySelector('input[placeholder*="备注"]') as HTMLInputElement;
+        if (noteInput) {
+          noteInput.focus();
+          noteInput.select();
+        }
+      }, 100);
+    }
+  }, [category, parsedAmount, note]);
+
   // 重置表单
   function resetForm() {
     // 清理防抖状态
@@ -285,16 +330,20 @@ export default function AddPage() {
   }
 
   return (
-    <>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {showToast && (
-        <ProgressToast
-          message="账单保存成功！"
-          duration={3000}
-          onClose={() => setShowToast(false)}
-        />
+        <div className="lg:col-span-3">
+          <ProgressToast
+            message="账单保存成功！"
+            duration={3000}
+            onClose={() => setShowToast(false)}
+          />
+        </div>
       )}
 
-      <Card>
+      {/* 左侧：添加账单表单 */}
+      <div className="lg:col-span-2">
+        <Card>
         <CardHeader>
           <CardTitle>添加账单</CardTitle>
         </CardHeader>
@@ -368,8 +417,7 @@ export default function AddPage() {
                 category={category}
                 amount={parsedAmount}
                 currency={currency}
-                onSuggestionSelected={(suggestion, type) => {
-                  console.log('用户选择了建议:', suggestion.content, '类型:', type);
+                onSuggestionSelected={() => {
                   // 这里可以添加额外的逻辑，比如统计用户使用建议的偏好
                 }}
               />
@@ -388,6 +436,40 @@ export default function AddPage() {
           </form>
         </CardContent>
       </Card>
-    </>
+      </div>
+
+      {/* 右侧：AI预测面板 */}
+      <div className="lg:col-span-1">
+        {showAIPrediction && (
+          <AIPredictionPanel
+            onPredictionSelect={handlePredictionSelect}
+            currentAmount={parsedAmount}
+            currentCategory={category}
+            className="sticky top-6"
+          />
+        )}
+
+        {/* AI预测开关 */}
+        <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <span className="text-sm text-blue-700">AI智能预测</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowAIPrediction(!showAIPrediction)}
+              className="text-blue-600 hover:text-blue-800 h-6 px-2"
+            >
+              {showAIPrediction ? '隐藏' : '显示'}
+            </Button>
+          </div>
+          <p className="text-xs text-blue-600 mt-2">
+            基于您的历史数据智能预测分类和金额，让记账更快速
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }

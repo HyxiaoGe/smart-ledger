@@ -293,13 +293,6 @@ async function processLearningData(data: LearningData) {
     // 2. 优化置信度计算公式
     // 3. 识别用户的消费模式变化
 
-    console.log('处理学习数据:', {
-      eventType: data.event_type,
-      outcome: data.learning_outcome,
-      category: data.context.category,
-      finalInput: data.final_input
-    });
-
     // 更新建议权重统计
     await updateSuggestionWeights(data);
 
