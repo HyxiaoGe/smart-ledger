@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
+import { revalidateTag, revalidatePath } from 'next/cache';
 
 export const runtime = 'nodejs';
 
@@ -101,6 +102,11 @@ export async function POST(req: NextRequest) {
     if (transactionError) {
       throw transactionError;
     }
+
+    // 刷新缓存 - 确保页面显示最新数据
+    revalidateTag('transactions');
+    revalidatePath('/');
+    revalidatePath('/records');
 
     return Response.json({
       success: true,

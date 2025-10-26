@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { Fragment } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ProgressToast } from '@/components/ProgressToast';
 import { CheckCircle, X, Edit2, RefreshCw } from 'lucide-react';
-import { FaRobot, FaCheck } from 'react-icons/fa';
+import { FaRobot, FaCheck, FaHeart } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabaseClient';
