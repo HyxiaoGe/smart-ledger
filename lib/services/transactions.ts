@@ -10,12 +10,16 @@ export async function listTransactionsByRange(
   startDate?: string,
   endDate?: string
 ) {
+  // 计算当前日期，确保缓存键包含日期信息
+  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD格式
+
   const cacheKey = [
     'records:transactions',
     month ?? 'all',
     range ?? 'today',
     startDate ?? 'none',
-    endDate ?? 'none'
+    endDate ?? 'none',
+    today // 添加当前日期到缓存键
   ];
 
   const getCached = unstable_cache(
@@ -96,16 +100,17 @@ export async function listTransactionsByRange(
 }
 
 export async function listYesterdayTransactions(range?: string) {
-  const cacheKey = ['records:yesterday', range ?? 'none'];
+  // 计算昨天的日期（在函数外部计算，确保缓存键包含日期）
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().slice(0, 10);
+
+  const cacheKey = ['records:yesterday', range ?? 'none', yesterdayStr];
   const getCached = unstable_cache(
     async () => {
       if (range !== 'today' && range !== 'yesterday') {
         return [];
       }
-
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().slice(0, 10);
 
       const { data } = await supabase
         .from('transactions')
@@ -118,15 +123,18 @@ export async function listYesterdayTransactions(range?: string) {
       return data || [];
     },
     cacheKey,
-    { revalidate: 60, tags: ['transactions'] }
+    { revalidate: 300, tags: ['transactions'] } // 增加到5分钟，但包含日期键
   );
   return getCached();
 }
 
 export async function getCurrentMonthSummary() {
+  // 计算当前月份（在函数外部计算，确保缓存键包含月份）
+  const today = new Date();
+  const currentMonth = today.toISOString().slice(0, 7); // YYYY-MM格式
+
   const getCached = unstable_cache(
     async () => {
-      const today = new Date();
       const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
         .toISOString()
         .slice(0, 10);
@@ -160,8 +168,108 @@ export async function getCurrentMonthSummary() {
 
       return { monthItems, monthTotalAmount, monthTotalCount };
     },
-    ['records:month-summary'],
-    { revalidate: 60, tags: ['transactions'] }
+    ['records:month-summary', currentMonth],
+    { revalidate: 300, tags: ['transactions'] } // 增加到5分钟，但包含月份键
+  );
+
+  return getCached();
+}
+
+// AI分析统一数据获取接口
+export async function getAIAnalysisData(targetMonth?: string) {
+  // 确定目标月份
+  const today = new Date();
+  const currentMonth = targetMonth || today.toISOString().slice(0, 7);
+
+  // 计算日期范围
+  const currentDate = new Date(today.getFullYear(), today.getMonth(), 1);
+  if (targetMonth) {
+    const [year, month] = targetMonth.split('-').map(Number);
+    currentDate.setFullYear(year, month - 1, 1);
+  }
+
+  const currentYear = currentDate.getFullYear();
+  const currentMonthNum = currentDate.getMonth() + 1;
+
+  // 计算上个月
+  const lastMonthNum = currentMonthNum === 1 ? 12 : currentMonthNum - 1;
+  const lastYear = currentMonthNum === 1 ? currentYear - 1 : currentYear;
+
+  // 格式化日期范围
+  const formatDate = (year: number, month: number) => {
+    return `${year}-${month.toString().padStart(2, '0')}`;
+  };
+
+  const currentMonthStr = formatDate(currentYear, currentMonthNum);
+  const lastMonthStr = formatDate(lastYear, lastMonthNum);
+
+  const cacheKey = [
+    'aiAnalysisData',
+    currentMonthStr,
+    lastMonthStr
+  ];
+
+  const getCached = unstable_cache(
+    async () => {
+      console.log('AI分析数据查询:', { currentMonthStr, lastMonthStr });
+
+      // 并行查询所需数据
+      const [
+        currentMonthFullResult,
+        lastMonthResult,
+        currentMonthTop20Result
+      ] = await Promise.all([
+        // 当前月完整数据 (包含note字段，用于DeepInsight)
+        supabase
+          .from('transactions')
+          .select('category, amount, date, note')
+          .gte('date', `${currentMonthStr}-01`)
+          .lt('date', `${currentMonthNum === 12 ? currentYear + 1 : currentYear}-${currentMonthNum === 12 ? '01' : (currentMonthNum + 1).toString().padStart(2, '0')}-01`)
+          .eq('type', 'expense')
+          .is('deleted_at', null)
+          .order('date', { ascending: false }),
+
+        // 上个月数据 (用于趋势分析)
+        supabase
+          .from('transactions')
+          .select('category, amount, date')
+          .gte('date', `${lastMonthStr}-01`)
+          .lt('date', `${currentMonthStr}-01`)
+          .eq('type', 'expense')
+          .is('deleted_at', null),
+
+        // 当前月高金额数据 (用于个性化建议)
+        supabase
+          .from('transactions')
+          .select('category, amount, date')
+          .gte('date', `${currentMonthStr}-01`)
+          .lt('date', `${currentMonthNum === 12 ? currentYear + 1 : currentYear}-${currentMonthNum === 12 ? '01' : (currentMonthNum + 1).toString().padStart(2, '0')}-01`)
+          .eq('type', 'expense')
+          .is('deleted_at', null)
+          .order('amount', { ascending: false })
+          .limit(20)
+      ]);
+
+      if (currentMonthFullResult.error || lastMonthResult.error || currentMonthTop20Result.error) {
+        console.error('AI数据查询错误:', {
+          currentMonthFull: currentMonthFullResult.error,
+          lastMonth: lastMonthResult.error,
+          top20: currentMonthTop20Result.error
+        });
+        throw new Error('获取AI分析数据失败');
+      }
+
+      return {
+        currentMonthFull: currentMonthFullResult.data || [],
+        lastMonth: lastMonthResult.data || [],
+        currentMonthTop20: currentMonthTop20Result.data || [],
+        currentMonthStr,
+        lastMonthStr
+      };
+
+    },
+    cacheKey,
+    { revalidate: 300, tags: ['transactions'] } // 5分钟缓存
   );
 
   return getCached();

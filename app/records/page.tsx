@@ -3,11 +3,13 @@ import { partitionExpenseTransactions } from '@/lib/records';
 import {
   getCurrentMonthSummary,
   listTransactionsByRange,
-  listYesterdayTransactions
+  listYesterdayTransactions,
+  getAIAnalysisData
 } from '@/lib/services/transactions';
 import { RangePicker } from '@/components/RangePicker';
 import { CollapsibleTransactionList } from '@/components/CollapsibleTransactionList';
 import { SkeletonBlock, SkeletonGrid } from '@/components/Skeletons';
+import { AIAnalysisPanel } from '@/components/AIAnalysisPanel';
 
 const SummaryModule = dynamic(
   () => import('@/components/MonthlyExpenseSummary').then((mod) => mod.MonthlyExpenseSummary),
@@ -39,7 +41,7 @@ export default async function RecordsPage({
   const start = searchParams?.start;
   const end = searchParams?.end;
 
-  const [mainResult, yesterdayData, monthSummary] = await Promise.all([
+  const [mainResult, yesterdayData, monthSummary, aiAnalysisData] = await Promise.all([
     listTransactionsByRange(month, range, start, end).catch(() => ({
       rows: [],
       monthLabel: '全部'
@@ -49,47 +51,68 @@ export default async function RecordsPage({
       monthItems: [],
       monthTotalAmount: 0,
       monthTotalCount: 0
+    })),
+    getAIAnalysisData(month).catch(() => ({
+      currentMonthFull: [],
+      lastMonth: [],
+      currentMonthTop20: [],
+      currentMonthStr: '',
+      lastMonthStr: ''
     }))
   ]);
 
   const rows = mainResult.rows;
   const monthLabel = mainResult.monthLabel;
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">账单列表（{monthLabel}）</h1>
-        <div className="flex items-center">
-          <RangePicker />
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      {/* 左侧主要内容 */}
+      <div className="lg:col-span-3 space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-semibold">账单列表（{monthLabel}）</h1>
+          <div className="flex items-center">
+            <RangePicker />
+          </div>
         </div>
+
+        {/* 统计面板 - 所有范围都显示 */}
+        {(() => {
+          const { dailyItems: items, expenseTransactions } = partitionExpenseTransactions(
+            rows as any[]
+          );
+
+          return (
+            <>
+              <SummaryModule
+                items={items}
+                transactions={expenseTransactions}
+                yesterdayTransactions={yesterdayData}
+                monthTotalAmount={monthSummary.monthTotalAmount}
+                monthTotalCount={monthSummary.monthTotalCount}
+                currency={'CNY'}
+                dateRange={monthLabel}
+                rangeType={range}
+              />
+
+              {/* 分类统计组件 */}
+              <CategoryModule transactions={expenseTransactions} currency={'CNY'} />
+            </>
+          );
+        })()}
+
+        {/* 交易明细列表 - 带收纳功能 */}
+        <CollapsibleTransactionList initialTransactions={rows as any} totalCount={rows.length} />
       </div>
 
-      {/* 统计面板 - 所有范围都显示 */}
-      {(() => {
-        const { dailyItems: items, expenseTransactions } = partitionExpenseTransactions(
-          rows as any[]
-        );
-
-        return (
-          <>
-            <SummaryModule
-              items={items}
-              transactions={expenseTransactions}
-              yesterdayTransactions={yesterdayData}
-              monthTotalAmount={monthSummary.monthTotalAmount}
-              monthTotalCount={monthSummary.monthTotalCount}
-              currency={'CNY'}
-              dateRange={monthLabel}
-              rangeType={range}
-            />
-
-            {/* 分类统计组件 */}
-            <CategoryModule transactions={expenseTransactions} currency={'CNY'} />
-          </>
-        );
-      })()}
-
-      {/* 交易明细列表 - 带收纳功能 */}
-      <CollapsibleTransactionList initialTransactions={rows as any} totalCount={rows.length} />
+      {/* 右侧AI分析面板 */}
+      <div className="lg:col-span-1">
+        <AIAnalysisPanel
+          dateRange={range}
+          currentMonth={month}
+          aiData={aiAnalysisData}
+          className="lg:sticky lg:top-6"
+        />
+      </div>
     </div>
   );
 }
