@@ -17,7 +17,7 @@ export default function Navigation() {
   return (
     <nav className="flex items-center gap-2">
       {navItems.map((item) => {
-        const isActive = pathname === item.href;
+        const isActive = pathname === item.href || (item.href === '/settings' && pathname.startsWith('/settings'));
 
         return (
           <Link
