@@ -7,7 +7,8 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { href: '/', label: '首页', icon: '🏠' },
   { href: '/add', label: '添加账单', icon: '➕' },
-  { href: '/records', label: '账单列表', icon: '📋' }
+  { href: '/records', label: '账单列表', icon: '📋' },
+  { href: '/settings', label: '设置', icon: '⚙️' }
 ];
 
 export default function Navigation() {
