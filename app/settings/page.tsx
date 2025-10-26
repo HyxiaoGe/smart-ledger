@@ -19,7 +19,7 @@ export default function SettingsPage() {
       description: '管理个人资料和账户信息',
       icon: User,
       href: '/settings/profile',
-      comingSoon: false
+      comingSoon: true
     },
     {
       title: '消费配置',
