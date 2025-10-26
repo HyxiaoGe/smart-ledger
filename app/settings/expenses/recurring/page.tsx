@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { ProgressToast } from '@/components/ProgressToast';
 import {
   Calendar,
   Plus,
@@ -39,6 +40,10 @@ export default function RecurringExpensesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState<RecurringExpense | null>(null);
+  const [confirmPause, setConfirmPause] = useState<RecurringExpense | null>(null);
 
   // 获取固定支出列表
   useEffect(() => {
@@ -75,28 +80,45 @@ export default function RecurringExpensesPage() {
       }
 
       const result = await response.json();
-      alert(result.message || '生成完成');
+      setToastMessage(result.message || '生成完成');
+      setShowToast(true);
 
       // 重新获取列表
       await fetchRecurringExpenses();
     } catch (error) {
       console.error('生成固定支出失败:', error);
-      alert('生成固定支出失败');
+      setToastMessage('生成固定支出失败');
+      setShowToast(true);
     } finally {
       setGenerating(false);
     }
   };
 
   // 切换启用/禁用状态
-  const toggleActiveStatus = async (id: string, currentStatus: boolean) => {
+  const toggleActiveStatus = (expense: RecurringExpense) => {
+    if (expense.is_active) {
+      // 如果是启用状态，需要确认才暂停
+      setConfirmPause(expense);
+    } else {
+      // 如果是暂停状态，直接启用
+      performToggleActive(expense.id, false);
+    }
+  };
+
+  // 执行状态切换
+  const performToggleActive = async (id: string, showPauseConfirm: boolean) => {
     try {
+      // 获取当前状态
+      const currentExpense = recurringExpenses.find(e => e.id === id);
+      if (!currentExpense) return;
+
       const response = await fetch(`/api/recurring-expenses/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          is_active: !currentStatus,
+          is_active: !currentExpense.is_active,
         }),
       });
 
@@ -104,22 +126,38 @@ export default function RecurringExpensesPage() {
         throw new Error('更新状态失败');
       }
 
+      const action = currentExpense.is_active ? '暂停' : '启用';
+      setToastMessage(`${action}成功`);
+      setShowToast(true);
+
+      // 清除确认状态
+      if (showPauseConfirm) {
+        setConfirmPause(null);
+      }
+
       // 重新获取列表
       await fetchRecurringExpenses();
     } catch (error) {
       console.error('更新状态失败:', error);
-      alert('更新状态失败');
+      setToastMessage('更新状态失败');
+      setShowToast(true);
     }
   };
 
-  // 删除固定支出
-  const deleteExpense = async (id: string) => {
-    if (!confirm('确定要删除这个固定支出吗？')) {
-      return;
-    }
+  // 确认暂停
+  const confirmPauseExpense = async (expense: RecurringExpense) => {
+    await performToggleActive(expense.id, true);
+  };
 
+  // 删除固定支出
+  const deleteExpense = (expense: RecurringExpense) => {
+    setConfirmDelete(expense);
+  };
+
+  // 确认删除
+  const confirmDeleteExpense = async (expense: RecurringExpense) => {
     try {
-      const response = await fetch(`/api/recurring-expenses/${id}`, {
+      const response = await fetch(`/api/recurring-expenses/${expense.id}`, {
         method: 'DELETE',
       });
 
@@ -127,11 +165,16 @@ export default function RecurringExpensesPage() {
         throw new Error('删除失败');
       }
 
+      setToastMessage('删除成功');
+      setShowToast(true);
+      setConfirmDelete(null);
+
       // 重新获取列表
       await fetchRecurringExpenses();
     } catch (error) {
       console.error('删除失败:', error);
-      alert('删除失败');
+      setToastMessage('删除失败');
+      setShowToast(true);
     }
   };
 
@@ -232,7 +275,7 @@ export default function RecurringExpensesPage() {
         </div>
 
         {/* 统计卡片 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
@@ -356,7 +399,7 @@ export default function RecurringExpensesPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => toggleActiveStatus(expense.id, expense.is_active)}
+                          onClick={() => toggleActiveStatus(expense)}
                         >
                           {expense.is_active ? (
                             <><Pause className="h-4 w-4 mr-1" /> 暂停</>
@@ -374,7 +417,7 @@ export default function RecurringExpensesPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => deleteExpense(expense.id)}
+                          onClick={() => deleteExpense(expense)}
                           className="text-red-600 hover:text-red-700 hover:border-red-300"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -398,6 +441,85 @@ export default function RecurringExpensesPage() {
             <li>• 支持每日、每周、每月等多种频率设置</li>
           </ul>
         </div>
+
+        {/* 暂停确认对话框 */}
+        {confirmPause && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md mx-4">
+              <div className="p-4 border-b">
+                <h3 className="font-semibold text-lg">确认暂停</h3>
+              </div>
+              <div className="p-4">
+                <p className="text-gray-600 mb-2">
+                  确定要暂停固定支出 "{confirmPause.name}" 吗？
+                </p>
+                <p className="text-sm text-gray-500">
+                  暂停后将停止自动生成该支出记录，您可以随时重新启用。
+                </p>
+                {confirmPause.next_generate && (
+                  <p className="text-sm text-blue-600 mt-2">
+                    下次生成时间：{confirmPause.next_generate}
+                  </p>
+                )}
+              </div>
+              <div className="p-4 border-t flex justify-end gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setConfirmPause(null)}
+                >
+                  取消
+                </Button>
+                <Button
+                  variant="default"
+                  onClick={() => confirmPauseExpense(confirmPause)}
+                >
+                  确认暂停
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 删除确认对话框 */}
+        {confirmDelete && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md mx-4">
+              <div className="p-4 border-b">
+                <h3 className="font-semibold text-lg">确认删除</h3>
+              </div>
+              <div className="p-4">
+                <p className="text-gray-600 mb-2">
+                  确定要删除固定支出 "{confirmDelete.name}" 吗？
+                </p>
+                <p className="text-sm text-gray-500">
+                  删除后将停止生成该支出记录，此操作不可撤销。
+                </p>
+              </div>
+              <div className="p-4 border-t flex justify-end gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setConfirmDelete(null)}
+                >
+                  取消
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => confirmDeleteExpense(confirmDelete)}
+                >
+                  确认删除
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Toast提示 */}
+        {showToast && (
+          <ProgressToast
+            message={toastMessage}
+            onClose={() => setShowToast(false)}
+          />
+        )}
       </div>
     </div>
   );

@@ -1,33 +1,53 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ProgressToast } from '@/components/ProgressToast';
 import { DateInput } from '@/components/DateInput';
 import {
-  Plus,
+  Edit3,
   Calendar,
   DollarSign,
-  Tag,
   Clock,
   ChevronLeft
 } from 'lucide-react';
 
-export default function AddRecurringExpensePage() {
+interface RecurringExpense {
+  id: string;
+  name: string;
+  amount: number;
+  category: string;
+  frequency: 'daily' | 'weekly' | 'monthly';
+  frequency_config: Record<string, any>;
+  start_date: string;
+  end_date?: string;
+  is_active: boolean;
+  last_generated?: string;
+  next_generate?: string;
+}
+
+export default function EditRecurringExpensePage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const params = useParams();
+  const id = params.id as string;
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [notFound, setNotFound] = useState(false);
+
   const [formData, setFormData] = useState({
     name: '',
     amount: '',
     category: '',
     frequency: 'monthly',
     frequency_config: { day_of_month: 1 },
-    start_date: new Date(),
+    start_date: null,
     end_date: null
   });
 
@@ -49,6 +69,45 @@ export default function AddRecurringExpensePage() {
     { value: 'weekly', label: '每周', description: '按周设置，可选择具体星期' },
     { value: 'monthly', label: '每月', description: '按月设置，可选择具体日期' }
   ];
+
+  // 获取固定支出详情
+  useEffect(() => {
+    if (id) {
+      fetchExpense();
+    }
+  }, [id]);
+
+  const fetchExpense = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/recurring-expenses/${id}`);
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          setNotFound(true);
+        } else {
+          throw new Error('获取固定支出详情失败');
+        }
+        return;
+      }
+
+      const data: RecurringExpense = await response.json();
+      setFormData({
+        name: data.name,
+        amount: data.amount.toString(),
+        category: data.category,
+        frequency: data.frequency,
+        frequency_config: data.frequency_config,
+        start_date: data.start_date ? new Date(data.start_date) : null,
+        end_date: data.end_date ? new Date(data.end_date) : null
+      });
+    } catch (error) {
+      console.error('获取固定支出详情失败:', error);
+      setError('获取固定支出详情失败');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -92,7 +151,7 @@ export default function AddRecurringExpensePage() {
     }
 
     try {
-      setLoading(true);
+      setSaving(true);
 
       const payload = {
         name: formData.name,
@@ -102,11 +161,10 @@ export default function AddRecurringExpensePage() {
         frequency_config: formData.frequency_config,
         start_date: formData.start_date ? formData.start_date.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
         end_date: formData.end_date ? formData.end_date.toISOString().split('T')[0] : null,
-        is_active: true
       };
 
-      const response = await fetch('/api/recurring-expenses', {
-        method: 'POST',
+      const response = await fetch(`/api/recurring-expenses/${id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -115,22 +173,86 @@ export default function AddRecurringExpensePage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || '创建失败');
+        throw new Error(errorData.error || '更新失败');
       }
 
-      setToastMessage('固定支出创建成功！');
+      setToastMessage('固定支出更新成功！');
       setShowToast(true);
       setTimeout(() => {
         router.push('/settings/expenses/recurring');
       }, 2000);
     } catch (error) {
-      console.error('创建固定支出失败:', error);
-      setToastMessage(error instanceof Error ? error.message : '创建固定支出失败');
+      console.error('更新固定支出失败:', error);
+      setToastMessage(error instanceof Error ? error.message : '更新固定支出失败');
       setShowToast(true);
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="mb-6">
+            <Link href="/settings/expenses/recurring">
+              <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
+                <ChevronLeft className="h-4 w-4 mr-2" />
+                返回固定支出管理
+              </Button>
+            </Link>
+          </div>
+          <div className="text-center py-12">
+            <div className="text-gray-500">加载中...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (notFound) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="mb-6">
+            <Link href="/settings/expenses/recurring">
+              <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
+                <ChevronLeft className="h-4 w-4 mr-2" />
+                返回固定支出管理
+              </Button>
+            </Link>
+          </div>
+          <div className="text-center py-12">
+            <div className="text-red-500 mb-4">固定支出不存在</div>
+            <Link href="/settings/expenses/recurring">
+              <Button>返回列表</Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="mb-6">
+            <Link href="/settings/expenses/recurring">
+              <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
+                <ChevronLeft className="h-4 w-4 mr-2" />
+                返回固定支出管理
+              </Button>
+            </Link>
+          </div>
+          <div className="text-center py-12">
+            <div className="text-red-500 mb-4">{error}</div>
+            <Button onClick={fetchExpense}>重试</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -148,14 +270,14 @@ export default function AddRecurringExpensePage() {
 
         {/* 页面标题 */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">添加固定支出</h2>
-          <p className="text-gray-600">设置定期自动生成的支出项目，让记账更加自动化</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">编辑固定支出</h2>
+          <p className="text-gray-600">修改固定支出的设置，只影响未来的生成记录</p>
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* 表单区域 */}
-            <div className="space-y-6">
+            <div className="lg:col-span-2 space-y-6">
               {/* 基本信息 */}
               <Card>
                 <CardHeader>
@@ -173,7 +295,6 @@ export default function AddRecurringExpensePage() {
                       type="text"
                       value={formData.name}
                       onChange={(e) => handleInputChange('name', e.target.value)}
-                      placeholder="例如：房租、地铁费、健身房会员"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       required
                     />
@@ -187,7 +308,6 @@ export default function AddRecurringExpensePage() {
                       type="number"
                       value={formData.amount}
                       onChange={(e) => handleInputChange('amount', e.target.value)}
-                      placeholder="0.00"
                       step="0.01"
                       min="0"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -342,10 +462,10 @@ export default function AddRecurringExpensePage() {
                 <Button
                   type="submit"
                   className="flex-1 bg-blue-600 hover:bg-blue-700"
-                  disabled={loading}
+                  disabled={saving}
                 >
-                  <Plus className="h-4 w-4 mr-2" />
-                  {loading ? '创建中...' : '创建固定支出'}
+                  <Edit3 className="h-4 w-4 mr-2" />
+                  {saving ? '保存中...' : '保存修改'}
                 </Button>
                 <Link href="/settings/expenses/recurring">
                   <Button type="button" variant="outline" className="flex-1">
@@ -357,85 +477,17 @@ export default function AddRecurringExpensePage() {
 
             {/* 侧边栏 */}
             <div className="space-y-6">
-              {/* 快速模板 */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <div className="p-1.5 bg-blue-100 rounded-lg">
-                      <Plus className="h-4 w-4 text-blue-600" />
-                    </div>
-                    快速模板
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {[
-                    { name: '房租', amount: '1400', frequency: 'monthly', day: 1, color: 'bg-orange-50 border-orange-200 hover:bg-orange-100', icon: '🏠' },
-                    { name: '地铁通勤', amount: '6', frequency: 'weekly', days: [1,2,3,4,5], color: 'bg-blue-50 border-blue-200 hover:bg-blue-100', icon: '🚇' },
-                    { name: '健身房', amount: '299', frequency: 'monthly', day: 15, color: 'bg-green-50 border-green-200 hover:bg-green-100', icon: '💪' }
-                  ].map((template, index) => (
-                    <div
-                      key={index}
-                      className={`p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${template.color} group`}
-                      onClick={() => {
-                        setFormData({
-                          name: template.name,
-                          amount: template.amount,
-                          category: template.name === '房租' ? 'rent' : template.name === '地铁通勤' ? 'transport' : 'sport',
-                          frequency: template.frequency,
-                          frequency_config: template.frequency === 'monthly'
-                            ? { day_of_month: template.day }
-                            : { days_of_week: template.days },
-                          start_date: new Date(),
-                          end_date: null
-                        });
-                      }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="text-2xl p-2 bg-white rounded-lg shadow-sm">
-                            {template.icon}
-                          </div>
-                          <div>
-                            <div className="font-semibold text-gray-900 group-hover:text-blue-700 transition-colors">
-                              {template.name}
-                            </div>
-                            <div className="text-sm text-gray-600 mt-0.5">
-                              {template.frequency === 'monthly' ? `每月${template.day}号` : '工作日'}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-bold text-lg text-gray-900">
-                            ¥{template.amount}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            自动填充
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-3 pt-3 border-t border-gray-200">
-                        <div className="flex items-center justify-center">
-                          <span className="text-xs text-gray-500 bg-white px-3 py-1 rounded-full">
-                            点击应用模板
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-
-              {/* 使用提示 */}
+              {/* 提示信息 */}
               <Card className="bg-blue-50 border-blue-200">
                 <CardHeader>
-                  <CardTitle className="text-base text-blue-900">💡 使用提示</CardTitle>
+                  <CardTitle className="text-base text-blue-900">💡 编辑说明</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ul className="text-sm text-blue-800 space-y-2">
-                    <li>• 固定支出会在指定时间自动生成</li>
-                    <li>• 可以随时暂停或启用固定支出</li>
-                    <li>• 支持多种重复频率设置</li>
-                    <li>• 系统会提前提醒即将生成的支出</li>
+                    <li>• 修改只影响未来的生成记录</li>
+                    <li>• 历史记录不会发生变化</li>
+                    <li>• 下次生成时间会重新计算</li>
+                    <li>• 可以随时暂停或恢复</li>
                   </ul>
                 </CardContent>
               </Card>

@@ -49,13 +49,7 @@ export default function ExpensesSettingsPage() {
     }
   ];
 
-  const recurringExpenseExamples = [
-    { name: '房租', amount: 3500, frequency: '每月1号', category: '住房' },
-    { name: '地铁费', amount: 6, frequency: '工作日', category: '交通' },
-    { name: '健身房', amount: 299, frequency: '每月15号', category: '运动' },
-    { name: 'Netflix订阅', amount: 68, frequency: '每月5号', category: '娱乐' }
-  ];
-
+  
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 主内容区域 */}
@@ -131,69 +125,7 @@ export default function ExpensesSettingsPage() {
           ))}
         </div>
 
-        {/* 固定支出示例 */}
-        <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-blue-900">
-              <Calendar className="h-5 w-5" />
-              固定支出示例
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {recurringExpenseExamples.map((expense, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 bg-white rounded-lg border border-blue-100"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <Wallet className="h-4 w-4 text-blue-600" />
-                    </div>
-                    <div>
-                      <div className="font-medium text-gray-900">{expense.name}</div>
-                      <div className="text-sm text-gray-500">{expense.frequency}</div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-semibold text-gray-900">¥{expense.amount}</div>
-                    <div className="text-xs text-gray-500">{expense.category}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-4 p-3 bg-blue-100 rounded-lg">
-              <p className="text-sm text-blue-800">
-                💡 <strong>提示：</strong>设置固定支出后，系统会在指定时间自动创建消费记录，
-                让您无需手动重复输入，提升记账效率。
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 快速开始 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Plus className="h-5 w-5" />
-              快速开始
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-6">
-              <p className="text-gray-600 mb-4">
-                还没有配置固定支出？点击下方按钮开始设置您的第一个固定支出
-              </p>
-              <Link href="/settings/expenses/recurring">
-                <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
-                  <Plus className="h-5 w-5 mr-2" />
-                  添加固定支出
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+        </div>
     </div>
   );
 }
