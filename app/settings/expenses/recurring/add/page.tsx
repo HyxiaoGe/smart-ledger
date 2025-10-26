@@ -7,7 +7,8 @@ import {
   Calendar,
   DollarSign,
   Tag,
-  Clock
+  Clock,
+  ChevronLeft
 } from 'lucide-react';
 
 export default function AddRecurringExpensePage() {
@@ -34,6 +35,16 @@ export default function AddRecurringExpensePage() {
     <div className="min-h-screen bg-gray-50">
       {/* 主内容区域 */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* 返回导航 */}
+        <div className="mb-6">
+          <Link href="/settings/expenses/recurring">
+            <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              返回固定支出管理
+            </Button>
+          </Link>
+        </div>
+
         {/* 页面标题 */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">添加固定支出</h2>

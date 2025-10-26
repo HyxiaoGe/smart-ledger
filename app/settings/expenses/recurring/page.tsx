@@ -8,7 +8,8 @@ import {
   Wallet,
   Clock,
   DollarSign,
-  Settings2
+  Settings2,
+  ChevronLeft
 } from 'lucide-react';
 
 export default function RecurringExpensesPage() {
@@ -65,6 +66,16 @@ export default function RecurringExpensesPage() {
     <div className="min-h-screen bg-gray-50">
       {/* 主内容区域 */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* 返回导航 */}
+        <div className="mb-6">
+          <Link href="/settings/expenses">
+            <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              返回消费配置
+            </Button>
+          </Link>
+        </div>
+
         {/* 页面标题和操作按钮 */}
         <div className="flex items-center justify-between mb-8">
           <div>
