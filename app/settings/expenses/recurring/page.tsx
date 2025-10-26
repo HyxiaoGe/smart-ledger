@@ -201,8 +201,8 @@ export default function RecurringExpensesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-6">
             <Link href="/settings/expenses">
-              <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
-                <ChevronLeft className="h-4 w-4 mr-2" />
+              <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg px-3 py-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200">
+                <ChevronLeft className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1" />
                 返回消费配置
               </Button>
             </Link>
@@ -221,8 +221,8 @@ export default function RecurringExpensesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-6">
             <Link href="/settings/expenses">
-              <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
-                <ChevronLeft className="h-4 w-4 mr-2" />
+              <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg px-3 py-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200">
+                <ChevronLeft className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1" />
                 返回消费配置
               </Button>
             </Link>
@@ -243,8 +243,8 @@ export default function RecurringExpensesPage() {
         {/* 返回导航 */}
         <div className="mb-6">
           <Link href="/settings/expenses">
-            <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
-              <ChevronLeft className="h-4 w-4 mr-2" />
+            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg px-3 py-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200">
+              <ChevronLeft className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1" />
               返回消费配置
             </Button>
           </Link>

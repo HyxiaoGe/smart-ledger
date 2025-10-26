@@ -17,9 +17,9 @@ export function BackNavigation({
   className = ''
 }: BackNavigationProps) {
   const variants = {
-    default: 'bg-white border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900 shadow-sm',
-    subtle: 'text-gray-600 hover:text-gray-900 hover:bg-gray-50',
-    primary: 'bg-blue-600 text-white hover:bg-blue-700'
+    default: 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200',
+    subtle: 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg px-3 py-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200',
+    primary: 'bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800 border border-blue-200 hover:border-blue-300 hover:shadow-md rounded-lg px-3 py-2 transition-all duration-200'
   };
 
   return (
@@ -27,9 +27,9 @@ export function BackNavigation({
       <Link href={href}>
         <Button
           variant="ghost"
-          className={`group flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 ${variants[variant]}`}
+          className={`group flex items-center gap-2 ${variants[variant]}`}
         >
-          <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+          <ChevronLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-1" />
           <span className="font-medium">{title}</span>
         </Button>
       </Link>
