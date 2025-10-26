@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { CalendarIcon } from 'lucide-react';
@@ -15,6 +15,11 @@ export interface DateInputProps {
   className?: string;
   placeholder?: string;
   disabled?: boolean;
+  containerZIndex?: number;
+  inputId?: string;
+  onOpen?: (inputId: string) => void;
+  onClose?: () => void;
+  isActive?: boolean;
 }
 
 export function DateInput({
@@ -22,9 +27,21 @@ export function DateInput({
   onSelect,
   className,
   placeholder = "选择日期",
-  disabled = false
+  disabled = false,
+  containerZIndex = 9999,
+  inputId,
+  onOpen,
+  onClose,
+  isActive
 }: DateInputProps) {
   const [isOpen, setIsOpen] = useState(false);
+
+  // 监听 isActive 状态，当其他日期选择器打开时关闭当前
+  useEffect(() => {
+    if (!isActive && isOpen) {
+      setIsOpen(false);
+    }
+  }, [isActive, isOpen]);
 
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {
@@ -35,6 +52,13 @@ export function DateInput({
 
   const handleButtonClick = () => {
     if (!disabled) {
+      if (!isOpen) {
+        // 打开时通知父组件
+        onOpen?.(inputId || '');
+      } else {
+        // 关闭时通知父组件
+        onClose?.();
+      }
       setIsOpen(!isOpen);
     }
   };
@@ -67,13 +91,15 @@ export function DateInput({
         <>
           {/* 遮罩层 */}
           <div
-            className="fixed inset-0 z-40"
+            className="fixed inset-0"
+            style={{ zIndex: containerZIndex - 1 }}
             onClick={() => setIsOpen(false)}
           />
 
           {/* 日历面板 */}
           <Card
-            className="absolute top-full left-0 right-0 z-50 mt-1 shadow-lg"
+            className="absolute top-full left-0 mt-1 shadow-lg w-72 sm:w-80 md:w-96"
+            style={{ zIndex: containerZIndex }}
             onClick={handleCardClick}
           >
             <CardContent className="p-2">
