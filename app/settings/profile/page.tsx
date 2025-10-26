@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -7,7 +8,8 @@ import {
   Phone,
   MapPin,
   Calendar,
-  Edit3
+  Edit3,
+  ChevronLeft
 } from 'lucide-react';
 
 export default function ProfileSettingsPage() {
@@ -15,6 +17,16 @@ export default function ProfileSettingsPage() {
     <div className="min-h-screen bg-gray-50">
       {/* 主内容区域 */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* 返回导航 */}
+        <div className="mb-6">
+          <Link href="/settings">
+            <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              返回设置中心
+            </Button>
+          </Link>
+        </div>
+
         {/* 页面标题 */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">个人信息设置</h2>
