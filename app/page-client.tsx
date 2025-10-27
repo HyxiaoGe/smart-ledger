@@ -15,6 +15,9 @@ import { HomeQuickTransaction } from '@/components/HomeQuickTransaction';
 import type { PageData } from './home-page-data';
 import { dataSync, consumeTransactionsDirty, peekTransactionsDirty } from '@/lib/dataSync';
 import { useRefreshQueue } from '@/hooks/useTransactionsSync';
+import { useAutoGenerateRecurring } from '@/hooks/useAutoGenerateRecurring';
+import { useState, useEffect } from 'react';
+import { ProgressToast } from '@/components/ProgressToast';
 
 const REFRESH_DELAYS_MS = [1500, 3500, 6000];
 
@@ -61,6 +64,48 @@ export default function HomePageClient({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  // 固定支出相关状态
+  const [recurringExpenses, setRecurringExpenses] = useState([]);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+
+  // 使用全局自动生成Hook
+  const {
+    isChecking,
+    lastResult,
+    checkAndGenerate
+  } = useAutoGenerateRecurring(recurringExpenses);
+
+  // 获取固定支出列表
+  useEffect(() => {
+    fetchRecurringExpenses();
+  }, []);
+
+  const fetchRecurringExpenses = async () => {
+    try {
+      const response = await fetch('/api/recurring-expenses');
+      if (response.ok) {
+        const data = await response.json();
+        setRecurringExpenses(data);
+      }
+    } catch (error) {
+      console.error('获取固定支出列表失败:', error);
+    }
+  };
+
+  // 监听自动生成结果，显示反馈
+  useEffect(() => {
+    if (lastResult && lastResult.generated > 0) {
+      setToastMessage(`✅ 自动生成 ${lastResult.generated} 笔固定支出记录`);
+      setShowToast(true);
+
+      // 重新获取数据以更新图表
+      setTimeout(() => {
+        router.refresh();
+      }, 1000);
+    }
+  }, [lastResult, router]);
 
   const refreshCallback = useCallback(() => router.refresh(), [router]);
   const { isRefreshing, triggerQueue, stopQueue } = useRefreshQueue({
@@ -217,6 +262,13 @@ export default function HomePageClient({
 
       {/* 快速记账悬浮按钮 */}
       <HomeQuickTransaction />
+
+      {/* 自动生成提示Toast */}
+      <ProgressToast
+        showToast={showToast}
+        message={toastMessage}
+        setShowToast={setShowToast}
+      />
     </div>
   );
 }
