@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ProgressToast } from '@/components/ProgressToast';
+import { useAutoGenerateRecurring } from '@/hooks/useAutoGenerateRecurring';
 import {
   Calendar,
   Plus,
@@ -45,10 +46,29 @@ export default function RecurringExpensesPage() {
   const [confirmDelete, setConfirmDelete] = useState<RecurringExpense | null>(null);
   const [confirmPause, setConfirmPause] = useState<RecurringExpense | null>(null);
 
+  // 使用全局自动生成Hook
+  const {
+    isChecking,
+    lastResult,
+    checkAndGenerate,
+    getExpenseGenerationStatus
+  } = useAutoGenerateRecurring(recurringExpenses);
+
   // 获取固定支出列表
   useEffect(() => {
     fetchRecurringExpenses();
   }, []);
+
+  // 监听自动生成结果，显示反馈
+  useEffect(() => {
+    if (lastResult && lastResult.generated > 0) {
+      setToastMessage(`✅ 自动生成 ${lastResult.generated} 笔固定支出记录`);
+      setShowToast(true);
+
+      // 重新获取列表以更新状态
+      fetchRecurringExpenses();
+    }
+  }, [lastResult]);
 
   const fetchRecurringExpenses = async () => {
     try {
@@ -184,6 +204,7 @@ export default function RecurringExpensesPage() {
     monthly: '每月'
   };
 
+  
   const categoryIcons = {
     rent: '🏠',
     transport: '🚇',
@@ -276,7 +297,7 @@ export default function RecurringExpensesPage() {
 
         {/* 统计概览 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {/* 总固定支出卡片 */}
+          {/* 本月生成统计卡片 */}
           <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-blue-600 to-blue-700 text-white">
             <div className="absolute top-0 right-0 -mt-4 -mr-4 opacity-10">
               <Wallet className="h-32 w-32" />
@@ -288,13 +309,16 @@ export default function RecurringExpensesPage() {
                 </div>
                 <div className="text-right">
                   <div className="text-3xl font-bold">
-                    ¥{recurringExpenses
-                      .filter(e => e.is_active)
-                      .reduce((sum, e) => sum + e.amount, 0)
-                      .toFixed(0)}
+                    {recurringExpenses.filter(e => {
+                      if (!e.is_active || !e.last_generated) return false;
+                      const lastGenerated = new Date(e.last_generated);
+                      const now = new Date();
+                      return lastGenerated.getMonth() === now.getMonth() &&
+                             lastGenerated.getFullYear() === now.getFullYear();
+                    }).length}
                   </div>
                   <div className="text-sm text-blue-100 mt-1">
-                    月度固定支出
+                    个本月已生成
                   </div>
                 </div>
               </div>
@@ -305,13 +329,13 @@ export default function RecurringExpensesPage() {
                   {recurringExpenses.filter(e => e.is_active).length} 个活跃项目
                 </div>
                 <div className="text-xs bg-white/20 px-2 py-1 rounded-full backdrop-blur-sm">
-                  每月自动
+                  自动化管理
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* 本月待生成卡片 */}
+          {/* 明日自动生成卡片 */}
           <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-amber-500 to-orange-600 text-white">
             <div className="absolute top-0 right-0 -mt-4 -mr-4 opacity-10">
               <Calendar className="h-32 w-32" />
@@ -323,14 +347,32 @@ export default function RecurringExpensesPage() {
                 </div>
                 <div className="text-right">
                   <div className="text-3xl font-bold">
-                    {recurringExpenses.filter(e => {
-                      if (!e.is_active) return false;
-                      const today = new Date().toISOString().split('T')[0];
-                      return e.next_generate && e.next_generate <= today;
-                    }).length}
+                    {(() => {
+                      const tomorrow = new Date();
+                      tomorrow.setDate(tomorrow.getDate() + 1);
+                      const tomorrowStr = tomorrow.toISOString().split('T')[0];
+                      const dayOfWeek = tomorrow.getDay();
+
+                      return recurringExpenses.filter(e => {
+                        if (!e.is_active) return false;
+
+                        if (e.next_generate !== tomorrowStr) return false;
+
+                        switch (e.frequency) {
+                          case 'daily':
+                            return true;
+                          case 'weekly':
+                            return e.frequency_config.days_of_week?.includes(dayOfWeek);
+                          case 'monthly':
+                            return e.frequency_config.day_of_month === tomorrow.getDate();
+                          default:
+                            return false;
+                        }
+                      }).length;
+                    })()}
                   </div>
                   <div className="text-sm text-amber-100 mt-1">
-                    笔待生成
+                    个明日生成
                   </div>
                 </div>
               </div>
@@ -338,10 +380,10 @@ export default function RecurringExpensesPage() {
             <CardContent className="pt-0">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-amber-100">
-                  即将自动生成
+                  明日自动生成
                 </div>
-                <div className="text-xs bg-white/20 px-2 py-1 rounded-full backdrop-blur-sm animate-pulse">
-                  待处理
+                <div className="text-xs bg-white/20 px-2 py-1 rounded-full backdrop-blur-sm">
+                  预计
                 </div>
               </div>
             </CardContent>
@@ -359,10 +401,10 @@ export default function RecurringExpensesPage() {
                 </div>
                 <div className="text-right">
                   <div className="text-3xl font-bold">
-                    {recurringExpenses.filter(e => e.last_generated).length}
+                    {recurringExpenses.filter(e => getExpenseGenerationStatus(e).status === 'generated').length}
                   </div>
                   <div className="text-sm text-emerald-100 mt-1">
-                    个已生成
+                    个今日已生成
                   </div>
                 </div>
               </div>
@@ -370,7 +412,7 @@ export default function RecurringExpensesPage() {
             <CardContent className="pt-0">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-emerald-100">
-                  历史生成记录
+                  今日自动生成记录
                 </div>
                 <div className="text-xs bg-white/20 px-2 py-1 rounded-full backdrop-blur-sm">
                   已完成
@@ -487,23 +529,17 @@ export default function RecurringExpensesPage() {
                             </div>
 
                             {/* 时间信息 */}
-                            <div className="flex items-center gap-6 text-xs text-gray-500">
-                              <span className="flex items-center gap-1">
+                            <div className="flex items-center gap-6 text-xs">
+                              <span className="flex items-center gap-1 text-gray-500">
                                 <Calendar className="h-3 w-3" />
                                 开始: {expense.start_date}
                               </span>
-                              {expense.next_generate && (
-                                <span className="flex items-center gap-1 text-blue-600 font-medium">
-                                  <Clock className="h-3 w-3" />
-                                  下次: {expense.next_generate}
-                                </span>
-                              )}
-                              {expense.last_generated && (
-                                <span className="flex items-center gap-1 text-green-600">
-                                  <History className="h-3 w-3" />
-                                  上次: {expense.last_generated}
-                                </span>
-                              )}
+                              <span className={`flex items-center gap-1 px-2 py-1 rounded-full border ${getExpenseGenerationStatus(expense).bgColor} ${getExpenseGenerationStatus(expense).borderColor} ${getExpenseGenerationStatus(expense).color} font-medium`}>
+                                {getExpenseGenerationStatus(expense).status === 'generated' && <History className="h-3 w-3" />}
+                                {getExpenseGenerationStatus(expense).status === 'pending' && <Clock className="h-3 w-3" />}
+                                {getExpenseGenerationStatus(expense).status === 'scheduled' && <Clock className="h-3 w-3" />}
+                                {getExpenseGenerationStatus(expense).text}
+                              </span>
                             </div>
                           </div>
                         </div>
