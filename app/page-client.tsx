@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useMemo } from 'react';
+import React, { useCallback, useEffect, useRef, useMemo, useState } from 'react';
 import type { Route } from 'next';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { ChartSummary } from './components/ChartSummary';
@@ -16,7 +16,6 @@ import type { PageData } from './home-page-data';
 import { dataSync, consumeTransactionsDirty, peekTransactionsDirty } from '@/lib/dataSync';
 import { useRefreshQueue } from '@/hooks/useTransactionsSync';
 import { useAutoGenerateRecurring } from '@/hooks/useAutoGenerateRecurring';
-import { useState, useEffect } from 'react';
 import { ProgressToast } from '@/components/ProgressToast';
 
 const REFRESH_DELAYS_MS = [1500, 3500, 6000];
