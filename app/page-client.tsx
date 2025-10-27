@@ -73,6 +73,7 @@ export default function HomePageClient({
   const {
     isChecking,
     lastResult,
+    hasShownTodayToast,
     checkAndGenerate
   } = useAutoGenerateRecurring(recurringExpenses);
 
@@ -93,18 +94,22 @@ export default function HomePageClient({
     }
   };
 
-  // 监听自动生成结果，显示反馈
+  // 监听自动生成结果，显示反馈（只在真正生成且今天未显示过时显示）
   useEffect(() => {
-    if (lastResult && lastResult.generated > 0) {
+    if (lastResult && lastResult.generated > 0 && !hasShownTodayToast) {
       setToastMessage(`✅ 自动生成 ${lastResult.generated} 笔固定支出记录`);
       setShowToast(true);
+
+      // 记录今天已显示过提示
+      const today = new Date().toISOString().split('T')[0];
+      localStorage.setItem('recurring_expenses_last_toast', today);
 
       // 重新获取数据以更新图表
       setTimeout(() => {
         router.refresh();
       }, 1000);
     }
-  }, [lastResult, router]);
+  }, [lastResult, hasShownTodayToast, router]);
 
   const refreshCallback = useCallback(() => router.refresh(), [router]);
   const { isRefreshing, triggerQueue, stopQueue } = useRefreshQueue({
