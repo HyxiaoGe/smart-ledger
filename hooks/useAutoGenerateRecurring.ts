@@ -9,7 +9,6 @@ interface AutoGenerateResult {
 export function useAutoGenerateRecurring(recurringExpenses: any[]) {
   const [isChecking, setIsChecking] = useState(false);
   const [lastResult, setLastResult] = useState<AutoGenerateResult | null>(null);
-  const [hasShownTodayToast, setHasShownTodayToast] = useState(false);
 
   // 计算固定支出的生成状态
   const getExpenseGenerationStatus = useCallback((expense: any) => {
@@ -148,15 +147,6 @@ export function useAutoGenerateRecurring(recurringExpenses: any[]) {
 
   // 自动检查（在数据加载完成时触发）
   useEffect(() => {
-    // 检查是否是新的一天，重置提示状态
-    const today = new Date().toISOString().split('T')[0];
-    const lastToastKey = 'recurring_expenses_last_toast';
-    const lastToastDate = localStorage.getItem(lastToastKey);
-
-    if (lastToastDate !== today) {
-      setHasShownTodayToast(false);
-    }
-
     if (recurringExpenses.length > 0) {
       checkAndGenerate();
     }
@@ -165,7 +155,6 @@ export function useAutoGenerateRecurring(recurringExpenses: any[]) {
   return {
     isChecking,
     lastResult,
-    hasShownTodayToast,
     pendingCount: getPendingCount(),
     checkAndGenerate,
     getExpenseGenerationStatus

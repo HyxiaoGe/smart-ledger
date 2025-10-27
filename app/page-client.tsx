@@ -16,7 +16,6 @@ import type { PageData } from './home-page-data';
 import { dataSync, consumeTransactionsDirty, peekTransactionsDirty } from '@/lib/dataSync';
 import { useRefreshQueue } from '@/hooks/useTransactionsSync';
 import { useAutoGenerateRecurring } from '@/hooks/useAutoGenerateRecurring';
-import { ProgressToast } from '@/components/ProgressToast';
 
 const REFRESH_DELAYS_MS = [1500, 3500, 6000];
 
@@ -66,14 +65,11 @@ export default function HomePageClient({
 
   // 固定支出相关状态
   const [recurringExpenses, setRecurringExpenses] = useState([]);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
 
   // 使用全局自动生成Hook
   const {
     isChecking,
     lastResult,
-    hasShownTodayToast,
     checkAndGenerate
   } = useAutoGenerateRecurring(recurringExpenses);
 
@@ -94,22 +90,15 @@ export default function HomePageClient({
     }
   };
 
-  // 监听自动生成结果，显示反馈（只在真正生成且今天未显示过时显示）
+  // 监听自动生成结果，静默刷新数据（完全无感知）
   useEffect(() => {
-    if (lastResult && lastResult.generated > 0 && !hasShownTodayToast) {
-      setToastMessage(`✅ 自动生成 ${lastResult.generated} 笔固定支出记录`);
-      setShowToast(true);
-
-      // 记录今天已显示过提示
-      const today = new Date().toISOString().split('T')[0];
-      localStorage.setItem('recurring_expenses_last_toast', today);
-
-      // 重新获取数据以更新图表
+    if (lastResult && lastResult.generated > 0) {
+      // 静默刷新页面数据，不显示任何提示
       setTimeout(() => {
         router.refresh();
       }, 1000);
     }
-  }, [lastResult, hasShownTodayToast, router]);
+  }, [lastResult, router]);
 
   const refreshCallback = useCallback(() => router.refresh(), [router]);
   const { isRefreshing, triggerQueue, stopQueue } = useRefreshQueue({
@@ -266,13 +255,6 @@ export default function HomePageClient({
 
       {/* 快速记账悬浮按钮 */}
       <HomeQuickTransaction />
-
-      {/* 自动生成提示Toast */}
-      <ProgressToast
-        showToast={showToast}
-        message={toastMessage}
-        setShowToast={setShowToast}
-      />
     </div>
   );
 }
