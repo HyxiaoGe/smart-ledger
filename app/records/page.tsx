@@ -10,6 +10,7 @@ import { RangePicker } from '@/components/RangePicker';
 import { CollapsibleTransactionList } from '@/components/CollapsibleTransactionList';
 import { SkeletonBlock, SkeletonGrid } from '@/components/Skeletons';
 import { AIAnalysisPanel } from '@/components/AIAnalysisPanel';
+import { AIAnalysisButton } from '@/components/AIAnalysisButton';
 
 const SummaryModule = dynamic(
   () => import('@/components/MonthlyExpenseSummary').then((mod) => mod.MonthlyExpenseSummary),
@@ -65,13 +66,17 @@ export default async function RecordsPage({
   const monthLabel = mainResult.monthLabel;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-      {/* 左侧主要内容 */}
-      <div className="lg:col-span-3 space-y-6">
+    <>
+      <div className="container space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold">账单列表（{monthLabel}）</h1>
-          <div className="flex items-center">
+          <div className="flex items-center gap-4">
             <RangePicker />
+            <AIAnalysisButton
+              dateRange={range}
+              currentMonth={month}
+              aiData={aiAnalysisData}
+            />
           </div>
         </div>
 
@@ -103,16 +108,6 @@ export default async function RecordsPage({
         {/* 交易明细列表 - 带收纳功能 */}
         <CollapsibleTransactionList initialTransactions={rows as any} totalCount={rows.length} />
       </div>
-
-      {/* 右侧AI分析面板 */}
-      <div className="lg:col-span-1">
-        <AIAnalysisPanel
-          dateRange={range}
-          currentMonth={month}
-          aiData={aiAnalysisData}
-          className="lg:sticky lg:top-6"
-        />
-      </div>
-    </div>
+    </>
   );
 }

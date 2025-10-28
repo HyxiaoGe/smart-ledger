@@ -204,7 +204,7 @@ export async function getAIAnalysisData(targetMonth?: string) {
   const lastMonthStr = formatDate(lastYear, lastMonthNum);
 
   const cacheKey = [
-    'aiAnalysisData',
+    'aiAnalysisDataV2', // 修改缓存key让旧缓存失效
     currentMonthStr,
     lastMonthStr
   ];
@@ -227,6 +227,8 @@ export async function getAIAnalysisData(targetMonth?: string) {
           .lt('date', `${currentMonthNum === 12 ? currentYear + 1 : currentYear}-${currentMonthNum === 12 ? '01' : (currentMonthNum + 1).toString().padStart(2, '0')}-01`)
           .eq('type', 'expense')
           .is('deleted_at', null)
+          .is('is_auto_generated', false) // 过滤掉自动生成的交易记录
+          .is('recurring_expense_id', null) // 过滤掉固定支出关联的交易记录
           .order('date', { ascending: false }),
 
         // 上个月数据 (用于趋势分析)
@@ -236,7 +238,9 @@ export async function getAIAnalysisData(targetMonth?: string) {
           .gte('date', `${lastMonthStr}-01`)
           .lt('date', `${currentMonthStr}-01`)
           .eq('type', 'expense')
-          .is('deleted_at', null),
+          .is('deleted_at', null)
+          .is('is_auto_generated', false) // 过滤掉自动生成的交易记录
+          .is('recurring_expense_id', null), // 过滤掉固定支出关联的交易记录
 
         // 当前月高金额数据 (用于个性化建议)
         supabase
@@ -246,6 +250,8 @@ export async function getAIAnalysisData(targetMonth?: string) {
           .lt('date', `${currentMonthNum === 12 ? currentYear + 1 : currentYear}-${currentMonthNum === 12 ? '01' : (currentMonthNum + 1).toString().padStart(2, '0')}-01`)
           .eq('type', 'expense')
           .is('deleted_at', null)
+          .is('is_auto_generated', false) // 过滤掉自动生成的交易记录
+          .is('recurring_expense_id', null) // 过滤掉固定支出关联的交易记录
           .order('amount', { ascending: false })
           .limit(20)
       ]);

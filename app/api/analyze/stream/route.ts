@@ -119,8 +119,10 @@ export async function GET(req: NextRequest) {
       const end = endDate.toISOString().slice(0, 10);
       const { data, error } = await supabase
         .from('transactions')
-        .select('type, category, amount, date, currency')
+        .select('type, category, amount, date, currency, is_auto_generated, recurring_expense_id')
         .is('deleted_at', null)
+        .is('is_auto_generated', false) // 过滤掉自动生成的交易记录
+        .is('recurring_expense_id', null) // 过滤掉固定支出关联的交易记录
         .gte('date', start)
         .lt('date', end)
         .eq('currency', currency);
