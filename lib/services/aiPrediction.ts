@@ -579,7 +579,7 @@ export class AIPredictionService {
         title: '瑞幸咖啡',
         description: '日常提神',
         category: 'drink',
-        amount: 11.54,
+        amount: 12.90,
         note: '瑞幸',
         confidence: 0.85,
         icon: '☕',
