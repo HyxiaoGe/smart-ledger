@@ -59,7 +59,7 @@ const QUICK_ITEMS: QuickTransactionItem[] = [
     title: '瑞幸咖啡',
     icon: '☕',
     category: 'drink',
-    suggestedAmount: 11.54,
+    suggestedAmount: 12.90,
     isFixed: false
   },
   {
@@ -87,6 +87,7 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
   const [showToast, setShowToast] = useState(false);
   const [lastTransaction, setLastTransaction] = useState<string | null>(null);
   const [todayCategories, setTodayCategories] = useState<Set<string>>(new Set());
+  const [todayItems, setTodayItems] = useState<Set<string>>(new Set());
   const [loadingCategories, setLoadingCategories] = useState(false);
 
   // 获取今天的日期字符串
@@ -94,7 +95,7 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
     return new Date().toISOString().slice(0, 10);
   };
 
-  // 获取今天已记录的分类
+  // 获取今天已记录的分类和具体项目
   const fetchTodayCategories = async () => {
     setLoadingCategories(true);
     try {
@@ -102,7 +103,7 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
 
       const { data, error } = await supabase
         .from('transactions')
-        .select('category')
+        .select('category, note')
         .eq('date', today)
         .is('deleted_at', null);
 
@@ -112,6 +113,44 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
 
       const categories = new Set(data?.map(t => t.category) || []);
       setTodayCategories(categories);
+
+      // 获取今天已记录的具体项目（基于note匹配）
+      const items = new Set<string>();
+      data?.forEach(transaction => {
+        // 根据note匹配具体的项目
+        const matchedItem = QUICK_ITEMS.find(item => {
+          // 精确匹配标题
+          if (transaction.note === item.title) {
+            return true;
+          }
+
+          // 智能模糊匹配 - 支持包含关键词
+          if (transaction.note) {
+            // 检查是否包含项目标题的核心关键词
+            const keywords = {
+              'lunch': ['午餐', '午饭', '午饭'],
+              'dinner': ['晚餐', '晚饭', '晚餐'],
+              'subway': ['地铁', '通勤', '地铁'],
+              'coffee': ['咖啡', '瑞幸', '咖啡'],
+              'bread': ['面包', '烘焙', '面包'],
+              'subscription': ['订阅', '会员', '订阅']
+            };
+
+            const itemKeywords = keywords[item.id as keyof typeof keywords] || [item.title];
+            return itemKeywords.some(keyword =>
+              transaction.note.includes(keyword) ||
+              keyword.includes(transaction.note)
+            );
+          }
+
+          return false;
+        });
+
+        if (matchedItem) {
+          items.add(matchedItem.id);
+        }
+      });
+      setTodayItems(items);
     } catch (error) {
       console.error('获取今日分类失败:', error);
     } finally {
@@ -178,6 +217,9 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
         // 更新今日分类缓存
         setTodayCategories(prev => new Set(prev).add(item.category));
 
+        // 更新今日项目缓存
+        setTodayItems(prev => new Set(prev).add(item.id));
+
         // 清空该项目的自定义金额
         if (!item.isFixed) {
           setCustomAmounts(prev => {
@@ -208,7 +250,7 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
     const isSubmitting = submittingId === item.id;
     const isEditing = editingId === item.id;
     const currentAmount = customAmounts[item.id] || item.suggestedAmount?.toFixed(2) || '';
-    const isRecordedToday = todayCategories.has(item.category);
+    const isRecordedToday = todayItems.has(item.id);
 
     return (
       <motion.div
@@ -408,8 +450,8 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
           className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-hidden border border-gray-100"
         >
           <Card className="border-0 shadow-none">
-            <CardHeader className="flex flex-row items-center justify-between pb-4 bg-gradient-to-r from-pink-50 via-purple-50 to-indigo-50 -mx-6 px-6 -mt-6 pt-6 rounded-t-2xl">
-              <CardTitle className="flex items-center gap-3 text-xl">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 bg-gradient-to-r from-pink-50 via-purple-50 to-indigo-50 -mx-6 px-6 -mt-6 pt-6 rounded-t-2xl">
+              <CardTitle className="flex items-center gap-3">
                 <motion.div
                   animate={{
                     rotate: [0, -3, 3, 0],
@@ -421,7 +463,7 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
                   }}
                 >
                   <div className="relative">
-                    <FaRobot className="h-9 w-9 text-purple-600" />
+                    <FaRobot className="h-8 w-8 text-purple-600" />
                     {/* 可爱的眼睛效果 */}
                     <div className="absolute top-2 left-2 w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
                     <div className="absolute top-2 right-2 w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
@@ -443,22 +485,56 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
                 variant="ghost"
                 size="sm"
                 onClick={() => onOpenChange(false)}
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 hover:bg-white/20 transition-colors"
               >
                 <X className="h-4 w-4" />
               </Button>
             </CardHeader>
 
-            <CardContent className="space-y-4 px-6 pb-6">
+            <CardContent className="space-y-6 px-6 pb-6 pt-4">
+              {/* 状态统计卡片 */}
+              <div className="grid grid-cols-3 gap-3">
+                <motion.div
+                  className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-3 text-center border border-blue-200"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <div className="text-2xl font-bold text-blue-600">{todayItems.size}</div>
+                  <div className="text-xs text-blue-600">已记录项目</div>
+                </motion.div>
+                <motion.div
+                  className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-3 text-center border border-green-200"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <div className="text-2xl font-bold text-green-600">{QUICK_ITEMS.length - todayItems.size}</div>
+                  <div className="text-xs text-green-600">待记录项目</div>
+                </motion.div>
+                <motion.div
+                  className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-3 text-center border border-purple-200"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <div className="text-2xl font-bold text-purple-600">
+                    {Math.round((todayItems.size / QUICK_ITEMS.length) * 100)}%
+                  </div>
+                  <div className="text-xs text-purple-600">完成进度</div>
+                </motion.div>
+              </div>
+
+              {/* 提示信息 */}
               <motion.div
-                className="flex items-center gap-3 p-4 bg-gradient-to-r from-pink-50 via-purple-50 to-indigo-50 rounded-xl border border-pink-100"
+                className="flex items-center gap-3 p-3 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border border-indigo-100"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
+                transition={{ delay: 0.4 }}
               >
                 <motion.div
                   animate={{
-                    scale: [1, 1.2, 1],
+                    scale: [1, 1.1, 1],
                   }}
                   transition={{
                     duration: 2,
@@ -466,13 +542,18 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
                     ease: "easeInOut"
                   }}
                 >
-                  <HiSparkles className="h-5 w-5 text-pink-500" />
+                  <HiSparkles className="h-4 w-4 text-indigo-500" />
                 </motion.div>
-                <div>
-                  <span className="text-sm text-gray-700 font-semibold">
-                    小助手帮你快速记账~
-                  </span>
-                  <div className="text-xs text-gray-500 mt-1">常用消费，一键记录 ✨</div>
+                <div className="flex-1">
+                  <div className="text-sm text-indigo-700 font-medium">
+                    {todayItems.size > 0 ? '今日记录很棒！' : '开始记账吧！'}
+                  </div>
+                  <div className="text-xs text-indigo-500">
+                    {todayItems.size > 0
+                      ? '还有其他快捷记账选项可以继续使用'
+                      : '常用消费，一键记录 ✨'
+                    }
+                  </div>
                 </div>
               </motion.div>
 
@@ -493,7 +574,12 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
                 <div className="flex items-center justify-between">
                   <Button
                     variant="outline"
-                    onClick={() => window.open('/add', '_blank')}
+                    onClick={() => {
+                      onOpenChange(false);
+                      setTimeout(() => {
+                        window.location.href = '/add';
+                      }, 300);
+                    }}
                     className="text-gray-600 hover:text-gray-800 hover:bg-gray-50 transition-colors"
                   >
                     详细记账
@@ -508,17 +594,19 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
                 </div>
               </div>
 
-              <div className="space-y-2 pt-2">
-                <div className="flex items-center justify-between px-3 py-2">
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span>固定价格项目点击直接记录</span>
-                    <div className="w-2 h-2 bg-blue-500 rounded-full ml-2"></div>
-                    <span>其他项目可点击金额修改后记录</span>
+              {/* 底部操作区域 */}
+              <div className="pt-4 border-t border-gray-100">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 text-xs text-gray-500">
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span>固定价格</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span>可修改金额</span>
+                    </div>
                   </div>
-                </div>
-
-                <div className="flex items-center justify-between px-3 py-2 border-t border-gray-100">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -527,11 +615,8 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
                     className="text-gray-500 hover:text-gray-700 h-7 px-2 text-xs"
                   >
                     <RefreshCw className={`h-3 w-3 mr-1 ${loadingCategories ? 'animate-spin' : ''}`} />
-                    刷新状态
+                    刷新
                   </Button>
-                  <div className="text-xs text-gray-400">
-                    今日已记录 <span className="font-semibold text-gray-600">{todayCategories.size}</span> 个分类
-                  </div>
                 </div>
               </div>
             </CardContent>
