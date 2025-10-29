@@ -505,3 +505,454 @@ SELECT
 FROM pg_indexes
 WHERE schemaname = 'public'
 ORDER BY tablename, indexname;
+
+
+-- AI请求日志表
+CREATE TABLE IF NOT EXISTS ai_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  -- 基本信息
+  ai_provider VARCHAR(50) NOT NULL DEFAULT 'deepseek', -- AI提供商
+  model_name VARCHAR(100), -- 模型名称
+  request_type VARCHAR(50) NOT NULL, -- 请求类型
+  feature_type VARCHAR(50) NOT NULL, -- 功能类型
+  session_id VARCHAR(100),
+  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+
+  -- 请求信息
+  input_data JSONB NOT NULL, -- 输入数据
+  parameters JSONB, -- 请求参数
+  prompt TEXT, -- 完整的提示词
+
+  -- 响应信息
+  response_data JSONB, -- 响应数据
+  response_text TEXT, -- 响应文本
+  tokens_used JSONB, -- Token使用情况 {input: int, output: int, total: int}
+  response_time_ms INTEGER, -- 响应时间（毫秒）
+
+  -- 状态信息
+  status VARCHAR(20) DEFAULT 'success' CHECK (status IN ('success', 'error', 'timeout', 'cancelled')),
+  error_code VARCHAR(50),
+  error_message TEXT,
+
+  -- 元数据
+  timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  user_agent TEXT,
+  ip_address INET,
+  request_id VARCHAR(100), -- 请求追踪ID
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 创建索引
+CREATE INDEX IF NOT EXISTS idx_ai_requests_feature_type ON ai_requests(feature_type);
+CREATE INDEX IF NOT EXISTS idx_ai_requests_status ON ai_requests(status);
+CREATE INDEX IF NOT EXISTS idx_ai_requests_timestamp ON ai_requests(timestamp);
+CREATE INDEX IF NOT EXISTS idx_ai_requests_session_id ON ai_requests(session_id);
+CREATE INDEX IF NOT EXISTS idx_ai_requests_ai_provider ON ai_requests(ai_provider);
+
+-- AI反馈表
+CREATE TABLE IF NOT EXISTS ai_feedbacks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  -- 基本信息
+  feature_type VARCHAR(50) NOT NULL, -- AI功能类型
+  feedback_type VARCHAR(50) NOT NULL, -- 反馈类型
+  session_id VARCHAR(100), -- 用户会话ID
+  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL, -- 用户ID（如果支持登录）
+
+  -- 反馈内容
+  rating INTEGER CHECK (rating >= 1 AND rating <= 5), -- 评分 (1-5)
+  is_positive BOOLEAN, -- 赞/踩
+  comment TEXT, -- 文字评论
+  choices TEXT[], -- 多选答案 (JSON数组)
+  custom_data JSONB, -- 自定义数据
+
+  -- 上下文信息
+  context JSONB, -- 上下文信息（输入数据、输出结果、参数等）
+  ai_request_id UUID REFERENCES ai_requests(id) ON DELETE SET NULL, -- 关联的AI请求
+
+  -- 元数据
+  timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  user_agent TEXT,
+  client_version VARCHAR(50),
+  ip_address INET,
+
+  -- 分析标记
+  tags TEXT[], -- 标签
+  priority VARCHAR(20) DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high')),
+  status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'reviewed', 'resolved', 'ignored')),
+
+  -- 管理信息
+  admin_notes TEXT,
+  resolved_at TIMESTAMP WITH TIME ZONE,
+  resolved_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 创建索引
+CREATE INDEX IF NOT EXISTS idx_ai_feedbacks_feature_type ON ai_feedbacks(feature_type);
+CREATE INDEX IF NOT EXISTS idx_ai_feedbacks_status ON ai_feedbacks(status);
+CREATE INDEX IF NOT EXISTS idx_ai_feedbacks_timestamp ON ai_feedbacks(timestamp);
+CREATE INDEX IF NOT EXISTS idx_ai_feedbacks_session_id ON ai_feedbacks(session_id);
+CREATE INDEX IF NOT EXISTS idx_ai_feedbacks_ai_request_id ON ai_feedbacks(ai_request_id);
+
+-- AI分析结果表
+CREATE TABLE IF NOT EXISTS ai_analyses (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  -- 关联信息
+  feedback_id UUID REFERENCES ai_feedbacks(id) ON DELETE CASCADE,
+  request_id UUID REFERENCES ai_requests(id) ON DELETE CASCADE,
+
+  -- 分析结果
+  sentiment VARCHAR(20) CHECK (sentiment IN ('positive', 'neutral', 'negative')),
+  confidence DECIMAL(3,2) CHECK (confidence >= 0 AND confidence <= 1),
+  keywords TEXT[], -- 关键词提取
+  categories TEXT[], -- 自动分类标签
+  severity VARCHAR(20) CHECK (severity IN ('low', 'medium', 'high')),
+
+  -- 自动生成的建议
+  suggestions TEXT[],
+
+  -- 分析元数据
+  analyzed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  analysis_model VARCHAR(100) DEFAULT 'basic_rule_based',
+  processing_time_ms INTEGER,
+  version VARCHAR(20) DEFAULT '1.0',
+
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 创建索引
+CREATE INDEX IF NOT EXISTS idx_ai_analyses_feedback_id ON ai_analyses(feedback_id);
+CREATE INDEX IF NOT EXISTS idx_ai_analyses_sentiment ON ai_analyses(sentiment);
+CREATE INDEX IF NOT EXISTS idx_ai_analyses_analyzed_at ON ai_analyses(analyzed_at);
+
+-- AI性能统计表
+CREATE TABLE IF NOT EXISTS ai_performance_stats (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  -- 统计维度
+  stat_date DATE NOT NULL, -- 统计日期
+  ai_provider VARCHAR(50) NOT NULL DEFAULT 'deepseek',
+  feature_type VARCHAR(50) NOT NULL,
+  model_name VARCHAR(100),
+
+  -- 请求统计
+  total_requests INTEGER DEFAULT 0,
+  successful_requests INTEGER DEFAULT 0,
+  failed_requests INTEGER DEFAULT 0,
+
+  -- 性能统计
+  avg_response_time_ms DECIMAL(10,2),
+  min_response_time_ms INTEGER,
+  max_response_time_ms INTEGER,
+  p95_response_time_ms INTEGER,
+
+  -- Token统计
+  total_tokens INTEGER DEFAULT 0,
+  input_tokens INTEGER DEFAULT 0,
+  output_tokens INTEGER DEFAULT 0,
+
+  -- 成本统计（假设每百万token的成本）
+  estimated_cost DECIMAL(10,6) DEFAULT 0,
+
+  -- 错误统计
+  error_rates JSONB, -- 各类错误的发生率
+
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
+  -- 确保每个日期、提供商、功能类型、模型组合唯一
+  UNIQUE(stat_date, ai_provider, feature_type, model_name)
+);
+
+-- 创建索引
+CREATE INDEX IF NOT EXISTS idx_ai_performance_stats_date ON ai_performance_stats(stat_date);
+CREATE INDEX IF NOT EXISTS idx_ai_performance_stats_feature_type ON ai_performance_stats(feature_type);
+CREATE INDEX IF NOT EXISTS idx_ai_performance_stats_ai_provider ON ai_performance_stats(ai_provider);
+
+-- AI模板配置表
+CREATE TABLE IF NOT EXISTS ai_feedback_templates (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  -- 基本信息
+  name VARCHAR(200) NOT NULL,
+  description TEXT,
+  feature_type VARCHAR(50) NOT NULL,
+  feedback_type VARCHAR(50) NOT NULL,
+
+  -- 模板配置
+  config JSONB NOT NULL, -- 模板配置
+
+  -- 显示配置
+  display JSONB NOT NULL, -- 显示配置
+
+  -- 状态
+  is_active BOOLEAN DEFAULT true,
+  version INTEGER DEFAULT 1,
+
+  -- 元数据
+  created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 创建索引
+CREATE INDEX IF NOT EXISTS idx_ai_feedback_templates_feature_type ON ai_feedback_templates(feature_type);
+CREATE INDEX IF NOT EXISTS idx_ai_feedback_templates_is_active ON ai_feedback_templates(is_active);
+
+-- AI会话记录表
+CREATE TABLE IF NOT EXISTS ai_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  -- 会话信息
+  session_id VARCHAR(100) UNIQUE NOT NULL,
+  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  start_time TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  end_time TIMESTAMP WITH TIME ZONE,
+
+  -- 会话统计
+  total_requests INTEGER DEFAULT 0,
+  total_tokens INTEGER DEFAULT 0,
+  total_cost DECIMAL(10,6) DEFAULT 0,
+  avg_response_time_ms DECIMAL(10,2),
+
+  -- 会话上下文
+  context JSONB, -- 会话上下文信息
+
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 创建索引
+CREATE INDEX IF NOT EXISTS idx_ai_sessions_session_id ON ai_sessions(session_id);
+CREATE INDEX IF NOT EXISTS idx_ai_sessions_user_id ON ai_sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_ai_sessions_start_time ON ai_sessions(start_time);
+
+-- RLS (Row Level Security) 策略
+-- AI反馈表
+ALTER TABLE ai_feedbacks ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view all AI feedbacks" ON ai_feedbacks FOR SELECT USING (true);
+CREATE POLICY "Users can insert AI feedbacks" ON ai_feedbacks FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can update AI feedbacks" ON ai_feedbacks FOR UPDATE USING (true);
+CREATE POLICY "Admins can delete AI feedbacks" ON ai_feedbacks FOR DELETE USING (
+  EXISTS (
+    SELECT 1 FROM auth.users
+    WHERE auth.users.id = auth.uid()
+    AND auth.users.raw_user_meta_data->>'role' = 'admin'
+  )
+);
+
+-- AI请求表
+ALTER TABLE ai_requests ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view AI requests" ON ai_requests FOR SELECT USING (true);
+CREATE POLICY "System can insert AI requests" ON ai_requests FOR INSERT WITH CHECK (true);
+CREATE POLICY "System can update AI requests" ON ai_requests FOR UPDATE USING (true);
+
+-- AI分析结果表
+ALTER TABLE ai_analyses ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view AI analyses" ON ai_analyses FOR SELECT USING (true);
+CREATE POLICY "System can insert AI analyses" ON ai_analyses FOR INSERT WITH CHECK (true);
+CREATE POLICY "System can update AI analyses" ON ai_analyses FOR UPDATE USING (true);
+
+-- AI性能统计表
+ALTER TABLE ai_performance_stats ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view AI performance stats" ON ai_performance_stats FOR SELECT USING (true);
+CREATE POLICY "System can manage AI performance stats" ON ai_performance_stats FOR ALL USING (true);
+
+-- AI模板表
+ALTER TABLE ai_feedback_templates ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view AI templates" ON ai_feedback_templates FOR SELECT USING (true);
+CREATE POLICY "Admins can manage AI templates" ON ai_feedback_templates FOR ALL USING (
+  EXISTS (
+    SELECT 1 FROM auth.users
+    WHERE auth.users.id = auth.uid()
+    AND auth.users.raw_user_meta_data->>'role' = 'admin'
+  )
+);
+
+-- AI会话表
+ALTER TABLE ai_sessions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage their own sessions" ON ai_sessions FOR ALL USING (
+  user_id IS NULL OR user_id = auth.uid()
+);
+
+-- 创建更新时间触发器
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_ai_feedbacks_updated_at BEFORE UPDATE ON ai_feedbacks
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_ai_requests_updated_at BEFORE UPDATE ON ai_requests
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_ai_analyses_updated_at BEFORE UPDATE ON ai_analyses
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_ai_performance_stats_updated_at BEFORE UPDATE ON ai_performance_stats
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_ai_feedback_templates_updated_at BEFORE UPDATE ON ai_feedback_templates
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_ai_sessions_updated_at BEFORE UPDATE ON ai_sessions
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- 创建聚合性能统计的函数
+CREATE OR REPLACE FUNCTION aggregate_ai_performance_stats()
+RETURNS void AS $$
+BEGIN
+  -- 按日期、提供商、功能类型、模型聚合性能统计
+  INSERT INTO ai_performance_stats (
+    stat_date, ai_provider, feature_type, model_name,
+    total_requests, successful_requests, failed_requests,
+    avg_response_time_ms, min_response_time_ms, max_response_time_ms,
+    total_tokens, input_tokens, output_tokens,
+    estimated_cost
+  )
+  SELECT
+    DATE(timestamp) as stat_date,
+    ai_provider,
+    feature_type,
+    COALESCE(model_name, 'default') as model_name,
+    COUNT(*) as total_requests,
+    COUNT(*) FILTER (WHERE status = 'success') as successful_requests,
+    COUNT(*) FILTER (WHERE status = 'error') as failed_requests,
+    ROUND(AVG(response_time_ms), 2) as avg_response_time_ms,
+    MIN(response_time_ms) as min_response_time_ms,
+    MAX(response_time_ms) as max_response_time_ms,
+    COALESCE(SUM((tokens_used->>'total')::integer), 0) as total_tokens,
+    COALESCE(SUM((tokens_used->>'input')::integer), 0) as input_tokens,
+    COALESCE(SUM((tokens_used->>'output')::integer), 0) as output_tokens,
+    COALESCE(SUM((tokens_used->>'total')::integer) * 0.002, 0) as estimated_cost -- 假设每100万token成本2元
+  FROM ai_requests
+  WHERE timestamp >= CURRENT_DATE - INTERVAL '7 days' -- 只聚合最近7天的数据
+    AND timestamp < CURRENT_DATE -- 不包括今天的数据（今天的数据实时计算）
+  GROUP BY DATE(timestamp), ai_provider, feature_type, COALESCE(model_name, 'default')
+  ON CONFLICT (stat_date, ai_provider, feature_type, model_name)
+  DO UPDATE SET
+    total_requests = EXCLUDED.total_requests,
+    successful_requests = EXCLUDED.successful_requests,
+    failed_requests = EXCLUDED.failed_requests,
+    avg_response_time_ms = EXCLUDED.avg_response_time_ms,
+    min_response_time_ms = EXCLUDED.min_response_time_ms,
+    max_response_time_ms = EXCLUDED.max_response_time_ms,
+    total_tokens = EXCLUDED.total_tokens,
+    input_tokens = EXCLUDED.input_tokens,
+    output_tokens = EXCLUDED.output_tokens,
+    estimated_cost = EXCLUDED.estimated_cost,
+    updated_at = NOW();
+END;
+$$ LANGUAGE plpgsql;
+
+-- 创建定期聚合性能统计的函数（需要设置cron job）
+CREATE OR REPLACE FUNCTION update_daily_ai_stats()
+RETURNS void AS $$
+BEGIN
+  PERFORM aggregate_ai_performance_stats();
+END;
+$$ LANGUAGE plpgsql;
+
+-- ========================================
+-- 7. AI反馈模板数据
+-- ========================================
+
+-- 插入默认的AI反馈模板
+INSERT INTO ai_feedback_templates (
+  name,
+  description,
+  feature_type,
+  feedback_type,
+  config,
+  display,
+  is_active,
+  version
+) VALUES
+(
+  '支出预测反馈模板',
+  '用于收集用户对AI支出预测功能的反馈',
+  'spending-prediction',
+  'rating',
+  '{"showRating": true, "showComment": true, "ratingScale": 5}',
+  '{"title": "预测准确性评估", "description": "请评估AI预测的准确性如何？"}',
+  true,
+  1
+),
+(
+  '异常检测反馈模板',
+  '用于收集用户对异常检测功能的反馈',
+  'anomaly-detection',
+  'rating',
+  '{"showRating": true, "showComment": true, "ratingScale": 5}',
+  '{"title": "异常检测效果评估", "description": "异常检测功能是否准确识别了异常支出？"}',
+  true,
+  1
+),
+(
+  '预算建议反馈模板',
+  '用于收集用户对预算建议功能的反馈',
+  'budget-recommendation',
+  'rating',
+  '{"showRating": true, "showComment": true, "ratingScale": 5}',
+  '{"title": "预算建议实用性评估", "description": "AI提供的预算建议对您有帮助吗？"}',
+  true,
+  1
+),
+(
+  '综合分析反馈模板',
+  '用于收集用户对综合分析功能的反馈',
+  'comprehensive-analysis',
+  'rating',
+  '{"showRating": true, "showComment": true, "ratingScale": 5}',
+  '{"title": "综合分析效果评估", "description": "综合分析功能是否提供了有价值的洞察？"}',
+  true,
+  1
+) ON CONFLICT DO NOTHING; -- 避免重复插入
+
+-- ========================================
+-- 8. 定时任务设置（可选）
+-- ========================================
+
+/*
+-- 注意：以下cron任务需要在启用pg_cron扩展后才能使用
+-- 在Supabase控制台的Extensions中启用pg_cron扩展
+
+-- 每天凌晨2点执行性能统计聚合
+SELECT cron.schedule(
+  'daily-ai-stats',
+  '0 2 * * *', -- 每天凌晨2点 UTC时间
+  'SELECT update_daily_ai_stats();'
+);
+
+-- 每周日凌晨3点清理30天前的会话数据
+SELECT cron.schedule(
+  'cleanup-old-sessions',
+  '0 3 * * 0', -- 每周日凌晨3点 UTC时间
+  $$
+  DELETE FROM ai_sessions
+  WHERE start_time < NOW() - INTERVAL '30 days'
+  AND end_time IS NOT NULL;
+  $$
+);
+
+-- 每月1号凌晨4点备份性能统计数据
+SELECT cron.schedule(
+  'backup-ai-data',
+  '0 4 1 * *', -- 每月1号凌晨4点 UTC时间
+  $$
+  INSERT INTO ai_performance_stats_backup
+  SELECT * FROM ai_performance_stats
+  WHERE stat_date >= CURRENT_DATE - INTERVAL '1 month';
+  $$
+);
+*/

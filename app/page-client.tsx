@@ -4,7 +4,6 @@ import React, { useCallback, useEffect, useRef, useMemo, useState } from 'react'
 import type { Route } from 'next';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { ChartSummary } from './components/ChartSummary';
-import { AiAnalyzeButton } from './components/AiAnalyze';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { RangePicker } from '@/components/RangePicker';
@@ -190,7 +189,6 @@ export default function HomePageClient({
   return (
     <div className="space-y-6">
       <div className="flex gap-3 items-center justify-between">
-        <AiAnalyzeButton currency={currency} month={monthLabel} />
         <div className="flex items-center gap-4">
           <div className="flex gap-2 items-center">
             <span className="text-sm text-muted-foreground">{TEXT.currency}</span>
@@ -227,6 +225,12 @@ export default function HomePageClient({
       <section className="space-y-2">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">{`${TEXT.topTitle} (${currency})`}</h2>
+          <div className="text-xs text-gray-500">
+            💡 需要 AI 财务分析？请前往
+            <a href="/records" className="text-blue-600 hover:text-blue-800 underline ml-1">
+              账单列表
+            </a>
+          </div>
           <div className="flex gap-1 text-xs">
             <Button
               variant={rangeParam !== 'month' ? 'default' : 'outline'}

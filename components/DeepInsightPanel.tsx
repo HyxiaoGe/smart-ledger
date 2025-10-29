@@ -101,14 +101,14 @@ export function DeepInsightPanel({
     let improvements: string[] = [];
 
     if (overall >= 80) {
-      description = '您的消费习惯非常稳定和规律';
-      improvements = ['继续保持良好的消费习惯', '定期回顾和优化预算'];
+      description = '您的可变支出习惯非常稳定和规律';
+      improvements = ['继续保持良好的消费习惯', '定期回顾和优化可变支出预算'];
     } else if (overall >= 60) {
-      description = '您的消费习惯较为规律，还有改进空间';
+      description = '您的可变支出习惯较为规律，还有改进空间';
       improvements = ['尝试制定更详细的消费计划', '减少冲动消费'];
     } else {
-      description = '您的消费习惯需要更多规划和规范';
-      improvements = ['建议制定严格的预算计划', '记录每笔消费并定期分析'];
+      description = '您的可变支出习惯需要更多规划和规范';
+      improvements = ['建议制定严格的可变支出预算计划', '记录每笔消费并定期分析'];
     }
 
     return {
@@ -166,9 +166,13 @@ export function DeepInsightPanel({
       const currentData = aiData.currentMonthFull;
       const lastMonthData = aiData.lastMonth;
 
+      // 过滤掉固定支出（自动生成的交易记录）
+      const filteredCurrentData = currentData.filter(t => !t.is_auto_generated && !t.recurring_expense_id);
+      const filteredLastMonthData = lastMonthData.filter(t => !t.is_auto_generated && !t.recurring_expense_id);
+
       console.log('处理的数据:', {
-        currentDataCount: currentData.length || 0,
-        lastMonthDataCount: lastMonthData.length || 0
+        currentDataCount: filteredCurrentData.length || 0,
+        lastMonthDataCount: filteredLastMonthData.length || 0
       });
 
       // 分析支出模式
@@ -186,13 +190,13 @@ export function DeepInsightPanel({
       const categoryData: Record<string, { amount: number; count: number }> = {};
       const merchantData: Record<string, { count: number; amount: number }> = {};
 
-      if (!currentData || currentData.length === 0) {
+      if (!filteredCurrentData || filteredCurrentData.length === 0) {
         console.log('没有找到当月消费数据');
         setData(null);
         return;
       }
 
-      currentData.forEach(transaction => {
+      filteredCurrentData.forEach(transaction => {
         // 分析小时分布
         const date = new Date(transaction.date);
         const hour = date.getHours();
@@ -262,21 +266,114 @@ export function DeepInsightPanel({
       // 生成洞察模式
       const patterns: InsightPattern[] = [];
 
-      // 周末高峰模式
-      if (spendingAnalysis.weekendVsWeekday.ratio > 0.4) {
+      // 1. 周末消费模式深度分析
+      const weekendRatio = spendingAnalysis.weekendVsWeekday.ratio;
+      if (weekendRatio > 0.6) {
         patterns.push({
-          id: 'weekend_peak',
+          id: 'weekend_heavy',
           type: 'weekend_peak',
-          title: '周末消费高峰',
-          description: `周末消费占总消费的${(spendingAnalysis.weekendVsWeekday.ratio * 100).toFixed(1)}%`,
-          impact: 'medium',
-          confidence: 85,
-          recommendation: '建议制定周末预算计划，控制冲动消费',
+          title: '周末消费主导',
+          description: `周末消费占比${(weekendRatio * 100).toFixed(1)}%，明显高于工作日`,
+          impact: weekendRatio > 0.8 ? 'high' : 'medium',
+          confidence: 90,
+          recommendation: '建议设定周末消费预算，工作日提前规划周末活动以控制支出',
           icon: '🎉'
+        });
+      } else if (weekendRatio < 0.2 && filteredCurrentData.length > 10) {
+        patterns.push({
+          id: 'weekday_heavy',
+          type: 'spending_pattern',
+          title: '工作日消费集中',
+          description: `工作日消费占主导(${((1-weekendRatio) * 100).toFixed(1)}%)，可能与工作相关支出较多`,
+          impact: 'low',
+          confidence: 75,
+          recommendation: '审视工作日支出的必要性，考虑是否有更经济的替代方案',
+          icon: '💼'
         });
       }
 
-      // 订阅增长模式
+      // 2. 消费频次和金额模式分析
+      const avgTransactionAmount = filteredCurrentData.length > 0
+        ? filteredCurrentData.reduce((sum, t) => sum + t.amount, 0) / filteredCurrentData.length
+        : 0;
+
+      if (avgTransactionAmount > 100) {
+        patterns.push({
+          id: 'high_ticket_spending',
+          type: 'spending_pattern',
+          title: '大额消费倾向',
+          description: `平均单笔消费¥${avgTransactionAmount.toFixed(0)}，倾向于高客单价消费`,
+          impact: 'medium',
+          confidence: 85,
+          recommendation: '建议对大额消费设置24小时冷静期，优先考虑性价比和替代方案',
+          icon: '💰'
+        });
+      } else if (filteredCurrentData.length > 50 && avgTransactionAmount < 30) {
+        patterns.push({
+          id: 'frequent_small_spending',
+          type: 'spending_pattern',
+          title: '小额高频消费',
+          description: `${filteredCurrentData.length}笔交易，平均¥${avgTransactionAmount.toFixed(0)}，小额消费频繁`,
+          impact: 'medium',
+          confidence: 90,
+          recommendation: '小额消费累积效应明显，建议记录每笔支出，设定日消费上限',
+          icon: '☕'
+        });
+      }
+
+      // 3. 消费多样性分析
+      const categoryCount = spendingAnalysis.commonCategories.length;
+      if (categoryCount > 8) {
+        patterns.push({
+          id: 'diverse_spending',
+          type: 'spending_pattern',
+          title: '消费类别分散',
+          description: `涉及${categoryCount}个消费类别，消费兴趣广泛`,
+          impact: 'low',
+          confidence: 80,
+          recommendation: '消费多样化有助于生活质量，建议关注核心类别的高效管理',
+          icon: '🎨'
+        });
+      } else if (categoryCount < 4 && filteredCurrentData.length > 5) {
+        patterns.push({
+          id: 'concentrated_spending',
+          type: 'spending_pattern',
+          title: '消费类别集中',
+          description: `主要集中在${categoryCount}个类别，消费偏好明显`,
+          impact: 'low',
+          confidence: 85,
+          recommendation: '在核心消费类别中寻求优化机会，探索更高性价比的选择',
+          icon: '🎯'
+        });
+      }
+
+      // 4. 消费稳定性深度分析
+      const stability = spendingAnalysis.spendingStability;
+      if (stability > 85) {
+        patterns.push({
+          id: 'highly_stable',
+          type: 'spending_pattern',
+          title: '消费习惯高度稳定',
+          description: `消费稳定性评分${stability.toFixed(0)}分，月度支出波动很小`,
+          impact: 'low',
+          confidence: 95,
+          recommendation: '稳定的消费习惯有利于财务规划，建议在此基础上优化消费结构，提升消费价值',
+          icon: '📊'
+        });
+      } else if (stability < 50 && filteredCurrentData.length > 10) {
+        patterns.push({
+          id: 'volatile_spending',
+          type: 'spending_pattern',
+          title: '消费波动较大',
+          description: `消费稳定性评分${stability.toFixed(0)}分，月度支出波动明显`,
+          impact: 'medium',
+          confidence: 85,
+          recommendation: '建议建立应急基金应对消费波动，同时分析波动原因并制定更稳定的消费计划',
+          icon: '📈'
+        });
+      }
+
+      // 5. 订阅服务分析（保留原有逻辑）
       const subscriptionCategories = ['subscription', 'membership', 'software'];
       const subscriptionSpending = spendingAnalysis.commonCategories
         .filter(cat => subscriptionCategories.some(sub => cat.category.includes(sub)))
@@ -290,7 +387,7 @@ export function DeepInsightPanel({
           description: `订阅服务支出¥${subscriptionSpending.toFixed(0)}，建议定期审查订阅服务`,
           impact: 'high',
           confidence: 90,
-          recommendation: '审查所有订阅服务，取消不必要的服务',
+          recommendation: '审查所有订阅服务，优先取消使用频率低的服务，考虑年付折扣',
           icon: '📱'
         });
       }
@@ -299,7 +396,7 @@ export function DeepInsightPanel({
       const habitScore = calculateHabitScore(spendingAnalysis, patterns);
 
       // 生成月度趋势
-      const monthlyTrends = analyzeMonthlyTrends(categoryData, lastMonthData || []);
+      const monthlyTrends = analyzeMonthlyTrends(categoryData, filteredLastMonthData || []);
 
       setData({
         patterns,
@@ -358,7 +455,7 @@ export function DeepInsightPanel({
           <CardTitle className="flex items-center gap-2 text-base">
             <Brain className="h-5 w-5 text-green-600" />
             <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent font-semibold">
-              深度洞察
+              可变支出深度洞察
             </span>
           </CardTitle>
         </CardHeader>
@@ -382,7 +479,7 @@ export function DeepInsightPanel({
           <div className="flex items-center gap-2">
             <Brain className="h-5 w-5 text-green-600" />
             <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent font-semibold">
-              深度洞察
+              可变支出深度洞察
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -427,7 +524,7 @@ export function DeepInsightPanel({
                 <>
                   {/* 习惯评分 */}
                   <div className="bg-white rounded-lg p-4 border border-green-100">
-                    <h4 className="text-sm font-medium text-gray-700 mb-3">消费习惯评分</h4>
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">可变支出习惯评分</h4>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-2xl font-bold text-green-600">
                         {data.habitScore.overall}
@@ -454,7 +551,7 @@ export function DeepInsightPanel({
                   {/* 洞察模式 */}
                   {data.patterns.length > 0 && (
                     <div className="space-y-2">
-                      <h4 className="text-sm font-medium text-gray-700">消费洞察</h4>
+                      <h4 className="text-sm font-medium text-gray-700">可变支出洞察</h4>
                       {data.patterns.map((pattern) => (
                         <div
                           key={pattern.id}
@@ -481,7 +578,7 @@ export function DeepInsightPanel({
                   {/* 月度趋势 */}
                   {data.monthlyTrends.length > 0 && (
                     <div className="space-y-2">
-                      <h4 className="text-sm font-medium text-gray-700">月度趋势</h4>
+                      <h4 className="text-sm font-medium text-gray-700">可变支出月度趋势</h4>
                       {data.monthlyTrends.map((trend, index) => (
                         <div key={index} className="flex items-center justify-between p-2 bg-white rounded border border-gray-100">
                           <div className="flex items-center gap-2">
