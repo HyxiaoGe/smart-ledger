@@ -773,7 +773,7 @@ export function AIAnalysisPanel({
         </Card>
       )}
 
-      {/* AI分析反馈 */}
+    {/* AI分析反馈 */}
       {aiSummary && (
         <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
           <CardContent className="p-4">
