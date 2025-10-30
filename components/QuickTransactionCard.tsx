@@ -187,12 +187,24 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
         finalAmount = item.fixedAmount!;
       } else {
         const customAmount = customAmounts[item.id];
-        if (!customAmount || parseFloat(customAmount) <= 0) {
-          alert('请输入有效金额');
-          setSubmittingId(null);
-          return;
+        // 如果用户没有输入金额，使用建议金额
+        if (!customAmount || customAmount.trim() === '') {
+          if (item.suggestedAmount && item.suggestedAmount > 0) {
+            finalAmount = item.suggestedAmount;
+          } else {
+            alert('请输入有效金额');
+            setSubmittingId(null);
+            return;
+          }
+        } else {
+          const parsedAmount = parseFloat(customAmount);
+          if (isNaN(parsedAmount) || parsedAmount <= 0) {
+            alert('请输入有效金额');
+            setSubmittingId(null);
+            return;
+          }
+          finalAmount = parsedAmount;
         }
-        finalAmount = parseFloat(customAmount);
       }
 
       const response = await fetch('/api/quick-transaction', {
