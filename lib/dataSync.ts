@@ -16,12 +16,14 @@ export type SyncEvent = {
 
 const STORAGE_KEY = 'smart-ledger-sync-event';
 const DIRTY_KEY = 'smart-ledger-transactions-dirty';
-const SYNC_DEBOUNCE_TIME = 500;
+const SYNC_DEBOUNCE_TIME = 300; // 降低到 300ms，提高响应速度
+const STORAGE_CLEANUP_DELAY = 200; // 增加到 200ms，确保其他标签页能读取到
 
 export class DataSyncManager {
   private static instance: DataSyncManager;
   private listeners = new Map<SyncType, Array<(event: SyncEvent) => void>>();
-  private lastEventTime = 0;
+  private eventQueue: SyncEvent[] = [];
+  private flushTimer: ReturnType<typeof setTimeout> | null = null;
 
   private constructor() {
     if (typeof window !== 'undefined') {
@@ -74,16 +76,52 @@ export class DataSyncManager {
   }
 
   private emit(event: Omit<SyncEvent, 'timestamp'>) {
-    const now = Date.now();
-    if (now - this.lastEventTime < SYNC_DEBOUNCE_TIME) {
+    const payload: SyncEvent = { ...event, timestamp: Date.now() };
+
+    // 添加到队列而不是丢弃
+    this.eventQueue.push(payload);
+
+    // 防抖处理：延迟执行批量发送
+    if (this.flushTimer) {
+      clearTimeout(this.flushTimer);
+    }
+
+    this.flushTimer = setTimeout(() => {
+      this.flushEvents();
+    }, SYNC_DEBOUNCE_TIME);
+  }
+
+  /**
+   * 批量发送队列中的事件
+   * 合并相同类型的事件，避免重复通知
+   */
+  private flushEvents() {
+    if (this.eventQueue.length === 0) {
+      this.flushTimer = null;
       return;
     }
-    this.lastEventTime = now;
 
-    const payload: SyncEvent = { ...event, timestamp: now };
-    writeJSON(STORAGE_KEY, payload);
-    setTimeout(() => removeItem(STORAGE_KEY), 100);
-    this.notify(payload);
+    // 合并相同类型的事件（保留最新的）
+    const mergedEvents = new Map<SyncType, SyncEvent>();
+    this.eventQueue.forEach(event => {
+      const existing = mergedEvents.get(event.type);
+      if (!existing || event.timestamp > existing.timestamp) {
+        mergedEvents.set(event.type, event);
+      }
+    });
+
+    // 发送合并后的事件
+    mergedEvents.forEach(event => {
+      writeJSON(STORAGE_KEY, event);
+      this.notify(event);
+
+      // 延迟清理，确保其他标签页能读取到
+      setTimeout(() => removeItem(STORAGE_KEY), STORAGE_CLEANUP_DELAY);
+    });
+
+    // 清空队列
+    this.eventQueue = [];
+    this.flushTimer = null;
   }
 
   private newOperationId() {

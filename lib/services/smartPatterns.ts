@@ -97,7 +97,7 @@ export function getPatternBasedSuggestions(
     const priceDiff = Math.abs(closestPricePoint - amount);
     if (priceDiff <= 0.5) { // 价格差异在0.5元以内
       // 找到这个价格点对应的最常用备注
-      const pricePointNotes = getNotesForPricePoint(pattern, closestPricePoint);
+      const pricePointNotes = getNotesForPricePoint(pattern, closestPricePoint, timeContext);
       pricePointNotes.forEach(note => {
         suggestions.push({
           note,
@@ -126,7 +126,7 @@ export function getPatternBasedSuggestions(
 /**
  * 获取特定价格点对应的最常用备注
  */
-function getNotesForPricePoint(pattern: ConsumptionPattern, pricePoint: number): string[] {
+function getNotesForPricePoint(pattern: ConsumptionPattern, pricePoint: number, timeContext?: string): string[] {
   // 这里可以进一步细化，基于价格点匹配特定备注
   // 例如：9.90元对应基础瑞幸，12.90元对应加料瑞幸
   switch (pattern.category) {

@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server';
 import { chat } from '@/lib/aiClient';
 import { getPredictionData } from '@/lib/services/transactions';
-import { predictionCache } from '@/lib/services/predictionCache';
-import { aiCacheServiceServer, getServerCachedSpendingPrediction } from '@/lib/services/aiCacheServiceServer';
+import { aiPredictionCache } from '@/lib/services/unifiedCache';
+import { aiCacheServiceServer } from '@/lib/services/aiCacheServiceServer';
 import { aiFeedbackServiceDB } from '@/lib/services/aiFeedbackServiceDB';
 
 export const runtime = 'nodejs';
@@ -71,19 +71,16 @@ export async function POST(req: NextRequest) {
  * 支出预测处理
  */
 async function handleSpendingPrediction(predictionData: any, predictionMonths: number, monthsToAnalyze: number = 6) {
-  // 检查缓存 (使用服务端智能缓存)
-  const cacheParams = {
+  // 构建缓存键
+  const cacheKey = JSON.stringify({
     monthsToAnalyze,
     predictionMonths,
-    confidenceThreshold: 70,
     lastTransactionDate: predictionData.monthlyData[0]?.month,
     transactionCount: predictionData.overallStats.totalTransactions
-  };
+  });
 
-  // 使用服务端智能缓存获取预测结果
-  return await getServerCachedSpendingPrediction(
-    cacheParams,
-    async () => {
+  // 使用统一缓存服务
+  return await aiPredictionCache.getOrSet(cacheKey, async () => {
   
       // 记录AI请求到数据库
       const startTime = Date.now();
@@ -194,9 +191,6 @@ ${JSON.stringify({
       riskFactors: aiResult.riskFactors || []
     };
 
-        // 缓存AI预测结果到旧系统（向后兼容）
-        predictionCache.setCachedPrediction(result, cacheParams);
-
         // 记录AI请求日志到数据库
         const responseTime = Date.now() - startTime;
         await aiCacheServiceServer.logAIRequest(
@@ -204,7 +198,7 @@ ${JSON.stringify({
           'deepseek-chat',
           'spending-prediction',
           'prediction',
-          cacheParams,
+          { monthsToAnalyze, predictionMonths },
           sys + '\n\n' + user,
           result, // 完整的响应数据
           responseTime,
@@ -223,7 +217,7 @@ ${JSON.stringify({
           'deepseek-chat',
           'spending-prediction',
           'prediction',
-          cacheParams,
+          { monthsToAnalyze, predictionMonths },
           sys + '\n\n' + user,
           null, // 响应数据为空
           responseTime,
@@ -235,8 +229,7 @@ ${JSON.stringify({
         // 降级到规则引擎预测
         return generateRuleBasedPrediction(predictionData, predictionMonths);
       }
-    }
-  );
+  });
 }
 
 /**

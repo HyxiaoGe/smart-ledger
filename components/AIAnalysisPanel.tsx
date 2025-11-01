@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { DeepInsightPanel } from '@/components/DeepInsightPanel';
 import { SpendingPredictionPanel } from '@/components/SpendingPredictionPanel';
 import { QuickFeedback } from '@/components/ui/AIFeedbackModal';
+import { CATEGORY_NAMES, CATEGORY_ICONS, PRIORITY_CONFIG } from './AIAnalysisPanel/constants';
 
 interface TrendAnalysis {
   currentMonth: number;
@@ -67,22 +68,6 @@ export function AIAnalysisPanel({
   const [refreshStatus, setRefreshStatus] = useState<'idle' | 'refreshing' | 'success' | 'error'>('idle');
   const [aiSummary, setAiSummary] = useState<string | null>(null);
 
-  // 类别名称中文翻译 - 组件级别定义
-  const categoryNames: Record<string, string> = {
-    food: '餐饮',
-    transport: '交通',
-    drink: '饮品',
-    daily: '日用品',
-    subscription: '订阅服务',
-    entertainment: '娱乐',
-    medical: '医疗',
-    education: '教育',
-    rent: '房租',
-    other: '其他',
-    shopping: '购物',
-    utilities: '水电费'
-  };
-
   // 处理趋势分析数据
   const processTrendAnalysis = useCallback(() => {
     if (!aiData) return;
@@ -104,24 +89,6 @@ export function AIAnalysisPanel({
       const changePercent = lastTotal > 0 ? (changeAmount / lastTotal) * 100 : 0;
 
       // 按分类聚合数据
-      const categoryIcons: Record<string, string> = {
-        food: '🍽️',
-        transport: '🚇',
-        drink: '☕',
-        daily: '🛍️',
-        subscription: '📱',
-        entertainment: '🎮',
-        medical: '💊',
-        education: '📚',
-        rent: '🏠',
-        other: '📦',
-        shopping: '🛒',
-        utilities: '💡',
-        salary: '💰',
-        bonus: '🎁',
-        investment: '📈'
-      };
-
       const categoryAnalysis: TrendAnalysis['categories'] = [];
 
       const allCategories = new Set([
@@ -143,7 +110,7 @@ export function AIAnalysisPanel({
           current,
           last,
           changePercent: categoryChange,
-          icon: categoryIcons[category] || '💰'
+          icon: CATEGORY_ICONS[category] || '💰'
         });
       });
 
@@ -207,11 +174,11 @@ export function AIAnalysisPanel({
           switch (category) {
             case 'food':
               if (avgAmount > 50 && frequency > 10) {
-                suggestionText = `${categoryNames[category]}支出较高(¥${avgAmount.toFixed(0)}/次，${frequency}次)，建议考虑增加在家做饭的频率，可节省约¥${Math.round(amount * 0.25)}`;
+                suggestionText = `${CATEGORY_NAMES[category]}支出较高(¥${avgAmount.toFixed(0)}/次，${frequency}次)，建议考虑增加在家做饭的频率，可节省约¥${Math.round(amount * 0.25)}`;
                 potentialSavings = Math.round(amount * 0.25);
                 priority = 'high';
               } else if (percent > 40) {
-                suggestionText = `${categoryNames[category]}占比较高(${percent.toFixed(1)}%)，建议优化餐饮结构，减少高价位餐饮消费`;
+                suggestionText = `${CATEGORY_NAMES[category]}占比较高(${percent.toFixed(1)}%)，建议优化餐饮结构，减少高价位餐饮消费`;
                 potentialSavings = Math.round(amount * 0.15);
                 priority = 'medium';
               }
@@ -219,24 +186,24 @@ export function AIAnalysisPanel({
 
             case 'transport':
               if (frequency > 15) {
-                suggestionText = `${categoryNames[category]}频繁(${frequency}次)，建议考虑公共交通月卡或拼车方案，预计节省¥${Math.round(amount * 0.2)}`;
+                suggestionText = `${CATEGORY_NAMES[category]}频繁(${frequency}次)，建议考虑公共交通月卡或拼车方案，预计节省¥${Math.round(amount * 0.2)}`;
                 potentialSavings = Math.round(amount * 0.2);
                 priority = 'medium';
               } else {
-                suggestionText = `${categoryNames[category]}支出¥${amount.toFixed(0)}，建议规划路线以减少交通成本`;
+                suggestionText = `${CATEGORY_NAMES[category]}支出¥${amount.toFixed(0)}，建议规划路线以减少交通成本`;
                 potentialSavings = Math.round(amount * 0.1);
                 priority = 'low';
               }
               break;
 
             case 'shopping':
-              suggestionText = `${categoryNames[category]}支出¥${amount.toFixed(0)}(${frequency}次)，建议制定购物清单，避免冲动消费，可节省¥${Math.round(amount * 0.3)}`;
+              suggestionText = `${CATEGORY_NAMES[category]}支出¥${amount.toFixed(0)}(${frequency}次)，建议制定购物清单，避免冲动消费，可节省¥${Math.round(amount * 0.3)}`;
               potentialSavings = Math.round(amount * 0.3);
               priority = 'high';
               break;
 
             case 'entertainment':
-              suggestionText = `${categoryNames[category]}支出¥${amount.toFixed(0)}，建议寻找免费或低价的娱乐活动，预计节省¥${Math.round(amount * 0.4)}`;
+              suggestionText = `${CATEGORY_NAMES[category]}支出¥${amount.toFixed(0)}，建议寻找免费或低价的娱乐活动，预计节省¥${Math.round(amount * 0.4)}`;
               potentialSavings = Math.round(amount * 0.4);
               priority = 'medium';
               break;
@@ -252,7 +219,7 @@ export function AIAnalysisPanel({
 
             default:
               if (percent > 30) {
-                suggestionText = `${categoryNames[category] || category}支出占比较高(${percent.toFixed(1)}%)，建议审视该类别的必要性和优化空间`;
+                suggestionText = `${CATEGORY_NAMES[category] || category}支出占比较高(${percent.toFixed(1)}%)，建议审视该类别的必要性和优化空间`;
                 potentialSavings = Math.round(amount * 0.15);
                 priority = 'medium';
               }
@@ -260,7 +227,7 @@ export function AIAnalysisPanel({
 
           if (suggestionText) {
             newSuggestions.push({
-              category: categoryNames[category] || category,
+              category: CATEGORY_NAMES[category] || category,
               suggestion: suggestionText,
               potential: potentialSavings,
               priority
@@ -338,7 +305,7 @@ export function AIAnalysisPanel({
     } catch (error) {
       console.error('处理个性化建议失败:', error);
     }
-  }, [aiData, categoryNames]);
+  }, [aiData]);
 
   // 调用真正的AI分析接口
   const callAIAnalysis = useCallback(async (transactions: any[]) => {
@@ -610,7 +577,7 @@ export function AIAnalysisPanel({
                           <div key={category.category} className="flex items-center justify-between p-2 bg-white rounded border border-gray-100">
                             <div className="flex items-center gap-2">
                               <span className="text-lg">{category.icon}</span>
-                              <span className="text-sm text-gray-700">{categoryNames[category.category] || category.category}</span>
+                              <span className="text-sm text-gray-700">{CATEGORY_NAMES[category.category] || category.category}</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-medium">¥{category.current.toFixed(0)}</span>

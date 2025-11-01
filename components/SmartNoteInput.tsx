@@ -16,6 +16,33 @@ import { generateTimeContext } from '@/lib/noteContext';
 import type { CommonNote, SmartSuggestionParams } from '@/types/transaction';
 import { AlertCircle, Lightbulb, TrendingUp, Clock, Target } from 'lucide-react';
 
+/**
+ * 建议类型配置
+ * 提取到组件外部避免每次渲染重复创建
+ */
+const SUGGESTION_TYPE_CONFIG = {
+  context: {
+    icon: Target,
+    color: 'bg-blue-100 text-blue-700 border-blue-200'
+  },
+  pattern: {
+    icon: Clock,
+    color: 'bg-green-100 text-green-700 border-green-200'
+  },
+  frequency: {
+    icon: TrendingUp,
+    color: 'bg-purple-100 text-purple-700 border-purple-200'
+  },
+  similarity: {
+    icon: Lightbulb,
+    color: 'bg-orange-100 text-orange-700 border-orange-200'
+  },
+  default: {
+    icon: Lightbulb,
+    color: 'bg-gray-100 text-gray-700 border-gray-200'
+  }
+} as const;
+
 type SmartNoteInputProps = {
   value?: string;
   onChange?: (value: string) => void;
@@ -29,7 +56,7 @@ type SmartNoteInputProps = {
   onSuggestionSelected?: (suggestion: SmartSuggestion | CommonNote, type: string) => void;
 };
 
-export function SmartNoteInput({
+const SmartNoteInputComponent = function SmartNoteInput({
   value = '',
   onChange,
   placeholder = '选择分类和金额后，智能提示将自动显示',
@@ -51,42 +78,19 @@ export function SmartNoteInput({
   const autoTriggeredRef = useRef(false); // 记录是否自动触发过
   const lastParamsRef = useRef<SmartSuggestionParams | null>(null);
 
-  // 获取建议类型图标
+  // 获取建议类型图标（使用配置）
   const getSuggestionIcon = (suggestion: SmartSuggestion | CommonNote) => {
-    if ('type' in suggestion) {
-      switch (suggestion.type) {
-        case 'context':
-          return <Target className="h-3 w-3" />;
-        case 'pattern':
-          return <Clock className="h-3 w-3" />;
-        case 'frequency':
-          return <TrendingUp className="h-3 w-3" />;
-        case 'similarity':
-          return <Lightbulb className="h-3 w-3" />;
-        default:
-          return <Lightbulb className="h-3 w-3" />;
-      }
-    }
-    return <TrendingUp className="h-3 w-3" />;
+    const type = 'type' in suggestion ? suggestion.type : 'default';
+    const config = SUGGESTION_TYPE_CONFIG[type] || SUGGESTION_TYPE_CONFIG.default;
+    const IconComponent = config.icon;
+    return <IconComponent className="h-3 w-3" />;
   };
 
-  // 获取建议类型颜色
+  // 获取建议类型颜色（使用配置）
   const getSuggestionColor = (suggestion: SmartSuggestion | CommonNote) => {
-    if ('type' in suggestion) {
-      switch (suggestion.type) {
-        case 'context':
-          return 'bg-blue-100 text-blue-700 border-blue-200';
-        case 'pattern':
-          return 'bg-green-100 text-green-700 border-green-200';
-        case 'frequency':
-          return 'bg-purple-100 text-purple-700 border-purple-200';
-        case 'similarity':
-          return 'bg-orange-100 text-orange-700 border-orange-200';
-        default:
-          return 'bg-gray-100 text-gray-700 border-gray-200';
-      }
-    }
-    return 'bg-gray-100 text-gray-700 border-gray-200';
+    const type = 'type' in suggestion ? suggestion.type : 'default';
+    const config = SUGGESTION_TYPE_CONFIG[type] || SUGGESTION_TYPE_CONFIG.default;
+    return config.color;
   };
 
   // 获取置信度颜色
@@ -453,4 +457,22 @@ export function SmartNoteInput({
       )}
     </div>
   );
-}
+};
+
+/**
+ * 使用 React.memo 优化渲染性能
+ * 只在关键 props 变化时才重新渲染
+ */
+export const SmartNoteInput = React.memo(SmartNoteInputComponent, (prevProps, nextProps) => {
+  // 返回 true 表示不重新渲染，false 表示需要重新渲染
+  return (
+    prevProps.value === nextProps.value &&
+    prevProps.category === nextProps.category &&
+    prevProps.amount === nextProps.amount &&
+    prevProps.currency === nextProps.currency &&
+    prevProps.disabled === nextProps.disabled &&
+    prevProps.placeholder === nextProps.placeholder &&
+    prevProps.className === nextProps.className
+    // onChange 和 onSuggestionSelected 函数引用变化不触发重渲染
+  );
+});
