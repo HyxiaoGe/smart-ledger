@@ -195,14 +195,29 @@ async function loadTopData(
     rEnd = quickRange.end;
   }
 
-  const { data: topData } = await supabase
+  // 判断是否为单日查询（和 loadRangeData 逻辑一致）
+  const isSingleDay = rangeParam === 'today' || rangeParam === 'yesterday' || rStart === rEnd;
+
+  let query = supabase
     .from('transactions')
     .select('id, type, category, amount, date, note, currency')
     .is('deleted_at', null)
-    .gte('date', rStart)
-    .lt('date', rEnd)
     .eq('currency', currency)
-    .eq('type', 'expense')
+    .eq('type', 'expense');
+
+  // 根据是否为单日选择不同的查询方式
+  if (isSingleDay) {
+    query = query.eq('date', rStart);
+  } else if (rangeParam === 'custom') {
+    const endDate = new Date(rEnd);
+    endDate.setDate(endDate.getDate() + 1);
+    const endDateStr = endDate.toISOString().slice(0, 10);
+    query = query.gte('date', rStart).lt('date', endDateStr);
+  } else {
+    query = query.gte('date', rStart).lt('date', rEnd);
+  }
+
+  const { data: topData } = await query
     .order('amount', { ascending: false })
     .limit(10);
 
