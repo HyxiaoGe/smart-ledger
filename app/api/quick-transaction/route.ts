@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { supabase } from '@/lib/clients/supabase/client';
 import { revalidateTag, revalidatePath } from 'next/cache';
+import { formatDateToLocal } from '@/lib/utils/date';
 
 export const runtime = 'nodejs';
 
@@ -30,7 +31,7 @@ export async function POST(req: NextRequest) {
     }
 
     const type = 'expense';
-    const transactionDate = date || new Date().toISOString().slice(0, 10);
+    const transactionDate = date || formatDateToLocal(new Date());
 
     // 检查是否存在相同业务记录（包括已删除的）
     const { data: existingRecord, error: queryError } = await supabase
