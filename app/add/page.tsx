@@ -14,6 +14,7 @@ import { AIPredictionPanel } from '@/components/features/ai-analysis/AIPredictio
 import { dataSync, markTransactionsDirty } from '@/lib/core/dataSync';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import type { TransactionPrediction, QuickTransactionSuggestion } from '@/lib/services/aiPrediction';
+import { formatDateToLocal } from '@/lib/utils/date';
 
 export default function AddPage() {
   const type: TransactionType = 'expense'; // 固定为支出类型
@@ -57,7 +58,8 @@ export default function AddPage() {
     setError('');
 
     try {
-      const dateStr = formData.date.toISOString().slice(0, 10);
+      // 使用本地时区格式化日期，避免时区问题
+      const dateStr = formatDateToLocal(formData.date);
       console.log('🔍 准备保存账单:', {
         date: dateStr,
         category: formData.category,
@@ -158,7 +160,6 @@ export default function AddPage() {
 
       if (addedDate.getTime() < today.getTime()) {
         // 历史日期 - 提示用户需要切换月份查看
-        const monthStr = formData.date.toISOString().slice(0, 7);
         setToastMessage(`账单已保存到 ${formattedDate}！切换到对应月份查看`);
       } else {
         setToastMessage('账单保存成功！');
@@ -172,7 +173,7 @@ export default function AddPage() {
         category: formData.category,
         amount: formData.amt,
         note: formData.note,
-        date: formData.date.toISOString(),
+        date: dateStr, // 使用已经格式化好的本地日期字符串
         currency: formData.currency
       });
       markTransactionsDirty();
@@ -448,7 +449,19 @@ export default function AddPage() {
                 <Label>日期 <span className="text-destructive">*</span></Label>
                 <DateInput
                   selected={date}
-                  onSelect={setDate}
+                  onSelect={(newDate) => {
+                    console.log('📅 DateInput返回的日期:', {
+                      raw: newDate,
+                      toString: newDate.toString(),
+                      toISOString: newDate.toISOString(),
+                      getFullYear: newDate.getFullYear(),
+                      getMonth: newDate.getMonth(),
+                      getDate: newDate.getDate(),
+                      getHours: newDate.getHours(),
+                      getTimezoneOffset: newDate.getTimezoneOffset()
+                    });
+                    setDate(newDate);
+                  }}
                   placeholder="选择日期"
                   disabled={loading}
                 />

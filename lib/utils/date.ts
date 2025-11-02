@@ -40,6 +40,19 @@ export function todayISO(now = new Date()): string {
   return `${year}-${month}-${day}`;
 }
 
+/**
+ * 将Date对象格式化为YYYY-MM-DD字符串（使用本地时区）
+ * 避免使用toISOString()导致的时区问题
+ * @param date Date对象
+ * @returns YYYY-MM-DD格式的字符串
+ */
+export function formatDateToLocal(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 export function dayRange(date = new Date()) {
   const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const end = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);

@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2 } from 'lucide-react';
 import { dataSync } from '@/lib/core/dataSync';
 import { ProgressToast } from '@/components/shared/ProgressToast';
+import { formatDateToLocal } from '@/lib/utils/date';
 
 type Transaction = {
   id: string;
@@ -220,7 +221,7 @@ export function TransactionGroupedList({
             <label className="text-sm font-medium text-gray-700 mb-1 block">日期</label>
             <DateInput
               selected={new Date((form.date as string) || transaction.date)}
-              onSelect={(date) => setForm((f) => ({ ...f, date: date?.toISOString().slice(0, 10) }))}
+              onSelect={(date) => setForm((f) => ({ ...f, date: date ? formatDateToLocal(date) : undefined }))}
               placeholder="选择日期"
             />
           </div>

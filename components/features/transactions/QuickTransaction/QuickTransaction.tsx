@@ -3,6 +3,7 @@
 import React, { useState, useCallback } from 'react';
 import { supabase } from '@/lib/clients/supabase/client';
 import { Button } from '@/components/ui/button';
+import { formatDateToLocal } from '@/lib/utils/date';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ProgressToast } from '@/components/shared/ProgressToast';
@@ -49,7 +50,7 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
 
     try {
       const type = 'expense';
-      const date = new Date().toISOString().slice(0, 10);
+      const date = formatDateToLocal(new Date());
 
       // 检查是否存在相同业务记录
       const { data: existingRecord, error: queryError } = await supabase
