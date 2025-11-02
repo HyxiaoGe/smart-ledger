@@ -60,12 +60,6 @@ export default function AddPage() {
     try {
       // 使用本地时区格式化日期，避免时区问题
       const dateStr = formatDateToLocal(formData.date);
-      console.log('🔍 准备保存账单:', {
-        date: dateStr,
-        category: formData.category,
-        amount: formData.amt,
-        note: formData.note
-      });
 
       // 先查询是否存在相同业务记录（包括已删除的）
       // 注意：不要用 .single()，因为可能查不到记录会报错
@@ -80,7 +74,6 @@ export default function AddPage() {
         .limit(1);
 
       const existingRecord = existingRecords && existingRecords.length > 0 ? existingRecords[0] : null;
-      console.log('🔍 查询结果:', { existingRecord, queryError });
 
       let transactionError;
 
@@ -109,16 +102,7 @@ export default function AddPage() {
         }
       } else {
         // 不存在任何记录，插入新记录
-        console.log('➕ 插入新记录:', {
-          type,
-          category: formData.category,
-          amount: formData.amt,
-          note: formData.note,
-          date: dateStr,
-          currency: formData.currency
-        });
-
-        const { data: insertData, error: insertError } = await supabase
+        const { error: insertError } = await supabase
           .from('transactions')
           .insert([{
             type,
@@ -127,25 +111,14 @@ export default function AddPage() {
             note: formData.note,
             date: dateStr,
             currency: formData.currency
-          }])
-          .select();
+          }]);
 
-        console.log('✅ 插入结果:', { insertData, insertError });
         transactionError = insertError;
       }
 
-      // 处理查询错误（排除"未找到记录"的错误）
-      if (queryError) {
-        console.error('❌ 查询错误:', queryError);
-        throw queryError;
-      }
-
-      if (transactionError) {
-        console.error('❌ 保存错误:', transactionError);
-        throw transactionError;
-      }
-
-      console.log('✅ 账单保存成功');
+      // 处理错误
+      if (queryError) throw queryError;
+      if (transactionError) throw transactionError;
 
       // 显示Toast成功提示（带进度条），包含日期信息
       const formattedDate = formData.date.toLocaleDateString('zh-CN', {
@@ -197,7 +170,6 @@ export default function AddPage() {
       }, 500);
 
     } catch (err: any) {
-      console.error('❌ 提交失败:', err);
       setError(err.message || '提交失败');
     } finally {
       setLoading(false);
@@ -451,19 +423,7 @@ export default function AddPage() {
                 <Label>日期 <span className="text-destructive">*</span></Label>
                 <DateInput
                   selected={date}
-                  onSelect={(newDate) => {
-                    console.log('📅 DateInput返回的日期:', {
-                      raw: newDate,
-                      toString: newDate.toString(),
-                      toISOString: newDate.toISOString(),
-                      getFullYear: newDate.getFullYear(),
-                      getMonth: newDate.getMonth(),
-                      getDate: newDate.getDate(),
-                      getHours: newDate.getHours(),
-                      getTimezoneOffset: newDate.getTimezoneOffset()
-                    });
-                    setDate(newDate);
-                  }}
+                  onSelect={setDate}
                   placeholder="选择日期"
                   disabled={loading}
                 />
