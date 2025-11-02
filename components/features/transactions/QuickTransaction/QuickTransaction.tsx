@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ProgressToast } from '@/components/ProgressToast';
+import { ProgressToast } from '@/components/shared/ProgressToast';
 import { dataSync, markTransactionsDirty } from '@/lib/dataSync';
 import { generateTimeContext } from '@/lib/noteContext';
 import { aiPredictionService, type QuickTransactionSuggestion } from '@/lib/services/aiPrediction';

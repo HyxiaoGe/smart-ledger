@@ -5,9 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Brain, CheckCircle, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DeepInsightPanel } from '@/components/DeepInsightPanel';
-import { SpendingPredictionPanel } from '@/components/SpendingPredictionPanel';
-import { QuickFeedback } from '@/components/ui/AIFeedbackModal';
+import { DeepInsightPanel } from '@/components/features/ai-analysis/DeepInsightPanel';
+import { SpendingPredictionPanel } from '@/components/features/ai-analysis/SpendingPredictionPanel';
+import { QuickFeedback } from '@/components/features/ai-analysis/AIFeedbackModal';
 import { TrendAnalysis } from './AIAnalysisPanel/TrendAnalysis';
 import { OptimizationAdvice } from './AIAnalysisPanel/OptimizationAdvice';
 import {

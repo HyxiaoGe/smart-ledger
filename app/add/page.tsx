@@ -8,11 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DateInput } from '@/components/DateInput';
-import { SmartNoteInput } from '@/components/SmartNoteInput';
-import { AIPredictionPanel } from '@/components/AIPredictionPanel';
+import { DateInput } from '@/components/features/input/DateInput';
+import { SmartNoteInput } from '@/components/features/input/SmartNoteInput';
+import { AIPredictionPanel } from '@/components/features/ai-analysis/AIPredictionPanel';
 import { dataSync, markTransactionsDirty } from '@/lib/dataSync';
-import { ProgressToast } from '@/components/ProgressToast';
+import { ProgressToast } from '@/components/shared/ProgressToast';
 import type { TransactionPrediction, QuickTransactionSuggestion } from '@/lib/services/aiPrediction';
 
 export default function AddPage() {

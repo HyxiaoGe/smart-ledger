@@ -5,8 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, TrendingDown, AlertTriangle, Target, RefreshCw, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PredictionTrendChart } from '@/components/PredictionTrendChart';
-import { AIFeedbackTrigger, QuickFeedback } from '@/components/ui/AIFeedbackModal';
+import { PredictionTrendChart } from '@/components/features/ai-analysis/PredictionTrendChart';
+import { AIFeedbackTrigger, QuickFeedback } from '@/components/features/ai-analysis/AIFeedbackModal';
 
 interface PredictionData {
   predictions: Array<{

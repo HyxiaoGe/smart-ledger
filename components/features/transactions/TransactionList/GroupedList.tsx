@@ -6,13 +6,13 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CategoryChip } from '@/components/CategoryChip';
-import { DateInput } from '@/components/DateInput';
+import { DateInput } from '@/components/features/input/DateInput';
 import { PRESET_CATEGORIES } from '@/lib/config';
 import { formatCurrency } from '@/lib/format';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2 } from 'lucide-react';
 import { dataSync } from '@/lib/dataSync';
-import { ProgressToast } from '@/components/ProgressToast';
+import { ProgressToast } from '@/components/shared/ProgressToast';
 
 type Transaction = {
   id: string;

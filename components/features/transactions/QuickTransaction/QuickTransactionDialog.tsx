@@ -3,7 +3,7 @@
 import React, { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ProgressToast } from '@/components/ProgressToast';
+import { ProgressToast } from '@/components/shared/ProgressToast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { aiPredictionService, type QuickTransactionSuggestion } from '@/lib/services/aiPrediction';
 import { Zap, Clock, CheckCircle, RefreshCw, X } from 'lucide-react';
