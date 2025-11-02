@@ -13,6 +13,10 @@ export interface Transaction {
   date: string; // ISO 日期字符串，如 2025-10-04
   created_at?: string;
   currency?: Currency; // 允许记录币种，默认 CNY
+  // 新增优化字段
+  merchant?: string; // 商家/品牌名称（如：瑞幸咖啡、地铁、美团）
+  subcategory?: string; // 子分类（如：coffee、subway、takeout）
+  product?: string; // 具体产品/服务（如：生椰拿铁、地铁票、午餐外卖）
 }
 
 // 常用备注类型定义（扩展支持智能分析）
@@ -28,6 +32,9 @@ export interface CommonNote {
   avg_amount?: number; // 平均金额
   time_patterns?: string[]; // 时间模式，如：['工作日12:00-13:00', '周末18:00-20:00']
   category_affinity?: string; // 类别关联度最强的类别
+  // 新增优化字段
+  merchant?: string; // 商家/品牌名称
+  subcategory?: string; // 子分类
 }
 
 // 智能提示类型

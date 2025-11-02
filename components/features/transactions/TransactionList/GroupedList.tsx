@@ -10,7 +10,8 @@ import { DateInput } from '@/components/features/input/DateInput';
 import { PRESET_CATEGORIES } from '@/lib/config/config';
 import { formatCurrency } from '@/lib/utils/format';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, Store } from 'lucide-react';
+import { MerchantInput, SubcategorySelect } from '@/components/features/input/MerchantInput';
 import { dataSync } from '@/lib/core/dataSync';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { formatDateToLocal } from '@/lib/utils/date';
@@ -23,6 +24,9 @@ type Transaction = {
   currency?: string;
   note?: string;
   date: string;
+  merchant?: string;
+  subcategory?: string;
+  product?: string;
 };
 
 interface TransactionGroupedListProps {
@@ -284,6 +288,45 @@ export function TransactionGroupedList({
           </div>
         </div>
 
+        {/* 商家信息编辑区域 */}
+        <div className="border-t border-gray-200 pt-4 space-y-4">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <Store className="h-4 w-4" />
+            <span className="font-medium">商家信息</span>
+            <span className="text-xs text-gray-400">（可选）</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">商家/品牌</label>
+              <MerchantInput
+                value={(form.merchant as string) ?? transaction.merchant ?? ''}
+                onChange={(value) => setForm((f) => ({ ...f, merchant: value }))}
+                placeholder="如：瑞幸咖啡、地铁"
+                category={(form.category as string) || transaction.category}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">子分类</label>
+              <SubcategorySelect
+                category={(form.category as string) || transaction.category}
+                value={(form.subcategory as string) ?? transaction.subcategory ?? ''}
+                onChange={(value) => setForm((f) => ({ ...f, subcategory: value }))}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">具体产品/服务</label>
+            <Input
+              value={(form.product as string) ?? transaction.product ?? ''}
+              onChange={(e) => setForm((f) => ({ ...f, product: e.target.value }))}
+              placeholder="如：生椰拿铁、地铁票"
+              className="h-10"
+            />
+          </div>
+        </div>
+
         <div className="flex justify-end gap-3 pt-2 border-t">
           <Button
             variant="outline"
@@ -326,13 +369,24 @@ export function TransactionGroupedList({
                   <CategoryChip category={transaction.category} />
                 </div>
 
-                {/* 备注信息 */}
-                <div className="flex-1 min-w-0">
+                {/* 备注和商家信息 */}
+                <div className="flex-1 min-w-0 space-y-1">
+                  {/* 商家信息 */}
+                  {transaction.merchant && (
+                    <div className="flex items-center gap-1 text-sm text-blue-600">
+                      <Store className="h-3 w-3" />
+                      <span className="font-medium">{transaction.merchant}</span>
+                      {transaction.product && (
+                        <span className="text-gray-500">· {transaction.product}</span>
+                      )}
+                    </div>
+                  )}
+                  {/* 备注信息 */}
                   {transaction.note ? (
                     <p className="text-gray-700 font-medium truncate" title={transaction.note}>
                       {transaction.note}
                     </p>
-                  ) : (
+                  ) : !transaction.merchant && (
                     <p className="text-gray-400 italic">无备注</p>
                   )}
                 </div>
