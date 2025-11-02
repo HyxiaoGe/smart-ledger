@@ -10,7 +10,7 @@ import { DateInput } from '@/components/features/input/DateInput';
 import { PRESET_CATEGORIES } from '@/lib/config/config';
 import { formatCurrency } from '@/lib/utils/format';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, Store } from 'lucide-react';
+import { Edit, Trash2, Store, ChevronDown, ChevronUp } from 'lucide-react';
 import { MerchantInput, SubcategorySelect } from '@/components/features/input/MerchantInput';
 import { dataSync } from '@/lib/core/dataSync';
 import { ProgressToast } from '@/components/shared/ProgressToast';
@@ -347,103 +347,90 @@ export function TransactionGroupedList({
     );
   }
 
-  // 自定义交易项渲染器
-  function renderTransactionItem(transaction: Transaction) {
-    const isEditing = editingId === transaction.id;
+  // 构建分层数据结构
+  const buildHierarchicalData = (transactions: Transaction[]) => {
+    const dateGroups: Record<string, {
+      date: string;
+      total: number;
+      categories: Record<string, {
+        category: string;
+        total: number;
+        merchants: Record<string, {
+          merchant: string;
+          total: number;
+          items: Transaction[];
+        }>;
+      }>;
+    }> = {};
 
-    return (
-      <div key={transaction.id} className="group">
-        {!isEditing ? (
-          <div
-            className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 hover:border-blue-300 relative overflow-hidden cursor-pointer"
-            onClick={() => handleEdit(transaction)}
-          >
-            {/* 左侧装饰条 */}
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-400 to-blue-600"></div>
+    for (const transaction of transactions) {
+      const date = transaction.date;
+      const category = transaction.category || 'other';
+      const merchant = transaction.merchant || '未分类';
+      const amount = Number(transaction.amount || 0);
 
-            <div className="flex items-center justify-between pl-4">
-              {/* 左侧信息 */}
-              <div className="flex items-center gap-4 flex-1 min-w-0">
-                {/* 分类图标和名称 */}
-                <div className="flex items-center gap-2">
-                  <CategoryChip category={transaction.category} />
-                </div>
+      // 初始化日期分组
+      if (!dateGroups[date]) {
+        dateGroups[date] = { date, total: 0, categories: {} };
+      }
+      dateGroups[date].total += amount;
 
-                {/* 备注和商家信息 */}
-                <div className="flex-1 min-w-0 space-y-1">
-                  {/* 商家信息 */}
-                  {transaction.merchant && (
-                    <div className="flex items-center gap-1 text-sm text-blue-600">
-                      <Store className="h-3 w-3" />
-                      <span className="font-medium">{transaction.merchant}</span>
-                      {transaction.product && (
-                        <span className="text-gray-500">· {transaction.product}</span>
-                      )}
-                    </div>
-                  )}
-                  {/* 备注信息 */}
-                  {transaction.note ? (
-                    <p className="text-gray-700 font-medium truncate" title={transaction.note}>
-                      {transaction.note}
-                    </p>
-                  ) : !transaction.merchant && (
-                    <p className="text-gray-400 italic">无备注</p>
-                  )}
-                </div>
+      // 初始化分类分组
+      if (!dateGroups[date].categories[category]) {
+        dateGroups[date].categories[category] = { category, total: 0, merchants: {} };
+      }
+      dateGroups[date].categories[category].total += amount;
 
-                {/* 币种标识 */}
-                <Badge variant="outline" className="text-xs">
-                  {transaction.currency || 'CNY'}
-                </Badge>
-              </div>
+      // 初始化商家分组
+      if (!dateGroups[date].categories[category].merchants[merchant]) {
+        dateGroups[date].categories[category].merchants[merchant] = { merchant, total: 0, items: [] };
+      }
+      dateGroups[date].categories[category].merchants[merchant].total += amount;
+      dateGroups[date].categories[category].merchants[merchant].items.push(transaction);
+    }
 
-              {/* 右侧金额和操作 */}
-              <div className="flex items-center gap-4">
-                {/* 金额显示 */}
-                <div className="text-right">
-                  <div className="text-xl font-bold text-red-600">
-                    -{formatCurrency(Number(transaction.amount || 0), transaction.currency || 'CNY')}
-                  </div>
-                </div>
+    return dateGroups;
+  };
 
-                {/* 操作按钮 */}
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEdit(transaction);
-                    }}
-                    disabled={loading}
-                    className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(transaction);
-                    }}
-                    disabled={loading}
-                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 shadow-sm">
-            {renderEditForm(transaction)}
-          </div>
-        )}
-      </div>
-    );
-  }
+  const hierarchicalData = buildHierarchicalData(transactions);
+  const sortedDates = Object.keys(hierarchicalData).sort((a, b) =>
+    new Date(b).getTime() - new Date(a).getTime()
+  );
+
+  // 折叠状态管理
+  const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [expandedMerchants, setExpandedMerchants] = useState<Set<string>>(new Set());
+
+  const toggleDate = (date: string) => {
+    const newSet = new Set(expandedDates);
+    if (newSet.has(date)) {
+      newSet.delete(date);
+    } else {
+      newSet.add(date);
+    }
+    setExpandedDates(newSet);
+  };
+
+  const toggleCategory = (key: string) => {
+    const newSet = new Set(expandedCategories);
+    if (newSet.has(key)) {
+      newSet.delete(key);
+    } else {
+      newSet.add(key);
+    }
+    setExpandedCategories(newSet);
+  };
+
+  const toggleMerchant = (key: string) => {
+    const newSet = new Set(expandedMerchants);
+    if (newSet.has(key)) {
+      newSet.delete(key);
+    } else {
+      newSet.add(key);
+    }
+    setExpandedMerchants(newSet);
+  };
 
   return (
     <>
@@ -510,49 +497,213 @@ export function TransactionGroupedList({
         </div>
       )}
 
+      {/* 分层树形展示 */}
       <div className="space-y-6">
-        {(() => {
-          // 按日期分组交易
-          const groupedTransactions = transactions.reduce((groups, transaction) => {
-            const date = transaction.date;
-            if (!groups[date]) {
-              groups[date] = [];
-            }
-            groups[date].push(transaction);
-            return groups;
-          }, {} as Record<string, Transaction[]>);
+        {sortedDates.map(date => {
+          const dateData = hierarchicalData[date];
+          const isDateExpanded = expandedDates.has(date);
 
-          // 对日期进行排序（最新的在前）
-          const sortedDates = Object.keys(groupedTransactions).sort((a, b) =>
-            new Date(b).getTime() - new Date(a).getTime()
-          );
-
-          return sortedDates.map(date => (
-            <div key={date} className="space-y-3">
-              <div className="flex items-center gap-2">
-                <h3 className="text-lg font-semibold text-gray-800">
-                  {new Date(date + 'T00:00:00').toLocaleDateString('zh-CN', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </h3>
-                <div className="text-sm text-gray-500">
-                  共 {groupedTransactions[date].length} 笔，总计：
-                  <span className="font-semibold text-red-600 ml-1">
-                    -{formatCurrency(
-                      groupedTransactions[date].reduce((sum, t) => sum + Number(t.amount || 0), 0),
-                      groupedTransactions[date][0]?.currency || 'CNY'
-                    )}
+          return (
+            <div key={date} className="border border-gray-200 rounded-lg overflow-hidden">
+              {/* 日期层 */}
+              <button
+                onClick={() => toggleDate(date)}
+                className="w-full p-4 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
+              >
+                <div className="flex items-center gap-3">
+                  {isDateExpanded ? (
+                    <ChevronDown className="h-4 w-4 text-gray-500" />
+                  ) : (
+                    <ChevronUp className="h-4 w-4 text-gray-500" />
+                  )}
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    {new Date(date + 'T00:00:00').toLocaleDateString('zh-CN', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </h3>
+                  <span className="text-sm text-gray-500">
+                    共 {Object.values(dateData.categories).reduce((sum, cat) =>
+                      sum + Object.values(cat.merchants).reduce((s, m) => s + m.items.length, 0), 0)} 笔
                   </span>
                 </div>
-              </div>
-              <div className="space-y-3">
-                {groupedTransactions[date].map(renderTransactionItem)}
-              </div>
+                <div className="font-semibold text-red-600">
+                  -¥{formatCurrency(dateData.total, 'CNY')}
+                </div>
+              </button>
+
+              {/* 分类层 */}
+              {isDateExpanded && (
+                <div className="bg-white">
+                  {Object.values(dateData.categories)
+                    .sort((a, b) => b.total - a.total)
+                    .map(categoryData => {
+                      const categoryKey = `${date}-${categoryData.category}`;
+                      const isCategoryExpanded = expandedCategories.has(categoryKey);
+                      const categoryInfo = PRESET_CATEGORIES.find(c => c.key === categoryData.category);
+
+                      return (
+                        <div key={categoryKey} className="border-t border-gray-100">
+                          <button
+                            onClick={() => toggleCategory(categoryKey)}
+                            className="w-full p-3 pl-8 hover:bg-gray-50 transition-colors flex items-center justify-between"
+                          >
+                            <div className="flex items-center gap-3">
+                              {isCategoryExpanded ? (
+                                <ChevronDown className="h-3 w-3 text-gray-400" />
+                              ) : (
+                                <ChevronUp className="h-3 w-3 text-gray-400" />
+                              )}
+                              <CategoryChip category={categoryData.category} />
+                              <span className="text-xs text-gray-500">
+                                {Object.keys(categoryData.merchants).length}个商家
+                              </span>
+                            </div>
+                            <div className="font-medium text-sm">
+                              ¥{formatCurrency(categoryData.total, 'CNY')}
+                            </div>
+                          </button>
+
+                          {/* 商家层 */}
+                          {isCategoryExpanded && (
+                            <div>
+                              {Object.values(categoryData.merchants)
+                                .sort((a, b) => b.total - a.total)
+                                .map(merchantData => {
+                                  const merchantKey = `${categoryKey}-${merchantData.merchant}`;
+                                  const isMerchantExpanded = expandedMerchants.has(merchantKey);
+
+                                  return (
+                                    <div key={merchantKey}>
+                                      <button
+                                        onClick={() => toggleMerchant(merchantKey)}
+                                        className="w-full p-2 pl-16 hover:bg-gray-50 transition-colors flex items-center justify-between"
+                                      >
+                                        <div className="flex items-center gap-2">
+                                          {merchantData.items.length > 1 && (
+                                            isMerchantExpanded ? (
+                                              <ChevronDown className="h-3 w-3 text-gray-400" />
+                                            ) : (
+                                              <ChevronUp className="h-3 w-3 text-gray-400" />
+                                            )
+                                          )}
+                                          {merchantData.items.length === 1 && (
+                                            <div className="w-3" />
+                                          )}
+                                          <Store className="h-3 w-3 text-blue-600" />
+                                          <span className="text-sm text-gray-900">{merchantData.merchant}</span>
+                                          {merchantData.items.length > 1 && (
+                                            <span className="text-xs text-gray-400">
+                                              {merchantData.items.length}笔
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div className="text-sm font-medium">
+                                          ¥{formatCurrency(merchantData.total, 'CNY')}
+                                        </div>
+                                      </button>
+
+                                      {/* 产品/交易明细层 */}
+                                      {isMerchantExpanded && merchantData.items.length > 1 && (
+                                        <div className="bg-gray-50">
+                                          {merchantData.items.map(item => (
+                                            <div key={item.id}>
+                                              {editingId === item.id ? (
+                                                <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-t border-blue-200">
+                                                  {renderEditForm(item)}
+                                                </div>
+                                              ) : (
+                                                <div className="p-2 pl-24 hover:bg-gray-100 transition-colors flex items-center justify-between group border-t border-gray-100">
+                                                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                                                    <div className="w-1 h-1 rounded-full bg-gray-400" />
+                                                    <span>{item.product || item.note || '无备注'}</span>
+                                                  </div>
+                                                  <div className="flex items-center gap-2">
+                                                    <div className="text-xs font-medium">
+                                                      ¥{formatCurrency(Number(item.amount || 0), 'CNY')}
+                                                    </div>
+                                                    <div className="opacity-0 group-hover:opacity-100 flex gap-1">
+                                                      <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          handleEdit(item);
+                                                        }}
+                                                        disabled={loading}
+                                                        className="h-6 w-6 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                                      >
+                                                        <Edit className="h-3 w-3" />
+                                                      </Button>
+                                                      <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          handleDelete(item);
+                                                        }}
+                                                        disabled={loading}
+                                                        className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                      >
+                                                        <Trash2 className="h-3 w-3" />
+                                                      </Button>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              )}
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+
+                                      {/* 单笔交易的编辑/删除按钮 */}
+                                      {merchantData.items.length === 1 && (
+                                        <div>
+                                          {editingId === merchantData.items[0].id ? (
+                                            <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-t border-blue-200">
+                                              {renderEditForm(merchantData.items[0])}
+                                            </div>
+                                          ) : (
+                                            <div className="pl-16 pr-4 py-2 flex gap-2 border-t border-gray-100">
+                                              <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleEdit(merchantData.items[0])}
+                                                disabled={loading}
+                                                className="text-xs h-7"
+                                              >
+                                                <Edit className="h-3 w-3 mr-1" />
+                                                编辑
+                                              </Button>
+                                              <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleDelete(merchantData.items[0])}
+                                                disabled={loading}
+                                                className="text-xs h-7 text-red-600 hover:text-red-700"
+                                              >
+                                                <Trash2 className="h-3 w-3 mr-1" />
+                                                删除
+                                              </Button>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
             </div>
-          ));
-        })()}
+          );
+        })}
+
         {transactions.length === 0 && (
           <div className="text-center py-12 text-gray-500">
             <div className="text-lg">暂无账单记录</div>
