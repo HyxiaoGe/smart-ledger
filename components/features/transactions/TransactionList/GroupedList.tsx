@@ -577,33 +577,72 @@ export function TransactionGroupedList({
 
                                   return (
                                     <div key={merchantKey}>
-                                      <button
-                                        onClick={() => toggleMerchant(merchantKey)}
-                                        className="w-full p-2 pl-16 hover:bg-gray-50 transition-colors flex items-center justify-between"
-                                      >
-                                        <div className="flex items-center gap-2">
-                                          {merchantData.items.length > 1 && (
-                                            isMerchantExpanded ? (
-                                              <ChevronDown className="h-3 w-3 text-gray-400" />
-                                            ) : (
-                                              <ChevronUp className="h-3 w-3 text-gray-400" />
-                                            )
-                                          )}
-                                          {merchantData.items.length === 1 && (
-                                            <div className="w-3" />
-                                          )}
-                                          <Store className="h-3 w-3 text-blue-600" />
-                                          <span className="text-sm text-gray-900">{merchantData.merchant}</span>
-                                          {merchantData.items.length > 1 && (
-                                            <span className="text-xs text-gray-400">
-                                              {merchantData.items.length}笔
-                                            </span>
-                                          )}
+                                      {editingId === merchantData.items[0].id && merchantData.items.length === 1 ? (
+                                        // 单笔交易编辑状态
+                                        <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-t border-blue-200">
+                                          {renderEditForm(merchantData.items[0])}
                                         </div>
-                                        <div className="text-sm font-medium">
-                                          {formatCurrency(merchantData.total, 'CNY')}
+                                      ) : (
+                                        // 商家行（统一样式）
+                                        <div className="w-full p-2 pl-16 hover:bg-gray-50 transition-colors flex items-center justify-between group border-t border-gray-100">
+                                          <div
+                                            className="flex items-center gap-2 flex-1 cursor-pointer"
+                                            onClick={() => merchantData.items.length > 1 && toggleMerchant(merchantKey)}
+                                          >
+                                            {merchantData.items.length > 1 && (
+                                              isMerchantExpanded ? (
+                                                <ChevronDown className="h-3 w-3 text-gray-400" />
+                                              ) : (
+                                                <ChevronUp className="h-3 w-3 text-gray-400" />
+                                              )
+                                            )}
+                                            {merchantData.items.length === 1 && (
+                                              <div className="w-3" />
+                                            )}
+                                            <Store className="h-3 w-3 text-blue-600" />
+                                            <span className="text-sm text-gray-900">{merchantData.merchant}</span>
+                                            {merchantData.items.length > 1 && (
+                                              <span className="text-xs text-gray-400">
+                                                {merchantData.items.length}笔
+                                              </span>
+                                            )}
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <div className="text-sm font-medium">
+                                              {formatCurrency(merchantData.total, 'CNY')}
+                                            </div>
+                                            {/* 单笔交易：右侧显示编辑/删除图标 */}
+                                            {merchantData.items.length === 1 && (
+                                              <div className="opacity-0 group-hover:opacity-100 flex gap-1">
+                                                <Button
+                                                  variant="ghost"
+                                                  size="sm"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleEdit(merchantData.items[0]);
+                                                  }}
+                                                  disabled={loading}
+                                                  className="h-6 w-6 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                                >
+                                                  <Edit className="h-3 w-3" />
+                                                </Button>
+                                                <Button
+                                                  variant="ghost"
+                                                  size="sm"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDelete(merchantData.items[0]);
+                                                  }}
+                                                  disabled={loading}
+                                                  className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                >
+                                                  <Trash2 className="h-3 w-3" />
+                                                </Button>
+                                              </div>
+                                            )}
+                                          </div>
                                         </div>
-                                      </button>
+                                      )}
 
                                       {/* 产品/交易明细层 */}
                                       {isMerchantExpanded && merchantData.items.length > 1 && (
@@ -655,40 +694,6 @@ export function TransactionGroupedList({
                                               )}
                                             </div>
                                           ))}
-                                        </div>
-                                      )}
-
-                                      {/* 单笔交易的编辑/删除按钮 */}
-                                      {merchantData.items.length === 1 && (
-                                        <div>
-                                          {editingId === merchantData.items[0].id ? (
-                                            <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-t border-blue-200">
-                                              {renderEditForm(merchantData.items[0])}
-                                            </div>
-                                          ) : (
-                                            <div className="pl-16 pr-4 py-2 flex gap-2 border-t border-gray-100">
-                                              <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleEdit(merchantData.items[0])}
-                                                disabled={loading}
-                                                className="text-xs h-7"
-                                              >
-                                                <Edit className="h-3 w-3 mr-1" />
-                                                编辑
-                                              </Button>
-                                              <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleDelete(merchantData.items[0])}
-                                                disabled={loading}
-                                                className="text-xs h-7 text-red-600 hover:text-red-700"
-                                              >
-                                                <Trash2 className="h-3 w-3 mr-1" />
-                                                删除
-                                              </Button>
-                                            </div>
-                                          )}
                                         </div>
                                       )}
                                     </div>
