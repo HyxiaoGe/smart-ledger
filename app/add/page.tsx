@@ -25,6 +25,7 @@ export default function AddPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('账单保存成功！');
   const [showAIPrediction, setShowAIPrediction] = useState(true);
 
   // 防抖相关
@@ -117,7 +118,27 @@ export default function AddPage() {
         throw transactionError;
       }
 
-      // 显示Toast成功提示（带进度条）
+      // 显示Toast成功提示（带进度条），包含日期信息
+      const formattedDate = formData.date.toLocaleDateString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+
+      // 检查是否添加的是历史日期
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const addedDate = new Date(formData.date);
+      addedDate.setHours(0, 0, 0, 0);
+
+      if (addedDate.getTime() < today.getTime()) {
+        // 历史日期 - 提示用户需要切换月份查看
+        const monthStr = formData.date.toISOString().slice(0, 7);
+        setToastMessage(`账单已保存到 ${formattedDate}！切换到对应月份查看`);
+      } else {
+        setToastMessage('账单保存成功！');
+      }
+
       setShowToast(true);
 
       // 触发同步事件
@@ -334,8 +355,8 @@ export default function AddPage() {
       {showToast && (
         <div className="lg:col-span-3">
           <ProgressToast
-            message="账单保存成功！"
-            duration={3000}
+            message={toastMessage}
+            duration={5000}
             onClose={() => setShowToast(false)}
           />
         </div>
