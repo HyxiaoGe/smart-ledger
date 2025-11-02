@@ -68,7 +68,8 @@ export default function AddPage() {
       });
 
       // 先查询是否存在相同业务记录（包括已删除的）
-      const { data: existingRecord, error: queryError } = await supabase
+      // 注意：不要用 .single()，因为可能查不到记录会报错
+      const { data: existingRecords, error: queryError } = await supabase
         .from('transactions')
         .select('*')
         .eq('type', type)
@@ -76,8 +77,9 @@ export default function AddPage() {
         .eq('date', dateStr)
         .eq('currency', formData.currency)
         .eq('note', formData.note)
-        .single();
+        .limit(1);
 
+      const existingRecord = existingRecords && existingRecords.length > 0 ? existingRecords[0] : null;
       console.log('🔍 查询结果:', { existingRecord, queryError });
 
       let transactionError;
@@ -132,8 +134,8 @@ export default function AddPage() {
         transactionError = insertError;
       }
 
-      // 处理查询和更新/插入错误
-      if (queryError && queryError.code !== 'PGRST116') { // PGRST116表示没有找到记录
+      // 处理查询错误（排除"未找到记录"的错误）
+      if (queryError) {
         console.error('❌ 查询错误:', queryError);
         throw queryError;
       }
