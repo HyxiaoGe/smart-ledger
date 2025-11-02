@@ -366,7 +366,8 @@ export function TransactionGroupedList({
     for (const transaction of transactions) {
       const date = transaction.date;
       const category = transaction.category || 'other';
-      const merchant = transaction.merchant || '未分类';
+      // 优先使用merchant，其次使用note，最后使用"无备注"
+      const merchant = transaction.merchant || transaction.note || '无备注';
       const amount = Number(transaction.amount || 0);
 
       // 初始化日期分组
@@ -529,7 +530,7 @@ export function TransactionGroupedList({
                   </span>
                 </div>
                 <div className="font-semibold text-red-600">
-                  -¥{formatCurrency(dateData.total, 'CNY')}
+                  -{formatCurrency(dateData.total, 'CNY')}
                 </div>
               </button>
 
@@ -561,7 +562,7 @@ export function TransactionGroupedList({
                               </span>
                             </div>
                             <div className="font-medium text-sm">
-                              ¥{formatCurrency(categoryData.total, 'CNY')}
+                              {formatCurrency(categoryData.total, 'CNY')}
                             </div>
                           </button>
 
@@ -600,7 +601,7 @@ export function TransactionGroupedList({
                                           )}
                                         </div>
                                         <div className="text-sm font-medium">
-                                          ¥{formatCurrency(merchantData.total, 'CNY')}
+                                          {formatCurrency(merchantData.total, 'CNY')}
                                         </div>
                                       </button>
 
@@ -621,7 +622,7 @@ export function TransactionGroupedList({
                                                   </div>
                                                   <div className="flex items-center gap-2">
                                                     <div className="text-xs font-medium">
-                                                      ¥{formatCurrency(Number(item.amount || 0), 'CNY')}
+                                                      {formatCurrency(Number(item.amount || 0), 'CNY')}
                                                     </div>
                                                     <div className="opacity-0 group-hover:opacity-100 flex gap-1">
                                                       <Button

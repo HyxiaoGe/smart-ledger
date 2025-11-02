@@ -266,9 +266,9 @@ async function loadTopData(
       category: item.category,
       amount: item.total,
       date: item.latestDate,
-      note: item.merchant || item.note || `${item.count}笔消费`,
+      note: `共${item.count}笔消费`,
       currency,
-      merchant: item.merchant
+      merchant: undefined // 不显示商家信息，避免误导
     }));
 
   return aggregatedData;
