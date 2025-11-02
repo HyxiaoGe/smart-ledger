@@ -1,4 +1,4 @@
-import { SUPPORTED_CURRENCIES } from '@/lib/config';
+import { SUPPORTED_CURRENCIES } from '@/lib/config/config';
 
 export function currencySymbol(code: string): string {
   const c = SUPPORTED_CURRENCIES.find((x) => x.code === code);

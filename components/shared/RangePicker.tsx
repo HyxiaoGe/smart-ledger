@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CalendarIcon, X } from "lucide-react";
 import { DatePicker } from "@/components/features/input/DatePicker";
 import { ComponentErrorBoundary } from "@/components/layout/ErrorBoundary";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/helpers";
 
 const QUICK_OPTIONS = [
   {

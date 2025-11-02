@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@/lib/clients/supabase/client';
 
 export const runtime = 'nodejs';
 

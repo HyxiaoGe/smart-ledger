@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle, TrendingUp, Clock, Target, Zap } from 'lucide-react';
-import { generateTimeContext } from '@/lib/noteContext';
+import { generateTimeContext } from '@/lib/domain/noteContext';
 import {
   aiPredictionService,
   type TransactionPrediction,

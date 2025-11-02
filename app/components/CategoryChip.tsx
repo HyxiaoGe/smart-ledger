@@ -1,4 +1,4 @@
-import { PRESET_CATEGORIES } from '@/lib/config';
+import { PRESET_CATEGORIES } from '@/lib/config/config';
 import { Badge } from '@/components/ui/badge';
 
 export function CategoryChip({ category }: { category: string }) {

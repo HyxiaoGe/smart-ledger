@@ -1,12 +1,12 @@
 import { NextRequest } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@/lib/clients/supabase/client';
 import {
   type SmartSuggestionParams,
   type SmartSuggestionResponse,
   type SmartSuggestion,
   type CommonNote
 } from '@/types/transaction';
-import { generateTimeContext, categorizeAmount, generateConsumptionScenario } from '@/lib/noteContext';
+import { generateTimeContext, categorizeAmount, generateConsumptionScenario } from '@/lib/domain/noteContext';
 import { getPatternBasedSuggestions, matchConsumptionPattern } from '@/lib/services/smartPatterns';
 
 export const runtime = 'nodejs';

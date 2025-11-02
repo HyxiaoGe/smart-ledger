@@ -10,7 +10,7 @@ import { CheckCircle, X, Edit2, RefreshCw } from 'lucide-react';
 import { FaRobot, FaCheck, FaHeart } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@/lib/clients/supabase/client';
 
 interface QuickTransactionItem {
   id: string;

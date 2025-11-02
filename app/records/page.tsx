@@ -1,5 +1,5 @@
 import dynamic from 'next/dynamic';
-import { partitionExpenseTransactions } from '@/lib/records';
+import { partitionExpenseTransactions } from '@/lib/domain/records';
 import {
   getCurrentMonthSummary,
   listTransactionsByRange,

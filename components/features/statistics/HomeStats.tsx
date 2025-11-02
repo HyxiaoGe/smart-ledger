@@ -4,7 +4,7 @@
 import React, { useEffect } from 'react';
 import { useSpring, animated } from '@react-spring/web';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { SUPPORTED_CURRENCIES } from '@/lib/config';
+import { SUPPORTED_CURRENCIES } from '@/lib/config/config';
 
 interface HomeStatsProps {
   initialIncome: number;

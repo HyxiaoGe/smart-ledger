@@ -3,8 +3,8 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/EmptyState';
-import { formatCurrency } from '@/lib/format';
-import { PRESET_CATEGORIES } from '@/lib/config';
+import { formatCurrency } from '@/lib/utils/format';
+import { PRESET_CATEGORIES } from '@/lib/config/config';
 
 const COLORS = ['#F97316', '#A855F7', '#06B6D4', '#22C55E', '#EF4444', '#3B82F6', '#F59E0B', '#0EA5E9', '#94A3B8'];
 const catMeta = new Map(PRESET_CATEGORIES.map(c => [c.key, { label: c.label, color: c.color || '#94A3B8' }]));

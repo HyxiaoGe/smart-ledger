@@ -1,5 +1,5 @@
 import HomePageClient from './page-client';
-import { DEFAULT_CURRENCY, SUPPORTED_CURRENCIES } from '@/lib/config';
+import { DEFAULT_CURRENCY, SUPPORTED_CURRENCIES } from '@/lib/config/config';
 import { loadPageData, resolveMonthLabel } from './home-page-data';
 
 export const revalidate = 0;

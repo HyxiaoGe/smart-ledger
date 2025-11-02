@@ -1,11 +1,11 @@
 "use client";
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@/lib/clients/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CategoryChip } from '@/components/CategoryChip';
-import { PRESET_CATEGORIES } from '@/lib/config';
-import { formatCurrency } from '@/lib/format';
+import { PRESET_CATEGORIES } from '@/lib/config/config';
+import { formatCurrency } from '@/lib/utils/format';
 import { EmptyState } from '@/components/EmptyState';
 
 type Row = {
