@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { chat } from '@/lib/aiClient';
+import { chat } from '@/lib/clients/ai/client';
 import { getPredictionData } from '@/lib/services/transactions';
 import { aiPredictionCache } from '@/lib/services/unifiedCache';
 import { aiCacheServiceServer } from '@/lib/services/aiCacheServiceServer';

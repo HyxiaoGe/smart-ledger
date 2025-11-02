@@ -12,7 +12,7 @@ import { TopExpenses } from '@/components/TopExpenses';
 import { HomeStats } from '@/components/features/statistics/HomeStats';
 import { HomeQuickTransaction } from '@/components/features/transactions/QuickTransaction/HomeQuickTransaction';
 import type { PageData } from './home-page-data';
-import { dataSync, consumeTransactionsDirty, peekTransactionsDirty } from '@/lib/dataSync';
+import { dataSync, consumeTransactionsDirty, peekTransactionsDirty } from '@/lib/core/dataSync';
 import { useRefreshQueue } from '@/hooks/useTransactionsSync';
 import { useAutoGenerateRecurring } from '@/hooks/useAutoGenerateRecurring';
 

@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@/lib/clients/supabase/client';
 import { aiPredictionService, type TransactionPrediction, type QuickTransactionSuggestion } from '@/lib/services/aiPrediction';
-import { generateTimeContext } from '@/lib/noteContext';
+import { generateTimeContext } from '@/lib/domain/noteContext';
 
 export const runtime = 'nodejs';
 

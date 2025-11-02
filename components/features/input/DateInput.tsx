@@ -6,7 +6,7 @@ import { CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import React from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/helpers';
 import { DatePicker } from '@/components/features/input/DatePicker';
 
 export interface DateInputProps {

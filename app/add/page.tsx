@@ -1,8 +1,8 @@
 "use client";
 import React, { useState, useRef, useCallback, useMemo } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@/lib/clients/supabase/client';
 import type { TransactionType, Currency } from '@/types/transaction';
-import { PRESET_CATEGORIES, SUPPORTED_CURRENCIES, DEFAULT_CURRENCY } from '@/lib/config';
+import { PRESET_CATEGORIES, SUPPORTED_CURRENCIES, DEFAULT_CURRENCY } from '@/lib/config/config';
 import { CategoryChip } from '@/components/CategoryChip';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DateInput } from '@/components/features/input/DateInput';
 import { SmartNoteInput } from '@/components/features/input/SmartNoteInput';
 import { AIPredictionPanel } from '@/components/features/ai-analysis/AIPredictionPanel';
-import { dataSync, markTransactionsDirty } from '@/lib/dataSync';
+import { dataSync, markTransactionsDirty } from '@/lib/core/dataSync';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import type { TransactionPrediction, QuickTransactionSuggestion } from '@/lib/services/aiPrediction';
 
