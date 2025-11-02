@@ -11,6 +11,7 @@ import { FaRobot, FaCheck, FaHeart } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/clients/supabase/client';
+import { formatDateToLocal } from '@/lib/utils/date';
 
 interface QuickTransactionItem {
   id: string;
@@ -92,7 +93,7 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
 
   // 获取今天的日期字符串
   const getTodayDateString = () => {
-    return new Date().toISOString().slice(0, 10);
+    return formatDateToLocal(new Date());
   };
 
   // 获取今天已记录的分类和具体项目
