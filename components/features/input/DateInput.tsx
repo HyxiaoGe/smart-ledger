@@ -37,8 +37,9 @@ export function DateInput({
   const [isOpen, setIsOpen] = useState(false);
 
   // 监听 isActive 状态，当其他日期选择器打开时关闭当前
+  // 只有当 isActive 明确为 false 时才关闭（避免 undefined 导致的误关闭）
   useEffect(() => {
-    if (!isActive && isOpen) {
+    if (isActive === false && isOpen) {
       setIsOpen(false);
     }
   }, [isActive, isOpen]);

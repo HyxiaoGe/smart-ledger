@@ -16,6 +16,7 @@ import {
   type TrendAnalysisData,
   type PersonalizedAdviceData
 } from './AIAnalysisPanel/utils';
+import { AICacheService } from '@/lib/services/aiCacheService';
 
 interface AIAnalysisPanelProps {
   className?: string;
@@ -75,12 +76,31 @@ export function AIAnalysisPanel({
     }
   }, [aiData]);
 
-  // 初始化加载 - 只在组件挂载时执行一次
+  // 初始化加载 - 先尝试从缓存加载 AI 分析结果
   useEffect(() => {
     if (aiData) {
       processData();
+
+      // 尝试从缓存加载 AI 分析结果
+      const loadCachedAnalysis = async () => {
+        const cacheService = AICacheService.getInstance();
+        const cacheKey = {
+          month: currentMonth || new Date().toISOString().slice(0, 7),
+          dataHash: JSON.stringify(aiData.currentMonthTop20).substring(0, 50) // 使用数据摘要作为key
+        };
+
+        const cached = await cacheService.get<string>('ai_analysis', cacheKey);
+        if (cached) {
+          console.log('✅ 从缓存加载AI分析结果');
+          setAiSummary(cached);
+        } else {
+          console.log('📭 缓存未命中，将在用户需要时调用AI分析');
+        }
+      };
+
+      loadCachedAnalysis();
     }
-  }, [aiData, processData]);
+  }, [aiData, processData, currentMonth]);
 
   // 调用真正的AI分析接口
   const callAIAnalysis = useCallback(async (transactions: any[]) => {
@@ -131,10 +151,19 @@ export function AIAnalysisPanel({
           if (aiSummaryResult) {
             setAiSummary(aiSummaryResult);
             console.log('🤖 获得AI分析:', aiSummaryResult);
+
+            // 3. 保存到缓存（30分钟有效期）
+            const cacheService = AICacheService.getInstance();
+            const cacheKey = {
+              month: currentMonth || new Date().toISOString().slice(0, 7),
+              dataHash: JSON.stringify(aiData.currentMonthTop20).substring(0, 50)
+            };
+            await cacheService.set('ai_analysis', aiSummaryResult, cacheKey);
+            console.log('💾 AI分析结果已缓存');
           }
         }
 
-        // 3. 重新处理本地数据（作为补充）
+        // 4. 重新处理本地数据（作为补充）
         processData();
 
         setRefreshStatus('success');
