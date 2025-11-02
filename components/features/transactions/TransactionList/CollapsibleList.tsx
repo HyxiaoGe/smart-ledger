@@ -15,6 +15,9 @@ interface Transaction {
   currency?: string;
   note?: string;
   date: string;
+  merchant?: string;
+  subcategory?: string;
+  product?: string;
 }
 
 interface CollapsibleTransactionListProps {

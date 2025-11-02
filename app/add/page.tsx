@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DateInput } from '@/components/features/input/DateInput';
 import { SmartNoteInput } from '@/components/features/input/SmartNoteInput';
+import { MerchantInput, SubcategorySelect } from '@/components/features/input/MerchantInput';
 import { AIPredictionPanel } from '@/components/features/ai-analysis/AIPredictionPanel';
 import { dataSync, markTransactionsDirty } from '@/lib/core/dataSync';
 import { ProgressToast } from '@/components/shared/ProgressToast';
@@ -28,6 +29,11 @@ export default function AddPage() {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('账单保存成功！');
   const [showAIPrediction, setShowAIPrediction] = useState(true);
+
+  // 新增：三层数据结构字段
+  const [merchant, setMerchant] = useState<string>('');
+  const [subcategory, setSubcategory] = useState<string>('');
+  const [product, setProduct] = useState<string>('');
 
   // 防抖相关
   const submitTimeoutRef = useRef<number | null>(null);
@@ -53,6 +59,9 @@ export default function AddPage() {
     note: string;
     date: Date;
     currency: Currency;
+    merchant?: string;
+    subcategory?: string;
+    product?: string;
   }) => {
     setLoading(true);
     setError('');
@@ -110,7 +119,11 @@ export default function AddPage() {
             amount: formData.amt,
             note: formData.note,
             date: dateStr,
-            currency: formData.currency
+            currency: formData.currency,
+            // 新增：三层数据结构
+            merchant: formData.merchant || null,
+            subcategory: formData.subcategory || null,
+            product: formData.product || null
           }]);
 
         transactionError = insertError;
@@ -149,7 +162,10 @@ export default function AddPage() {
         amount: formData.amt,
         note: formData.note,
         date: dateStr, // 使用已经格式化好的本地日期字符串
-        currency: formData.currency
+        currency: formData.currency,
+        merchant: formData.merchant,
+        subcategory: formData.subcategory,
+        product: formData.product
       });
       markTransactionsDirty();
       void fetch('/api/revalidate', {
@@ -221,7 +237,7 @@ export default function AddPage() {
 
     // 使用防抖提交
     submitTimeoutRef.current = setTimeout(() => {
-      debouncedSubmit({ amt, category, note, date, currency });
+      debouncedSubmit({ amt, category, note, date, currency, merchant, subcategory, product });
     }, 200); // 200ms 延迟
   }
 
@@ -283,6 +299,11 @@ export default function AddPage() {
     setDate(new Date());
     setCurrency(DEFAULT_CURRENCY as Currency);
     setError('');
+
+    // 清空三层结构字段
+    setMerchant('');
+    setSubcategory('');
+    setProduct('');
   }
 
   // 组件卸载时清理
@@ -429,6 +450,47 @@ export default function AddPage() {
                 />
               </div>
             </div>
+
+            {/* 新增：商家信息输入区域 */}
+            <div className="border-t border-gray-200 pt-4 space-y-4">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <span className="font-medium">商家信息</span>
+                <span className="text-xs text-gray-400">（可选，帮助更好地分析消费习惯）</span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>商家/品牌</Label>
+                  <MerchantInput
+                    value={merchant}
+                    onChange={setMerchant}
+                    placeholder="如：瑞幸咖啡、地铁"
+                    disabled={loading}
+                    category={category}
+                  />
+                </div>
+                <div>
+                  <Label>子分类</Label>
+                  <SubcategorySelect
+                    category={category}
+                    value={subcategory}
+                    onChange={setSubcategory}
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label>具体产品/服务</Label>
+                <Input
+                  value={product}
+                  onChange={(e) => setProduct(e.target.value)}
+                  placeholder="如：生椰拿铁、地铁票"
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
             <div>
               <Label>备注</Label>
               <SmartNoteInput

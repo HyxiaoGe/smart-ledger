@@ -1,6 +1,7 @@
 'use client';
 import { CategoryChip } from '@/components/CategoryChip';
 import { formatCurrency } from '@/lib/utils/format';
+import { Store } from 'lucide-react';
 
 type Item = {
   id: string;
@@ -9,6 +10,9 @@ type Item = {
   date: string;
   note?: string;
   currency?: string;
+  merchant?: string;
+  subcategory?: string;
+  product?: string;
 };
 
 export function TopExpenses({ items, currency }: { items: Item[]; currency: string }) {
@@ -29,9 +33,19 @@ export function TopExpenses({ items, currency }: { items: Item[]; currency: stri
             </div>
             <div className="mt-1 text-xs text-muted-foreground flex items-center justify-between">
               <span>{it.date}</span>
-              <span className="truncate max-w-[60%]" title={it.note || ''}>
-                {it.note || ''}
-              </span>
+              <div className="flex items-center gap-2 max-w-[60%]">
+                {it.merchant && (
+                  <div className="flex items-center gap-1 text-blue-600">
+                    <Store className="h-3 w-3" />
+                    <span className="font-medium">{it.merchant}</span>
+                  </div>
+                )}
+                {it.note && (
+                  <span className="truncate" title={it.note}>
+                    {it.note}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </li>
