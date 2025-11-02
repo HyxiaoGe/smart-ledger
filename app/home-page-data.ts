@@ -200,7 +200,7 @@ async function loadTopData(
 
   let query = supabase
     .from('transactions')
-    .select('id, type, category, amount, date, note, currency')
+    .select('id, type, category, amount, date, note, currency, merchant, subcategory, product')
     .is('deleted_at', null)
     .eq('currency', currency)
     .eq('type', 'expense');
@@ -217,9 +217,59 @@ async function loadTopData(
     query = query.gte('date', rStart).lt('date', rEnd);
   }
 
-  const { data: topData } = await query
-    .order('amount', { ascending: false })
-    .limit(10);
+  const { data: allData } = await query;
+  const transactions = allData || [];
 
-  return topData || [];
+  // 按分类聚合数据
+  const categoryMap = new Map<string, {
+    category: string;
+    total: number;
+    count: number;
+    latestDate: string;
+    merchant?: string;
+    note?: string;
+  }>();
+
+  for (const transaction of transactions) {
+    const category = transaction.category || 'other';
+    const amount = Number(transaction.amount || 0);
+
+    if (!categoryMap.has(category)) {
+      categoryMap.set(category, {
+        category,
+        total: 0,
+        count: 0,
+        latestDate: transaction.date,
+        merchant: transaction.merchant,
+        note: transaction.note
+      });
+    }
+
+    const categoryData = categoryMap.get(category)!;
+    categoryData.total += amount;
+    categoryData.count += 1;
+
+    // 保留最新的日期和商家信息
+    if (transaction.date > categoryData.latestDate) {
+      categoryData.latestDate = transaction.date;
+      categoryData.merchant = transaction.merchant;
+      categoryData.note = transaction.note;
+    }
+  }
+
+  // 转换为数组并排序
+  const aggregatedData = Array.from(categoryMap.values())
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 10)
+    .map(item => ({
+      id: `${item.category}-agg`,
+      category: item.category,
+      amount: item.total,
+      date: item.latestDate,
+      note: item.merchant || item.note || `${item.count}笔消费`,
+      currency,
+      merchant: item.merchant
+    }));
+
+  return aggregatedData;
 }
