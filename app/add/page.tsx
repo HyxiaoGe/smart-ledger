@@ -449,7 +449,19 @@ export default function AddPage() {
                 <Label>日期 <span className="text-destructive">*</span></Label>
                 <DateInput
                   selected={date}
-                  onSelect={setDate}
+                  onSelect={(newDate) => {
+                    console.log('📅 DateInput返回的日期:', {
+                      raw: newDate,
+                      toString: newDate.toString(),
+                      toISOString: newDate.toISOString(),
+                      getFullYear: newDate.getFullYear(),
+                      getMonth: newDate.getMonth(),
+                      getDate: newDate.getDate(),
+                      getHours: newDate.getHours(),
+                      getTimezoneOffset: newDate.getTimezoneOffset()
+                    });
+                    setDate(newDate);
+                  }}
                   placeholder="选择日期"
                   disabled={loading}
                 />
