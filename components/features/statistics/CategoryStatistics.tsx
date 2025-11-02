@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { PRESET_CATEGORIES } from '@/lib/config/config';
-import { TrendingUp, BarChart3, ChevronDown, ChevronUp } from 'lucide-react';
+import { TrendingUp, BarChart3, ChevronDown, ChevronUp, Store } from 'lucide-react';
 
 interface CategoryStatisticsProps {
   transactions: any[];
@@ -15,8 +15,9 @@ interface CategoryStatisticsProps {
 
 export function CategoryStatistics({ transactions }: CategoryStatisticsProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
-  // 计算分类统计数据
+  // 计算分类统计数据（按主分类聚合）
   const categoryStats = useMemo(() => {
     const stats = new Map<string, { total: number; count: number; percentage: number }>();
     let totalAmount = 0;
@@ -48,6 +49,75 @@ export function CategoryStatistics({ transactions }: CategoryStatisticsProps) {
 
     return { sortedStats, totalAmount };
   }, [transactions]);
+
+  // 计算分类下的商家统计（用于展开显示）
+  const merchantStatsByCategory = useMemo(() => {
+    const statsByCategory = new Map<string, Map<string, { total: number; count: number; subcategories: Map<string, { total: number; count: number }> }>>();
+
+    for (const transaction of transactions) {
+      if (transaction.type !== 'expense') continue;
+
+      const category = transaction.category || 'other';
+      const merchant = transaction.merchant || '未分类商家';
+      const subcategory = transaction.subcategory;
+      const amount = Number(transaction.amount || 0);
+
+      // 初始化分类统计
+      if (!statsByCategory.has(category)) {
+        statsByCategory.set(category, new Map());
+      }
+      const categoryMap = statsByCategory.get(category)!;
+
+      // 初始化商家统计
+      if (!categoryMap.has(merchant)) {
+        categoryMap.set(merchant, { total: 0, count: 0, subcategories: new Map() });
+      }
+      const merchantData = categoryMap.get(merchant)!;
+      merchantData.total += amount;
+      merchantData.count += 1;
+
+      // 统计子分类
+      if (subcategory) {
+        if (!merchantData.subcategories.has(subcategory)) {
+          merchantData.subcategories.set(subcategory, { total: 0, count: 0 });
+        }
+        const subData = merchantData.subcategories.get(subcategory)!;
+        subData.total += amount;
+        subData.count += 1;
+      }
+    }
+
+    // 对每个分类下的商家按金额排序
+    const sortedStats = new Map<string, Array<{ merchant: string; total: number; count: number; subcategories: Array<{ name: string; total: number; count: number }> }>>();
+
+    for (const [category, merchantMap] of statsByCategory.entries()) {
+      const merchantArray = Array.from(merchantMap.entries())
+        .map(([merchant, data]) => ({
+          merchant,
+          total: data.total,
+          count: data.count,
+          subcategories: Array.from(data.subcategories.entries())
+            .map(([name, subData]) => ({ name, total: subData.total, count: subData.count }))
+            .sort((a, b) => b.total - a.total)
+        }))
+        .sort((a, b) => b.total - a.total);
+
+      sortedStats.set(category, merchantArray);
+    }
+
+    return sortedStats;
+  }, [transactions]);
+
+  // 切换分类展开状态
+  const toggleCategory = (category: string) => {
+    const newExpanded = new Set(expandedCategories);
+    if (newExpanded.has(category)) {
+      newExpanded.delete(category);
+    } else {
+      newExpanded.add(category);
+    }
+    setExpandedCategories(newExpanded);
+  };
 
   // 获取分类信息
   const getCategoryInfo = (categoryKey: string) => {
@@ -237,45 +307,97 @@ export function CategoryStatistics({ transactions }: CategoryStatisticsProps) {
             </div>
           </div>
 
-          {/* 展开状态：显示详细统计 */}
+          {/* 展开状态：显示商家分层统计 */}
           {isExpanded && (
             <div className="mt-6 pt-6 border-t">
-              <h4 className="font-semibold mb-4">详细统计</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <h4 className="font-semibold mb-4 flex items-center gap-2">
+                <Store className="h-4 w-4" />
+                商家分层统计
+                <span className="text-xs text-gray-500 font-normal">点击分类查看商家明细</span>
+              </h4>
+              <div className="space-y-3">
                 {categoryStats.sortedStats.map((stat) => {
                   const info = getCategoryInfo(stat.category);
+                  const isExpanded = expandedCategories.has(stat.category);
+                  const merchants = merchantStatsByCategory.get(stat.category) || [];
+
                   return (
-                    <div key={stat.category} className="p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
+                    <div key={stat.category} className="border border-gray-200 rounded-lg overflow-hidden">
+                      {/* 分类汇总行 */}
+                      <button
+                        onClick={() => toggleCategory(stat.category)}
+                        className="w-full p-4 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-3">
+                          {isExpanded ? (
+                            <ChevronDown className="h-4 w-4 text-gray-500" />
+                          ) : (
+                            <ChevronUp className="h-4 w-4 text-gray-500" />
+                          )}
                           <span className="text-lg">{info.icon}</span>
-                          <span className="font-medium">{info.label}</span>
+                          <div className="text-left">
+                            <div className="font-medium">{info.label}</div>
+                            <div className="text-xs text-gray-500">
+                              {merchants.length > 0 ? `${merchants.length}个商家 · ` : ''}{stat.count}笔
+                            </div>
+                          </div>
                         </div>
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: info.color }}
-                        />
-                      </div>
-                      <div className="space-y-1 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">支出:</span>
-                          <span className="font-medium">¥{formatCurrency(stat.total)}</span>
+                        <div className="text-right">
+                          <div className="font-semibold">
+                            ¥{formatCurrency(stat.total)}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {stat.percentage.toFixed(1)}%
+                          </div>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">占比:</span>
-                          <span className="font-medium">{stat.percentage.toFixed(1)}%</span>
+                      </button>
+
+                      {/* 商家明细（展开时显示） */}
+                      {isExpanded && merchants.length > 0 && (
+                        <div className="bg-white divide-y divide-gray-100">
+                          {merchants.map((merchantData, idx) => (
+                            <div key={idx} className="p-3 pl-12">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <Store className="h-3 w-3 text-blue-600" />
+                                  <span className="font-medium text-sm text-gray-900">
+                                    {merchantData.merchant}
+                                  </span>
+                                  <Badge variant="outline" className="text-xs">
+                                    {merchantData.count}笔
+                                  </Badge>
+                                </div>
+                                <div className="font-medium text-sm">
+                                  ¥{formatCurrency(merchantData.total)}
+                                </div>
+                              </div>
+
+                              {/* 子分类明细 */}
+                              {merchantData.subcategories.length > 0 && (
+                                <div className="ml-5 space-y-1">
+                                  {merchantData.subcategories.map((sub, subIdx) => (
+                                    <div key={subIdx} className="flex items-center justify-between text-xs text-gray-600">
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-1 h-1 rounded-full bg-gray-400" />
+                                        <span>{sub.name}</span>
+                                        <span className="text-gray-400">({sub.count}笔)</span>
+                                      </div>
+                                      <span>¥{formatCurrency(sub.total)}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">笔数:</span>
-                          <span className="font-medium">{stat.count}笔</span>
+                      )}
+
+                      {/* 无商家数据提示 */}
+                      {isExpanded && merchants.length === 0 && (
+                        <div className="p-4 text-center text-sm text-gray-500 bg-white">
+                          暂无商家数据
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">平均:</span>
-                          <span className="font-medium">
-                            ¥{formatCurrency(stat.count > 0 ? stat.total / stat.count : 0)}
-                          </span>
-                        </div>
-                      </div>
+                      )}
                     </div>
                   );
                 })}
