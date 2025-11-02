@@ -119,7 +119,7 @@ function AIAnalysisModal({
 import dynamic from 'next/dynamic';
 
 const AIAnalysisPanel = dynamic(
-  () => import('@/components/AIAnalysisPanel').then((mod) => mod.AIAnalysisPanel),
+  () => import('@/components/features/ai-analysis/AIAnalysisPanel').then((mod) => mod.AIAnalysisPanel),
   {
     loading: () => (
       <div className="flex items-center justify-center h-64">

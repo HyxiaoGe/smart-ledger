@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ProgressToast } from '@/components/ProgressToast';
+import { ProgressToast } from '@/components/shared/ProgressToast';
 import { useAutoGenerateRecurring } from '@/hooks/useAutoGenerateRecurring';
 import {
   Calendar,

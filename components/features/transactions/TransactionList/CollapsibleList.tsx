@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { TransactionGroupedList } from '@/components/TransactionGroupedList';
+import { TransactionGroupedList } from '@/components/features/transactions/TransactionList/GroupedList';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp, List } from 'lucide-react';
 import { dataSync } from '@/lib/dataSync';

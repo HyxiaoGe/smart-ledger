@@ -6,11 +6,11 @@ import {
   listYesterdayTransactions,
   getAIAnalysisData
 } from '@/lib/services/transactions';
-import { RangePicker } from '@/components/RangePicker';
-import { CollapsibleTransactionList } from '@/components/CollapsibleTransactionList';
-import { SkeletonBlock, SkeletonGrid } from '@/components/Skeletons';
-import { AIAnalysisPanel } from '@/components/AIAnalysisPanel';
-import { AIAnalysisButton } from '@/components/AIAnalysisButton';
+import { RangePicker } from '@/components/shared/RangePicker';
+import { CollapsibleTransactionList } from '@/components/features/transactions/TransactionList/CollapsibleList';
+import { SkeletonBlock, SkeletonGrid } from '@/components/shared/Skeletons';
+import { AIAnalysisPanel } from '@/components/features/ai-analysis/AIAnalysisPanel';
+import { AIAnalysisButton } from '@/components/features/ai-analysis/AIAnalysisButton';
 
 const SummaryModule = dynamic(
   () => import('@/components/MonthlyExpenseSummary').then((mod) => mod.MonthlyExpenseSummary),
@@ -26,7 +26,7 @@ const SummaryModule = dynamic(
 );
 
 const CategoryModule = dynamic(
-  () => import('@/components/CategoryStatistics').then((mod) => mod.CategoryStatistics),
+  () => import('@/components/features/statistics/CategoryStatistics').then((mod) => mod.CategoryStatistics),
   {
     loading: () => <SkeletonBlock className="h-96 rounded-xl" />
   }

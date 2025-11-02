@@ -5,7 +5,7 @@ import { Fragment } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ProgressToast } from '@/components/ProgressToast';
+import { ProgressToast } from '@/components/shared/ProgressToast';
 import { CheckCircle, X, Edit2, RefreshCw } from 'lucide-react';
 import { FaRobot, FaCheck, FaHeart } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';

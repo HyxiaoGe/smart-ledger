@@ -2,8 +2,8 @@ import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import './globals.css';
-import Navigation from '@/components/Navigation';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import Navigation from '@/components/layout/Navigation';
+import { ErrorBoundary } from '@/components/layout/ErrorBoundary';
 
 export const metadata: Metadata = {
   title: 'Smart Ledger',

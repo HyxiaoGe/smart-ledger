@@ -1,6 +1,6 @@
 "use client";
 import React from 'react';
-import { QuickTransaction } from '@/components/QuickTransaction';
+import { QuickTransaction } from '@/components/features/transactions/QuickTransaction/QuickTransaction';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/components/ui/link';

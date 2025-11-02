@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { QuickTransactionCard } from '@/components/QuickTransactionCard';
+import { QuickTransactionCard } from '@/components/features/transactions/QuickTransaction/QuickTransactionCard';
 import { FaRobot, FaStar } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
 import { BsEmojiSmileFill } from 'react-icons/bs';

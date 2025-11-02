@@ -1,4 +1,4 @@
-import { SkeletonBlock, SkeletonGrid } from '@/components/Skeletons';
+import { SkeletonBlock, SkeletonGrid } from '@/components/shared/Skeletons';
 
 export default function Loading() {
   return (

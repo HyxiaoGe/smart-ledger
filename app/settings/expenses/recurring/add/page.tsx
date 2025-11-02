@@ -5,9 +5,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ProgressToast } from '@/components/ProgressToast';
-import { DateInput } from '@/components/DateInput';
-import { BackNavigation } from '@/components/BackNavigation';
+import { ProgressToast } from '@/components/shared/ProgressToast';
+import { DateInput } from '@/components/features/input/DateInput';
+import { BackNavigation } from '@/components/layout/BackNavigation';
 import {
   Plus,
   Calendar,
