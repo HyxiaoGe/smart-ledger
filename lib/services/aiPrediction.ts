@@ -274,6 +274,7 @@ export class AIPredictionService {
    */
   private async generatePatternBasedPredictions(timeContext: any): Promise<TransactionPrediction[]> {
     const predictions: TransactionPrediction[] = [];
+    const hour = timeContext.hour;
 
     // 咖啡时间预测
     if ((hour >= 8 && hour <= 11) || (hour >= 14 && hour <= 16)) {
