@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { SUPPORTED_CURRENCIES } from '@/lib/config';
+import { SUPPORTED_CURRENCIES } from '@/lib/config/config';
 
 type CurrencySelectProps = {
   value: string;

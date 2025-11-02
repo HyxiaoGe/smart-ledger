@@ -5,8 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, TrendingDown, BarChart, ChevronDown, RefreshCw, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '@/lib/supabaseClient';
-import { useDataSync } from '@/lib/dataSync';
+import { supabase } from '@/lib/clients/supabase/client';
+import { useDataSync } from '@/lib/core/dataSync';
 
 interface CategoryPrediction {
   category: string;

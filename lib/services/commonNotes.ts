@@ -1,4 +1,4 @@
-import { fetchJson } from '@/lib/http';
+import { fetchJson } from '@/lib/utils/http';
 
 type ListParams = {
   limit?: number;

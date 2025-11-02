@@ -1,5 +1,5 @@
-import { fetchJson } from '@/lib/http';
-import { generateSessionId } from '@/lib/utils';
+import { fetchJson } from '@/lib/utils/http';
+import { generateSessionId } from '@/lib/utils/helpers';
 
 export type LearningEventType = 'suggestion_selected' | 'suggestion_ignored' | 'manual_input';
 

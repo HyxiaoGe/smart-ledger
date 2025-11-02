@@ -1,6 +1,6 @@
 // AI预测服务 - 自动分类和金额预测
-import { supabase } from '@/lib/supabaseClient';
-import { generateTimeContext } from '@/lib/noteContext';
+import { supabase } from '@/lib/clients/supabase/client';
+import { generateTimeContext } from '@/lib/domain/noteContext';
 import {
   CONSUMPTION_PATTERNS,
   matchConsumptionPattern,

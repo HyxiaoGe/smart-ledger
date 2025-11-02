@@ -5,7 +5,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recha
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { PRESET_CATEGORIES } from '@/lib/config';
+import { PRESET_CATEGORIES } from '@/lib/config/config';
 import { TrendingUp, BarChart3, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface CategoryStatisticsProps {

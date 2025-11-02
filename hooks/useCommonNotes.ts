@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { readJSON, writeJSON, removeItem } from '@/lib/storage';
+import { readJSON, writeJSON, removeItem } from '@/lib/utils/storage';
 import { commonNotesService, type CommonNote } from '@/lib/services/commonNotes';
 
 export const COMMON_NOTES_CACHE_KEY = 'common-notes-cache';

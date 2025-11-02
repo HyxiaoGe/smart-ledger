@@ -1,17 +1,17 @@
 "use client";
 // 交易分组列表组件（客户端支持编辑和删除）
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@/lib/clients/supabase/client';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CategoryChip } from '@/components/CategoryChip';
 import { DateInput } from '@/components/features/input/DateInput';
-import { PRESET_CATEGORIES } from '@/lib/config';
-import { formatCurrency } from '@/lib/format';
+import { PRESET_CATEGORIES } from '@/lib/config/config';
+import { formatCurrency } from '@/lib/utils/format';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2 } from 'lucide-react';
-import { dataSync } from '@/lib/dataSync';
+import { dataSync } from '@/lib/core/dataSync';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 
 type Transaction = {

@@ -1,6 +1,6 @@
 import { unstable_cache } from 'next/cache';
-import { supabase } from '@/lib/supabaseClient';
-import { parseMonthStr, formatMonth, getQuickRange } from '@/lib/date';
+import { supabase } from '@/lib/clients/supabase/client';
+import { parseMonthStr, formatMonth, getQuickRange } from '@/lib/utils/date';
 
 type DateRange = { start: string; end: string; label: string };
 

@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { removeItem, writeJSON, readString, writeString } from '@/lib/storage';
+import { removeItem, writeJSON, readString, writeString } from '@/lib/utils/storage';
 
 type SyncType = 'transaction_added' | 'transaction_deleted' | 'transaction_updated';
 

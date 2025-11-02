@@ -1,6 +1,6 @@
 'use client';
 import { CategoryChip } from '@/components/CategoryChip';
-import { formatCurrency } from '@/lib/format';
+import { formatCurrency } from '@/lib/utils/format';
 
 type Item = {
   id: string;

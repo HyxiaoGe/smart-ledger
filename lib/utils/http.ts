@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { notifyError } from './notifications';
+import { notifyError } from '../core/notifications';
 
 const DEFAULT_TIMEOUT = 10000;
 

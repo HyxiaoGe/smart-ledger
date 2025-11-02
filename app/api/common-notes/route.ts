@@ -1,7 +1,7 @@
 // 常用备注API路由
 import { NextRequest, NextResponse } from 'next/server';
 import type { CommonNote } from '@/types/transaction';
-import { supabaseServerClient } from '@/lib/supabaseServer';
+import { supabaseServerClient } from '@/lib/clients/supabase/server';
 import { unstable_cache, revalidateTag } from 'next/cache';
 
 export const runtime = 'nodejs';

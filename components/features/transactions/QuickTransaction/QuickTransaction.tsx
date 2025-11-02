@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@/lib/clients/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ProgressToast } from '@/components/shared/ProgressToast';
-import { dataSync, markTransactionsDirty } from '@/lib/dataSync';
-import { generateTimeContext } from '@/lib/noteContext';
+import { dataSync, markTransactionsDirty } from '@/lib/core/dataSync';
+import { generateTimeContext } from '@/lib/domain/noteContext';
 import { aiPredictionService, type QuickTransactionSuggestion } from '@/lib/services/aiPrediction';
 import { Zap, Clock, TrendingUp, CheckCircle } from 'lucide-react';
 

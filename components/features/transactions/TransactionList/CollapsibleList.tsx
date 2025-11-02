@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { TransactionGroupedList } from '@/components/features/transactions/TransactionList/GroupedList';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp, List } from 'lucide-react';
-import { dataSync } from '@/lib/dataSync';
+import { dataSync } from '@/lib/core/dataSync';
 
 interface Transaction {
   id: string;

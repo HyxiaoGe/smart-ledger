@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
-import { getAiConfig } from '@/lib/aiClient';
-import { supabase } from '@/lib/supabaseClient';
+import { getAiConfig } from '@/lib/clients/ai/client';
+import { supabase } from '@/lib/clients/supabase/client';
 
 export const runtime = 'edge';
 

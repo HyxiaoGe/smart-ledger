@@ -3,7 +3,7 @@
  * 使用Supabase数据库替代localStorage，提供企业级的数据管理
  */
 
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@/lib/clients/supabase/client';
 import { aiCacheService } from './aiCacheService';
 import type {
   AIFeedbackRow,

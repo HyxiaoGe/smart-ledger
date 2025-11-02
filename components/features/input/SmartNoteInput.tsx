@@ -12,7 +12,7 @@ import {
   type SmartSuggestion
 } from '@/lib/services/smartSuggestions';
 import { recordSuggestionLearning } from '@/lib/services/suggestionLearning';
-import { generateTimeContext } from '@/lib/noteContext';
+import { generateTimeContext } from '@/lib/domain/noteContext';
 import type { CommonNote, SmartSuggestionParams } from '@/types/transaction';
 import { AlertCircle, Lightbulb, TrendingUp, Clock, Target } from 'lucide-react';
 

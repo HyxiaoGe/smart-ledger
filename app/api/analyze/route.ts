@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { chat } from '@/lib/aiClient';
+import { chat } from '@/lib/clients/ai/client';
 
 export const runtime = 'nodejs';
 

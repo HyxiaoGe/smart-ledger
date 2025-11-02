@@ -1,5 +1,5 @@
-import { supabase } from '@/lib/supabaseClient';
-import { parseMonthStr, formatMonth, getQuickRange } from '@/lib/date';
+import { supabase } from '@/lib/clients/supabase/client';
+import { parseMonthStr, formatMonth, getQuickRange } from '@/lib/utils/date';
 
 type MonthData = {
   income: number;
