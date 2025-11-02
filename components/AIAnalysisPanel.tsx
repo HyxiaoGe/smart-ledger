@@ -3,37 +3,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, TrendingDown, Lightbulb, ChevronDown, RefreshCw, Brain, CheckCircle, AlertCircle } from 'lucide-react';
+import { RefreshCw, Brain, CheckCircle, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DeepInsightPanel } from '@/components/DeepInsightPanel';
 import { SpendingPredictionPanel } from '@/components/SpendingPredictionPanel';
 import { QuickFeedback } from '@/components/ui/AIFeedbackModal';
-import { CATEGORY_NAMES, CATEGORY_ICONS, PRIORITY_CONFIG } from './AIAnalysisPanel/constants';
-
-interface TrendAnalysis {
-  currentMonth: number;
-  lastMonth: number;
-  changePercent: number;
-  changeAmount: number;
-  categories: Array<{
-    category: string;
-    current: number;
-    last: number;
-    changePercent: number;
-    icon: string;
-  }>;
-}
-
-interface PersonalizedAdvice {
-  recommendedBudget: number;
-  suggestedSavings: number;
-  suggestions: Array<{
-    category: string;
-    suggestion: string;
-    potential: number;
-    priority: 'high' | 'medium' | 'low';
-  }>;
-}
+import { TrendAnalysis } from './AIAnalysisPanel/TrendAnalysis';
+import { OptimizationAdvice } from './AIAnalysisPanel/OptimizationAdvice';
+import {
+  processTrendAnalysisData,
+  processPersonalizedAdviceData,
+  type TrendAnalysisData,
+  type PersonalizedAdviceData
+} from './AIAnalysisPanel/utils';
 
 interface AIAnalysisPanelProps {
   className?: string;
@@ -58,8 +40,8 @@ export function AIAnalysisPanel({
   aiData,
   isModal = false
 }: AIAnalysisPanelProps) {
-  const [trendAnalysis, setTrendAnalysis] = useState<TrendAnalysis | null>(null);
-  const [advice, setAdvice] = useState<PersonalizedAdvice | null>(null);
+  const [trendAnalysis, setTrendAnalysis] = useState<TrendAnalysisData | null>(null);
+  const [advice, setAdvice] = useState<PersonalizedAdviceData | null>(null);
   const [currentExpense, setCurrentExpense] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [collapsedModules, setCollapsedModules] = useState<Record<string, boolean>>({});
@@ -68,244 +50,37 @@ export function AIAnalysisPanel({
   const [refreshStatus, setRefreshStatus] = useState<'idle' | 'refreshing' | 'success' | 'error'>('idle');
   const [aiSummary, setAiSummary] = useState<string | null>(null);
 
-  // 处理趋势分析数据
-  const processTrendAnalysis = useCallback(() => {
+  // 处理数据
+  const processData = useCallback(() => {
     if (!aiData) return;
 
+    setLoading(true);
+
     try {
-      console.log('处理趋势分析数据:', aiData.currentMonthStr, aiData.lastMonthStr);
+      // 处理趋势分析数据
+      const trendData = processTrendAnalysisData(aiData);
+      setTrendAnalysis(trendData);
 
-      const currentData = aiData.currentMonthFull;
-      const lastData = aiData.lastMonth;
+      if (trendData) {
+        setCurrentExpense(trendData.currentMonth);
+      }
 
-      // 过滤掉固定支出（自动生成的交易记录）
-      const filteredCurrentData = currentData.filter(t => !t.is_auto_generated && !t.recurring_expense_id);
-      const filteredLastData = lastData.filter(t => !t.is_auto_generated && !t.recurring_expense_id);
-
-      // 计算月度总计
-      const currentTotal = filteredCurrentData.reduce((sum, t) => sum + t.amount, 0) || 0;
-      const lastTotal = filteredLastData.reduce((sum, t) => sum + t.amount, 0) || 0;
-      const changeAmount = currentTotal - lastTotal;
-      const changePercent = lastTotal > 0 ? (changeAmount / lastTotal) * 100 : 0;
-
-      // 按分类聚合数据
-      const categoryAnalysis: TrendAnalysis['categories'] = [];
-
-      const allCategories = new Set([
-        ...filteredCurrentData.map(t => t.category),
-        ...filteredLastData.map(t => t.category)
-      ]);
-
-      allCategories.forEach(category => {
-        const current = filteredCurrentData
-          .filter(t => t.category === category)
-          .reduce((sum, t) => sum + t.amount, 0) || 0;
-        const last = filteredLastData
-          .filter(t => t.category === category)
-          .reduce((sum, t) => sum + t.amount, 0) || 0;
-        const categoryChange = last > 0 ? ((current - last) / last) * 100 : 0;
-
-        categoryAnalysis.push({
-          category,
-          current,
-          last,
-          changePercent: categoryChange,
-          icon: CATEGORY_ICONS[category] || '💰'
-        });
-      });
-
-      setTrendAnalysis({
-        currentMonth: currentTotal,
-        lastMonth: lastTotal,
-        changePercent,
-        changeAmount,
-        categories: categoryAnalysis
-      });
-
-      setCurrentExpense(currentTotal);
-
+      // 处理个性化建议数据
+      const adviceData = processPersonalizedAdviceData(aiData);
+      setAdvice(adviceData);
     } catch (error) {
-      console.error('处理趋势分析失败:', error);
+      console.error('数据处理失败:', error);
+    } finally {
+      setLoading(false);
     }
   }, [aiData]);
 
-  // 处理个性化建议数据 (基于传入的aiData)
-  const processPersonalizedAdvice = useCallback(() => {
-    if (!aiData) return;
-
-    try {
-      console.log('处理个性化建议数据');
-
-      const top20Data = aiData.currentMonthTop20;
-      const currentData = aiData.currentMonthFull;
-
-      // 过滤掉固定支出（自动生成的交易记录）
-      const filteredCurrentData = currentData.filter(t => !t.is_auto_generated && !t.recurring_expense_id);
-
-      const totalExpense = filteredCurrentData.reduce((sum, t) => sum + t.amount, 0) || 0;
-      const categoryTotals: Record<string, number> = {};
-
-      filteredCurrentData.forEach(t => {
-        categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
-      });
-
-      // 生成建议
-
-      // 生成全面且深入的建议
-      const generateAdvancedSuggestions = (currentData: any[]) => {
-        const newSuggestions: PersonalizedAdvice['suggestions'] = [];
-        const sortedCategories = Object.entries(categoryTotals)
-          .sort(([, a], [, b]) => b - a);
-
-        // 1. 高支出类别深入分析
-        sortedCategories.slice(0, 3).forEach(([category, amount]) => {
-          const percent = (amount / totalExpense) * 100;
-
-          // 基于类别特性的深度建议
-          const categoryData = currentData.filter(t => t.category === category);
-          const avgAmount = categoryData.length > 0 ? amount / categoryData.length : 0;
-          const frequency = categoryData.length;
-
-          let suggestionText = '';
-          let potentialSavings = 0;
-          let priority: 'high' | 'medium' | 'low' = 'medium';
-
-          // 根据不同类别给出个性化建议
-          switch (category) {
-            case 'food':
-              if (avgAmount > 50 && frequency > 10) {
-                suggestionText = `${CATEGORY_NAMES[category]}支出较高(¥${avgAmount.toFixed(0)}/次，${frequency}次)，建议考虑增加在家做饭的频率，可节省约¥${Math.round(amount * 0.25)}`;
-                potentialSavings = Math.round(amount * 0.25);
-                priority = 'high';
-              } else if (percent > 40) {
-                suggestionText = `${CATEGORY_NAMES[category]}占比较高(${percent.toFixed(1)}%)，建议优化餐饮结构，减少高价位餐饮消费`;
-                potentialSavings = Math.round(amount * 0.15);
-                priority = 'medium';
-              }
-              break;
-
-            case 'transport':
-              if (frequency > 15) {
-                suggestionText = `${CATEGORY_NAMES[category]}频繁(${frequency}次)，建议考虑公共交通月卡或拼车方案，预计节省¥${Math.round(amount * 0.2)}`;
-                potentialSavings = Math.round(amount * 0.2);
-                priority = 'medium';
-              } else {
-                suggestionText = `${CATEGORY_NAMES[category]}支出¥${amount.toFixed(0)}，建议规划路线以减少交通成本`;
-                potentialSavings = Math.round(amount * 0.1);
-                priority = 'low';
-              }
-              break;
-
-            case 'shopping':
-              suggestionText = `${CATEGORY_NAMES[category]}支出¥${amount.toFixed(0)}(${frequency}次)，建议制定购物清单，避免冲动消费，可节省¥${Math.round(amount * 0.3)}`;
-              potentialSavings = Math.round(amount * 0.3);
-              priority = 'high';
-              break;
-
-            case 'entertainment':
-              suggestionText = `${CATEGORY_NAMES[category]}支出¥${amount.toFixed(0)}，建议寻找免费或低价的娱乐活动，预计节省¥${Math.round(amount * 0.4)}`;
-              potentialSavings = Math.round(amount * 0.4);
-              priority = 'medium';
-              break;
-
-            case 'drink':
-              const dailyAvg = avgAmount;
-              if (dailyAvg > 15 && frequency > 10) {
-                suggestionText = `饮品消费较高(¥${dailyAvg.toFixed(0)}/次)，建议减少高价咖啡/奶茶频次，自制饮品可节省¥${Math.round(amount * 0.5)}`;
-                potentialSavings = Math.round(amount * 0.5);
-                priority = 'high';
-              }
-              break;
-
-            default:
-              if (percent > 30) {
-                suggestionText = `${CATEGORY_NAMES[category] || category}支出占比较高(${percent.toFixed(1)}%)，建议审视该类别的必要性和优化空间`;
-                potentialSavings = Math.round(amount * 0.15);
-                priority = 'medium';
-              }
-          }
-
-          if (suggestionText) {
-            newSuggestions.push({
-              category: CATEGORY_NAMES[category] || category,
-              suggestion: suggestionText,
-              potential: potentialSavings,
-              priority
-            });
-          }
-        });
-
-        // 2. 支出模式分析
-        const weekdaySpending = currentData.filter(t => {
-          const day = new Date(t.date).getDay();
-          return day >= 1 && day <= 5; // 周一到周五
-        }).reduce((sum, t) => sum + t.amount, 0);
-
-        const weekendSpending = currentData.filter(t => {
-          const day = new Date(t.date).getDay();
-          return day === 0 || day === 6; // 周末
-        }).reduce((sum, t) => sum + t.amount, 0);
-
-        if (weekendSpending > weekdaySpending * 0.6 && currentData.length > 5) {
-          newSuggestions.push({
-            category: '消费模式',
-            suggestion: `周末消费较高(¥${weekendSpending.toFixed(0)})，建议提前规划周末活动预算，避免超支`,
-            potential: Math.round(weekendSpending * 0.2),
-            priority: 'medium'
-          });
-        }
-
-        // 3. 预算优化建议
-        const dailyAvg = totalExpense / 30;
-        if (dailyAvg > 100) {
-          newSuggestions.push({
-            category: '预算管理',
-            suggestion: `日均可变支出¥${dailyAvg.toFixed(0)}偏高，建议设定每日消费上限¥${Math.round(dailyAvg * 0.8)}，强制储蓄`,
-            potential: Math.round(totalExpense * 0.15),
-            priority: 'high'
-          });
-        }
-
-        // 4. 消费时机建议
-        const highAmountTransactions = currentData.filter(t => t.amount > 100);
-        if (highAmountTransactions.length > 0) {
-          newSuggestions.push({
-            category: '消费时机',
-            suggestion: `大额消费(${highAmountTransactions.length}笔)建议提前规划，考虑24小时冷静期规则，避免冲动消费`,
-            potential: Math.round(highAmountTransactions.reduce((sum, t) => sum + t.amount, 0) * 0.1),
-            priority: 'medium'
-          });
-        }
-
-        // 5. 储蓄目标建议
-        if (newSuggestions.length === 0) {
-          newSuggestions.push({
-            category: '综合建议',
-            suggestion: '您的可变支出结构合理，建议继续保持并考虑增加投资理财比例',
-            potential: 0,
-            priority: 'low'
-          });
-        }
-
-        return newSuggestions;
-      };
-
-      const suggestions = generateAdvancedSuggestions(filteredCurrentData);
-
-      // 计算推荐的预算和储蓄目标
-      const recommendedBudget = Math.round(totalExpense * 0.9); // 建议减少10%
-      const suggestedSavings = suggestions.reduce((sum, s) => sum + s.potential, 0);
-
-      setAdvice({
-        recommendedBudget,
-        suggestedSavings,
-        suggestions: suggestions.slice(0, 6) // 限制建议数量
-      });
-
-    } catch (error) {
-      console.error('处理个性化建议失败:', error);
+  // 初始化加载 - 只在组件挂载时执行一次
+  useEffect(() => {
+    if (aiData) {
+      processData();
     }
-  }, [aiData]);
+  }, [aiData, processData]);
 
   // 调用真正的AI分析接口
   const callAIAnalysis = useCallback(async (transactions: any[]) => {
@@ -360,8 +135,7 @@ export function AIAnalysisPanel({
         }
 
         // 3. 重新处理本地数据（作为补充）
-        processTrendAnalysis();
-        processPersonalizedAdvice();
+        processData();
 
         setRefreshStatus('success');
         setTimeout(() => setRefreshStatus('idle'), 2000);
@@ -378,22 +152,7 @@ export function AIAnalysisPanel({
     } finally {
       setLoading(false);
     }
-  }, [processTrendAnalysis, processPersonalizedAdvice, aiData, callAIAnalysis]);
-
-  // 处理数据
-  const processData = useCallback(() => {
-    setLoading(true);
-    processTrendAnalysis();
-    processPersonalizedAdvice();
-    setLoading(false);
-  }, [processTrendAnalysis, processPersonalizedAdvice]);
-
-  // 初始化加载 - 只在组件挂载时执行一次
-  useEffect(() => {
-    if (aiData) {
-      processData();
-    }
-  }, [aiData]);
+  }, [processData, aiData, callAIAnalysis]);
 
   // 切换模块折叠状态
   const toggleModule = (moduleId: string) => {
@@ -510,203 +269,32 @@ export function AIAnalysisPanel({
 
       {/* 主要内容区域 - 根据模式选择布局 */}
       <div className={isModal ? "space-y-6" : "grid grid-cols-1 lg:grid-cols-2 gap-6"}>
-        {/* 左侧：趋势分析 */}
-        <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-          <CardHeader
-            className="pb-3 cursor-pointer"
-            onClick={() => toggleModule('trend')}
-          >
-            <CardTitle className="flex items-center justify-between text-base">
-              <div className="flex items-center gap-2">
-                <Brain className="h-5 w-5 text-blue-600" />
-                <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent font-semibold">
-                  可变支出趋势分析
-                </span>
-              </div>
-              <motion.div
-                animate={{ rotate: collapsedModules['trend'] ? 180 : 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <ChevronDown className="h-4 w-4 text-gray-400" />
-              </motion.div>
-            </CardTitle>
-          </CardHeader>
+        {/* 趋势分析组件 */}
+        <TrendAnalysis
+          data={trendAnalysis}
+          loading={loading}
+          collapsed={collapsedModules['trend']}
+          onToggle={() => toggleModule('trend')}
+        />
 
-          <AnimatePresence>
-            {!collapsedModules['trend'] && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="overflow-hidden"
-              >
-                <CardContent className="pt-0">
-                  {trendAnalysis ? (
-                    <>
-                      {/* 月度总览 */}
-                      <div className="bg-white rounded-lg p-4 border border-blue-100">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-gray-600">本月可变支出</span>
-                          <span className="text-2xl font-bold text-gray-900">
-                            ¥{trendAnalysis.currentMonth.toFixed(0)}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {trendAnalysis.changePercent >= 0 ? (
-                            <TrendingUp className="h-4 w-4 text-red-500" />
-                          ) : (
-                            <TrendingDown className="h-4 w-4 text-green-500" />
-                          )}
-                          <span className={`text-sm font-medium ${
-                            trendAnalysis.changePercent >= 0 ? 'text-red-500' : 'text-green-500'
-                          }`}>
-                            {trendAnalysis.changePercent >= 0 ? '+' : ''}
-                            {trendAnalysis.changePercent.toFixed(1)}%
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            (¥{Math.abs(trendAnalysis.changeAmount).toFixed(0)})
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* 分类趋势 */}
-                      <div className="space-y-2">
-                        <div className="text-sm font-medium text-gray-700">主要类别趋势</div>
-                        {trendAnalysis.categories.map((category, index) => (
-                          <div key={category.category} className="flex items-center justify-between p-2 bg-white rounded border border-gray-100">
-                            <div className="flex items-center gap-2">
-                              <span className="text-lg">{category.icon}</span>
-                              <span className="text-sm text-gray-700">{CATEGORY_NAMES[category.category] || category.category}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium">¥{category.current.toFixed(0)}</span>
-                              {category.changePercent !== 0 && (
-                                <span className={`text-xs px-1 rounded ${
-                                  category.changePercent > 0 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
-                                }`}>
-                                  {category.changePercent > 0 ? '+' : ''}
-                                  {category.changePercent.toFixed(1)}%
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      <Brain className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                      <div className="text-sm">分析中...</div>
-                    </div>
-                  )}
-                </CardContent>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </Card>
-
-        {/* 右侧：智能优化建议 */}
-        <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
-          <CardHeader
-            className="pb-3 cursor-pointer"
-            onClick={() => toggleModule('advice')}
-          >
-            <CardTitle className="flex items-center justify-between text-base">
-              <div className="flex items-center gap-2">
-                <Lightbulb className="h-5 w-5 text-purple-600" />
-                <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent font-semibold">
-                  智能优化建议
-                </span>
-              </div>
-              <motion.div
-                animate={{ rotate: collapsedModules['advice'] ? 180 : 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <ChevronDown className="h-4 w-4 text-gray-400" />
-              </motion.div>
-            </CardTitle>
-          </CardHeader>
-
-          <AnimatePresence>
-            {!collapsedModules['advice'] && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="overflow-hidden"
-              >
-                <CardContent className="pt-0">
-                  {advice?.suggestions && advice.suggestions.length > 0 ? (
-                    <>
-                      <div className="space-y-3">
-                        {advice.suggestions.slice(0, 3).map((suggestion, index) => (
-                          <div key={index} className="bg-white rounded-lg p-4 border border-purple-100">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <span className="text-sm font-medium text-gray-900">
-                                    {suggestion.category}
-                                  </span>
-                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                    suggestion.priority === 'high' ? 'bg-red-100 text-red-700' :
-                                    suggestion.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                                    'bg-gray-100 text-gray-700'
-                                  }`}>
-                                    {suggestion.priority === 'high' ? '高优先级' :
-                                     suggestion.priority === 'medium' ? '中优先级' : '低优先级'}
-                                  </span>
-                                </div>
-                                <div className="text-lg font-bold text-green-600">¥{suggestion.potential.toFixed(2)}</div>
-                                <p className="text-xs text-gray-600 leading-relaxed">
-                                  {suggestion.suggestion}
-                                </p>
-                                <div className="mt-2">
-                                  <button
-                                    onClick={() => {
-                                      setSelectedSuggestion(suggestion);
-                                      setShowDetailModal(true);
-                                    }}
-                                    className="text-xs text-purple-600 hover:text-purple-800"
-                                  >
-                                    查看详细分析 →
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* 查看更多按钮 */}
-                      {advice.suggestions.length > 3 && (
-                        <div className="text-center pt-2">
-                          <button className="text-sm text-purple-600 hover:text-purple-800 font-medium">
-                            查看全部 {advice.suggestions.length} 条建议 →
-                          </button>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      <Lightbulb className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                      <div className="text-sm">分析中...</div>
-                    </div>
-                  )}
-                </CardContent>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </Card>
+        {/* 优化建议组件 */}
+        <OptimizationAdvice
+          data={advice}
+          loading={loading}
+          collapsed={collapsedModules['advice']}
+          onToggle={() => toggleModule('advice')}
+          onSuggestionClick={(suggestion) => {
+            setSelectedSuggestion(suggestion);
+            setShowDetailModal(true);
+          }}
+          maxDisplay={3}
+        />
       </div>
 
       {/* AI智能分析结果 */}
       {aiSummary && (
         <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
-          <CardHeader
-            className="pb-3"
-          >
+          <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
               <Brain className="h-5 w-5 text-green-600" />
               <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent font-semibold">
@@ -740,7 +328,7 @@ export function AIAnalysisPanel({
         </Card>
       )}
 
-    {/* AI分析反馈 */}
+      {/* AI分析反馈 */}
       {aiSummary && (
         <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
           <CardContent className="p-4">
