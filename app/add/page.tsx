@@ -57,16 +57,26 @@ export default function AddPage() {
     setError('');
 
     try {
+      const dateStr = formData.date.toISOString().slice(0, 10);
+      console.log('🔍 准备保存账单:', {
+        date: dateStr,
+        category: formData.category,
+        amount: formData.amt,
+        note: formData.note
+      });
+
       // 先查询是否存在相同业务记录（包括已删除的）
       const { data: existingRecord, error: queryError } = await supabase
         .from('transactions')
         .select('*')
         .eq('type', type)
         .eq('category', formData.category)
-        .eq('date', formData.date.toISOString().slice(0, 10))
+        .eq('date', dateStr)
         .eq('currency', formData.currency)
         .eq('note', formData.note)
         .single();
+
+      console.log('🔍 查询结果:', { existingRecord, queryError });
 
       let transactionError;
 
@@ -95,28 +105,43 @@ export default function AddPage() {
         }
       } else {
         // 不存在任何记录，插入新记录
-        const { error: insertError } = await supabase
+        console.log('➕ 插入新记录:', {
+          type,
+          category: formData.category,
+          amount: formData.amt,
+          note: formData.note,
+          date: dateStr,
+          currency: formData.currency
+        });
+
+        const { data: insertData, error: insertError } = await supabase
           .from('transactions')
           .insert([{
             type,
             category: formData.category,
             amount: formData.amt,
             note: formData.note,
-            date: formData.date.toISOString().slice(0, 10),
+            date: dateStr,
             currency: formData.currency
-          }]);
+          }])
+          .select();
 
+        console.log('✅ 插入结果:', { insertData, insertError });
         transactionError = insertError;
       }
 
       // 处理查询和更新/插入错误
       if (queryError && queryError.code !== 'PGRST116') { // PGRST116表示没有找到记录
+        console.error('❌ 查询错误:', queryError);
         throw queryError;
       }
 
       if (transactionError) {
+        console.error('❌ 保存错误:', transactionError);
         throw transactionError;
       }
+
+      console.log('✅ 账单保存成功');
 
       // 显示Toast成功提示（带进度条），包含日期信息
       const formattedDate = formData.date.toLocaleDateString('zh-CN', {
@@ -169,6 +194,7 @@ export default function AddPage() {
       }, 500);
 
     } catch (err: any) {
+      console.error('❌ 提交失败:', err);
       setError(err.message || '提交失败');
     } finally {
       setLoading(false);
