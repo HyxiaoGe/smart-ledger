@@ -5,6 +5,7 @@ import type { TransactionType, Currency } from '@/types/transaction';
 import { PRESET_CATEGORIES, SUPPORTED_CURRENCIES, DEFAULT_CURRENCY } from '@/lib/config/config';
 import { CategoryChip } from '@/components/CategoryChip';
 import { Input } from '@/components/ui/input';
+import { ClearableInput } from '@/components/ui/clearable-input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -412,7 +413,7 @@ export default function AddPage() {
             </div>
             <div>
               <Label>金额 <span className="text-destructive">*</span></Label>
-              <Input
+              <ClearableInput
                 placeholder="例如：1,234.56"
                 value={amountText}
                 onChange={(e) => {
@@ -420,6 +421,7 @@ export default function AddPage() {
                   // 允许输入数字、小数点与逗号
                   if (/^[0-9.,]*$/.test(raw)) setAmountText(raw);
                 }}
+                onClear={() => setAmountText('0')}
                 onBlur={() => setAmountText(formatThousand(parsedAmount))}
                 className={invalidAmount ? 'border-destructive' : undefined}
                 disabled={loading}
@@ -482,9 +484,10 @@ export default function AddPage() {
 
               <div>
                 <Label>具体产品/服务</Label>
-                <Input
+                <ClearableInput
                   value={product}
                   onChange={(e) => setProduct(e.target.value)}
+                  onClear={() => setProduct('')}
                   placeholder="如：生椰拿铁、地铁票"
                   disabled={loading}
                 />
