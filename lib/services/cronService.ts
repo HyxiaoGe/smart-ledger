@@ -101,10 +101,12 @@ export async function manualTriggerCronJob(jobName: string): Promise<any> {
   // 根据任务名称映射到对应的 RPC 函数
   const functionMap: Record<string, string> = {
     'generate-recurring-transactions': 'generate_recurring_transactions',
-    'extract-ai-features-daily': 'extract_ai_features_daily',
-    'annotate-consumption-patterns': 'annotate_consumption_patterns',
-    'snapshot-training-data-weekly': 'snapshot_training_data',
-    'check-data-quality-daily': 'check_data_quality',
+    'aggregate-ai-performance-stats': 'aggregate_ai_performance_stats',
+    'cleanup-old-sessions': 'cleanup_old_sessions',
+    'extract-daily-features': 'extract_ai_features_daily',
+    'annotate-patterns': 'annotate_consumption_patterns',
+    'export-training-snapshot': 'snapshot_training_data',
+    'check-data-quality': 'check_data_quality',
   };
 
   const functionName = functionMap[jobName];
@@ -137,18 +139,21 @@ export function parseCronExpression(cronExp: string): string {
 
   const [minute, hour, day, month, weekday] = parts;
 
-  // 常见模式识别
-  if (cronExp === '1 0 * * *') {
-    return '每天 00:01';
-  }
-  if (cronExp === '0 2 * * *') {
-    return '每天 02:00';
-  }
-  if (cronExp === '0 0 * * 0') {
-    return '每周日 00:00';
-  }
-  if (cronExp === '0 3 1 * *') {
-    return '每月1号 03:00';
+  // 精确匹配常见模式
+  const patterns: Record<string, string> = {
+    '1 0 * * *': '每天 00:01',
+    '0 1 * * *': '每天 01:00',
+    '30 1 * * *': '每天 01:30',
+    '0 2 * * *': '每天 02:00',
+    '0 3 * * *': '每天 03:00',
+    '0 3 * * 0': '每周日 03:00',
+    '0 2 * * 0': '每周日 02:00',
+    '0 0 * * 0': '每周日 00:00',
+    '0 3 1 * *': '每月1号 03:00',
+  };
+
+  if (patterns[cronExp]) {
+    return patterns[cronExp];
   }
 
   // 通用解析
@@ -169,7 +174,7 @@ export function parseCronExpression(cronExp: string): string {
   }
 
   // 时间
-  const h = hour === '*' ? '每小时' : `${hour.padStart(2, '0')}`;
+  const h = hour === '*' ? '每小时' : hour.padStart(2, '0');
   const m = minute === '*' ? '' : `:${minute.padStart(2, '0')}`;
 
   if (hour !== '*') {
@@ -185,7 +190,7 @@ export function parseCronExpression(cronExp: string): string {
  */
 export function calculateNextRun(cronExp: string, lastRun?: string): Date | null {
   try {
-    const now = lastRun ? new Date(lastRun) : new Date();
+    const now = new Date();
     const parts = cronExp.split(' ');
 
     if (parts.length !== 5) {
@@ -194,30 +199,58 @@ export function calculateNextRun(cronExp: string, lastRun?: string): Date | null
 
     const [minute, hour, day, month, weekday] = parts;
 
-    // 简化处理：只支持常见的每日任务
-    if (cronExp === '1 0 * * *') {
+    // 解析时间
+    const targetHour = parseInt(hour);
+    const targetMinute = parseInt(minute);
+
+    // 处理每日任务 (day = *, month = *, weekday = *)
+    if (day === '*' && month === '*' && weekday === '*') {
       const next = new Date(now);
-      next.setDate(next.getDate() + 1);
-      next.setHours(0, 1, 0, 0);
+      next.setHours(targetHour, targetMinute, 0, 0);
+
+      // 如果今天的执行时间已过，移到明天
+      if (next <= now) {
+        next.setDate(next.getDate() + 1);
+      }
+
       return next;
     }
 
-    if (cronExp === '0 2 * * *') {
+    // 处理每周任务 (weekday != *)
+    if (weekday !== '*') {
+      const targetWeekday = parseInt(weekday); // 0 = 周日, 1 = 周一, ..., 6 = 周六
       const next = new Date(now);
-      next.setDate(next.getDate() + 1);
-      next.setHours(2, 0, 0, 0);
+      next.setHours(targetHour, targetMinute, 0, 0);
+
+      // 计算距离目标星期几还有多少天
+      const currentWeekday = next.getDay();
+      let daysUntilTarget = targetWeekday - currentWeekday;
+
+      // 如果目标是今天但时间已过，或者目标已过，移到下周
+      if (daysUntilTarget < 0 || (daysUntilTarget === 0 && next <= now)) {
+        daysUntilTarget += 7;
+      }
+
+      next.setDate(next.getDate() + daysUntilTarget);
       return next;
     }
 
-    // 周任务
-    if (cronExp === '0 0 * * 0') {
+    // 处理每月任务 (day != *)
+    if (day !== '*' && month === '*' && weekday === '*') {
+      const targetDay = parseInt(day);
       const next = new Date(now);
-      next.setDate(next.getDate() + (7 - next.getDay()));
-      next.setHours(0, 0, 0, 0);
+      next.setDate(targetDay);
+      next.setHours(targetHour, targetMinute, 0, 0);
+
+      // 如果这个月的执行时间已过，移到下个月
+      if (next <= now) {
+        next.setMonth(next.getMonth() + 1);
+      }
+
       return next;
     }
 
-    return null; // 复杂表达式暂不支持
+    return null; // 更复杂的表达式暂不支持
   } catch (error) {
     console.error('计算下次执行时间失败:', error);
     return null;
@@ -234,24 +267,34 @@ export function getJobDescription(jobName: string): { title: string; description
       description: '自动生成符合条件的固定支出交易记录',
       category: 'business'
     },
-    'extract-ai-features-daily': {
+    'aggregate-ai-performance-stats': {
+      title: 'AI性能统计',
+      description: '汇总AI分析的性能数据和使用情况',
+      category: 'ai'
+    },
+    'cleanup-old-sessions': {
+      title: '清理过期会话',
+      description: '定期清理过期的用户会话和临时数据',
+      category: 'maintenance'
+    },
+    'extract-daily-features': {
       title: 'AI特征提取',
       description: '每日提取交易特征用于机器学习训练',
       category: 'ai'
     },
-    'annotate-consumption-patterns': {
+    'annotate-patterns': {
       title: '消费模式标注',
       description: '分析并标注用户的消费行为模式',
       category: 'ai'
     },
-    'snapshot-training-data-weekly': {
+    'export-training-snapshot': {
       title: '训练数据快照',
-      description: '每周保存训练数据快照供模型使用',
+      description: '定期导出训练数据快照供模型使用',
       category: 'ai'
     },
-    'check-data-quality-daily': {
+    'check-data-quality': {
       title: '数据质量检查',
-      description: '每日检查数据完整性和一致性',
+      description: '检查数据完整性、一致性和异常情况',
       category: 'maintenance'
     },
   };
