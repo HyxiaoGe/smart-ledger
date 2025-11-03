@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { useAutoGenerateRecurring } from '@/hooks/useAutoGenerateRecurring';
+import { manualGenerateRecurring } from '@/lib/services/recurringService';
 import {
   Calendar,
   Plus,
@@ -18,7 +19,8 @@ import {
   Play,
   Edit,
   Trash2,
-  History
+  History,
+  Zap
 } from 'lucide-react';
 
 interface RecurringExpense {
@@ -46,29 +48,13 @@ export default function RecurringExpensesPage() {
   const [confirmDelete, setConfirmDelete] = useState<RecurringExpense | null>(null);
   const [confirmPause, setConfirmPause] = useState<RecurringExpense | null>(null);
 
-  // 使用全局自动生成Hook
-  const {
-    isChecking,
-    lastResult,
-    checkAndGenerate,
-    getExpenseGenerationStatus
-  } = useAutoGenerateRecurring(recurringExpenses);
+  // 使用状态展示 Hook
+  const { getExpenseGenerationStatus } = useAutoGenerateRecurring(recurringExpenses);
 
   // 获取固定支出列表
   useEffect(() => {
     fetchRecurringExpenses();
   }, []);
-
-  // 监听自动生成结果，显示反馈
-  useEffect(() => {
-    if (lastResult && lastResult.generated > 0) {
-      setToastMessage(`✅ 自动生成 ${lastResult.generated} 笔固定支出记录`);
-      setShowToast(true);
-
-      // 重新获取列表以更新状态
-      fetchRecurringExpenses();
-    }
-  }, [lastResult]);
 
   const fetchRecurringExpenses = async () => {
     try {
@@ -87,27 +73,34 @@ export default function RecurringExpensesPage() {
     }
   };
 
-  // 手动生成固定支出
+  // 手动生成固定支出（调用 Supabase RPC）
   const handleGenerateExpenses = async () => {
     try {
       setGenerating(true);
-      const response = await fetch('/api/recurring-expenses/generate', {
-        method: 'POST',
-      });
+      const results = await manualGenerateRecurring();
 
-      if (!response.ok) {
-        throw new Error('生成固定支出失败');
+      const successCount = results.filter(r => r.status === 'success').length;
+      const failedCount = results.filter(r => r.status === 'failed').length;
+
+      let message = '';
+      if (successCount > 0) {
+        message += `✅ 成功生成 ${successCount} 笔`;
+      }
+      if (failedCount > 0) {
+        message += ` ❌ 失败 ${failedCount} 笔`;
+      }
+      if (successCount === 0 && failedCount === 0) {
+        message = '💡 今日无需生成';
       }
 
-      const result = await response.json();
-      setToastMessage(result.message || '生成完成');
+      setToastMessage(message);
       setShowToast(true);
 
       // 重新获取列表
       await fetchRecurringExpenses();
     } catch (error) {
       console.error('生成固定支出失败:', error);
-      setToastMessage('生成固定支出失败');
+      setToastMessage('❌ 生成失败');
       setShowToast(true);
     } finally {
       setGenerating(false);
@@ -282,9 +275,11 @@ export default function RecurringExpensesPage() {
               onClick={handleGenerateExpenses}
               disabled={generating}
               variant="outline"
+              className="group"
+              title="手动触发生成今日固定账单（正常情况下每天00:01自动执行）"
             >
-              <Clock className="h-4 w-4 mr-2" />
-              {generating ? '生成中...' : '立即生成'}
+              <Zap className="h-4 w-4 mr-2 group-hover:text-yellow-500 transition-colors" />
+              {generating ? '生成中...' : '手动触发生成'}
             </Button>
             <Link href="/settings/expenses/recurring/add">
               <Button className="bg-blue-600 hover:bg-blue-700">
