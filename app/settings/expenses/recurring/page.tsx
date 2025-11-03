@@ -271,6 +271,12 @@ export default function RecurringExpensesPage() {
             <p className="text-gray-600">设置和管理您的定期固定支出，系统将自动生成记录</p>
           </div>
           <div className="flex gap-3">
+            <Link href="/settings/expenses/recurring/history">
+              <Button variant="outline" className="group">
+                <History className="h-4 w-4 mr-2 group-hover:text-blue-600 transition-colors" />
+                查看历史
+              </Button>
+            </Link>
             <Button
               onClick={handleGenerateExpenses}
               disabled={generating}
