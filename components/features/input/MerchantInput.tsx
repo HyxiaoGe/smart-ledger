@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { MERCHANT_SUGGESTIONS, SUBCATEGORY_DEFINITIONS } from '@/lib/config/config';
-import { Store, ChevronDown } from 'lucide-react';
+import { Store, ChevronDown, X } from 'lucide-react';
 
 type MerchantInputProps = {
   value?: string;
@@ -149,8 +149,24 @@ export function MerchantInput({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
-          className="pr-8"
+          className="pr-16"
         />
+        {value && !disabled && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onChange?.('');
+              setSuggestions([]);
+              setShowSuggestions(false);
+            }}
+            className="absolute right-8 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+            tabIndex={-1}
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
         <Store className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
       </div>
 

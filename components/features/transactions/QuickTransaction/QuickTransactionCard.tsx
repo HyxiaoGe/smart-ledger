@@ -269,14 +269,12 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
       <motion.div
         key={item.id}
         className={`flex items-center justify-between p-4 border-2 rounded-xl transition-all duration-300 ${
-          isRecordedToday
-            ? 'border-gray-200 bg-gray-50 opacity-75'
-            : item.isFixed
+          item.isFixed
             ? 'border-gradient-to-r from-green-200 to-emerald-200 bg-gradient-to-r from-green-50/50 to-emerald-50/50 hover:from-green-100 hover:to-emerald-100 hover:shadow-green-200/50'
             : 'border-gradient-to-r from-blue-200 to-purple-200 bg-gradient-to-r from-blue-50/50 to-purple-50/50 hover:from-blue-100 hover:to-purple-100 hover:shadow-blue-200/50'
-        } ${!isRecordedToday ? 'hover:shadow-lg cursor-pointer group' : ''}`}
-        whileHover={!isRecordedToday ? { scale: 1.02, y: -2 } : {}}
-        whileTap={!isRecordedToday ? { scale: 0.98 } : {}}
+        } hover:shadow-lg cursor-pointer group`}
+        whileHover={{ scale: 1.02, y: -2 }}
+        whileTap={{ scale: 0.98 }}
       >
         {/* 左侧内容 */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -372,52 +370,43 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
           )}
 
           <motion.div
-            whileHover={!isRecordedToday ? { scale: 1.05 } : {}}
-            whileTap={!isRecordedToday ? { scale: 0.95 } : {}}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            {isRecordedToday ? (
-              <div className="min-w-[70px] h-10 flex items-center justify-center">
-                <div className="flex items-center gap-2 text-gray-500">
-                  <FaCheck className="h-4 w-4" />
-                  <span className="text-sm font-medium">已记录</span>
-                </div>
-              </div>
-            ) : (
-              <Button
-                size="sm"
-                onClick={() => handleQuickTransaction(item)}
-                disabled={isSubmitting}
-                className={`min-w-[70px] h-10 font-medium shadow-md hover:shadow-lg transition-all duration-200 ${
-                  item.isFixed
-                    ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 border-green-200'
-                    : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 border-blue-200'
-                } text-white`}
-              >
-                {isSubmitting ? (
+            <Button
+              size="sm"
+              onClick={() => handleQuickTransaction(item)}
+              disabled={isSubmitting}
+              className={`min-w-[70px] h-10 font-medium shadow-md hover:shadow-lg transition-all duration-200 ${
+                item.isFixed
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 border-green-200'
+                  : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 border-blue-200'
+              } text-white`}
+            >
+              {isSubmitting ? (
+                <motion.div
+                  className="flex items-center gap-1"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
                   <motion.div
-                    className="flex items-center gap-1"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  >
-                    <motion.div
-                      className="w-3 h-3 border-2 border-white border-t-transparent rounded-full"
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    />
-                    <span>记录中</span>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    className="flex items-center gap-1"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  >
-                    <CheckCircle className="h-3.5 w-3.5" />
-                    <span>记录</span>
-                  </motion.div>
-                )}
-              </Button>
-            )}
+                    className="w-3 h-3 border-2 border-white border-t-transparent rounded-full"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  />
+                  <span>记录中</span>
+                </motion.div>
+              ) : (
+                <motion.div
+                  className="flex items-center gap-1"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  <CheckCircle className="h-3.5 w-3.5" />
+                  <span>记录</span>
+                </motion.div>
+              )}
+            </Button>
           </motion.div>
         </div>
       </motion.div>

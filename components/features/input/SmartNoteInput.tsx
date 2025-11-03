@@ -3,6 +3,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Input } from '@/components/ui/input';
+import { ClearableInput } from '@/components/ui/clearable-input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -329,9 +330,10 @@ const SmartNoteInputComponent = function SmartNoteInput({
 
   return (
     <div ref={containerRef} className={`relative ${className}`}>
-      <Input
+      <ClearableInput
         value={value}
         onChange={handleInputChange}
+        onClear={() => onChange?.('')}
         onFocus={handleFocus}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
