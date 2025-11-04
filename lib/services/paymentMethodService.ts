@@ -43,15 +43,15 @@ export interface DeletePaymentMethodResult {
 
 /**
  * 支付方式类型配置
- * iconType: 'lucide' 使用 Lucide 图标, 'emoji' 使用 emoji
+ * 使用官方品牌图标（支付宝、微信等使用品牌 SVG 图标）
  */
 export const PAYMENT_METHOD_TYPES = [
-  { value: 'alipay', label: '支付宝', icon: 'Wallet', iconType: 'lucide' as const, color: '#1677FF', brandColor: true },
-  { value: 'wechat', label: '微信支付', icon: 'MessageCircle', iconType: 'lucide' as const, color: '#07C160', brandColor: true },
-  { value: 'cash', label: '现金', icon: 'Banknote', iconType: 'lucide' as const, color: '#10B981', brandColor: false },
-  { value: 'debit_card', label: '借记卡', icon: 'CreditCard', iconType: 'lucide' as const, color: '#6366F1', brandColor: false },
-  { value: 'credit_card', label: '信用卡', icon: 'CreditCard', iconType: 'lucide' as const, color: '#EC4899', brandColor: false },
-  { value: 'other', label: '其他', icon: 'Smartphone', iconType: 'lucide' as const, color: '#8B5CF6', brandColor: false },
+  { value: 'alipay', label: '支付宝', icon: 'Alipay', color: '#1677FF', brandIcon: true },
+  { value: 'wechat', label: '微信支付', icon: 'WechatPay', color: '#07C160', brandIcon: true },
+  { value: 'cash', label: '现金', icon: 'Cash', color: '#10B981', brandIcon: false },
+  { value: 'debit_card', label: '借记卡', icon: 'BankCard', color: '#6366F1', brandIcon: false },
+  { value: 'credit_card', label: '信用卡', icon: 'CreditCard', color: '#EC4899', brandIcon: false },
+  { value: 'other', label: '其他', icon: 'PhonePay', color: '#8B5CF6', brandIcon: false },
 ] as const;
 
 /**

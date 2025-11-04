@@ -14,12 +14,15 @@ import {
   CreditCard,
   TrendingUp,
   CheckCircle2,
-  Wallet,
-  MessageCircle,
-  Banknote,
-  Smartphone,
-  type LucideIcon,
 } from 'lucide-react';
+import {
+  AlipayIcon,
+  WechatPayIcon,
+  CashIcon,
+  BankCardIcon,
+  CreditCardIcon,
+  PhonePayIcon,
+} from '@/components/icons/PaymentBrandIcons';
 import {
   getPaymentMethodsWithStats,
   addPaymentMethod,
@@ -35,37 +38,36 @@ import {
 } from '@/lib/services/paymentMethodService';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 
-// 支付方式类型图标映射
-const PAYMENT_TYPE_ICONS: Record<PaymentMethod['type'], LucideIcon> = {
-  alipay: Wallet,
-  wechat: MessageCircle,
-  cash: Banknote,
-  debit_card: CreditCard,
-  credit_card: CreditCard,
-  other: Smartphone,
+// 支付方式类型图标映射（使用官方品牌图标）
+const PAYMENT_TYPE_ICONS: Record<PaymentMethod['type'], React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
+  alipay: AlipayIcon,
+  wechat: WechatPayIcon,
+  cash: CashIcon,
+  debit_card: BankCardIcon,
+  credit_card: CreditCardIcon,
+  other: PhonePayIcon,
 };
 
-// 渲染支付方式图标（优先显示 Lucide 图标，除非用户自定义了 emoji）
+// 渲染支付方式图标
 function PaymentIcon({ method, className = "h-6 w-6" }: { method: PaymentMethod; className?: string }) {
   const Icon = PAYMENT_TYPE_ICONS[method.type];
   const typeConfig = getPaymentMethodTypeConfig(method.type);
 
-  // 如果用户自定义了 emoji 图标（不是默认的 Lucide 图标名称）
+  // 如果用户自定义了 emoji 图标
   const hasCustomIcon = method.icon && !Object.values(PAYMENT_METHOD_TYPES).some(t => t.icon === method.icon);
 
   if (hasCustomIcon) {
     return <span className="text-2xl">{method.icon}</span>;
   }
 
-  return <Icon className={className} style={{ color: typeConfig.color }} />;
+  // 对于品牌图标（支付宝、微信），不需要设置颜色，SVG 内部已有品牌色
+  return <Icon className={className} />;
 }
 
 // 渲染类型图标（用于类型选择按钮）
 function TypeIcon({ type, className = "h-8 w-8" }: { type: PaymentMethod['type']; className?: string }) {
   const Icon = PAYMENT_TYPE_ICONS[type];
-  const typeConfig = getPaymentMethodTypeConfig(type);
-
-  return <Icon className={className} style={{ color: typeConfig.color }} />;
+  return <Icon className={className} />;
 }
 
 export default function PaymentMethodsPage() {
