@@ -36,8 +36,8 @@ export default function ExpensesSettingsPage() {
       description: '添加个人专属的消费类别，自定义图标和颜色',
       icon: Tag,
       href: '/settings/expenses/categories',
-      status: 'coming-soon',
-      badge: '即将推出'
+      status: 'available',
+      badge: '已上线'
     },
     {
       title: '支付方式管理',
