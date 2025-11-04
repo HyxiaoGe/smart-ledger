@@ -28,8 +28,8 @@ export default function ExpensesSettingsPage() {
       description: '为不同消费类别设置月度预算上限，帮助控制支出',
       icon: PiggyBank,
       href: '/settings/expenses/budget',
-      status: 'coming-soon',
-      badge: '即将推出'
+      status: 'available',
+      badge: '已上线'
     },
     {
       title: '类别自定义',
