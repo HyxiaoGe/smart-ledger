@@ -33,8 +33,6 @@ import {
   formatLast4Digits,
   type PaymentMethod,
   PAYMENT_METHOD_TYPES,
-  PAYMENT_ICONS,
-  PAYMENT_COLORS,
 } from '@/lib/services/paymentMethodService';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 
@@ -484,8 +482,6 @@ function AddPaymentMethodDialog({
 }) {
   const [name, setName] = useState('');
   const [type, setType] = useState<PaymentMethod['type']>('other');
-  const [icon, setIcon] = useState('📱');
-  const [color, setColor] = useState(PAYMENT_COLORS[0]);
   const [last4Digits, setLast4Digits] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -509,8 +505,6 @@ function AddPaymentMethodDialog({
       await addPaymentMethod({
         name: name.trim(),
         type,
-        icon,
-        color,
         last4Digits: isCardType && last4Digits ? last4Digits : undefined,
       });
       onSuccess();
@@ -541,11 +535,7 @@ function AddPaymentMethodDialog({
                 <button
                   key={t.value}
                   type="button"
-                  onClick={() => {
-                    setType(t.value as PaymentMethod['type']);
-                    setIcon(t.icon);
-                    setColor(t.color);
-                  }}
+                  onClick={() => setType(t.value as PaymentMethod['type'])}
                   className={`p-3 border-2 rounded-lg text-center transition-all ${
                     type === t.value
                       ? 'border-blue-500 bg-blue-50'
@@ -594,75 +584,6 @@ function AddPaymentMethodDialog({
             </div>
           )}
 
-          {/* 图标选择 */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              选择图标
-            </label>
-            <div className="grid grid-cols-10 gap-2">
-              {PAYMENT_ICONS.map((ic) => (
-                <button
-                  key={ic}
-                  type="button"
-                  onClick={() => setIcon(ic)}
-                  className={`p-2 text-2xl border-2 rounded-lg hover:scale-110 transition-transform ${
-                    icon === ic ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
-                  }`}
-                >
-                  {ic}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* 颜色选择 */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              选择颜色
-            </label>
-            <div className="grid grid-cols-6 gap-3">
-              {PAYMENT_COLORS.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setColor(c)}
-                  className={`h-10 rounded-lg border-2 transition-all ${
-                    color === c
-                      ? 'border-gray-900 scale-110'
-                      : 'border-gray-200 hover:scale-105'
-                  }`}
-                  style={{ backgroundColor: c }}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* 预览 */}
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm font-medium text-gray-700 mb-3">预览效果</p>
-            <div className="flex items-center gap-3">
-              <div
-                className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl"
-                style={{ backgroundColor: `${color}20` }}
-              >
-                {icon}
-              </div>
-              <div>
-                <p className="font-semibold text-gray-900 flex items-center gap-2">
-                  {name || '支付方式名称'}
-                  {isCardType && last4Digits && (
-                    <span className="text-sm text-gray-500">
-                      **** {last4Digits}
-                    </span>
-                  )}
-                </p>
-                <p className="text-sm text-gray-600">
-                  {PAYMENT_METHOD_TYPES.find((t) => t.value === type)?.label}
-                </p>
-              </div>
-            </div>
-          </div>
-
           {/* 按钮 */}
           <div className="flex gap-3">
             <Button
@@ -698,8 +619,6 @@ function EditPaymentMethodDialog({
   setShowToast: (show: boolean) => void;
 }) {
   const [name, setName] = useState(method.name);
-  const [icon, setIcon] = useState(method.icon || '📱');
-  const [color, setColor] = useState(method.color || PAYMENT_COLORS[0]);
   const [last4Digits, setLast4Digits] = useState(method.last_4_digits || '');
   const [saving, setSaving] = useState(false);
 
@@ -724,8 +643,6 @@ function EditPaymentMethodDialog({
       await updatePaymentMethod({
         id: method.id,
         name: name.trim(),
-        icon,
-        color,
         last4Digits: isCardType && last4Digits ? last4Digits : undefined,
       });
       onSuccess();
@@ -778,72 +695,6 @@ function EditPaymentMethodDialog({
               />
             </div>
           )}
-
-          {/* 图标选择 */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              选择图标
-            </label>
-            <div className="grid grid-cols-10 gap-2">
-              {PAYMENT_ICONS.map((ic) => (
-                <button
-                  key={ic}
-                  type="button"
-                  onClick={() => setIcon(ic)}
-                  className={`p-2 text-2xl border-2 rounded-lg hover:scale-110 transition-transform ${
-                    icon === ic ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
-                  }`}
-                >
-                  {ic}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* 颜色选择 */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              选择颜色
-            </label>
-            <div className="grid grid-cols-6 gap-3">
-              {PAYMENT_COLORS.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setColor(c)}
-                  className={`h-10 rounded-lg border-2 transition-all ${
-                    color === c
-                      ? 'border-gray-900 scale-110'
-                      : 'border-gray-200 hover:scale-105'
-                  }`}
-                  style={{ backgroundColor: c }}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* 预览 */}
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm font-medium text-gray-700 mb-3">预览效果</p>
-            <div className="flex items-center gap-3">
-              <div
-                className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl"
-                style={{ backgroundColor: `${color}20` }}
-              >
-                {icon}
-              </div>
-              <div>
-                <p className="font-semibold text-gray-900 flex items-center gap-2">
-                  {name || '支付方式名称'}
-                  {isCardType && last4Digits && (
-                    <span className="text-sm text-gray-500">
-                      **** {last4Digits}
-                    </span>
-                  )}
-                </p>
-              </div>
-            </div>
-          </div>
 
           {/* 按钮 */}
           <div className="flex gap-3">
