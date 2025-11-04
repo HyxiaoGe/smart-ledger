@@ -85,7 +85,7 @@ export const MERCHANT_SUGGESTIONS: Record<string, string[]> = {
   drink: ['瑞幸咖啡', 'Manner咖啡', '星巴克', '茶百道', '霸王茶姬'],
   transport: ['地铁', '滴滴出行', '哈啰单车', '美团单车'],
   daily: ['盒马', '美团买菜', '叮咚买菜', '永辉超市', '山姆会员店'],
-  subscription: ['腾讯视频', '爱奇艺', 'Netflix', 'ChatGPT', 'GitHub'],
+  subscription: ['ChatGPT', 'Cluade', 'Cursor', 'GitHub'],
   entertainment: ['万达影城', 'Steam', '健身房', '网易云音乐'],
   other: ['美团', '饿了么', '淘宝', '京东']
 };
