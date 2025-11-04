@@ -44,8 +44,8 @@ export default function ExpensesSettingsPage() {
       description: '管理不同的支付账户，如信用卡、支付宝、微信等',
       icon: CreditCard,
       href: '/settings/expenses/payment-methods',
-      status: 'coming-soon',
-      badge: '即将推出'
+      status: 'available',
+      badge: '已上线'
     }
   ];
 
