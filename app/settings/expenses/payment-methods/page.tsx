@@ -16,6 +16,14 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import {
+  AlipayIcon,
+  WechatPayIcon,
+  CashIcon,
+  BankCardIcon,
+  CreditCardIcon,
+  PhonePayIcon,
+} from '@/components/icons/PaymentBrandIcons';
+import {
   getPaymentMethodsWithStats,
   addPaymentMethod,
   updatePaymentMethod,
@@ -29,6 +37,38 @@ import {
   PAYMENT_COLORS,
 } from '@/lib/services/paymentMethodService';
 import { ProgressToast } from '@/components/shared/ProgressToast';
+
+// 支付方式类型图标映射（使用官方品牌图标）
+const PAYMENT_TYPE_ICONS: Record<PaymentMethod['type'], React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
+  alipay: AlipayIcon,
+  wechat: WechatPayIcon,
+  cash: CashIcon,
+  debit_card: BankCardIcon,
+  credit_card: CreditCardIcon,
+  other: PhonePayIcon,
+};
+
+// 渲染支付方式图标
+function PaymentIcon({ method, className = "h-6 w-6" }: { method: PaymentMethod; className?: string }) {
+  const Icon = PAYMENT_TYPE_ICONS[method.type];
+  const typeConfig = getPaymentMethodTypeConfig(method.type);
+
+  // 如果用户自定义了 emoji 图标
+  const hasCustomIcon = method.icon && !Object.values(PAYMENT_METHOD_TYPES).some(t => t.icon === method.icon);
+
+  if (hasCustomIcon) {
+    return <span className="text-2xl">{method.icon}</span>;
+  }
+
+  // 对于品牌图标（支付宝、微信），不需要设置颜色，SVG 内部已有品牌色
+  return <Icon className={className} />;
+}
+
+// 渲染类型图标（用于类型选择按钮）
+function TypeIcon({ type, className = "h-8 w-8" }: { type: PaymentMethod['type']; className?: string }) {
+  const Icon = PAYMENT_TYPE_ICONS[type];
+  return <Icon className={className} />;
+}
 
 export default function PaymentMethodsPage() {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
@@ -351,12 +391,12 @@ function PaymentMethodCard({
         <div className="flex items-center gap-3">
           {/* 图标 */}
           <div
-            className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl shadow-sm"
+            className="w-12 h-12 rounded-lg flex items-center justify-center shadow-sm"
             style={{
               backgroundColor: `${method.color || typeConfig.color}20`,
             }}
           >
-            {method.icon || typeConfig.icon}
+            <PaymentIcon method={method} className="h-7 w-7" />
           </div>
 
           {/* 名称和类型 */}
@@ -512,7 +552,9 @@ function AddPaymentMethodDialog({
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  <div className="text-2xl mb-1">{t.icon}</div>
+                  <div className="flex justify-center mb-2">
+                    <TypeIcon type={t.value as PaymentMethod['type']} />
+                  </div>
                   <div className="text-xs font-medium">{t.label}</div>
                 </button>
               ))}
