@@ -28,7 +28,7 @@ import {
   PAYMENT_ICONS,
   PAYMENT_COLORS,
 } from '@/lib/services/paymentMethodService';
-import { ProgressToast } from '@/components/ProgressToast';
+import { ProgressToast } from '@/components/shared/ProgressToast';
 
 export default function PaymentMethodsPage() {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
@@ -36,6 +36,8 @@ export default function PaymentMethodsPage() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editingMethod, setEditingMethod] = useState<PaymentMethod | null>(null);
   const [deletingMethod, setDeletingMethod] = useState<PaymentMethod | null>(null);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
 
   useEffect(() => {
     loadPaymentMethods();
@@ -48,7 +50,8 @@ export default function PaymentMethodsPage() {
       setPaymentMethods(data);
     } catch (error) {
       console.error('加载支付方式失败:', error);
-      ProgressToast.error('加载支付方式失败，请刷新页面重试');
+      setToastMessage('❌ 加载支付方式失败，请刷新页面重试');
+      setShowToast(true);
     } finally {
       setLoading(false);
     }
@@ -56,13 +59,14 @@ export default function PaymentMethodsPage() {
 
   const handleSetDefault = async (id: string) => {
     try {
-      ProgressToast.loading('设置默认支付方式中...');
       await setDefaultPaymentMethod(id);
       await loadPaymentMethods();
-      ProgressToast.success('默认支付方式设置成功！');
+      setToastMessage('✅ 默认支付方式设置成功！');
+      setShowToast(true);
     } catch (error) {
       console.error('设置默认支付方式失败:', error);
-      ProgressToast.error('设置默认支付方式失败，请重试');
+      setToastMessage('❌ 设置默认支付方式失败，请重试');
+      setShowToast(true);
     }
   };
 
@@ -259,7 +263,11 @@ export default function PaymentMethodsPage() {
           onSuccess={() => {
             setShowAddDialog(false);
             loadPaymentMethods();
+            setToastMessage('✅ 支付方式添加成功！');
+            setShowToast(true);
           }}
+          setToastMessage={setToastMessage}
+          setShowToast={setShowToast}
         />
       )}
 
@@ -271,7 +279,11 @@ export default function PaymentMethodsPage() {
           onSuccess={() => {
             setEditingMethod(null);
             loadPaymentMethods();
+            setToastMessage('✅ 支付方式更新成功！');
+            setShowToast(true);
           }}
+          setToastMessage={setToastMessage}
+          setShowToast={setShowToast}
         />
       )}
 
@@ -284,7 +296,19 @@ export default function PaymentMethodsPage() {
           onSuccess={() => {
             setDeletingMethod(null);
             loadPaymentMethods();
+            setToastMessage('✅ 支付方式删除成功！');
+            setShowToast(true);
           }}
+          setToastMessage={setToastMessage}
+          setShowToast={setShowToast}
+        />
+      )}
+
+      {/* Toast 提示 */}
+      {showToast && (
+        <ProgressToast
+          message={toastMessage}
+          onClose={() => setShowToast(false)}
         />
       )}
     </div>
@@ -410,9 +434,13 @@ function PaymentMethodCard({
 function AddPaymentMethodDialog({
   onClose,
   onSuccess,
+  setToastMessage,
+  setShowToast,
 }: {
   onClose: () => void;
   onSuccess: () => void;
+  setToastMessage: (msg: string) => void;
+  setShowToast: (show: boolean) => void;
 }) {
   const [name, setName] = useState('');
   const [type, setType] = useState<PaymentMethod['type']>('other');
@@ -425,18 +453,19 @@ function AddPaymentMethodDialog({
 
   const handleSubmit = async () => {
     if (!name.trim()) {
-      ProgressToast.error('请输入支付方式名称');
+      setToastMessage('❌ 请输入支付方式名称');
+      setShowToast(true);
       return;
     }
 
     if (isCardType && last4Digits && !/^\d{4}$/.test(last4Digits)) {
-      ProgressToast.error('卡号后四位必须是4位数字');
+      setToastMessage('❌ 卡号后四位必须是4位数字');
+      setShowToast(true);
       return;
     }
 
     try {
       setSaving(true);
-      ProgressToast.loading('添加支付方式中...');
       await addPaymentMethod({
         name: name.trim(),
         type,
@@ -444,11 +473,11 @@ function AddPaymentMethodDialog({
         color,
         last4Digits: isCardType && last4Digits ? last4Digits : undefined,
       });
-      ProgressToast.success('支付方式添加成功！');
       onSuccess();
     } catch (error) {
       console.error('添加支付方式失败:', error);
-      ProgressToast.error('添加支付方式失败，请重试');
+      setToastMessage('❌ 添加支付方式失败，请重试');
+      setShowToast(true);
     } finally {
       setSaving(false);
     }
@@ -617,10 +646,14 @@ function EditPaymentMethodDialog({
   method,
   onClose,
   onSuccess,
+  setToastMessage,
+  setShowToast,
 }: {
   method: PaymentMethod;
   onClose: () => void;
   onSuccess: () => void;
+  setToastMessage: (msg: string) => void;
+  setShowToast: (show: boolean) => void;
 }) {
   const [name, setName] = useState(method.name);
   const [icon, setIcon] = useState(method.icon || '📱');
@@ -633,18 +666,19 @@ function EditPaymentMethodDialog({
 
   const handleSubmit = async () => {
     if (!name.trim()) {
-      ProgressToast.error('请输入支付方式名称');
+      setToastMessage('❌ 请输入支付方式名称');
+      setShowToast(true);
       return;
     }
 
     if (isCardType && last4Digits && !/^\d{4}$/.test(last4Digits)) {
-      ProgressToast.error('卡号后四位必须是4位数字');
+      setToastMessage('❌ 卡号后四位必须是4位数字');
+      setShowToast(true);
       return;
     }
 
     try {
       setSaving(true);
-      ProgressToast.loading('更新支付方式中...');
       await updatePaymentMethod({
         id: method.id,
         name: name.trim(),
@@ -652,11 +686,11 @@ function EditPaymentMethodDialog({
         color,
         last4Digits: isCardType && last4Digits ? last4Digits : undefined,
       });
-      ProgressToast.success('支付方式更新成功！');
       onSuccess();
     } catch (error) {
       console.error('更新支付方式失败:', error);
-      ProgressToast.error('更新支付方式失败，请重试');
+      setToastMessage('❌ 更新支付方式失败，请重试');
+      setShowToast(true);
     } finally {
       setSaving(false);
     }
@@ -795,11 +829,15 @@ function DeletePaymentMethodDialog({
   allMethods,
   onClose,
   onSuccess,
+  setToastMessage,
+  setShowToast,
 }: {
   method: PaymentMethod;
   allMethods: PaymentMethod[];
   onClose: () => void;
   onSuccess: () => void;
+  setToastMessage: (msg: string) => void;
+  setShowToast: (show: boolean) => void;
 }) {
   const [migrateToId, setMigrateToId] = useState('');
   const [deleting, setDeleting] = useState(false);
@@ -809,27 +847,28 @@ function DeletePaymentMethodDialog({
 
   const handleDelete = async () => {
     if (hasUsage && !migrateToId) {
-      ProgressToast.error('请选择要迁移到的支付方式');
+      setToastMessage('❌ 请选择要迁移到的支付方式');
+      setShowToast(true);
       return;
     }
 
     try {
       setDeleting(true);
-      ProgressToast.loading('删除支付方式中...');
       const result = await deletePaymentMethod(
         method.id,
         migrateToId || undefined
       );
 
       if (result.success) {
-        ProgressToast.success('支付方式删除成功！');
         onSuccess();
       } else {
-        ProgressToast.error(result.message);
+        setToastMessage(`❌ ${result.message}`);
+        setShowToast(true);
       }
     } catch (error) {
       console.error('删除支付方式失败:', error);
-      ProgressToast.error('删除支付方式失败，请重试');
+      setToastMessage('❌ 删除支付方式失败，请重试');
+      setShowToast(true);
     } finally {
       setDeleting(false);
     }
