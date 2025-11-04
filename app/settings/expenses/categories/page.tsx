@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ProgressToast } from '@/components/shared/ProgressToast';
+import { PageSkeleton } from '@/components/shared/PageSkeleton';
 import {
   getCategoriesWithStats,
   addCustomCategory,
@@ -169,28 +170,7 @@ export default function CategoriesPage() {
   const activeCategories = categories.filter(cat => cat.is_active).length;
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-6">
-            <Skeleton className="h-10 w-32" />
-          </div>
-          <div className="mb-8">
-            <Skeleton className="h-8 w-40 mb-2" />
-            <Skeleton className="h-4 w-96" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            {[1, 2, 3].map((i) => (
-              <Card key={i} className="border-0 shadow-md">
-                <CardContent className="pt-6">
-                  <Skeleton className="h-24 w-full" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
+    return <PageSkeleton stats={3} listItems={0} />;
   }
 
   return (
