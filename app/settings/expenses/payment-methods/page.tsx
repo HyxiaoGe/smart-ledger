@@ -14,14 +14,14 @@ import {
   CreditCard,
   TrendingUp,
   CheckCircle2,
+  Wallet,
+  Smartphone,
+  Landmark,
+  Banknote,
 } from 'lucide-react';
 import {
   AlipayIcon,
   WechatPayIcon,
-  CashIcon,
-  BankCardIcon,
-  CreditCardIcon,
-  PhonePayIcon,
 } from '@/components/icons/PaymentBrandIcons';
 import {
   getPaymentMethodsWithStats,
@@ -36,14 +36,14 @@ import {
 } from '@/lib/services/paymentMethodService';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 
-// 支付方式类型图标映射（使用官方品牌图标）
+// 支付方式类型图标映射（支付宝和微信使用品牌图标，其他使用 Lucide 官方图标）
 const PAYMENT_TYPE_ICONS: Record<PaymentMethod['type'], React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
   alipay: AlipayIcon,
   wechat: WechatPayIcon,
-  cash: CashIcon,
-  debit_card: BankCardIcon,
-  credit_card: CreditCardIcon,
-  other: PhonePayIcon,
+  cash: Banknote,
+  debit_card: Landmark,
+  credit_card: CreditCard,
+  other: Smartphone,
 };
 
 // 渲染支付方式图标
@@ -55,17 +55,60 @@ function PaymentIcon({ method, className = "h-6 w-6" }: { method: PaymentMethod;
   const hasCustomIcon = method.icon && !Object.values(PAYMENT_METHOD_TYPES).some(t => t.icon === method.icon);
 
   if (hasCustomIcon) {
-    return <span className="text-2xl">{method.icon}</span>;
+    return <span className="text-2xl flex items-center justify-center">{method.icon}</span>;
   }
 
-  // 对于品牌图标（支付宝、微信），不需要设置颜色，SVG 内部已有品牌色
-  return <Icon className={className} />;
+  // 判断是否为品牌图标（支付宝、微信）
+  const isBrandIcon = method.type === 'alipay' || method.type === 'wechat';
+  
+  // 对于品牌图标，使用 SVG 组件；对于其他图标，使用 Lucide 图标并设置颜色
+  if (isBrandIcon) {
+    return <Icon className={className} style={{ display: 'block' }} />;
+  }
+  
+  // 对于 Lucide 图标，设置颜色和样式
+  return (
+    <Icon 
+      className={className} 
+      style={{ 
+        color: method.color || typeConfig.color,
+        display: 'block',
+      }} 
+    />
+  );
 }
 
 // 渲染类型图标（用于类型选择按钮）
 function TypeIcon({ type, className = "h-8 w-8" }: { type: PaymentMethod['type']; className?: string }) {
   const Icon = PAYMENT_TYPE_ICONS[type];
-  return <Icon className={className} />;
+  const typeConfig = getPaymentMethodTypeConfig(type);
+  
+  // 判断是否为品牌图标
+  const isBrandIcon = type === 'alipay' || type === 'wechat';
+  
+  if (isBrandIcon) {
+    return (
+      <Icon 
+        className={className} 
+        style={{ 
+          display: 'block',
+          margin: '0 auto',
+        }} 
+      />
+    );
+  }
+  
+  // 对于 Lucide 图标，设置颜色
+  return (
+    <Icon 
+      className={className} 
+      style={{ 
+        color: typeConfig.color,
+        display: 'block',
+        margin: '0 auto',
+      }} 
+    />
+  );
 }
 
 export default function PaymentMethodsPage() {
@@ -389,12 +432,12 @@ function PaymentMethodCard({
         <div className="flex items-center gap-3">
           {/* 图标 */}
           <div
-            className="w-12 h-12 rounded-lg flex items-center justify-center shadow-sm"
+            className="w-12 h-12 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0"
             style={{
               backgroundColor: `${method.color || typeConfig.color}20`,
             }}
           >
-            <PaymentIcon method={method} className="h-7 w-7" />
+            <PaymentIcon method={method} className="h-7 w-7 flex-shrink-0" />
           </div>
 
           {/* 名称和类型 */}
@@ -536,16 +579,16 @@ function AddPaymentMethodDialog({
                   key={t.value}
                   type="button"
                   onClick={() => setType(t.value as PaymentMethod['type'])}
-                  className={`p-3 border-2 rounded-lg text-center transition-all ${
+                  className={`p-3 border-2 rounded-lg text-center transition-all flex flex-col items-center justify-center ${
                     type === t.value
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  <div className="flex justify-center mb-2">
-                    <TypeIcon type={t.value as PaymentMethod['type']} />
+                  <div className="flex items-center justify-center mb-2 h-8 w-8 flex-shrink-0">
+                    <TypeIcon type={t.value as PaymentMethod['type']} className="h-8 w-8" />
                   </div>
-                  <div className="text-xs font-medium">{t.label}</div>
+                  <div className="text-xs font-medium leading-tight">{t.label}</div>
                 </button>
               ))}
             </div>
