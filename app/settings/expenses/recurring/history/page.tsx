@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PageSkeleton } from '@/components/shared/PageSkeleton';
 import { getGenerationHistory } from '@/lib/services/recurringService';
 import {
   ChevronLeft,
@@ -129,85 +130,7 @@ export default function RecurringHistoryPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-6">
-            <Skeleton className="h-10 w-32" />
-          </div>
-
-          {/* 标题骨架 */}
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <Skeleton className="h-10 w-10 rounded-lg" />
-              <Skeleton className="h-8 w-40" />
-            </div>
-            <Skeleton className="h-4 w-96" />
-          </div>
-
-          {/* 统计卡片骨架 */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            {[1, 2, 3, 4].map((i) => (
-              <Card key={i} className="border-0 shadow-md">
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <Skeleton className="h-8 w-12 mb-2" />
-                      <Skeleton className="h-4 w-20" />
-                    </div>
-                    <Skeleton className="h-12 w-12 rounded-lg" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* 筛选器骨架 */}
-          <Card className="border-0 shadow-md mb-6">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <Skeleton className="h-4 w-20" />
-                <div className="flex gap-2">
-                  {[1, 2, 3, 4].map((i) => (
-                    <Skeleton key={i} className="h-8 w-24 rounded" />
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 历史记录骨架 */}
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
-              <div className="flex items-center gap-3">
-                <Skeleton className="h-9 w-9 rounded-lg" />
-                <Skeleton className="h-6 w-32" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-3">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="rounded-xl border-2 border-gray-200 p-4">
-                    <div className="flex items-start gap-4">
-                      <Skeleton className="h-9 w-9 rounded-lg" />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <Skeleton className="h-6 w-32" />
-                          <Skeleton className="h-5 w-16 rounded-full" />
-                          <Skeleton className="h-6 w-24" />
-                        </div>
-                        <Skeleton className="h-4 w-48 mb-2" />
-                        <Skeleton className="h-4 w-full" />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
+    return <PageSkeleton stats={4} listColumns={1} />;
   }
 
   if (error) {
