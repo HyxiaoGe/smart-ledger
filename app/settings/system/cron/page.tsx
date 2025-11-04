@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ProgressToast } from '@/components/shared/ProgressToast';
+import { PageSkeleton } from '@/components/shared/PageSkeleton';
 import {
   getAllCronJobs,
   getCronJobHistory,
@@ -199,72 +200,7 @@ export default function CronManagementPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-6">
-            <Skeleton className="h-10 w-32" />
-          </div>
-
-          {/* 标题骨架 */}
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <Skeleton className="h-10 w-10 rounded-lg" />
-              <Skeleton className="h-8 w-40" />
-            </div>
-            <Skeleton className="h-4 w-64" />
-          </div>
-
-          {/* 统计卡片骨架 */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            {[1, 2, 3, 4].map((i) => (
-              <Card key={i} className="border-0 shadow-md">
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <Skeleton className="h-8 w-16 mb-2" />
-                      <Skeleton className="h-4 w-24" />
-                    </div>
-                    <Skeleton className="h-12 w-12 rounded-lg" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* 任务列表骨架 */}
-          <Card className="border-0 shadow-lg mb-6">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
-              <div className="flex items-center gap-3">
-                <Skeleton className="h-9 w-9 rounded-lg" />
-                <Skeleton className="h-6 w-32" />
-              </div>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="rounded-xl border-2 border-gray-200 p-5">
-                    <div className="flex items-start gap-4">
-                      <Skeleton className="h-14 w-14 rounded-xl" />
-                      <div className="flex-1">
-                        <Skeleton className="h-6 w-48 mb-2" />
-                        <Skeleton className="h-4 w-full mb-3" />
-                        <div className="flex gap-2 mb-3">
-                          <Skeleton className="h-6 w-16 rounded-full" />
-                          <Skeleton className="h-6 w-32 rounded" />
-                        </div>
-                        <Skeleton className="h-20 w-full rounded-lg" />
-                      </div>
-                      <Skeleton className="h-9 w-24 rounded" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
+    return <PageSkeleton stats={4} listColumns={1} />;
   }
 
   if (error) {

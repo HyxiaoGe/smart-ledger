@@ -35,6 +35,7 @@ import {
   PAYMENT_METHOD_TYPES,
 } from '@/lib/services/paymentMethodService';
 import { ProgressToast } from '@/components/shared/ProgressToast';
+import { PageSkeleton } from '@/components/shared/PageSkeleton';
 
 // 支付方式类型图标映射（支付宝和微信使用品牌图标，其他使用 Lucide 官方图标）
 const PAYMENT_TYPE_ICONS: Record<PaymentMethod['type'], React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
@@ -162,48 +163,7 @@ export default function PaymentMethodsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* 返回按钮骨架 */}
-          <div className="mb-6">
-            <Skeleton className="h-10 w-32" />
-          </div>
-
-          {/* 标题骨架 */}
-          <div className="mb-8">
-            <Skeleton className="h-8 w-40 mb-2" />
-            <Skeleton className="h-4 w-96" />
-          </div>
-
-          {/* 统计卡片骨架 */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {[1, 2, 3].map((i) => (
-              <Card key={i} className="border-0 shadow-md">
-                <CardContent className="pt-6">
-                  <Skeleton className="h-8 w-16 mb-2" />
-                  <Skeleton className="h-4 w-24" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* 支付方式列表骨架 */}
-          <Card className="border-0 shadow-md">
-            <CardHeader>
-              <Skeleton className="h-6 w-32" />
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {[1, 2, 3, 4].map((i) => (
-                  <Skeleton key={i} className="h-32 rounded-xl" />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
+    return <PageSkeleton />;
   }
 
   return (
