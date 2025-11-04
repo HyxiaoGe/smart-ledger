@@ -294,3 +294,35 @@ COMMENT ON FUNCTION update_payment_method(UUID, TEXT, TEXT, TEXT, TEXT) IS '更�
 COMMENT ON FUNCTION delete_payment_method(UUID, UUID) IS '删除支付方式（软删除，需迁移交易记录）';
 COMMENT ON FUNCTION set_default_payment_method(UUID) IS '设置默认支付方式';
 COMMENT ON FUNCTION get_payment_method_usage_detail(UUID) IS '获取支付方式使用详情';
+
+-- 8. 启用 RLS 并设置策略（允许匿名访问，因为是全局共享的支付方式）
+ALTER TABLE public.payment_methods ENABLE ROW LEVEL SECURITY;
+
+-- 允许所有用户（包括匿名用户）读取支付方式
+CREATE POLICY "Allow anonymous read access to payment_methods"
+  ON public.payment_methods
+  FOR SELECT
+  TO anon, authenticated
+  USING (true);
+
+-- 允许所有用户（包括匿名用户）插入支付方式
+CREATE POLICY "Allow anonymous insert access to payment_methods"
+  ON public.payment_methods
+  FOR INSERT
+  TO anon, authenticated
+  WITH CHECK (true);
+
+-- 允许所有用户（包括匿名用户）更新支付方式
+CREATE POLICY "Allow anonymous update access to payment_methods"
+  ON public.payment_methods
+  FOR UPDATE
+  TO anon, authenticated
+  USING (true)
+  WITH CHECK (true);
+
+-- 允许所有用户（包括匿名用户）删除支付方式
+CREATE POLICY "Allow anonymous delete access to payment_methods"
+  ON public.payment_methods
+  FOR DELETE
+  TO anon, authenticated
+  USING (true);
