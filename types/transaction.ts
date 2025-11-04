@@ -13,6 +13,7 @@ export interface Transaction {
   date: string; // ISO 日期字符串，如 2025-10-04
   created_at?: string;
   currency?: Currency; // 允许记录币种，默认 CNY
+  payment_method?: string; // 支付方式 ID，关联到 payment_methods 表
   // 新增优化字段
   merchant?: string; // 商家/品牌名称（如：瑞幸咖啡、地铁、美团）
   subcategory?: string; // 子分类（如：coffee、subway、takeout）
