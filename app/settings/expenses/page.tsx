@@ -21,7 +21,8 @@ export default function ExpensesSettingsPage() {
       icon: Calendar,
       href: '/settings/expenses/recurring',
       status: 'available',
-      badge: '核心功能'
+      badge: '核心功能',
+      badgeColor: 'blue'
     },
     {
       title: '月度预算设置',
@@ -29,7 +30,8 @@ export default function ExpensesSettingsPage() {
       icon: PiggyBank,
       href: '/settings/expenses/budget',
       status: 'available',
-      badge: '已上线'
+      badge: 'NEW',
+      badgeColor: 'green'
     },
     {
       title: '类别自定义',
@@ -37,7 +39,8 @@ export default function ExpensesSettingsPage() {
       icon: Tag,
       href: '/settings/expenses/categories',
       status: 'available',
-      badge: '已上线'
+      badge: 'NEW',
+      badgeColor: 'green'
     },
     {
       title: '支付方式管理',
@@ -45,7 +48,8 @@ export default function ExpensesSettingsPage() {
       icon: CreditCard,
       href: '/settings/expenses/payment-methods',
       status: 'available',
-      badge: '已上线'
+      badge: 'NEW',
+      badgeColor: 'green'
     }
   ];
 
@@ -93,7 +97,9 @@ export default function ExpensesSettingsPage() {
                     <div>
                       <CardTitle className="text-lg">{section.title}</CardTitle>
                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-1 ${
-                        section.status === 'available'
+                        section.badgeColor === 'green'
+                          ? 'bg-green-100 text-green-700'
+                          : section.badgeColor === 'blue'
                           ? 'bg-blue-100 text-blue-600'
                           : 'bg-gray-100 text-gray-600'
                       }`}>
