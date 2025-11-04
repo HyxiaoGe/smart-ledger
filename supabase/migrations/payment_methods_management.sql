@@ -38,12 +38,12 @@ CREATE TRIGGER trigger_update_payment_methods_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_payment_methods_updated_at();
 
--- 插入预设支付方式
+-- 插入预设支付方式（icon 为 NULL 时使用类型对应的 Lucide 图标）
 INSERT INTO public.payment_methods (name, type, icon, color, is_default, sort_order) VALUES
-  ('支付宝', 'alipay', '💳', '#1677FF', true, 1),
-  ('微信支付', 'wechat', '💚', '#07C160', false, 2),
-  ('现金', 'cash', '💵', '#10B981', false, 3),
-  ('银行卡', 'debit_card', '🏦', '#6366F1', false, 4)
+  ('支付宝', 'alipay', NULL, '#1677FF', true, 1),
+  ('微信支付', 'wechat', NULL, '#07C160', false, 2),
+  ('现金', 'cash', NULL, '#10B981', false, 3),
+  ('银行卡', 'debit_card', NULL, '#6366F1', false, 4)
 ON CONFLICT DO NOTHING;
 
 -- 2. 获取支付方式列表（带使用统计）
