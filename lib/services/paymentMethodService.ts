@@ -43,14 +43,15 @@ export interface DeletePaymentMethodResult {
 
 /**
  * 支付方式类型配置
+ * 使用官方品牌图标（支付宝、微信等使用品牌 SVG 图标）
  */
 export const PAYMENT_METHOD_TYPES = [
-  { value: 'alipay', label: '支付宝', icon: '💳', color: '#1677FF' },
-  { value: 'wechat', label: '微信支付', icon: '💚', color: '#07C160' },
-  { value: 'cash', label: '现金', icon: '💵', color: '#10B981' },
-  { value: 'debit_card', label: '借记卡', icon: '🏦', color: '#6366F1' },
-  { value: 'credit_card', label: '信用卡', icon: '💎', color: '#EC4899' },
-  { value: 'other', label: '其他', icon: '📱', color: '#8B5CF6' },
+  { value: 'alipay', label: '支付宝', icon: 'Alipay', color: '#1677FF', brandIcon: true },
+  { value: 'wechat', label: '微信支付', icon: 'WechatPay', color: '#07C160', brandIcon: true },
+  { value: 'cash', label: '现金', icon: 'Cash', color: '#10B981', brandIcon: false },
+  { value: 'debit_card', label: '借记卡', icon: 'BankCard', color: '#6366F1', brandIcon: false },
+  { value: 'credit_card', label: '信用卡', icon: 'CreditCard', color: '#EC4899', brandIcon: false },
+  { value: 'other', label: '其他', icon: 'PhonePay', color: '#8B5CF6', brandIcon: false },
 ] as const;
 
 /**
