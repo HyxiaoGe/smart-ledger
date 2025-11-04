@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { supabase } from '@/lib/clients/supabase/client';
 import type { TransactionType, Currency } from '@/types/transaction';
 import { PRESET_CATEGORIES, SUPPORTED_CURRENCIES, DEFAULT_CURRENCY } from '@/lib/config/config';
@@ -17,6 +17,7 @@ import { dataSync, markTransactionsDirty } from '@/lib/core/dataSync';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import type { TransactionPrediction, QuickTransactionSuggestion } from '@/lib/services/aiPrediction';
 import { formatDateToLocal } from '@/lib/utils/date';
+import { getPaymentMethodsWithStats, type PaymentMethod } from '@/lib/services/paymentMethodService';
 
 export default function AddPage() {
   const type: TransactionType = 'expense'; // 固定为支出类型
@@ -35,6 +36,10 @@ export default function AddPage() {
   const [merchant, setMerchant] = useState<string>('');
   const [subcategory, setSubcategory] = useState<string>('');
   const [product, setProduct] = useState<string>('');
+
+  // 新增：支付方式
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [paymentMethod, setPaymentMethod] = useState<string>('');
 
   // 防抖相关
   const submitTimeoutRef = useRef<number | null>(null);
@@ -60,6 +65,7 @@ export default function AddPage() {
     note: string;
     date: Date;
     currency: Currency;
+    paymentMethod?: string;
     merchant?: string;
     subcategory?: string;
     product?: string;
@@ -121,6 +127,7 @@ export default function AddPage() {
             note: formData.note,
             date: dateStr,
             currency: formData.currency,
+            payment_method: formData.paymentMethod || null,
             // 新增：三层数据结构
             merchant: formData.merchant || null,
             subcategory: formData.subcategory || null,
@@ -238,7 +245,7 @@ export default function AddPage() {
 
     // 使用防抖提交
     submitTimeoutRef.current = setTimeout(() => {
-      debouncedSubmit({ amt, category, note, date, currency, merchant, subcategory, product });
+      debouncedSubmit({ amt, category, note, date, currency, paymentMethod, merchant, subcategory, product });
     }, 200); // 200ms 延迟
   }
 
@@ -301,11 +308,35 @@ export default function AddPage() {
     setCurrency(DEFAULT_CURRENCY as Currency);
     setError('');
 
+    // 重置为默认支付方式
+    const defaultMethod = paymentMethods.find(m => m.is_default);
+    if (defaultMethod) {
+      setPaymentMethod(defaultMethod.id);
+    }
+
     // 清空三层结构字段
     setMerchant('');
     setSubcategory('');
     setProduct('');
   }
+
+  // 加载支付方式列表
+  useEffect(() => {
+    async function loadPaymentMethods() {
+      try {
+        const methods = await getPaymentMethodsWithStats();
+        setPaymentMethods(methods);
+        // 设置默认支付方式
+        const defaultMethod = methods.find(m => m.is_default);
+        if (defaultMethod) {
+          setPaymentMethod(defaultMethod.id);
+        }
+      } catch (err) {
+        console.error('加载支付方式失败:', err);
+      }
+    }
+    loadPaymentMethods();
+  }, []);
 
   // 组件卸载时清理
   React.useEffect(() => {
@@ -428,7 +459,7 @@ export default function AddPage() {
               />
               {invalidAmount && <p className="mt-1 text-sm text-destructive">金额必须大于 0</p>}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label>币种 <span className="text-destructive">*</span></Label>
                 <select
@@ -439,6 +470,22 @@ export default function AddPage() {
                 >
                   {SUPPORTED_CURRENCIES.map((c) => (
                     <option key={c.code} value={c.code as string}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <Label>支付方式</Label>
+                <select
+                  className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50"
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  disabled={loading}
+                >
+                  <option value="">未设置</option>
+                  {paymentMethods.map((pm) => (
+                    <option key={pm.id} value={pm.id}>
+                      {pm.name}{pm.is_default ? ' (默认)' : ''}
+                    </option>
                   ))}
                 </select>
               </div>
