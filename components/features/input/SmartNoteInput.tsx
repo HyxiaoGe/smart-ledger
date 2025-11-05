@@ -351,7 +351,7 @@ const SmartNoteInputComponent = function SmartNoteInput({
             style={{ backgroundColor: 'transparent' }}
           />
 
-          <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+          <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
           {/* 错误状态 */}
           {error && (
             <div className="p-3 flex items-center gap-2 text-red-600 text-sm">
@@ -362,7 +362,7 @@ const SmartNoteInputComponent = function SmartNoteInput({
 
           {/* 加载状态 */}
           {isLoading && !error && (
-            <div className="p-3 text-center text-sm text-gray-500">
+            <div className="p-3 text-center text-sm text-gray-500 dark:text-gray-400">
               正在分析智能建议…
             </div>
           )}
@@ -378,10 +378,10 @@ const SmartNoteInputComponent = function SmartNoteInput({
                     event.preventDefault();
                     handleChooseSuggestion(suggestion);
                   }}
-                  className={`w-full px-3 py-2 text-left text-sm border-b border-gray-50 last:border-b-0 transition-colors ${
+                  className={`w-full px-3 py-2 text-left text-sm border-b border-gray-50 dark:border-gray-700 last:border-b-0 transition-colors ${
                     index === activeIndex
-                      ? 'bg-blue-50 border-blue-100'
-                      : 'hover:bg-gray-50'
+                      ? 'bg-blue-50 dark:bg-blue-950 border-blue-100 dark:border-blue-800'
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -394,13 +394,13 @@ const SmartNoteInputComponent = function SmartNoteInput({
 
                       {/* 备注内容 */}
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-gray-900 truncate">
+                        <div className="font-medium text-gray-900 dark:text-gray-100 truncate">
                           {suggestion.content}
                         </div>
 
                         {/* 推荐理由 */}
                         {'reason' in suggestion && suggestion.reason && (
-                          <div className="text-xs text-gray-500 mt-1 line-clamp-1">
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-1">
                             {suggestion.reason}
                           </div>
                         )}
@@ -409,12 +409,12 @@ const SmartNoteInputComponent = function SmartNoteInput({
                         {'metadata' in suggestion && suggestion.metadata && (
                           <div className="flex items-center gap-2 mt-1">
                             {suggestion.metadata.avg_amount && (
-                              <span className="text-xs text-gray-400">
+                              <span className="text-xs text-gray-400 dark:text-gray-500">
                                 ¥{suggestion.metadata.avg_amount}
                               </span>
                             )}
                             {suggestion.metadata.usage_count && (
-                              <span className="text-xs text-gray-400">
+                              <span className="text-xs text-gray-400 dark:text-gray-500">
                                 {suggestion.metadata.usage_count}次
                               </span>
                             )}
@@ -437,7 +437,7 @@ const SmartNoteInputComponent = function SmartNoteInput({
 
           {/* 空状态 */}
           {!isLoading && !error && suggestions.length === 0 && (category || amount) && (
-            <div className="p-4 text-center text-sm text-gray-500">
+            <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
               <Lightbulb className="h-8 w-8 mx-auto mb-2 text-gray-300" />
               <div>暂无智能建议</div>
               <div className="text-xs text-gray-400 mt-1">
@@ -448,8 +448,8 @@ const SmartNoteInputComponent = function SmartNoteInput({
 
           {/* 无上下文提示 */}
           {!isLoading && !error && suggestions.length === 0 && !category && !amount && (
-            <div className="p-4 text-center text-sm text-gray-500">
-              <div className="text-xs text-gray-400">
+            <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
+              <div className="text-xs text-gray-400 dark:text-gray-500">
                 选择类别和金额后，将显示智能备注建议
               </div>
             </div>

@@ -161,7 +161,7 @@ export function MerchantInput({
               setSuggestions([]);
               setShowSuggestions(false);
             }}
-            className="absolute right-8 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+            className="absolute right-8 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             tabIndex={-1}
           >
             <X className="h-3.5 w-3.5" />
@@ -180,11 +180,11 @@ export function MerchantInput({
             style={{ backgroundColor: 'transparent' }}
           />
 
-          <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+          <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
             <div className="max-h-64 overflow-y-auto">
               {/* 分类提示 */}
               {category && category in MERCHANT_SUGGESTIONS && (
-                <div className="px-3 py-2 text-xs text-gray-500 bg-gray-50 border-b border-gray-100 flex items-center gap-1">
+                <div className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700 flex items-center gap-1">
                   <Store className="h-3 w-3" />
                   常用商家建议
                 </div>
@@ -199,15 +199,15 @@ export function MerchantInput({
                     event.preventDefault();
                     handleChooseMerchant(merchant);
                   }}
-                  className={`w-full px-3 py-2 text-left text-sm border-b border-gray-50 last:border-b-0 transition-colors ${
+                  className={`w-full px-3 py-2 text-left text-sm border-b border-gray-50 dark:border-gray-700 last:border-b-0 transition-colors ${
                     index === activeIndex
-                      ? 'bg-blue-50 border-blue-100'
-                      : 'hover:bg-gray-50'
+                      ? 'bg-blue-50 dark:bg-blue-950 border-blue-100 dark:border-blue-800'
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
                   <div className="flex items-center gap-2">
                     <Store className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                    <span className="font-medium text-gray-900">{merchant}</span>
+                    <span className="font-medium text-gray-900 dark:text-gray-100">{merchant}</span>
                     {category && category in MERCHANT_SUGGESTIONS && MERCHANT_SUGGESTIONS[category].includes(merchant) && (
                       <span className="ml-auto text-xs text-blue-600">推荐</span>
                     )}
@@ -251,7 +251,7 @@ export function SubcategorySelect({
   return (
     <div className={`relative ${className}`}>
       <select
-        className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50 appearance-none pr-8"
+        className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50 appearance-none pr-8 dark:bg-gray-800"
         value={value || ''}
         onChange={(e) => onChange?.(e.target.value)}
         disabled={disabled}
