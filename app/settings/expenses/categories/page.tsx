@@ -174,7 +174,7 @@ export default function CategoriesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 返回导航 */}
         <div className="mb-6">
@@ -190,7 +190,7 @@ export default function CategoriesPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">类别自定义</h2>
-            <p className="text-gray-600">管理消费类别，打造个性化的记账体验</p>
+            <p className="text-gray-600 dark:text-gray-300">管理消费类别，打造个性化的记账体验</p>
           </div>
           <Button
             onClick={() => {
@@ -281,7 +281,7 @@ export default function CategoriesPage() {
                       <div>
                         <h3 className="font-semibold text-gray-900 text-lg">{category.label}</h3>
                         {category.is_system && (
-                          <span className="inline-flex items-center gap-1 text-xs text-gray-500">
+                          <span className="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">
                             <Lock className="h-3 w-3" />
                             系统预设
                           </span>
@@ -291,7 +291,7 @@ export default function CategoriesPage() {
                   </div>
 
                   <div className="flex items-center justify-between text-sm mb-3">
-                    <span className="text-gray-600">使用次数</span>
+                    <span className="text-gray-600 dark:text-gray-300">使用次数</span>
                     <span className="font-semibold text-gray-900">{category.usage_count || 0}</span>
                   </div>
 
@@ -572,7 +572,7 @@ function DeleteDialog({
             </>
           )}
 
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
             此操作不可撤销，请谨慎操作。
           </p>
         </div>

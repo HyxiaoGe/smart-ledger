@@ -147,10 +147,10 @@ export default function AddRecurringExpensePage() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-center min-h-96">
-            <div className="text-gray-500">加载中...</div>
+            <div className="text-gray-500 dark:text-gray-400 dark:text-gray-500">加载中...</div>
           </div>
         </div>
       </div>
@@ -158,7 +158,7 @@ export default function AddRecurringExpensePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* 主内容区域 */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
         {/* 返回导航 */}
@@ -208,7 +208,7 @@ export default function AddRecurringExpensePage() {
                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                         required
                       />
-                      <div className="absolute right-3 top-3 text-gray-400">
+                      <div className="absolute right-3 top-3 text-gray-400 dark:text-gray-500">
                         <Tag className="h-5 w-5" />
                       </div>
                     </div>
@@ -526,12 +526,12 @@ export default function AddRecurringExpensePage() {
                           <div className="font-bold text-lg text-gray-900">
                             ¥{template.amount}
                           </div>
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">
                             自动填充
                           </div>
                         </div>
                       </div>
-                      <div className="mt-3 pt-3 border-t border-gray-200">
+                      <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                         <div className="flex items-center justify-center">
                           <span className="text-xs text-gray-500 bg-white px-3 py-1 rounded-full">
                             点击应用模板

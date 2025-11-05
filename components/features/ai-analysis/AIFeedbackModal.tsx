@@ -137,7 +137,7 @@ export function AIFeedbackModal({
                 className={`w-10 h-10 rounded-full border-2 transition-all ${
                   answer === rating
                     ? 'bg-blue-500 border-blue-500 text-white'
-                    : 'bg-white border-gray-300 text-gray-400 hover:border-blue-300'
+                    : 'bg-white border-gray-300 dark:border-gray-700 text-gray-400 dark:text-gray-500 hover:border-blue-300'
                 }`}
               >
                 <Star className="w-4 h-4" fill={answer === rating ? 'currentColor' : 'none'} />
@@ -154,7 +154,7 @@ export function AIFeedbackModal({
               className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
                 answer === true
                   ? 'bg-green-50 border-green-500 text-green-700'
-                  : 'bg-white border-gray-300 text-gray-600 hover:border-green-300'
+                  : 'bg-white border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-green-300'
               }`}
             >
               <ThumbsUp className="w-4 h-4" />
@@ -165,7 +165,7 @@ export function AIFeedbackModal({
               className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
                 answer === false
                   ? 'bg-red-50 border-red-500 text-red-700'
-                  : 'bg-white border-gray-300 text-gray-600 hover:border-red-300'
+                  : 'bg-white border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-red-300'
               }`}
             >
               <ThumbsDown className="w-4 h-4" />
@@ -180,7 +180,7 @@ export function AIFeedbackModal({
             value={answer || ''}
             onChange={(e) => handleAnswerChange(question.id, e.target.value)}
             placeholder={question.placeholder || ''}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
             rows={3}
           />
         );
@@ -237,13 +237,13 @@ export function AIFeedbackModal({
           className="relative w-full max-w-md bg-white rounded-xl shadow-2xl"
         >
           {/* 头部 */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 dark:border-gray-700">
             <div>
               <h3 className="text-lg font-semibold text-gray-900">
                 {template.config.title || 'AI反馈'}
               </h3>
               {template.config.description && (
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                   {template.config.description}
                 </p>
               )}
@@ -252,7 +252,7 @@ export function AIFeedbackModal({
               onClick={onClose}
               className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
             >
-              <X className="w-5 h-5 text-gray-500" />
+              <X className="w-5 h-5 text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500" />
             </button>
           </div>
 
@@ -266,7 +266,7 @@ export function AIFeedbackModal({
                 <h4 className="text-lg font-semibold text-gray-900 mb-2">
                   感谢您的反馈！
                 </h4>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-300">
                   您的意见将帮助我们改进AI功能
                 </p>
               </div>
@@ -291,7 +291,7 @@ export function AIFeedbackModal({
 
           {/* 底部 */}
           {!isSubmitted && (
-            <div className="flex items-center justify-between p-6 border-t border-gray-200">
+            <div className="flex items-center justify-between p-6 border-t border-gray-200 dark:border-gray-700 dark:border-gray-700">
               <Button
                 variant="ghost"
                 onClick={onClose}
@@ -435,7 +435,7 @@ export function QuickFeedback({
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <span className="text-sm text-gray-600">这个AI功能有帮助吗？</span>
+      <span className="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-300">这个AI功能有帮助吗？</span>
       <div className="flex items-center gap-1">
         <button
           onClick={() => handleFeedback(true)}

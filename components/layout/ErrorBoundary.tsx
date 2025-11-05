@@ -129,7 +129,7 @@ export function ComponentErrorBoundary({
   return (
     <ErrorBoundary
       fallback={fallback || (
-        <div className="p-4 text-center text-sm text-gray-500">
+        <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
           组件加载失败，请刷新页面重试
         </div>
       )}

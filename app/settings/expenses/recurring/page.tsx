@@ -217,7 +217,7 @@ export default function RecurringExpensesPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-6">
             <Link href="/settings/expenses">
@@ -237,7 +237,7 @@ export default function RecurringExpensesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* 主内容区域 */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 返回导航 */}
@@ -254,7 +254,7 @@ export default function RecurringExpensesPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">固定支出管理</h2>
-            <p className="text-gray-600">设置和管理您的定期固定支出，系统将自动生成记录</p>
+            <p className="text-gray-600 dark:text-gray-300">设置和管理您的定期固定支出，系统将自动生成记录</p>
           </div>
           <div className="flex gap-3">
             <Link href="/settings/expenses/recurring/history">
@@ -423,7 +423,7 @@ export default function RecurringExpensesPage() {
                 </span>
               </CardTitle>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
                   {recurringExpenses.filter(e => e.is_active).length} 个活跃
                 </span>
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
@@ -490,7 +490,7 @@ export default function RecurringExpensesPage() {
                                   活跃
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:text-gray-300">
                                   <Pause className="h-3 w-3 mr-1" />
                                   暂停
                                 </span>
@@ -517,7 +517,7 @@ export default function RecurringExpensesPage() {
 
                             {/* 时间信息 */}
                             <div className="flex items-center gap-6 text-xs">
-                              <span className="flex items-center gap-1 text-gray-500">
+                              <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400 dark:text-gray-500">
                                 <Calendar className="h-3 w-3" />
                                 开始: {expense.start_date}
                               </span>
@@ -585,7 +585,7 @@ export default function RecurringExpensesPage() {
               </div>
               <div>
                 <h4 className="font-medium text-gray-900 mb-1">自动生成</h4>
-                <p className="text-sm text-gray-600">在指定时间自动创建交易记录</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">在指定时间自动创建交易记录</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -594,7 +594,7 @@ export default function RecurringExpensesPage() {
               </div>
               <div>
                 <h4 className="font-medium text-gray-900 mb-1">灵活控制</h4>
-                <p className="text-sm text-gray-600">随时暂停或启用固定支出</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">随时暂停或启用固定支出</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -603,7 +603,7 @@ export default function RecurringExpensesPage() {
               </div>
               <div>
                 <h4 className="font-medium text-gray-900 mb-1">智能防重</h4>
-                <p className="text-sm text-gray-600">避免重复生成同一天记录</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">避免重复生成同一天记录</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -612,7 +612,7 @@ export default function RecurringExpensesPage() {
               </div>
               <div>
                 <h4 className="font-medium text-gray-900 mb-1">多种频率</h4>
-                <p className="text-sm text-gray-600">支持每日、每周、每月等设置</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">支持每日、每周、每月等设置</p>
               </div>
             </div>
           </div>
@@ -629,7 +629,7 @@ export default function RecurringExpensesPage() {
                 <p className="text-gray-600 mb-2">
                   确定要暂停固定支出 "{confirmPause.name}" 吗？
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
                   暂停后将停止自动生成该支出记录，您可以随时重新启用。
                 </p>
                 {confirmPause.next_generate && (
@@ -667,7 +667,7 @@ export default function RecurringExpensesPage() {
                 <p className="text-gray-600 mb-2">
                   确定要删除固定支出 "{confirmDelete.name}" 吗？
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
                   删除后将停止生成该支出记录，此操作不可撤销。
                 </p>
               </div>

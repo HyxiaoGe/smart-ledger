@@ -28,7 +28,7 @@ export function QuickTransactionButton({ onSuccess, className = '' }: QuickTrans
       </Button>
 
       {/* 智能提示标签 */}
-      <div className="hidden sm:flex items-center gap-1 text-xs text-gray-500">
+      <div className="hidden sm:flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">
         <TrendingUp className="h-3 w-3" />
         <span>AI智能预测</span>
       </div>

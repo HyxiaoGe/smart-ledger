@@ -197,7 +197,7 @@ export default function EditRecurringExpensePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <BackNavigation
             href="/settings/expenses/recurring"
@@ -205,7 +205,7 @@ export default function EditRecurringExpensePage() {
             variant="default"
           />
           <div className="text-center py-12">
-            <div className="text-gray-500">加载中...</div>
+            <div className="text-gray-500 dark:text-gray-400 dark:text-gray-500">加载中...</div>
           </div>
         </div>
       </div>
@@ -214,7 +214,7 @@ export default function EditRecurringExpensePage() {
 
   if (notFound) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-6">
             <Link href="/settings/expenses/recurring">
@@ -237,7 +237,7 @@ export default function EditRecurringExpensePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-6">
             <Link href="/settings/expenses/recurring">
@@ -257,7 +257,7 @@ export default function EditRecurringExpensePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* 主内容区域 */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 返回导航 */}
@@ -306,7 +306,7 @@ export default function EditRecurringExpensePage() {
                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                         required
                       />
-                      <div className="absolute right-3 top-3 text-gray-400">
+                      <div className="absolute right-3 top-3 text-gray-400 dark:text-gray-500">
                         <Edit3 className="h-5 w-5" />
                       </div>
                     </div>

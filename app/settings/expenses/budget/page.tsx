@@ -130,7 +130,7 @@ export default function BudgetPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 返回导航 */}
         <div className="mb-6">
@@ -146,7 +146,7 @@ export default function BudgetPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">月度预算设置</h2>
-            <p className="text-gray-600">管理您的月度预算，控制支出更轻松</p>
+            <p className="text-gray-600 dark:text-gray-300">管理您的月度预算，控制支出更轻松</p>
           </div>
           <div className="flex items-center gap-3">
             <div className="px-4 py-2 bg-blue-50 rounded-lg border border-blue-200">
@@ -285,7 +285,7 @@ export default function BudgetPage() {
             {budgetStatuses.filter(b => b.category_key).length === 0 ? (
               <div className="text-center py-12">
                 <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-4">
-                  <PiggyBank className="h-10 w-10 text-gray-400" />
+                  <PiggyBank className="h-10 w-10 text-gray-400 dark:text-gray-500" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">还没有设置分类预算</h3>
                 <p className="text-gray-500 mb-6">
@@ -366,7 +366,7 @@ export default function BudgetPage() {
 
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">使用率</span>
+                          <span className="text-gray-600 dark:text-gray-300">使用率</span>
                           <span className="font-semibold text-gray-900">{budget.usage_percentage.toFixed(1)}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-3">
@@ -375,7 +375,7 @@ export default function BudgetPage() {
                             style={{ width: `${Math.min(budget.usage_percentage, 100)}%` }}
                           />
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">
                           {budget.transaction_count} 笔交易
                         </div>
                       </div>

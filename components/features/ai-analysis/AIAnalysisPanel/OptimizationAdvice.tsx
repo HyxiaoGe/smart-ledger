@@ -40,7 +40,7 @@ export function OptimizationAdvice({
   const hasMore = (data?.suggestions.length || 0) > maxDisplay;
 
   return (
-    <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
+    <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 border-purple-200">
       <CardHeader
         className="pb-3 cursor-pointer"
         onClick={onToggle}
@@ -56,7 +56,7 @@ export function OptimizationAdvice({
             animate={{ rotate: collapsed ? 180 : 0 }}
             transition={{ duration: 0.2 }}
           >
-            <ChevronDown className="h-4 w-4 text-gray-400" />
+            <ChevronDown className="h-4 w-4 text-gray-400 dark:text-gray-500" />
           </motion.div>
         </CardTitle>
       </CardHeader>
@@ -120,7 +120,7 @@ export function OptimizationAdvice({
                   )}
                 </>
               ) : (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400 dark:text-gray-500">
                   <Lightbulb className="h-8 w-8 mx-auto mb-2 text-gray-300" />
                   <div className="text-sm">
                     {loading ? '分析中...' : '暂无建议'}

@@ -289,7 +289,7 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
             <div className="font-semibold text-gray-900 text-base group-hover:text-transparent bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text transition-all duration-300">
               {item.title}
             </div>
-            <div className="text-sm text-gray-500 flex items-center gap-2 mt-1">
+            <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2 mt-1">
               <span className={
                 item.category === 'transport' ? 'text-green-600' :
                 item.category === 'food' ? 'text-orange-600' :
@@ -304,7 +304,7 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
                 {item.category === 'subscription' && '📱 订阅'}
               </span>
               {isRecordedToday ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full font-medium">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs rounded-full font-medium">
                   <FaCheck className="w-2.5 h-2.5" />
                   今日已记录
                 </span>
@@ -477,7 +477,7 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
                   <span className="bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent font-bold text-lg">
                     小助手记账
                   </span>
-                  <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
+                  <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mt-1">
                     <FaHeart className="h-3 w-3 text-pink-500 animate-pulse" />
                     <span>让记账变得简单有趣</span>
                   </div>
@@ -599,7 +599,7 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
               {/* 底部操作区域 */}
               <div className="pt-4 border-t border-gray-100">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 text-xs text-gray-500">
+                  <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">
                     <div className="flex items-center gap-1">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                       <span>固定价格</span>

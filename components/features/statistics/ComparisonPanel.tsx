@@ -209,7 +209,7 @@ export function ComparisonPanel({
   const getRankingIcon = (percentile: number) => {
     if (percentile >= 90) return <Trophy className="h-4 w-4 text-yellow-500" />;
     if (percentile >= 70) return <Award className="h-4 w-4 text-silver" />;
-    return <Users className="h-4 w-4 text-gray-400" />;
+    return <Users className="h-4 w-4 text-gray-400 dark:text-gray-500" />;
   };
 
   return (
@@ -229,7 +229,7 @@ export function ComparisonPanel({
             animate={{ rotate: collapsed ? 180 : 0 }}
             transition={{ duration: 0.2 }}
           >
-            <ChevronDown className="h-4 w-4 text-gray-400" />
+            <ChevronDown className="h-4 w-4 text-gray-400 dark:text-gray-500" />
           </motion.div>
         </CardTitle>
       </CardHeader>
@@ -257,7 +257,7 @@ export function ComparisonPanel({
                         <div className="text-lg font-bold text-gray-900">
                           前{data.ranking.percentile}%
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">
                           {data.ranking.position}/{data.ranking.totalUsers}
                         </div>
                       </div>
@@ -266,13 +266,13 @@ export function ComparisonPanel({
                     {/* 对比统计 */}
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <div className="text-xs text-gray-500">您的支出</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">您的支出</div>
                         <div className="text-lg font-bold text-gray-900">
                           ¥{data.userStats.monthlyAverage}
                         </div>
                       </div>
                       <div>
-                        <div className="text-xs text-gray-500">同类平均</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">同类平均</div>
                         <div className="text-lg font-bold text-gray-900">
                           ¥{data.peerStats.average}
                         </div>
@@ -280,7 +280,7 @@ export function ComparisonPanel({
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-500">差额:</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">差额:</span>
                       <span className={`text-sm font-medium ${
                         data.userStats.monthlyAverage < data.peerStats.average
                           ? 'text-green-600' : 'text-red-600'
@@ -316,7 +316,7 @@ export function ComparisonPanel({
                                 </span>
                               </div>
                               <div className="text-xs text-gray-600 mb-1">{insight.description}</div>
-                              <div className="text-xs text-gray-500">{insight.comparison}</div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">{insight.comparison}</div>
                             </div>
                           </div>
                         </div>
@@ -381,7 +381,7 @@ export function ComparisonPanel({
                   </div>
                 </>
               ) : (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400 dark:text-gray-500">
                   <Trophy className="h-8 w-8 mx-auto mb-2 text-gray-300" />
                   <div className="text-sm">对比分析中...</div>
                 </div>
