@@ -126,8 +126,8 @@ export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTrans
       <div className="space-y-6">
         {/* 如果当前查询范围没有数据，显示提示 */}
         <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-xl p-8 text-center">
-          <div className="text-gray-500 text-lg">📊</div>
-          <div className="text-gray-600 mt-2">当前时间范围暂无支出记录</div>
+          <div className="text-gray-500 dark:text-gray-400 text-lg">📊</div>
+          <div className="text-gray-600 dark:text-gray-300 mt-2">当前时间范围暂无支出记录</div>
         </div>
 
         {/* 月度进度条 - 即使没有当前范围数据也要显示 */}
@@ -231,7 +231,7 @@ export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTrans
               <div className="grid grid-cols-2 gap-4 mt-3">
                 {/* 金额变化 */}
                 <div className="flex items-center justify-between bg-white/60 dark:bg-gray-800/60 rounded-lg p-3 transition-all duration-200 hover:bg-white/80 dark:bg-gray-800/80 hover:shadow-md hover:scale-105 cursor-pointer group">
-                  <span className="text-sm text-gray-600 group-hover:text-gray-700 transition-colors duration-200">支出金额</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors duration-200">支出金额</span>
                   <div className="flex items-center gap-2">
                     {statistics.trend.amountChangePercent > 0 ? (
                       <>
@@ -249,8 +249,8 @@ export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTrans
                       </>
                     ) : (
                       <>
-                        <Minus className="h-4 w-4 text-gray-400 group-hover:scale-110 group-hover:text-gray-500 transition-all duration-200" />
-                        <span className="font-semibold text-gray-600 group-hover:text-gray-700 transition-colors duration-200">
+                        <Minus className="h-4 w-4 text-gray-400 dark:text-gray-500 group-hover:scale-110 group-hover:text-gray-500 dark:group-hover:text-gray-400 transition-all duration-200" />
+                        <span className="font-semibold text-gray-600 dark:text-gray-300 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors duration-200">
                           无变化 (0%)
                         </span>
                       </>
@@ -260,7 +260,7 @@ export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTrans
 
                 {/* 笔数变化 */}
                 <div className="flex items-center justify-between bg-white/60 dark:bg-gray-800/60 rounded-lg p-3 transition-all duration-200 hover:bg-white/80 dark:bg-gray-800/80 hover:shadow-md hover:scale-105 cursor-pointer group">
-                  <span className="text-sm text-gray-600 group-hover:text-gray-700 transition-colors duration-200">交易笔数</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors duration-200">交易笔数</span>
                   <div className="flex items-center gap-2">
                     {statistics.trend.countChange > 0 ? (
                       <>
@@ -271,15 +271,15 @@ export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTrans
                       </>
                     ) : statistics.trend.countChange < 0 ? (
                       <>
-                        <TrendingDown className="h-4 w-4 text-gray-500 group-hover:scale-110 group-hover:text-gray-600 transition-all duration-200" />
-                        <span className="font-semibold text-gray-600 group-hover:text-gray-700 transition-colors duration-200">
+                        <TrendingDown className="h-4 w-4 text-gray-500 dark:text-gray-400 group-hover:scale-110 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-all duration-200" />
+                        <span className="font-semibold text-gray-600 dark:text-gray-300 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors duration-200">
                           {statistics.trend.countChange}笔
                         </span>
                       </>
                     ) : (
                       <>
-                        <Minus className="h-4 w-4 text-gray-400 group-hover:scale-110 group-hover:text-gray-500 transition-all duration-200" />
-                        <span className="font-semibold text-gray-600 group-hover:text-gray-700 transition-colors duration-200">
+                        <Minus className="h-4 w-4 text-gray-400 dark:text-gray-500 group-hover:scale-110 group-hover:text-gray-500 dark:group-hover:text-gray-400 transition-all duration-200" />
+                        <span className="font-semibold text-gray-600 dark:text-gray-300 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors duration-200">
                           无变化
                         </span>
                       </>

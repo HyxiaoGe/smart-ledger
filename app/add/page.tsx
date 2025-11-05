@@ -433,7 +433,7 @@ export default function AddPage() {
                 disabled={loading}
               >
                 {PRESET_CATEGORIES.map((c) => (
-                  <option className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" key={c.key} value={c.key}>
+                  <option className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700" key={c.key} value={c.key}>
                     {c.icon ? `${c.icon} ` : ''}{c.label}
                   </option>
                 ))}
@@ -469,7 +469,7 @@ export default function AddPage() {
                   disabled={loading}
                 >
                   {SUPPORTED_CURRENCIES.map((c) => (
-                    <option className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" key={c.code} value={c.code as string}>{c.name}</option>
+                    <option className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700" key={c.code} value={c.code as string}>{c.name}</option>
                   ))}
                 </select>
               </div>
@@ -481,9 +481,9 @@ export default function AddPage() {
                   onChange={(e) => setPaymentMethod(e.target.value)}
                   disabled={loading}
                 >
-                  <option value="">未设置</option>
+                  <option className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700" value="">未设置</option>
                   {paymentMethods.map((pm) => (
-                    <option className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" key={pm.id} value={pm.id}>
+                    <option className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700" key={pm.id} value={pm.id}>
                       {pm.name}{pm.is_default ? ' (默认)' : ''}
                     </option>
                   ))}
