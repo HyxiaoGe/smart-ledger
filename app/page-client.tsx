@@ -225,7 +225,7 @@ export default function HomePageClient({
       <section className="space-y-2">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">{`${TEXT.topTitle} (${currency})`}</h2>
-          <div className="text-xs text-gray-500">
+          <div className="text-xs text-gray-500 dark:text-gray-400">
             💡 需要 AI 财务分析？请前往
             <a href="/records" className="text-blue-600 hover:text-blue-800 underline ml-1">
               账单列表
@@ -235,7 +235,7 @@ export default function HomePageClient({
             <Button
               variant={rangeParam !== 'month' ? 'default' : 'outline'}
               size="sm"
-              className={rangeParam !== 'month' ? '' : 'text-gray-600 hover:text-gray-800'}
+              className={rangeParam !== 'month' ? '' : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}
               onClick={() => updateRange('today')}
             >
               {TEXT.today}
@@ -243,7 +243,7 @@ export default function HomePageClient({
             <Button
               variant={rangeParam === 'month' ? 'default' : 'outline'}
               size="sm"
-              className={rangeParam === 'month' ? '' : 'text-gray-600 hover:text-gray-800'}
+              className={rangeParam === 'month' ? '' : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}
               onClick={() => updateRange('month')}
             >
               {TEXT.month}

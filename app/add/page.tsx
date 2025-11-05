@@ -427,13 +427,13 @@ export default function AddPage() {
             <div>
               <Label>分类 <span className="text-destructive">*</span></Label>
               <select
-                className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50"
+                className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 disabled={loading}
               >
                 {PRESET_CATEGORIES.map((c) => (
-                  <option key={c.key} value={c.key}>
+                  <option className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" key={c.key} value={c.key}>
                     {c.icon ? `${c.icon} ` : ''}{c.label}
                   </option>
                 ))}
@@ -463,27 +463,27 @@ export default function AddPage() {
               <div>
                 <Label>币种 <span className="text-destructive">*</span></Label>
                 <select
-                  className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50"
+                  className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800"
                   value={currency}
                   onChange={(e) => setCurrency(e.target.value as Currency)}
                   disabled={loading}
                 >
                   {SUPPORTED_CURRENCIES.map((c) => (
-                    <option key={c.code} value={c.code as string}>{c.name}</option>
+                    <option className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" key={c.code} value={c.code as string}>{c.name}</option>
                   ))}
                 </select>
               </div>
               <div>
                 <Label>支付方式</Label>
                 <select
-                  className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50"
+                  className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800"
                   value={paymentMethod}
                   onChange={(e) => setPaymentMethod(e.target.value)}
                   disabled={loading}
                 >
                   <option value="">未设置</option>
                   {paymentMethods.map((pm) => (
-                    <option key={pm.id} value={pm.id}>
+                    <option className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" key={pm.id} value={pm.id}>
                       {pm.name}{pm.is_default ? ' (默认)' : ''}
                     </option>
                   ))}

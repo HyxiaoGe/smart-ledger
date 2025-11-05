@@ -58,7 +58,7 @@ export function HomeStats({
         <CardTitle className="text-sm text-muted-foreground">{title}</CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
-        <animated.span className="text-3xl font-semibold tracking-tight text-slate-900">
+        <animated.span className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-gray-100">
           {valueSpring.value.to((v) => `${sym}${v.toFixed(2)}`)}
         </animated.span>
         {suffix ? <p className="mt-2 text-xs text-muted-foreground">{suffix}</p> : null}
