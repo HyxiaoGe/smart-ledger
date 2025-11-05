@@ -486,11 +486,11 @@ export function TransactionGroupedList({
       )}
 
       {confirmRow && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onMouseDown={(e) => { if (e.target === e.currentTarget) setConfirmRow(null); }}>
-          <div className="rounded-lg border bg-card text-card-foreground shadow-sm w-full max-w-sm z-50" role="dialog" aria-modal="true" onMouseDown={(e) => e.stopPropagation()}>
-            <div className="p-4 border-b font-semibold">确认删除</div>
-            <div className="p-4 text-sm text-muted-foreground">确定要删除这条记录吗？删除后可在短时间内"撤销"。</div>
-            <div className="p-4 flex justify-end gap-2 border-t">
+        <div className="fixed inset-0 z-50 bg-black/40 dark:bg-black/60 flex items-center justify-center p-4" onMouseDown={(e) => { if (e.target === e.currentTarget) setConfirmRow(null); }}>
+          <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm w-full max-w-sm z-50" role="dialog" aria-modal="true" onMouseDown={(e) => e.stopPropagation()}>
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 font-semibold">确认删除</div>
+            <div className="p-4 text-sm text-gray-600 dark:text-gray-400">确定要删除这条记录吗？删除后可在短时间内"撤销"。</div>
+            <div className="p-4 flex justify-end gap-2 border-t border-gray-200 dark:border-gray-700">
               <Button variant="secondary" onClick={() => setConfirmRow(null)}>取消</Button>
               <Button variant="destructive" onClick={async () => { const row = confirmRow; setConfirmRow(null); if (row) await confirmDelete(row); }}>确认删除</Button>
             </div>
@@ -579,7 +579,7 @@ export function TransactionGroupedList({
                                     <div key={merchantKey}>
                                       {editingId === merchantData.items[0].id && merchantData.items.length === 1 ? (
                                         // 单笔交易编辑状态
-                                        <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-t border-blue-200">
+                                        <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border-t border-blue-200 dark:border-blue-800">
                                           {renderEditForm(merchantData.items[0])}
                                         </div>
                                       ) : (
@@ -622,7 +622,7 @@ export function TransactionGroupedList({
                                                     handleEdit(merchantData.items[0]);
                                                   }}
                                                   disabled={loading}
-                                                  className="h-6 w-6 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                                  className="h-6 w-6 p-0 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950"
                                                 >
                                                   <Edit className="h-3 w-3" />
                                                 </Button>
@@ -634,7 +634,7 @@ export function TransactionGroupedList({
                                                     handleDelete(merchantData.items[0]);
                                                   }}
                                                   disabled={loading}
-                                                  className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                  className="h-6 w-6 p-0 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950"
                                                 >
                                                   <Trash2 className="h-3 w-3" />
                                                 </Button>
@@ -650,7 +650,7 @@ export function TransactionGroupedList({
                                           {merchantData.items.map(item => (
                                             <div key={item.id}>
                                               {editingId === item.id ? (
-                                                <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-t border-blue-200">
+                                                <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border-t border-blue-200 dark:border-blue-800">
                                                   {renderEditForm(item)}
                                                 </div>
                                               ) : (
@@ -672,7 +672,7 @@ export function TransactionGroupedList({
                                                           handleEdit(item);
                                                         }}
                                                         disabled={loading}
-                                                        className="h-6 w-6 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                                        className="h-6 w-6 p-0 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950"
                                                       >
                                                         <Edit className="h-3 w-3" />
                                                       </Button>
@@ -684,7 +684,7 @@ export function TransactionGroupedList({
                                                           handleDelete(item);
                                                         }}
                                                         disabled={loading}
-                                                        className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                        className="h-6 w-6 p-0 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950"
                                                       >
                                                         <Trash2 className="h-3 w-3" />
                                                       </Button>

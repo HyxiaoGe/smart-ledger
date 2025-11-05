@@ -378,7 +378,7 @@ const SmartNoteInputComponent = function SmartNoteInput({
                     event.preventDefault();
                     handleChooseSuggestion(suggestion);
                   }}
-                  className={`w-full px-3 py-2 text-left text-sm border-b border-gray-50 dark:border-gray-700 last:border-b-0 transition-colors ${
+                  className={`w-full px-3 py-2 text-left text-sm border-b border-gray-50 dark:border-gray-700 last:border-b-0 transition-all duration-200 ${
                     index === activeIndex
                       ? 'bg-blue-50 dark:bg-blue-950 border-blue-100 dark:border-blue-800'
                       : 'hover:bg-gray-50 dark:hover:bg-gray-800'
