@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils/helpers';
+import NProgress from 'nprogress';
 
 const navItems = [
   { href: '/', label: '首页', icon: '🏠' },
@@ -14,6 +15,13 @@ const navItems = [
 export default function Navigation() {
   const pathname = usePathname();
 
+  const handleClick = (href: string) => {
+    // 只有在跳转到不同页面时才显示进度条
+    if (pathname !== href && !pathname.startsWith(href === '/settings' ? '/settings' : '___')) {
+      NProgress.start();
+    }
+  };
+
   return (
     <nav className="flex items-center gap-2">
       {navItems.map((item) => {
@@ -23,6 +31,8 @@ export default function Navigation() {
           <Link
             key={item.href}
             href={item.href as any}
+            prefetch={true}
+            onClick={() => handleClick(item.href)}
             className={cn(
               'relative px-3 py-2 text-sm font-medium transition-all duration-200 rounded-lg group',
               isActive
