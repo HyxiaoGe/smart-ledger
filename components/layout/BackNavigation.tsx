@@ -1,7 +1,10 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
+import NProgress from 'nprogress';
 
 interface BackNavigationProps {
   href: string;
@@ -22,9 +25,13 @@ export function BackNavigation({
     primary: 'bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800 border border-blue-200 hover:border-blue-300 hover:shadow-md rounded-lg px-3 py-2 transition-all duration-200'
   };
 
+  const handleClick = () => {
+    NProgress.start();
+  };
+
   return (
     <div className={`mb-6 ${className}`}>
-      <Link href={href}>
+      <Link href={href} prefetch={true} onClick={handleClick}>
         <Button
           variant="ghost"
           className={`group flex items-center gap-2 ${variants[variant]}`}

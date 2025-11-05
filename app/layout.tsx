@@ -4,6 +4,7 @@ import Link from 'next/link';
 import './globals.css';
 import Navigation from '@/components/layout/Navigation';
 import { ErrorBoundary } from '@/components/layout/ErrorBoundary';
+import { NavigationProgress } from '@/components/layout/NavigationProgress';
 
 export const metadata: Metadata = {
   title: 'Smart Ledger',
@@ -14,6 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="zh-CN">
       <body className="min-h-screen bg-gradient-to-br from-gray-50 to-white text-foreground">
+        <NavigationProgress />
         <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
           <div className="container flex h-16 items-center justify-between">
             <div className="flex items-center gap-4">
