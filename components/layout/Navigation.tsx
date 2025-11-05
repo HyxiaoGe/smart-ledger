@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils/helpers';
 import NProgress from 'nprogress';
+import { ThemeToggle } from './ThemeToggle';
 
 const navItems = [
   { href: '/', label: '首页', icon: '🏠' },
@@ -37,7 +38,7 @@ export default function Navigation() {
               'relative px-3 py-2 text-sm font-medium transition-all duration-200 rounded-lg group',
               isActive
                 ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md'
-                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100 hover:shadow-sm'
+                : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:shadow-sm'
             )}
           >
             <span className="flex items-center gap-2">
@@ -62,6 +63,9 @@ export default function Navigation() {
           </Link>
         );
       })}
+      <div className="ml-2 pl-2 border-l border-gray-200 dark:border-gray-700">
+        <ThemeToggle />
+      </div>
     </nav>
   );
 }
