@@ -222,13 +222,13 @@ export function RangePicker({ className, onRangeChange }: RangePickerProps) {
           />
 
           {/* 弹出面板 */}
-          <Card className="absolute top-full right-0 z-50 mt-3 w-auto min-w-[380px] shadow-2xl border border-gray-100 bg-white rounded-xl overflow-hidden">
+          <Card className="absolute top-full right-0 z-50 mt-3 w-auto min-w-[380px] shadow-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
             <CardContent className="p-0">
               {/* 快捷选项区域 */}
-              <div className="border-b border-gray-100 bg-gray-50/50 p-4">
+              <div className="border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-semibold text-gray-700">快速选择</span>
-                  <div className="h-px bg-gradient-to-r from-blue-200 to-transparent flex-1 ml-3"></div>
+                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">快速选择</span>
+                  <div className="h-px bg-gradient-to-r from-blue-200 dark:from-blue-800 to-transparent flex-1 ml-3"></div>
                 </div>
                 <div className="grid grid-cols-4 gap-2">
                   {QUICK_OPTIONS.map(option => (
@@ -241,7 +241,7 @@ export function RangePicker({ className, onRangeChange }: RangePickerProps) {
                         "text-xs h-9 px-3 transition-all duration-200 font-medium",
                         current.key === option.key
                           ? "bg-blue-500 text-white shadow-sm hover:bg-blue-600"
-                          : "bg-white text-gray-600 hover:bg-gray-100 hover:text-gray-900 border border-gray-200"
+                          : "bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-gray-100 border border-gray-200 dark:border-gray-600"
                       )}
                     >
                       {option.label}
@@ -251,15 +251,15 @@ export function RangePicker({ className, onRangeChange }: RangePickerProps) {
               </div>
 
               {/* 自定义日期选择器区域 */}
-              <div className="p-4 bg-white">
+              <div className="p-4 bg-white dark:bg-gray-800">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span className="text-sm font-semibold text-gray-700">自定义日期范围</span>
+                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">自定义日期范围</span>
                   </div>
                   {customRange && (
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
                         {customRange.from && format(customRange.from, 'MM月dd日')} -
                         {customRange.to && format(customRange.to, 'MM月dd日')}
                       </span>
@@ -267,7 +267,7 @@ export function RangePicker({ className, onRangeChange }: RangePickerProps) {
                         variant="ghost"
                         size="sm"
                         onClick={clearCustomRange}
-                        className="h-7 px-2 text-xs hover:bg-red-50 hover:text-red-600 transition-colors"
+                        className="h-7 px-2 text-xs hover:bg-red-50 dark:hover:bg-red-950 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                       >
                         <X className="h-3 w-3 mr-1" />
                         清除
@@ -277,10 +277,10 @@ export function RangePicker({ className, onRangeChange }: RangePickerProps) {
                 </div>
 
                 {/* 日期选择器容器 */}
-                <div className="bg-gradient-to-br from-blue-50/50 to-indigo-50/30 rounded-xl p-4 border border-blue-100">
+                <div className="bg-gradient-to-br from-blue-50/50 to-indigo-50/30 dark:from-blue-950/50 dark:to-indigo-950/30 rounded-xl p-4 border border-blue-100 dark:border-blue-900">
                   <ComponentErrorBoundary
                     fallback={
-                      <div className="text-center py-8 text-sm text-gray-500">
+                      <div className="text-center py-8 text-sm text-gray-500 dark:text-gray-400">
                         日期选择器加载失败，请刷新页面重试
                       </div>
                     }
@@ -301,7 +301,7 @@ export function RangePicker({ className, onRangeChange }: RangePickerProps) {
                 {/* 提示文字 */}
                 {!customRange && (
                   <div className="mt-3 text-center">
-                    <p className="text-xs text-gray-500 flex items-center justify-center gap-1">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>

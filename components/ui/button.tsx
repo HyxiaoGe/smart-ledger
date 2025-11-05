@@ -10,11 +10,11 @@ const buttonVariants = cva(
         default:
           'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md hover:from-blue-700 hover:to-blue-600 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]',
         secondary:
-          'bg-gradient-to-r from-gray-100 to-gray-50 text-gray-800 border border-gray-200 shadow-sm hover:from-gray-200 hover:to-gray-100 hover:shadow-md hover:scale-[1.02] active:scale-[0.98]',
+          'bg-gradient-to-r from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-800 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-600 shadow-sm hover:from-gray-200 hover:to-gray-100 dark:hover:from-gray-600 dark:hover:to-gray-700 hover:shadow-md hover:scale-[1.02] active:scale-[0.98]',
         outline:
-          'border-2 border-blue-500 text-blue-600 bg-white hover:bg-blue-50 hover:border-blue-600 hover:shadow-md hover:scale-[1.02] active:scale-[0.98]',
+          'border-2 border-blue-500 dark:border-blue-400 text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-950 hover:border-blue-600 dark:hover:border-blue-300 hover:shadow-md hover:scale-[1.02] active:scale-[0.98]',
         ghost:
-          'text-gray-600 hover:bg-gray-100 hover:text-gray-800 hover:scale-[1.02] active:scale-[0.98]',
+          'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-800 dark:hover:text-gray-100 hover:scale-[1.02] active:scale-[0.98]',
         destructive:
           'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-md hover:from-red-700 hover:to-red-600 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]',
         success:

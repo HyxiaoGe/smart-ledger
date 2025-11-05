@@ -13,10 +13,10 @@ export function StatsSkeleton() {
       {[1, 2].map((i) => (
         <Card key={i} className="relative">
           <CardHeader>
-            <div className="h-4 bg-gray-200 rounded w-24 animate-pulse"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24 animate-pulse"></div>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="h-8 bg-gray-200 rounded w-32 animate-pulse"></div>
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-32 animate-pulse"></div>
           </CardContent>
         </Card>
       ))}
@@ -27,10 +27,10 @@ export function StatsSkeleton() {
 export function ChartSkeleton() {
   return (
     <div className="space-y-4">
-      <div className="h-6 bg-gray-200 rounded w-32 animate-pulse"></div>
+      <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-32 animate-pulse"></div>
       <Card>
         <CardContent className="pt-6">
-          <div className="h-64 bg-gray-200 rounded animate-pulse"></div>
+          <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
         </CardContent>
       </Card>
     </div>
@@ -41,22 +41,22 @@ export function TopExpensesSkeleton() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div className="h-6 bg-gray-200 rounded w-32 animate-pulse"></div>
+        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-32 animate-pulse"></div>
         <div className="flex gap-1">
-          <div className="h-8 bg-gray-200 rounded w-16 animate-pulse"></div>
-          <div className="h-8 bg-gray-200 rounded w-16 animate-pulse"></div>
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-16 animate-pulse"></div>
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-16 animate-pulse"></div>
         </div>
       </div>
       <Card>
         <CardContent className="pt-4">
           <div className="space-y-3">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="flex items-center justify-between p-3 border rounded">
+              <div key={i} className="flex items-center justify-between p-3 border dark:border-gray-700 rounded">
                 <div className="flex items-center gap-3">
-                  <div className="h-4 w-4 bg-gray-200 rounded animate-pulse"></div>
-                  <div className="h-4 bg-gray-200 rounded w-32 animate-pulse"></div>
+                  <div className="h-4 w-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32 animate-pulse"></div>
                 </div>
-                <div className="h-5 bg-gray-200 rounded w-20 animate-pulse"></div>
+                <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-20 animate-pulse"></div>
               </div>
             ))}
           </div>
@@ -70,18 +70,18 @@ export function TransactionsSkeleton() {
   return (
     <div className="space-y-4">
       {[1, 2, 3, 4, 5].map((i) => (
-        <div key={i} className="bg-white border border-gray-200 rounded-lg p-4">
+        <div key={i} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4 flex-1">
-              <div className="h-6 w-6 bg-gray-200 rounded animate-pulse"></div>
-              <div className="h-4 bg-gray-200 rounded w-40 animate-pulse"></div>
-              <div className="h-4 bg-gray-200 rounded w-16 animate-pulse"></div>
+              <div className="h-6 w-6 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-40 animate-pulse"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16 animate-pulse"></div>
             </div>
             <div className="flex items-center gap-4">
-              <div className="h-6 bg-gray-200 rounded w-24 animate-pulse"></div>
+              <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-24 animate-pulse"></div>
               <div className="flex gap-1">
-                <div className="h-8 w-8 bg-gray-200 rounded animate-pulse"></div>
-                <div className="h-8 w-8 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               </div>
             </div>
           </div>
@@ -94,8 +94,8 @@ export function TransactionsSkeleton() {
 export function PageHeaderSkeleton() {
   return (
     <div className="flex items-center justify-between">
-      <div className="h-7 bg-gray-200 rounded w-48 animate-pulse"></div>
-      <div className="h-10 bg-gray-200 rounded w-32 animate-pulse"></div>
+      <div className="h-7 bg-gray-200 dark:bg-gray-700 rounded w-48 animate-pulse"></div>
+      <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-32 animate-pulse"></div>
     </div>
   );
 }
@@ -104,8 +104,8 @@ export function FullPageLoading() {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center space-y-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-        <p className="text-gray-600">加载中...</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
+        <p className="text-gray-600 dark:text-gray-400">加载中...</p>
       </div>
     </div>
   );

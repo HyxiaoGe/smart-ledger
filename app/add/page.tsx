@@ -501,10 +501,10 @@ export default function AddPage() {
             </div>
 
             {/* 新增：商家信息输入区域 */}
-            <div className="border-t border-gray-200 pt-4 space-y-4">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4">
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                 <span className="font-medium">商家信息</span>
-                <span className="text-xs text-gray-400">（可选，帮助更好地分析消费习惯）</span>
+                <span className="text-xs text-gray-400 dark:text-gray-500">（可选，帮助更好地分析消费习惯）</span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -584,22 +584,22 @@ export default function AddPage() {
         )}
 
         {/* AI预测开关 */}
-        <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span className="text-sm text-blue-700">AI智能预测</span>
+              <span className="text-sm text-blue-700 dark:text-blue-400">AI智能预测</span>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setShowAIPrediction(!showAIPrediction)}
-              className="text-blue-600 hover:text-blue-800 h-6 px-2"
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 h-6 px-2"
             >
               {showAIPrediction ? '隐藏' : '显示'}
             </Button>
           </div>
-          <p className="text-xs text-blue-600 mt-2">
+          <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
             基于您的历史数据智能预测分类和金额，让记账更快速
           </p>
         </div>
