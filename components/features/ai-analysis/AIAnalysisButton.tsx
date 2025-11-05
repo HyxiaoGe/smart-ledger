@@ -80,14 +80,14 @@ function AIAnalysisModal({
         onClick={(e) => e.stopPropagation()} // 阻止点击内容区域时关闭弹窗
       >
         {/* 弹窗头部 */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-pink-50">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
               <Brain className="h-6 w-6 text-white" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-900">智能财务分析</h2>
-              <p className="text-sm text-gray-600">基于AI的个性化消费分析和建议</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-300">基于AI的个性化消费分析和建议</p>
             </div>
           </div>
           <Button
@@ -123,7 +123,7 @@ const AIAnalysisPanel = dynamic(
   {
     loading: () => (
       <div className="flex items-center justify-center h-64">
-        <div className="flex items-center gap-2 text-gray-500">
+        <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">
           <Brain className="h-6 w-6 animate-pulse" />
           <span>AI分析加载中...</span>
         </div>

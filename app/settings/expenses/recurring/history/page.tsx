@@ -135,7 +135,7 @@ export default function RecurringHistoryPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-6">
             <Link href="/settings/expenses/recurring">
@@ -155,7 +155,7 @@ export default function RecurringHistoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 返回导航 */}
         <div className="mb-6">
@@ -175,7 +175,7 @@ export default function RecurringHistoryPage() {
             </div>
             <h2 className="text-2xl font-bold text-gray-900">生成历史记录</h2>
           </div>
-          <p className="text-gray-600">查看固定支出的自动生成记录和执行状态</p>
+          <p className="text-gray-600 dark:text-gray-300">查看固定支出的自动生成记录和执行状态</p>
         </div>
 
         {/* 统计卡片 */}
@@ -226,11 +226,11 @@ export default function RecurringHistoryPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-2xl font-bold text-gray-600">{stats.skipped}</div>
+                  <div className="text-2xl font-bold text-gray-600 dark:text-gray-300">{stats.skipped}</div>
                   <div className="text-sm text-gray-600 mt-1">已跳过</div>
                 </div>
                 <div className="p-3 bg-gray-50 rounded-lg">
-                  <Clock className="h-6 w-6 text-gray-600" />
+                  <Clock className="h-6 w-6 text-gray-600 dark:text-gray-300" />
                 </div>
               </div>
             </CardContent>
@@ -284,7 +284,7 @@ export default function RecurringHistoryPage() {
             {filteredLogs.length === 0 ? (
               <div className="text-center py-16">
                 <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-6">
-                  <History className="h-10 w-10 text-gray-400" />
+                  <History className="h-10 w-10 text-gray-400 dark:text-gray-500" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
                   {filterStatus === 'all' ? '还没有生成记录' : `没有${getStatusStyle(filterStatus).label}的记录`}
@@ -343,7 +343,7 @@ export default function RecurringHistoryPage() {
                                 )}
                               </div>
                             </div>
-                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
                               <Calendar className="h-4 w-4" />
                               <div className="text-right">
                                 <div className="font-medium">{time.date}</div>
@@ -359,10 +359,10 @@ export default function RecurringHistoryPage() {
 
                           {/* 关联交易信息 */}
                           {log.transaction && (
-                            <div className="mt-3 p-3 bg-white rounded-lg border border-gray-200">
+                            <div className="mt-3 p-3 bg-white rounded-lg border border-gray-200 dark:border-gray-700">
                               <div className="flex items-center justify-between">
                                 <div className="text-sm">
-                                  <span className="text-gray-500">生成交易：</span>
+                                  <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">生成交易：</span>
                                   <span className="text-gray-900 font-medium ml-2">{log.transaction.note}</span>
                                 </div>
                                 <Link href={`/records`}>

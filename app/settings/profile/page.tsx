@@ -14,7 +14,7 @@ import {
 
 export default function ProfileSettingsPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:bg-gray-900">
       {/* 主内容区域 */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 返回导航 */}
@@ -30,7 +30,7 @@ export default function ProfileSettingsPage() {
         {/* 页面标题 */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">个人信息设置</h2>
-          <p className="text-gray-600">管理您的个人资料和账户信息</p>
+          <p className="text-gray-600 dark:text-gray-300">管理您的个人资料和账户信息</p>
         </div>
 
         {/* 敬请期待提示 */}
@@ -53,7 +53,7 @@ export default function ProfileSettingsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
                     <div>
                       <h5 className="font-medium text-gray-800 mb-2">👤 基本信息管理</h5>
-                      <ul className="text-sm text-gray-600 space-y-1">
+                      <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
                         <li>• 用户名和头像设置</li>
                         <li>• 联系方式管理</li>
                         <li>• 个人简介编辑</li>
@@ -61,7 +61,7 @@ export default function ProfileSettingsPage() {
                     </div>
                     <div>
                       <h5 className="font-medium text-gray-800 mb-2">🌍 地理位置设置</h5>
-                      <ul className="text-sm text-gray-600 space-y-1">
+                      <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
                         <li>• 所在地区设置</li>
                         <li>• 时区和日期格式</li>
                         <li>• 货币单位选择</li>
@@ -69,7 +69,7 @@ export default function ProfileSettingsPage() {
                     </div>
                     <div>
                       <h5 className="font-medium text-gray-800 mb-2">🔒 隐私与安全</h5>
-                      <ul className="text-sm text-gray-600 space-y-1">
+                      <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
                         <li>• 账户安全设置</li>
                         <li>• 隐私选项管理</li>
                         <li>• 登录设备管理</li>
@@ -77,7 +77,7 @@ export default function ProfileSettingsPage() {
                     </div>
                     <div>
                       <h5 className="font-medium text-gray-800 mb-2">🔔 通知偏好</h5>
-                      <ul className="text-sm text-gray-600 space-y-1">
+                      <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
                         <li>• 邮件通知设置</li>
                         <li>• 系统消息管理</li>
                         <li>• 数据统计偏好</li>

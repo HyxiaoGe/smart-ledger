@@ -441,7 +441,7 @@ export function ConsumptionHabitsPanel({
             animate={{ rotate: collapsed ? 180 : 0 }}
             transition={{ duration: 0.2 }}
           >
-            <ChevronDown className="h-4 w-4 text-gray-400" />
+            <ChevronDown className="h-4 w-4 text-gray-400 dark:text-gray-500 dark:text-gray-500" />
           </motion.div>
         </CardTitle>
       </CardHeader>
@@ -472,15 +472,15 @@ export function ConsumptionHabitsPanel({
                     </div>
                     <div className="grid grid-cols-3 gap-2 text-xs">
                       <div className="text-center">
-                        <div className="text-gray-500">规律性</div>
+                        <div className="text-gray-500 dark:text-gray-400 dark:text-gray-500">规律性</div>
                         <div className="font-semibold">{data.habitScore.regularity}</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-gray-500">多样性</div>
+                        <div className="text-gray-500 dark:text-gray-400 dark:text-gray-500">多样性</div>
                         <div className="font-semibold">{data.habitScore.diversity}</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-gray-500">一致性</div>
+                        <div className="text-gray-500 dark:text-gray-400 dark:text-gray-500">一致性</div>
                         <div className="font-semibold">{data.habitScore.consistency}</div>
                       </div>
                     </div>
@@ -496,7 +496,7 @@ export function ConsumptionHabitsPanel({
                             <span className="text-lg">{pattern.icon}</span>
                             <div>
                               <div className="text-sm font-medium">{pattern.description}</div>
-                              <div className="text-xs text-gray-500">{pattern.frequency}次 · 均价¥{pattern.averageAmount}</div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">{pattern.frequency}次 · 均价¥{pattern.averageAmount}</div>
                             </div>
                           </div>
                           <div className="text-right">
@@ -513,27 +513,27 @@ export function ConsumptionHabitsPanel({
                     <div className="bg-white rounded-lg p-3 border border-gray-100">
                       <div className="grid grid-cols-4 gap-2 mb-3">
                         <div className="text-center">
-                          <div className="text-xs text-gray-500">早晨</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">早晨</div>
                           <div className="text-sm font-semibold">¥{data.timePattern.morning}</div>
                         </div>
                         <div className="text-center">
-                          <div className="text-xs text-gray-500">下午</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">下午</div>
                           <div className="text-sm font-semibold">¥{data.timePattern.afternoon}</div>
                         </div>
                         <div className="text-center">
-                          <div className="text-xs text-gray-500">晚上</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">晚上</div>
                           <div className="text-sm font-semibold">¥{data.timePattern.evening}</div>
                         </div>
                         <div className="text-center">
-                          <div className="text-xs text-gray-500">深夜</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">深夜</div>
                           <div className="text-sm font-semibold">¥{data.timePattern.night}</div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-gray-600">
+                      <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 dark:text-gray-300">
                         <Clock className="h-3 w-3" />
                         <span>高峰时段: {data.timePattern.peakTime}</span>
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">{data.timePattern.insight}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{data.timePattern.insight}</div>
                     </div>
                   </div>
 
@@ -557,7 +557,7 @@ export function ConsumptionHabitsPanel({
                                    insight.type === 'warning' ? '注意' : '机会'}
                                 </span>
                               </div>
-                              <div className="text-xs text-gray-600 mb-1">{insight.description}</div>
+                              <div className="text-xs text-gray-600 dark:text-gray-300 mb-1">{insight.description}</div>
                               <div className="text-xs text-teal-600">{insight.suggestion}</div>
                             </div>
                           </div>
@@ -581,7 +581,7 @@ export function ConsumptionHabitsPanel({
                   </div>
                 </>
               ) : (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">
                   <Activity className="h-8 w-8 mx-auto mb-2 text-gray-300" />
                   <div className="text-sm">习惯分析中...</div>
                 </div>

@@ -92,7 +92,7 @@ export function CacheManagementPanel({ show = false, onClose }: CacheManagementP
       case 'error':
         return <AlertTriangle className="h-4 w-4 text-red-500" />;
       default:
-        return <Info className="h-4 w-4 text-gray-500" />;
+        return <Info className="h-4 w-4 text-gray-500 dark:text-gray-400 dark:text-gray-500" />;
     }
   };
 
@@ -149,7 +149,7 @@ export function CacheManagementPanel({ show = false, onClose }: CacheManagementP
               <CardContent className="p-4 text-center">
                 <Activity className="h-8 w-8 mx-auto mb-2 text-blue-500" />
                 <div className="text-2xl font-bold">{cacheStats.totalRequests}</div>
-                <div className="text-sm text-gray-600">总请求</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">总请求</div>
               </CardContent>
             </Card>
 
@@ -157,7 +157,7 @@ export function CacheManagementPanel({ show = false, onClose }: CacheManagementP
               <CardContent className="p-4 text-center">
                 <Zap className="h-8 w-8 mx-auto mb-2 text-green-500" />
                 <div className="text-2xl font-bold">{getHitRateDisplay()}</div>
-                <div className="text-sm text-gray-600">命中率</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">命中率</div>
               </CardContent>
             </Card>
 
@@ -165,7 +165,7 @@ export function CacheManagementPanel({ show = false, onClose }: CacheManagementP
               <CardContent className="p-4 text-center">
                 <Database className="h-8 w-8 mx-auto mb-2 text-orange-500" />
                 <div className="text-2xl font-bold">{getCacheSizeDisplay()}</div>
-                <div className="text-sm text-gray-600">缓存大小</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">缓存大小</div>
               </CardContent>
             </Card>
 
@@ -175,7 +175,7 @@ export function CacheManagementPanel({ show = false, onClose }: CacheManagementP
                 <div className="text-2xl font-bold">
                   {Math.round((Date.now() - cacheStats.lastCleanup) / 1000 / 60)}m
                 </div>
-                <div className="text-sm text-gray-600">上次清理</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">上次清理</div>
               </CardContent>
             </Card>
           </div>
@@ -191,7 +191,7 @@ export function CacheManagementPanel({ show = false, onClose }: CacheManagementP
                   {Object.entries(cacheStats.configs).map(([type, config]) => (
                     <div key={type} className="flex justify-between items-center p-2 bg-gray-50 rounded">
                       <span className="font-medium">{type}</span>
-                      <div className="flex space-x-4 text-sm text-gray-600">
+                      <div className="flex space-x-4 text-sm text-gray-600 dark:text-gray-300">
                         <span>TTL: {Math.round(config.ttl / 1000 / 60)}m</span>
                         <span>Max: {config.maxSize}</span>
                         <Badge variant="outline">{config.version}</Badge>

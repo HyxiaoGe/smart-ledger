@@ -195,7 +195,7 @@ export default function AIFeedbackManagementPage() {
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-center h-64">
           <RefreshCw className="w-8 h-8 animate-spin text-blue-600" />
-          <span className="ml-2 text-gray-600">加载AI反馈数据...</span>
+          <span className="ml-2 text-gray-600 dark:text-gray-300 dark:text-gray-300">加载AI反馈数据...</span>
         </div>
       </div>
     );
@@ -232,7 +232,7 @@ export default function AIFeedbackManagementPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">总反馈数</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300 dark:text-gray-300">总反馈数</p>
                   <p className="text-2xl font-bold text-gray-900">{stats.totalFeedbacks}</p>
                 </div>
                 <MessageSquare className="h-8 w-8 text-blue-600" />
@@ -244,7 +244,7 @@ export default function AIFeedbackManagementPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">平均评分</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300 dark:text-gray-300">平均评分</p>
                   <p className="text-2xl font-bold text-gray-900">{stats.averageRating.toFixed(1)}</p>
                 </div>
                 <Star className="h-8 w-8 text-yellow-500" />
@@ -256,7 +256,7 @@ export default function AIFeedbackManagementPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">积极率</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300 dark:text-gray-300">积极率</p>
                   <p className="text-2xl font-bold text-gray-900">{(stats.positiveRate * 100).toFixed(1)}%</p>
                 </div>
                 <ThumbsUp className="h-8 w-8 text-green-600" />
@@ -268,7 +268,7 @@ export default function AIFeedbackManagementPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">本周反馈</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300 dark:text-gray-300">本周反馈</p>
                   <p className="text-2xl font-bold text-gray-900">{stats.timeStats.thisWeek}</p>
                 </div>
                 <Users className="h-8 w-8 text-purple-600" />
@@ -283,14 +283,14 @@ export default function AIFeedbackManagementPage() {
         <CardContent className="p-4">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-gray-500" />
+              <Filter className="w-4 h-4 text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500" />
               <span className="text-sm font-medium text-gray-700">筛选:</span>
             </div>
 
             <select
               value={filter.featureType}
               onChange={(e) => setFilter(prev => ({ ...prev, featureType: e.target.value }))}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-sm"
             >
               <option value="all">所有功能</option>
               <option value="spending_prediction">支出预测</option>
@@ -303,7 +303,7 @@ export default function AIFeedbackManagementPage() {
             <select
               value={filter.status}
               onChange={(e) => setFilter(prev => ({ ...prev, status: e.target.value }))}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-sm"
             >
               <option value="all">所有状态</option>
               <option value="pending">待处理</option>
@@ -315,7 +315,7 @@ export default function AIFeedbackManagementPage() {
             <select
               value={filter.timeRange}
               onChange={(e) => setFilter(prev => ({ ...prev, timeRange: e.target.value }))}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-sm"
             >
               <option value="1d">最近1天</option>
               <option value="7d">最近7天</option>
@@ -397,7 +397,7 @@ export default function AIFeedbackManagementPage() {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>最近反馈</span>
-            <span className="text-sm font-normal text-gray-600">
+            <span className="text-sm font-normal text-gray-600 dark:text-gray-300 dark:text-gray-300">
               显示 {feedbacks.length} 条反馈
             </span>
           </CardTitle>
@@ -405,7 +405,7 @@ export default function AIFeedbackManagementPage() {
         <CardContent>
           <div className="space-y-4">
             {feedbacks.slice(0, 10).map((feedback) => (
-              <div key={feedback.id} className="border border-gray-200 rounded-lg p-4">
+              <div key={feedback.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
@@ -427,7 +427,7 @@ export default function AIFeedbackManagementPage() {
                       <p className="text-sm text-gray-700 mb-2">{feedback.comment}</p>
                     )}
 
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">
                       {new Date(feedback.timestamp).toLocaleString('zh-CN')}
                     </div>
                   </div>
@@ -463,7 +463,7 @@ export default function AIFeedbackManagementPage() {
             ))}
 
             {feedbacks.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">
                 <MessageSquare className="w-12 h-12 mx-auto mb-2 text-gray-300" />
                 <p>暂无符合条件的反馈数据</p>
               </div>
