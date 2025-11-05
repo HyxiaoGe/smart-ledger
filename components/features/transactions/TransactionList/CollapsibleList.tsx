@@ -57,8 +57,8 @@ export function CollapsibleTransactionList({
       {/* 控制按钮 */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <List className="h-5 w-5 text-gray-600" />
-          <h3 className="text-lg font-semibold text-gray-800">
+          <List className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
             账单明细
           </h3>
           <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
@@ -70,7 +70,7 @@ export function CollapsibleTransactionList({
           variant="outline"
           size="sm"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-2 hover:bg-gray-50 transition-colors duration-200"
+          className="flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200"
         >
           <span className="text-sm">
             {isExpanded ? '收起明细' : '展开明细'}
@@ -94,7 +94,7 @@ export function CollapsibleTransactionList({
 
       {/* 收起状态的提示 */}
       {!isExpanded && totalCount > 0 && (
-        <div className="text-center py-8 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
           <div className="text-gray-500">
             <div className="text-sm mb-2">账单明细已收起</div>
             <div className="text-xs text-gray-400">
@@ -106,7 +106,7 @@ export function CollapsibleTransactionList({
 
       {/* 无数据状态 */}
       {!isExpanded && totalCount === 0 && (
-        <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="text-center py-12 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
           <div className="text-lg">暂无账单记录</div>
           <div className="text-sm mt-2">点击"添加账单"开始记录您的支出</div>
         </div>

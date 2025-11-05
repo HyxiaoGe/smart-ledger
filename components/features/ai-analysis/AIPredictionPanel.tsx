@@ -135,7 +135,7 @@ export function AIPredictionPanel({
     if (confidence >= 0.8) return 'text-green-600 bg-green-50 border-green-200';
     if (confidence >= 0.6) return 'text-blue-600 bg-blue-50 border-blue-200';
     if (confidence >= 0.4) return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-    return 'text-gray-600 bg-gray-50 border-gray-200';
+    return 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700';
   };
 
   return (
@@ -176,7 +176,7 @@ export function AIPredictionPanel({
 
         {/* 加载状态 */}
         {isLoading && (
-          <div className="flex items-center justify-center py-8 text-gray-500">
+          <div className="flex items-center justify-center py-8 text-gray-500 dark:text-gray-400">
             <div className="text-sm">AI正在分析您的消费模式...</div>
           </div>
         )}
@@ -184,7 +184,7 @@ export function AIPredictionPanel({
         {/* 快速记账建议 */}
         {!isLoading && !error && activeTab === 'quick' && quickSuggestions.length > 0 && (
           <div className="space-y-3">
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
               <Clock className="h-4 w-4 inline mr-1" />
               基于当前时间的快速记账建议
             </div>
@@ -194,7 +194,7 @@ export function AIPredictionPanel({
                 <Button
                   key={suggestion.id}
                   variant="outline"
-                  className="h-auto p-3 justify-start text-left hover:bg-blue-50 hover:border-blue-200 transition-colors"
+                  className="h-auto p-3 justify-start text-left hover:bg-blue-50 dark:hover:bg-blue-950 hover:border-blue dark:hover:border-blue-200 transition-colors"
                   onClick={() => handleQuickSuggestionSelect(suggestion)}
                 >
                   <div className="flex items-center gap-3 w-full">
@@ -203,16 +203,16 @@ export function AIPredictionPanel({
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium text-gray-900">
+                      <div className="font-medium text-gray-900 dark:text-gray-100">
                         {suggestion.title}
                       </div>
-                      <div className="text-sm text-gray-500 truncate">
+                      <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
                         {suggestion.description}
                       </div>
                     </div>
 
                     <div className="text-right flex-shrink-0">
-                      <div className="font-semibold text-gray-900">
+                      <div className="font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100">
                         ¥{suggestion.amount}
                       </div>
                       <Badge
@@ -232,7 +232,7 @@ export function AIPredictionPanel({
         {/* AI预测结果 */}
         {!isLoading && !error && activeTab === 'predictions' && predictions.length > 0 && (
           <div className="space-y-3">
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
               <Target className="h-4 w-4 inline mr-1" />
               基于您的历史数据智能预测
             </div>
@@ -266,7 +266,7 @@ export function AIPredictionPanel({
                         {prediction.reason}
                       </div>
 
-                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                      <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                         {prediction.predictedAmount && (
                           <span>建议金额: ¥{prediction.predictedAmount}</span>
                         )}
@@ -293,7 +293,7 @@ export function AIPredictionPanel({
 
         {/* 空状态 */}
         {!isLoading && !error && activeTab === 'quick' && quickSuggestions.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
             <Clock className="h-8 w-8 mx-auto mb-2 text-gray-300" />
             <div className="text-sm">暂无快速记账建议</div>
             <div className="text-xs text-gray-400 mt-1">
@@ -303,7 +303,7 @@ export function AIPredictionPanel({
         )}
 
         {!isLoading && !error && activeTab === 'predictions' && predictions.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
             <Target className="h-8 w-8 mx-auto mb-2 text-gray-300" />
             <div className="text-sm">暂无AI预测数据</div>
             <div className="text-xs text-gray-400 mt-1">
@@ -319,7 +319,7 @@ export function AIPredictionPanel({
               variant="ghost"
               size="sm"
               onClick={fetchPredictions}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
             >
               刷新预测
             </Button>
