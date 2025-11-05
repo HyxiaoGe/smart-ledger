@@ -222,7 +222,7 @@ export function TransactionGroupedList({
       <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">日期</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">日期</label>
             <DateInput
               selected={new Date((form.date as string) || transaction.date)}
               onSelect={(date) => setForm((f) => ({ ...f, date: date ? formatDateToLocal(date) : undefined }))}
@@ -230,8 +230,8 @@ export function TransactionGroupedList({
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">类型</label>
-            <div className="h-10 w-full rounded-md border border-gray-300 bg-gray-50 px-3 text-sm flex items-center text-red-600">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">类型</label>
+            <div className="h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 text-sm flex items-center text-red-600 dark:text-red-400">
               支出
             </div>
             <input type="hidden" name="type" value="expense" />
@@ -240,9 +240,9 @@ export function TransactionGroupedList({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">分类</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">分类</label>
             <select
-              className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm focus:border-blue-500 focus:ring-blue-500"
+              className="h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 text-sm focus:border-blue-500 focus:ring-blue-500"
               value={(form.category as string) || transaction.category}
               onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
             >
@@ -254,7 +254,7 @@ export function TransactionGroupedList({
             </select>
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">金额</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">金额</label>
             <Input
               type="number"
               inputMode="decimal"
@@ -267,9 +267,9 @@ export function TransactionGroupedList({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">币种</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">币种</label>
             <select
-              className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm focus:border-blue-500 focus:ring-blue-500"
+              className="h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 text-sm focus:border-blue-500 focus:ring-blue-500"
               value={form.currency as string || transaction.currency || 'CNY'}
               onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value }))}
             >
@@ -278,7 +278,7 @@ export function TransactionGroupedList({
             </select>
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">备注</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">备注</label>
             <Input
               value={(form.note as string) || transaction.note || ''}
               onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
@@ -289,16 +289,16 @@ export function TransactionGroupedList({
         </div>
 
         {/* 商家信息编辑区域 */}
-        <div className="border-t border-gray-200 pt-4 space-y-4">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4">
+          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
             <Store className="h-4 w-4" />
             <span className="font-medium">商家信息</span>
-            <span className="text-xs text-gray-400">（可选）</span>
+            <span className="text-xs text-gray-400 dark:text-gray-500">（可选）</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">商家/品牌</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">商家/品牌</label>
               <MerchantInput
                 value={(form.merchant as string) ?? transaction.merchant ?? ''}
                 onChange={(value) => setForm((f) => ({ ...f, merchant: value }))}
@@ -307,7 +307,7 @@ export function TransactionGroupedList({
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">子分类</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">子分类</label>
               <SubcategorySelect
                 category={(form.category as string) || transaction.category}
                 value={(form.subcategory as string) ?? transaction.subcategory ?? ''}
@@ -317,7 +317,7 @@ export function TransactionGroupedList({
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">具体产品/服务</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">具体产品/服务</label>
             <Input
               value={(form.product as string) ?? transaction.product ?? ''}
               onChange={(e) => setForm((f) => ({ ...f, product: e.target.value }))}
@@ -505,38 +505,38 @@ export function TransactionGroupedList({
           const isDateExpanded = expandedDates.has(date);
 
           return (
-            <div key={date} className="border border-gray-200 rounded-lg overflow-hidden">
+            <div key={date} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
               {/* 日期层 */}
               <button
                 onClick={() => toggleDate(date)}
-                className="w-full p-4 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
+                className="w-full p-4 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-between"
               >
                 <div className="flex items-center gap-3">
                   {isDateExpanded ? (
-                    <ChevronDown className="h-4 w-4 text-gray-500" />
+                    <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                   ) : (
-                    <ChevronUp className="h-4 w-4 text-gray-500" />
+                    <ChevronUp className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                   )}
-                  <h3 className="text-lg font-semibold text-gray-800">
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
                     {new Date(date + 'T00:00:00').toLocaleDateString('zh-CN', {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric'
                     })}
                   </h3>
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
                     共 {Object.values(dateData.categories).reduce((sum, cat) =>
                       sum + Object.values(cat.merchants).reduce((s, m) => s + m.items.length, 0), 0)} 笔
                   </span>
                 </div>
-                <div className="font-semibold text-red-600">
+                <div className="font-semibold text-red-600 dark:text-red-400">
                   -{formatCurrency(dateData.total, 'CNY')}
                 </div>
               </button>
 
               {/* 分类层 */}
               {isDateExpanded && (
-                <div className="bg-white">
+                <div className="bg-white dark:bg-gray-900">
                   {Object.values(dateData.categories)
                     .sort((a, b) => b.total - a.total)
                     .map(categoryData => {
@@ -545,23 +545,23 @@ export function TransactionGroupedList({
                       const categoryInfo = PRESET_CATEGORIES.find(c => c.key === categoryData.category);
 
                       return (
-                        <div key={categoryKey} className="border-t border-gray-100">
+                        <div key={categoryKey} className="border-t border-gray-100 dark:border-gray-700">
                           <button
                             onClick={() => toggleCategory(categoryKey)}
-                            className="w-full p-3 pl-8 hover:bg-gray-50 transition-colors flex items-center justify-between"
+                            className="w-full p-3 pl-8 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center justify-between"
                           >
                             <div className="flex items-center gap-3">
                               {isCategoryExpanded ? (
-                                <ChevronDown className="h-3 w-3 text-gray-400" />
+                                <ChevronDown className="h-3 w-3 text-gray-400 dark:text-gray-500" />
                               ) : (
-                                <ChevronUp className="h-3 w-3 text-gray-400" />
+                                <ChevronUp className="h-3 w-3 text-gray-400 dark:text-gray-500" />
                               )}
                               <CategoryChip category={categoryData.category} />
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
                                 {Object.keys(categoryData.merchants).length}个商家
                               </span>
                             </div>
-                            <div className="font-medium text-sm">
+                            <div className="font-medium text-sm text-gray-900 dark:text-gray-100">
                               {formatCurrency(categoryData.total, 'CNY')}
                             </div>
                           </button>
@@ -584,25 +584,25 @@ export function TransactionGroupedList({
                                         </div>
                                       ) : (
                                         // 商家行（统一样式）
-                                        <div className="w-full p-2 pl-16 hover:bg-gray-50 transition-colors flex items-center justify-between group border-t border-gray-100">
+                                        <div className="w-full p-2 pl-16 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center justify-between group border-t border-gray-100 dark:border-gray-700">
                                           <div
                                             className="flex items-center gap-2 flex-1 cursor-pointer"
                                             onClick={() => merchantData.items.length > 1 && toggleMerchant(merchantKey)}
                                           >
                                             {merchantData.items.length > 1 && (
                                               isMerchantExpanded ? (
-                                                <ChevronDown className="h-3 w-3 text-gray-400" />
+                                                <ChevronDown className="h-3 w-3 text-gray-400 dark:text-gray-500" />
                                               ) : (
-                                                <ChevronUp className="h-3 w-3 text-gray-400" />
+                                                <ChevronUp className="h-3 w-3 text-gray-400 dark:text-gray-500" />
                                               )
                                             )}
                                             {merchantData.items.length === 1 && (
                                               <div className="w-3" />
                                             )}
-                                            <Store className="h-3 w-3 text-blue-600" />
-                                            <span className="text-sm text-gray-900">{merchantData.merchant}</span>
+                                            <Store className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                                            <span className="text-sm text-gray-900 dark:text-gray-100">{merchantData.merchant}</span>
                                             {merchantData.items.length > 1 && (
-                                              <span className="text-xs text-gray-400">
+                                              <span className="text-xs text-gray-400 dark:text-gray-500">
                                                 {merchantData.items.length}笔
                                               </span>
                                             )}
@@ -646,7 +646,7 @@ export function TransactionGroupedList({
 
                                       {/* 产品/交易明细层 */}
                                       {isMerchantExpanded && merchantData.items.length > 1 && (
-                                        <div className="bg-gray-50">
+                                        <div className="bg-gray-50 dark:bg-gray-800">
                                           {merchantData.items.map(item => (
                                             <div key={item.id}>
                                               {editingId === item.id ? (
@@ -654,13 +654,13 @@ export function TransactionGroupedList({
                                                   {renderEditForm(item)}
                                                 </div>
                                               ) : (
-                                                <div className="p-2 pl-24 hover:bg-gray-100 transition-colors flex items-center justify-between group border-t border-gray-100">
-                                                  <div className="flex items-center gap-2 text-xs text-gray-600">
-                                                    <div className="w-1 h-1 rounded-full bg-gray-400" />
+                                                <div className="p-2 pl-24 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-between group border-t border-gray-100 dark:border-gray-700">
+                                                  <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                                                    <div className="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-600" />
                                                     <span>{item.product || item.note || '无备注'}</span>
                                                   </div>
                                                   <div className="flex items-center gap-2">
-                                                    <div className="text-xs font-medium">
+                                                    <div className="text-xs font-medium text-gray-900 dark:text-gray-100">
                                                       {formatCurrency(Number(item.amount || 0), 'CNY')}
                                                     </div>
                                                     <div className="opacity-0 group-hover:opacity-100 flex gap-1">
@@ -711,7 +711,7 @@ export function TransactionGroupedList({
         })}
 
         {transactions.length === 0 && (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
             <div className="text-lg">暂无账单记录</div>
             <div className="text-sm mt-2">点击"添加账单"开始记录您的支出</div>
           </div>

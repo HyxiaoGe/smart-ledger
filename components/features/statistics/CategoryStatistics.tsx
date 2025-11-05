@@ -154,23 +154,23 @@ export function CategoryStatistics({ transactions }: CategoryStatisticsProps) {
     const info = getCategoryInfo(data.category);
 
     return (
-      <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-2 mb-2">
           <span className="text-lg">{info.icon}</span>
-          <span className="font-medium">{info.label}</span>
+          <span className="font-medium text-gray-900 dark:text-gray-100">{info.label}</span>
         </div>
         <div className="text-sm space-y-1">
           <div className="flex justify-between gap-4">
-            <span className="text-gray-600">金额:</span>
-            <span className="font-medium">¥{formatCurrency(data.value)}</span>
+            <span className="text-gray-600 dark:text-gray-400">金额:</span>
+            <span className="font-medium text-gray-900 dark:text-gray-100">¥{formatCurrency(data.value)}</span>
           </div>
           <div className="flex justify-between gap-4">
-            <span className="text-gray-600">占比:</span>
-            <span className="font-medium">{data.percentage.toFixed(1)}%</span>
+            <span className="text-gray-600 dark:text-gray-400">占比:</span>
+            <span className="font-medium text-gray-900 dark:text-gray-100">{data.percentage.toFixed(1)}%</span>
           </div>
           <div className="flex justify-between gap-4">
-            <span className="text-gray-600">笔数:</span>
-            <span className="font-medium">{categoryStats.sortedStats.find(s => s.category === data.category)?.count || 0}笔</span>
+            <span className="text-gray-600 dark:text-gray-400">笔数:</span>
+            <span className="font-medium text-gray-900 dark:text-gray-100">{categoryStats.sortedStats.find(s => s.category === data.category)?.count || 0}笔</span>
           </div>
         </div>
       </div>
@@ -268,11 +268,11 @@ export function CategoryStatistics({ transactions }: CategoryStatisticsProps) {
 
             {/* 分类排行榜 */}
             <div className={`${isExpanded ? '' : 'max-h-64 overflow-y-auto'}`}>
-              <h4 className="font-semibold mb-4 flex items-center gap-2">
+              <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                 <TrendingUp className="h-4 w-4" />
                 分类排行榜
                 {!isExpanded && categoryStats.sortedStats.length > 5 && (
-                  <span className="text-xs text-gray-500 ml-2">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
                     滚动查看更多 ↓
                   </span>
                 )}
@@ -281,22 +281,22 @@ export function CategoryStatistics({ transactions }: CategoryStatisticsProps) {
                 {categoryStats.sortedStats.map((stat, index) => {
                   const info = getCategoryInfo(stat.category);
                   return (
-                    <div key={stat.category} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <div key={stat.category} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                       <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white text-sm font-semibold">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white dark:bg-gray-900 text-sm font-semibold text-gray-900 dark:text-gray-100">
                           {index + 1}
                         </div>
                         <span className="text-lg">{info.icon}</span>
                         <div>
-                          <div className="font-medium">{info.label}</div>
-                          <div className="text-xs text-gray-500">{stat.count}笔</div>
+                          <div className="font-medium text-gray-900 dark:text-gray-100">{info.label}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">{stat.count}笔</div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-semibold">
+                        <div className="font-semibold text-gray-900 dark:text-gray-100">
                           ¥{formatCurrency(stat.total)}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
                           {stat.percentage.toFixed(1)}%
                         </div>
                       </div>
@@ -309,11 +309,11 @@ export function CategoryStatistics({ transactions }: CategoryStatisticsProps) {
 
           {/* 展开状态：显示商家分层统计 */}
           {isExpanded && (
-            <div className="mt-6 pt-6 border-t">
-              <h4 className="font-semibold mb-4 flex items-center gap-2">
+            <div className="mt-6 pt-6 border-t dark:border-gray-700">
+              <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                 <Store className="h-4 w-4" />
                 商家分层统计
-                <span className="text-xs text-gray-500 font-normal">点击分类查看商家明细</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">点击分类查看商家明细</span>
               </h4>
               <div className="space-y-3">
                 {categoryStats.sortedStats.map((stat) => {
@@ -322,31 +322,31 @@ export function CategoryStatistics({ transactions }: CategoryStatisticsProps) {
                   const merchants = merchantStatsByCategory.get(stat.category) || [];
 
                   return (
-                    <div key={stat.category} className="border border-gray-200 rounded-lg overflow-hidden">
+                    <div key={stat.category} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
                       {/* 分类汇总行 */}
                       <button
                         onClick={() => toggleCategory(stat.category)}
-                        className="w-full p-4 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
+                        className="w-full p-4 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-between"
                       >
                         <div className="flex items-center gap-3">
                           {isExpanded ? (
-                            <ChevronDown className="h-4 w-4 text-gray-500" />
+                            <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                           ) : (
-                            <ChevronUp className="h-4 w-4 text-gray-500" />
+                            <ChevronUp className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                           )}
                           <span className="text-lg">{info.icon}</span>
                           <div className="text-left">
-                            <div className="font-medium">{info.label}</div>
-                            <div className="text-xs text-gray-500">
+                            <div className="font-medium text-gray-900 dark:text-gray-100">{info.label}</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
                               {merchants.length > 0 ? `${merchants.length}个商家 · ` : ''}{stat.count}笔
                             </div>
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="font-semibold">
+                          <div className="font-semibold text-gray-900 dark:text-gray-100">
                             ¥{formatCurrency(stat.total)}
                           </div>
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
                             {stat.percentage.toFixed(1)}%
                           </div>
                         </div>
@@ -354,20 +354,20 @@ export function CategoryStatistics({ transactions }: CategoryStatisticsProps) {
 
                       {/* 商家明细（展开时显示） */}
                       {isExpanded && merchants.length > 0 && (
-                        <div className="bg-white divide-y divide-gray-100">
+                        <div className="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-700">
                           {merchants.map((merchantData, idx) => (
                             <div key={idx} className="p-3 pl-12">
                               <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-2">
-                                  <Store className="h-3 w-3 text-blue-600" />
-                                  <span className="font-medium text-sm text-gray-900">
+                                  <Store className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                                  <span className="font-medium text-sm text-gray-900 dark:text-gray-100">
                                     {merchantData.merchant}
                                   </span>
                                   <Badge variant="outline" className="text-xs">
                                     {merchantData.count}笔
                                   </Badge>
                                 </div>
-                                <div className="font-medium text-sm">
+                                <div className="font-medium text-sm text-gray-900 dark:text-gray-100">
                                   ¥{formatCurrency(merchantData.total)}
                                 </div>
                               </div>
@@ -376,11 +376,11 @@ export function CategoryStatistics({ transactions }: CategoryStatisticsProps) {
                               {merchantData.subcategories.length > 0 && (
                                 <div className="ml-5 space-y-1">
                                   {merchantData.subcategories.map((sub, subIdx) => (
-                                    <div key={subIdx} className="flex items-center justify-between text-xs text-gray-600">
+                                    <div key={subIdx} className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
                                       <div className="flex items-center gap-2">
-                                        <div className="w-1 h-1 rounded-full bg-gray-400" />
+                                        <div className="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-600" />
                                         <span>{sub.name}</span>
-                                        <span className="text-gray-400">({sub.count}笔)</span>
+                                        <span className="text-gray-400 dark:text-gray-500">({sub.count}笔)</span>
                                       </div>
                                       <span>¥{formatCurrency(sub.total)}</span>
                                     </div>
@@ -394,7 +394,7 @@ export function CategoryStatistics({ transactions }: CategoryStatisticsProps) {
 
                       {/* 无商家数据提示 */}
                       {isExpanded && merchants.length === 0 && (
-                        <div className="p-4 text-center text-sm text-gray-500 bg-white">
+                        <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-900">
                           暂无商家数据
                         </div>
                       )}

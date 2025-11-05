@@ -297,7 +297,7 @@ export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTrans
                 <DollarSign className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
                 <span className="text-xs font-medium">总支出</span>
               </div>
-              <div className="text-2xl font-bold text-gray-800 group-hover:text-gray-900 transition-colors duration-200">
+              <div className="text-2xl font-bold text-gray-800 dark:text-gray-100 group-hover:text-gray-900 dark:group-hover:text-gray-50 transition-colors duration-200">
                 ¥{formatCurrency(statistics.totalAmount)}
               </div>
             </div>
@@ -307,7 +307,7 @@ export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTrans
                 <Calendar className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
                 <span className="text-xs font-medium">总笔数</span>
               </div>
-              <div className="text-2xl font-bold text-gray-800 group-hover:text-gray-900 transition-colors duration-200">
+              <div className="text-2xl font-bold text-gray-800 dark:text-gray-100 group-hover:text-gray-900 dark:group-hover:text-gray-50 transition-colors duration-200">
                 {statistics.totalCount}笔
               </div>
             </div>
@@ -317,7 +317,7 @@ export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTrans
                 <TrendingUp className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
                 <span className="text-xs font-medium">日均支出</span>
               </div>
-              <div className="text-2xl font-bold text-gray-800 group-hover:text-gray-900 transition-colors duration-200">
+              <div className="text-2xl font-bold text-gray-800 dark:text-gray-100 group-hover:text-gray-900 dark:group-hover:text-gray-50 transition-colors duration-200">
                 ¥{formatCurrency(statistics.dailyAverage)}
               </div>
             </div>
@@ -326,29 +326,29 @@ export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTrans
           {/* 第二行：详细分析 */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="bg-white/40 dark:bg-gray-800/40 rounded-lg p-3 text-center transition-all duration-200 hover:bg-white/60 dark:bg-gray-800/60 hover:shadow-md hover:scale-105 cursor-pointer group">
-              <div className="text-xs text-gray-600 mb-1 group-hover:text-gray-700 transition-colors duration-200">单笔最高</div>
-              <div className="text-lg font-bold text-orange-600 group-hover:text-orange-700 group-hover:scale-110 transition-all duration-200">
+              <div className="text-xs text-gray-600 dark:text-gray-400 mb-1 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-200">单笔最高</div>
+              <div className="text-lg font-bold text-orange-600 dark:text-orange-400 group-hover:text-orange-700 dark:group-hover:text-orange-300 group-hover:scale-110 transition-all duration-200">
                 ¥{formatCurrency(statistics.maxTransactionAmount)}
               </div>
             </div>
 
             <div className="bg-white/40 dark:bg-gray-800/40 rounded-lg p-3 text-center transition-all duration-200 hover:bg-white/60 dark:bg-gray-800/60 hover:shadow-md hover:scale-105 cursor-pointer group">
-              <div className="text-xs text-gray-600 mb-1 group-hover:text-gray-700 transition-colors duration-200">单笔最低</div>
-              <div className="text-lg font-bold text-teal-600 group-hover:text-teal-700 group-hover:scale-110 transition-all duration-200">
+              <div className="text-xs text-gray-600 dark:text-gray-400 mb-1 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-200">单笔最低</div>
+              <div className="text-lg font-bold text-teal-600 dark:text-teal-400 group-hover:text-teal-700 dark:group-hover:text-teal-300 group-hover:scale-110 transition-all duration-200">
                 ¥{formatCurrency(statistics.minTransactionAmount)}
               </div>
             </div>
 
             <div className="bg-white/40 dark:bg-gray-800/40 rounded-lg p-3 text-center transition-all duration-200 hover:bg-white/60 dark:bg-gray-800/60 hover:shadow-md hover:scale-105 cursor-pointer group">
-              <div className="text-xs text-gray-600 mb-1 group-hover:text-gray-700 transition-colors duration-200">平均单笔</div>
-              <div className="text-lg font-bold text-indigo-600 group-hover:text-indigo-700 group-hover:scale-110 transition-all duration-200">
+              <div className="text-xs text-gray-600 dark:text-gray-400 mb-1 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-200">平均单笔</div>
+              <div className="text-lg font-bold text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 group-hover:scale-110 transition-all duration-200">
                 ¥{formatCurrency(statistics.avgTransactionAmount)}
               </div>
             </div>
 
             <div className="bg-white/40 dark:bg-gray-800/40 rounded-lg p-3 text-center transition-all duration-200 hover:bg-white/60 dark:bg-gray-800/60 hover:shadow-md hover:scale-105 cursor-pointer group">
-              <div className="text-xs text-gray-600 mb-1 group-hover:text-gray-700 transition-colors duration-200">消费强度</div>
-              <div className="text-lg font-bold text-purple-600 group-hover:text-purple-700 group-hover:scale-110 transition-all duration-200">
+              <div className="text-xs text-gray-600 dark:text-gray-400 mb-1 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-200">消费强度</div>
+              <div className="text-lg font-bold text-purple-600 dark:text-purple-400 group-hover:text-purple-700 dark:group-hover:text-purple-300 group-hover:scale-110 transition-all duration-200">
                 {statistics.totalCount > 0 ? (statistics.totalCount / items.length).toFixed(1) : '0'}笔/日
               </div>
             </div>
