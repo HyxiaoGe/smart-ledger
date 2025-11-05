@@ -129,22 +129,22 @@ export function PredictionTrendChart({
       const isPrediction = data.type === 'prediction';
 
       return (
-        <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
+        <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 dark:border-gray-700">
           <p className="font-medium text-gray-900 mb-2">{label}</p>
           <div className="space-y-1">
             <p className="text-sm">
-              <span className="text-gray-600">总支出：</span>
+              <span className="text-gray-600 dark:text-gray-300">总支出：</span>
               <span className={`font-medium ${isPrediction ? 'text-blue-600' : 'text-gray-900'}`}>
                 ¥{data.totalAmount?.toFixed(0) || data.totalAmount?.toFixed(0)}
               </span>
             </p>
             {isPrediction && data.confidence && (
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">
                 置信度：{data.confidence}%
               </p>
             )}
             {isPrediction && data.upperBound && data.lowerBound && (
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">
                 <div>预测区间：¥{data.lowerBound.toFixed(0)} - ¥{data.upperBound.toFixed(0)}</div>
               </div>
             )}
@@ -159,7 +159,7 @@ export function PredictionTrendChart({
   const CategoryTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
+        <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 dark:border-gray-700">
           <p className="font-medium text-gray-900 mb-2">{label}</p>
           <div className="space-y-1">
             {payload.map((entry: any, index: number) => (
@@ -168,7 +168,7 @@ export function PredictionTrendChart({
                   className="w-3 h-3 rounded"
                   style={{ backgroundColor: entry.color }}
                 />
-                <span className="text-gray-600">{entry.name}：</span>
+                <span className="text-gray-600 dark:text-gray-300">{entry.name}：</span>
                 <span className="font-medium">¥{entry.value.toFixed(0)}</span>
               </div>
             ))}
@@ -182,7 +182,7 @@ export function PredictionTrendChart({
   return (
     <div className={`space-y-6 ${className}`}>
       {/* 主要趋势图 */}
-      <div className="bg-white rounded-lg p-6 border border-gray-200">
+      <div className="bg-white rounded-lg p-6 border border-gray-200 dark:border-gray-700 dark:border-gray-700">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">支出趋势预测</h3>
         <ResponsiveContainer width="100%" height={300}>
           <AreaChart data={combinedData}>
@@ -248,7 +248,7 @@ export function PredictionTrendChart({
 
       {/* 分类预测图 */}
       {categoryData.length > 0 && (
-        <div className="bg-white rounded-lg p-6 border border-gray-200">
+        <div className="bg-white rounded-lg p-6 border border-gray-200 dark:border-gray-700 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">分类支出预测</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={categoryData}>

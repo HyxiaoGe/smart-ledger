@@ -162,7 +162,7 @@ export default function PaymentMethodsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* 返回按钮骨架 */}
           <div className="mb-6">
@@ -206,7 +206,7 @@ export default function PaymentMethodsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 返回导航 */}
         <div className="mb-6">
@@ -227,7 +227,7 @@ export default function PaymentMethodsPage() {
             <CreditCard className="h-7 w-7 text-blue-600" />
             支付方式管理
           </h2>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             管理您的支付账户，让记账更加便捷准确
           </p>
         </div>
@@ -273,7 +273,7 @@ export default function PaymentMethodsPage() {
                     {stats.mostUsed?.name || '暂无数据'}
                   </p>
                   {stats.mostUsed && (
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">
                       使用 {stats.mostUsed.usage_count} 次
                     </p>
                   )}
@@ -299,7 +299,7 @@ export default function PaymentMethodsPage() {
             {paymentMethods.length === 0 ? (
               <div className="text-center py-16">
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
-                  <CreditCard className="h-8 w-8 text-gray-400" />
+                  <CreditCard className="h-8 w-8 text-gray-400 dark:text-gray-500" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
                   还没有支付方式
@@ -330,7 +330,7 @@ export default function PaymentMethodsPage() {
 
         {/* 使用提示 */}
         <div className="mt-8 text-center">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
             💡 提示：设置默认支付方式后，添加账单时会自动选择该支付方式
           </p>
         </div>
@@ -449,7 +449,7 @@ function PaymentMethodCard({
                 </span>
               )}
             </h3>
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:text-gray-300">
               {typeConfig.label}
             </span>
           </div>
@@ -459,14 +459,14 @@ function PaymentMethodCard({
       {/* 使用统计 */}
       <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
         <div>
-          <p className="text-gray-500">使用次数</p>
+          <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500">使用次数</p>
           <p className="text-lg font-semibold text-gray-900">
             {method.usage_count || 0} 次
           </p>
         </div>
         {method.last_used && (
           <div>
-            <p className="text-gray-500">最后使用</p>
+            <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500">最后使用</p>
             <p className="text-sm text-gray-700">
               {new Date(method.last_used).toLocaleDateString()}
             </p>
@@ -691,12 +691,12 @@ function AddPaymentMethodDialog({
                 <p className="font-semibold text-gray-900 flex items-center gap-2">
                   {name || '支付方式名称'}
                   {isCardType && last4Digits && (
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
                       **** {last4Digits}
                     </span>
                   )}
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
                   {PAYMENT_METHOD_TYPES.find((t) => t.value === type)?.label}
                 </p>
               </div>
@@ -876,7 +876,7 @@ function EditPaymentMethodDialog({
                 <p className="font-semibold text-gray-900 flex items-center gap-2">
                   {name || '支付方式名称'}
                   {isCardType && last4Digits && (
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
                       **** {last4Digits}
                     </span>
                   )}

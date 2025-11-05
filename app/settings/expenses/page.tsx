@@ -55,7 +55,7 @@ export default function ExpensesSettingsPage() {
 
   
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:bg-gray-900">
       {/* 主内容区域 */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 返回导航 */}
@@ -71,7 +71,7 @@ export default function ExpensesSettingsPage() {
         {/* 页面标题和描述 */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">消费配置中心</h2>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             个性化您的消费管理体验，让智能记账更符合您的生活习惯
           </p>
         </div>
@@ -101,7 +101,7 @@ export default function ExpensesSettingsPage() {
                           ? 'bg-green-100 text-green-700'
                           : section.badgeColor === 'blue'
                           ? 'bg-blue-100 text-blue-600'
-                          : 'bg-gray-100 text-gray-600'
+                          : 'bg-gray-100 text-gray-600 dark:text-gray-300'
                       }`}>
                         {section.badge}
                       </span>

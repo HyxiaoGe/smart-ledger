@@ -50,7 +50,7 @@ export function TrendAnalysis({
             animate={{ rotate: collapsed ? 180 : 0 }}
             transition={{ duration: 0.2 }}
           >
-            <ChevronDown className="h-4 w-4 text-gray-400" />
+            <ChevronDown className="h-4 w-4 text-gray-400 dark:text-gray-500" />
           </motion.div>
         </CardTitle>
       </CardHeader>
@@ -70,7 +70,7 @@ export function TrendAnalysis({
                   {/* 月度总览 */}
                   <div className="bg-white rounded-lg p-4 border border-blue-100 mb-4">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-600">本月可变支出</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-300">本月可变支出</span>
                       <span className="text-2xl font-bold text-gray-900">
                         ¥{data.currentMonth.toFixed(0)}
                       </span>
@@ -87,7 +87,7 @@ export function TrendAnalysis({
                         {data.changePercent >= 0 ? '+' : ''}
                         {data.changePercent.toFixed(1)}%
                       </span>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">
                         (¥{Math.abs(data.changeAmount).toFixed(0)})
                       </span>
                     </div>
@@ -120,7 +120,7 @@ export function TrendAnalysis({
                   </div>
                 </>
               ) : (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400 dark:text-gray-500">
                   <Brain className="h-8 w-8 mx-auto mb-2 text-gray-300" />
                   <div className="text-sm">
                     {loading ? '分析中...' : '暂无数据'}

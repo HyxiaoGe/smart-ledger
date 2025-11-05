@@ -135,7 +135,7 @@ export function AIPredictionPanel({
     if (confidence >= 0.8) return 'text-green-600 bg-green-50 border-green-200';
     if (confidence >= 0.6) return 'text-blue-600 bg-blue-50 border-blue-200';
     if (confidence >= 0.4) return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-    return 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700';
+    return 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 dark:bg-gray-800 border-gray-200 dark:border-gray-700 dark:border-gray-700';
   };
 
   return (
@@ -176,7 +176,7 @@ export function AIPredictionPanel({
 
         {/* 加载状态 */}
         {isLoading && (
-          <div className="flex items-center justify-center py-8 text-gray-500 dark:text-gray-400">
+          <div className="flex items-center justify-center py-8 text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">
             <div className="text-sm">AI正在分析您的消费模式...</div>
           </div>
         )}
@@ -184,7 +184,7 @@ export function AIPredictionPanel({
         {/* 快速记账建议 */}
         {!isLoading && !error && activeTab === 'quick' && quickSuggestions.length > 0 && (
           <div className="space-y-3">
-            <div className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400 dark:text-gray-500">
               <Clock className="h-4 w-4 inline mr-1" />
               基于当前时间的快速记账建议
             </div>
@@ -206,7 +206,7 @@ export function AIPredictionPanel({
                       <div className="font-medium text-gray-900 dark:text-gray-100">
                         {suggestion.title}
                       </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                      <div className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 truncate">
                         {suggestion.description}
                       </div>
                     </div>
@@ -232,7 +232,7 @@ export function AIPredictionPanel({
         {/* AI预测结果 */}
         {!isLoading && !error && activeTab === 'predictions' && predictions.length > 0 && (
           <div className="space-y-3">
-            <div className="text-sm text-gray-600 dark:text-gray-400">
+            <div className="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400 dark:text-gray-500">
               <Target className="h-4 w-4 inline mr-1" />
               基于您的历史数据智能预测
             </div>
@@ -266,7 +266,7 @@ export function AIPredictionPanel({
                         {prediction.reason}
                       </div>
 
-                      <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                      <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">
                         {prediction.predictedAmount && (
                           <span>建议金额: ¥{prediction.predictedAmount}</span>
                         )}
@@ -293,20 +293,20 @@ export function AIPredictionPanel({
 
         {/* 空状态 */}
         {!isLoading && !error && activeTab === 'quick' && quickSuggestions.length === 0 && (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">
             <Clock className="h-8 w-8 mx-auto mb-2 text-gray-300" />
             <div className="text-sm">暂无快速记账建议</div>
-            <div className="text-xs text-gray-400 mt-1">
+            <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
               请稍后再试或手动填写
             </div>
           </div>
         )}
 
         {!isLoading && !error && activeTab === 'predictions' && predictions.length === 0 && (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">
             <Target className="h-8 w-8 mx-auto mb-2 text-gray-300" />
             <div className="text-sm">暂无AI预测数据</div>
-            <div className="text-xs text-gray-400 mt-1">
+            <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
               请先记录一些交易以获得更好的预测
             </div>
           </div>

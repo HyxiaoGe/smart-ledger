@@ -42,7 +42,7 @@ export default function AIAnalysisSettingsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:bg-gray-900">
       {/* 主内容区域 */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 返回导航 */}
@@ -58,7 +58,7 @@ export default function AIAnalysisSettingsPage() {
         {/* 页面标题 */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">AI分析配置</h2>
-          <p className="text-gray-600">个性化您的智能分析体验，让AI更好地为您服务</p>
+          <p className="text-gray-600 dark:text-gray-300">个性化您的智能分析体验，让AI更好地为您服务</p>
         </div>
 
         {/* 功能概览 */}
@@ -161,7 +161,7 @@ export default function AIAnalysisSettingsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
                 <h4 className="font-medium text-gray-900">分析频率控制</h4>
-                <ul className="text-sm text-gray-600 space-y-1">
+                <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
                   <li>• 实时分析：每次消费后立即分析</li>
                   <li>• 每日分析：每日固定时间汇总分析</li>
                   <li>• 每周分析：每周生成深度报告</li>
@@ -171,7 +171,7 @@ export default function AIAnalysisSettingsPage() {
 
               <div className="space-y-3">
                 <h4 className="font-medium text-gray-900">智能提醒</h4>
-                <ul className="text-sm text-gray-600 space-y-1">
+                <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
                   <li>• 消费异常提醒：超出预算时通知</li>
                   <li>• 趋势变化提醒：消费习惯改变时提醒</li>
                   <li>• 固定支出提醒：固定支出到期前提醒</li>
@@ -183,7 +183,7 @@ export default function AIAnalysisSettingsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
                 <h4 className="font-medium text-gray-900">分析偏好</h4>
-                <ul className="text-sm text-gray-600 space-y-1">
+                <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
                   <li>• 关注的消费类别</li>
                   <li>• 分析深度（简单/详细/深度）</li>
                   <li>• 预测模型的选择</li>
@@ -193,7 +193,7 @@ export default function AIAnalysisSettingsPage() {
 
               <div className="space-y-3">
                 <h4 className="font-medium text-gray-900">数据管理</h4>
-                <ul className="text-sm text-gray-600 space-y-1">
+                <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
                   <li>• 分析数据保留时间</li>
                   <li>• 数据导出格式选择</li>
                   <li>• 隐私保护级别</li>

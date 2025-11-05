@@ -232,7 +232,7 @@ export function GoalTrackingPanel({
             animate={{ rotate: collapsed ? 180 : 0 }}
             transition={{ duration: 0.2 }}
           >
-            <ChevronDown className="h-4 w-4 text-gray-400" />
+            <ChevronDown className="h-4 w-4 text-gray-400 dark:text-gray-500" />
           </motion.div>
         </CardTitle>
       </CardHeader>
@@ -253,13 +253,13 @@ export function GoalTrackingPanel({
                   <div className="bg-white rounded-lg p-4 border border-green-100">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <div className="text-xs text-gray-500">完成进度</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">完成进度</div>
                         <div className="text-lg font-bold text-green-600">
                           {data.overallProgress.completedGoals}/{data.overallProgress.totalGoals}
                         </div>
                       </div>
                       <div>
-                        <div className="text-xs text-gray-500">月度储蓄</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">月度储蓄</div>
                         <div className="text-lg font-bold text-emerald-600">
                           ¥{data.currentMonthSavings}
                         </div>
@@ -270,11 +270,11 @@ export function GoalTrackingPanel({
                     <div className="mt-3 space-y-1">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span className="text-xs text-gray-600">进行中: {data.overallProgress.onTrackGoals}</span>
+                        <span className="text-xs text-gray-600 dark:text-gray-300">进行中: {data.overallProgress.onTrackGoals}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                        <span className="text-xs text-gray-600">风险中: {data.overallProgress.atRiskGoals}</span>
+                        <span className="text-xs text-gray-600 dark:text-gray-300">风险中: {data.overallProgress.atRiskGoals}</span>
                       </div>
                     </div>
                   </div>
@@ -293,7 +293,7 @@ export function GoalTrackingPanel({
                               {getStatusIcon(goal)}
                               <div>
                                 <div className="text-sm font-medium text-gray-800">{goal.title}</div>
-                                <div className="text-xs text-gray-500">{getStatusText(goal)}</div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">{getStatusText(goal)}</div>
                               </div>
                             </div>
                             <div className="text-right">
@@ -348,7 +348,7 @@ export function GoalTrackingPanel({
                   </div>
                 </>
               ) : (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400 dark:text-gray-500">
                   <Target className="h-8 w-8 mx-auto mb-2 text-gray-300" />
                   <div className="text-sm">目标加载中...</div>
                 </div>
