@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import NProgress from 'nprogress';
-import '@/app/nprogress.css';
+import '../../app/nprogress.css';
 
 // 配置 NProgress
 NProgress.configure({
