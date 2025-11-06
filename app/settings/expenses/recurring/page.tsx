@@ -576,7 +576,7 @@ export default function RecurringExpensesPage() {
             <div className="p-2 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded-lg">
               <Settings2 className="h-5 w-5 text-blue-600" />
             </div>
-            <h3 className="font-semibold text-gray-900 text-lg">功能说明</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">功能说明</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="flex items-start gap-3">
@@ -584,7 +584,7 @@ export default function RecurringExpensesPage() {
                 <div className="w-2 h-2 bg-green-50 dark:bg-green-950 dark:bg-green-9500 rounded-full"></div>
               </div>
               <div>
-                <h4 className="font-medium text-gray-900 mb-1">自动生成</h4>
+                <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">自动生成</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-300">在指定时间自动创建交易记录</p>
               </div>
             </div>
@@ -593,7 +593,7 @@ export default function RecurringExpensesPage() {
                 <Pause className="h-4 w-4 text-blue-600" />
               </div>
               <div>
-                <h4 className="font-medium text-gray-900 mb-1">灵活控制</h4>
+                <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">灵活控制</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-300">随时暂停或启用固定支出</p>
               </div>
             </div>
@@ -602,7 +602,7 @@ export default function RecurringExpensesPage() {
                 <Calendar className="h-4 w-4 text-purple-600" />
               </div>
               <div>
-                <h4 className="font-medium text-gray-900 mb-1">智能防重</h4>
+                <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">智能防重</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-300">避免重复生成同一天记录</p>
               </div>
             </div>
@@ -611,7 +611,7 @@ export default function RecurringExpensesPage() {
                 <Clock className="h-4 w-4 text-orange-600" />
               </div>
               <div>
-                <h4 className="font-medium text-gray-900 mb-1">多种频率</h4>
+                <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">多种频率</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-300">支持每日、每周、每月等设置</p>
               </div>
             </div>
@@ -621,9 +621,9 @@ export default function RecurringExpensesPage() {
         {/* 暂停确认对话框 */}
         {confirmPause && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md mx-4">
-              <div className="p-4 border-b">
-                <h3 className="font-semibold text-lg">确认暂停</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md mx-4">
+              <div className="p-4 border-b dark:border-gray-700">
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">确认暂停</h3>
               </div>
               <div className="p-4">
                 <p className="text-gray-600 dark:text-gray-300 mb-2">
@@ -638,7 +638,7 @@ export default function RecurringExpensesPage() {
                   </p>
                 )}
               </div>
-              <div className="p-4 border-t flex justify-end gap-3">
+              <div className="p-4 border-t dark:border-gray-700 flex justify-end gap-3">
                 <Button
                   variant="outline"
                   onClick={() => setConfirmPause(null)}
@@ -659,9 +659,9 @@ export default function RecurringExpensesPage() {
         {/* 删除确认对话框 */}
         {confirmDelete && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md mx-4">
-              <div className="p-4 border-b">
-                <h3 className="font-semibold text-lg">确认删除</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md mx-4">
+              <div className="p-4 border-b dark:border-gray-700">
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">确认删除</h3>
               </div>
               <div className="p-4">
                 <p className="text-gray-600 dark:text-gray-300 mb-2">
@@ -671,7 +671,7 @@ export default function RecurringExpensesPage() {
                   删除后将停止生成该支出记录，此操作不可撤销。
                 </p>
               </div>
-              <div className="p-4 border-t flex justify-end gap-3">
+              <div className="p-4 border-t dark:border-gray-700 flex justify-end gap-3">
                 <Button
                   variant="outline"
                   onClick={() => setConfirmDelete(null)}

@@ -20,7 +20,7 @@ export default function ProfileSettingsPage() {
         {/* 返回导航 */}
         <div className="mb-6">
           <Link href="/settings">
-            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg px-3 py-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200">
+            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 dark:text-gray-100 hover:bg-gray-50 rounded-lg px-3 py-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200">
               <ChevronLeft className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1" />
               返回设置中心
             </Button>
@@ -29,7 +29,7 @@ export default function ProfileSettingsPage() {
 
         {/* 页面标题 */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">个人信息设置</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">个人信息设置</h2>
           <p className="text-gray-600 dark:text-gray-300">管理您的个人资料和账户信息</p>
         </div>
 
@@ -48,8 +48,8 @@ export default function ProfileSettingsPage() {
                 我们正在构建一个完整的个人信息管理系统，让您能够更好地管理个人资料和账户设置。
               </p>
               <div className="max-w-2xl mx-auto">
-                <div className="bg-white rounded-lg p-6 shadow-sm">
-                  <h4 className="font-medium text-gray-900 mb-4">即将支持的功能</h4>
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+                  <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-4">即将支持的功能</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
                     <div>
                       <h5 className="font-medium text-gray-800 mb-2">👤 基本信息管理</h5>

@@ -127,7 +127,7 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
 
   return (
     <div className="rounded-lg border bg-card text-card-foreground shadow-md">
-      <div className="flex flex-col gap-3 p-4 border-b md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-3 p-4 border-b dark:border-gray-700 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-2">
           <Input placeholder="搜索 分类/类型" value={query} onChange={(e) => setQuery(e.target.value)} className="w-[260px]" />
           {query && (
@@ -151,7 +151,7 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
           {view === 'table' ? (
             <table className="w-full text-left">
               <thead>
-                <tr className="border-b bg-muted/50">
+                <tr className="border-b dark:border-gray-700 bg-muted/50">
                   <th className="px-4 py-2">日期</th>
                   <th className="px-4 py-2">类型</th>
                   <th className="px-4 py-2">分类</th>
@@ -163,7 +163,7 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
               </thead>
               <tbody>
                 {rows.map((r) => (
-                  <tr key={r.id} className="border-b last:border-0 hover:bg-muted/40 transition">
+                  <tr key={r.id} className="border-b dark:border-gray-700 last:border-0 hover:bg-muted/40 transition">
                     <td className="px-4 py-2">{r.date}</td>
                     <td className="px-4 py-2">支出</td>
                     <td className="px-4 py-2">

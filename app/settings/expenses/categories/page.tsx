@@ -179,7 +179,7 @@ export default function CategoriesPage() {
         {/* 返回导航 */}
         <div className="mb-6">
           <Link href="/settings/expenses">
-            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 dark:text-gray-100">
+            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 dark:text-gray-100 dark:text-gray-100">
               <ChevronLeft className="h-4 w-4 mr-2" />
               返回消费配置
             </Button>
@@ -189,7 +189,7 @@ export default function CategoriesPage() {
         {/* 页面标题和操作 */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">类别自定义</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100 mb-2">类别自定义</h2>
             <p className="text-gray-600 dark:text-gray-300">管理消费类别，打造个性化的记账体验</p>
           </div>
           <Button
@@ -206,11 +206,11 @@ export default function CategoriesPage() {
 
         {/* 统计卡片 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
+          <Card className="border-0 shadow-md bg-white dark:bg-gray-800 dark:bg-gray-800">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{categories.length}</div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">{categories.length}</div>
                   <div className="text-sm text-gray-600 mt-1">总类别数</div>
                 </div>
                 <div className="p-3 bg-blue-50 dark:bg-blue-950 dark:bg-blue-950 rounded-lg">
@@ -220,7 +220,7 @@ export default function CategoriesPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
+          <Card className="border-0 shadow-md bg-white dark:bg-gray-800 dark:bg-gray-800">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -234,7 +234,7 @@ export default function CategoriesPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
+          <Card className="border-0 shadow-md bg-white dark:bg-gray-800 dark:bg-gray-800">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -250,9 +250,9 @@ export default function CategoriesPage() {
         </div>
 
         {/* 类别列表 */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-gray-800">
-          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-750 dark:from-gray-800 dark:to-gray-750 border-b dark:border-gray-700">
-            <CardTitle className="flex items-center gap-3 text-gray-900 dark:text-gray-100">
+        <Card className="border-0 shadow-lg bg-white dark:bg-gray-800 dark:bg-gray-800">
+          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-750 dark:from-gray-800 dark:to-gray-750 border-b dark:border-gray-700 dark:border-gray-700">
+            <CardTitle className="flex items-center gap-3 text-gray-900 dark:text-gray-100 dark:text-gray-100">
               <div className="p-2 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded-lg">
                 <Tag className="h-5 w-5 text-blue-600" />
               </div>
@@ -267,7 +267,7 @@ export default function CategoriesPage() {
               {categories.map((category) => (
                 <div
                   key={category.id}
-                  className="group relative rounded-xl border-2 border-gray-200 p-4 hover:shadow-md hover:border-blue-300 dark:border-blue-700 transition-all"
+                  className="group relative rounded-xl border-2 border-gray-200 dark:border-gray-700 p-4 hover:shadow-md hover:border-blue-300 dark:border-blue-700 transition-all"
                   style={{ borderLeftColor: category.color || undefined, borderLeftWidth: '4px' }}
                 >
                   <div className="flex items-start justify-between mb-3">
@@ -279,7 +279,7 @@ export default function CategoriesPage() {
                         {category.icon}
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">{category.label}</h3>
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100 text-lg">{category.label}</h3>
                         {category.is_system && (
                           <span className="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">
                             <Lock className="h-3 w-3" />
@@ -292,7 +292,7 @@ export default function CategoriesPage() {
 
                   <div className="flex items-center justify-between text-sm mb-3">
                     <span className="text-gray-600 dark:text-gray-300">使用次数</span>
-                    <span className="font-semibold text-gray-900 dark:text-gray-100">{category.usage_count || 0}</span>
+                    <span className="font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100">{category.usage_count || 0}</span>
                   </div>
 
                   {category.last_used && (
@@ -418,8 +418,8 @@ function CategoryDialog({
 }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b">
+      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b dark:border-gray-700">
           <h3 className="font-semibold text-xl">{title}</h3>
         </div>
         <div className="p-6 space-y-6">
@@ -445,7 +445,7 @@ function CategoryDialog({
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   选择图标
                 </label>
-                <div className="grid grid-cols-10 gap-2 max-h-48 overflow-y-auto p-2 border border-gray-200 rounded-lg">
+                <div className="grid grid-cols-10 gap-2 max-h-48 overflow-y-auto p-2 border border-gray-200 dark:border-gray-700 rounded-lg">
                   {EMOJI_ICONS.map((emoji) => (
                     <button
                       key={emoji}
@@ -494,7 +494,7 @@ function CategoryDialog({
                   >
                     {icon}
                   </div>
-                  <span className="font-semibold text-gray-900 dark:text-gray-100">
+                  <span className="font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100">
                     {label || '类别名称'}
                   </span>
                 </div>
@@ -502,7 +502,7 @@ function CategoryDialog({
             </>
           )}
         </div>
-        <div className="p-6 border-t flex justify-end gap-3">
+        <div className="p-6 border-t dark:border-gray-700 flex justify-end gap-3">
           <Button variant="outline" onClick={onCancel}>
             取消
           </Button>
@@ -535,8 +535,8 @@ function DeleteDialog({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-md w-full">
-        <div className="p-6 border-b">
+      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full">
+        <div className="p-6 border-b dark:border-gray-700">
           <h3 className="font-semibold text-xl text-red-600">删除类别</h3>
         </div>
         <div className="p-6 space-y-4">
@@ -576,7 +576,7 @@ function DeleteDialog({
             此操作不可撤销，请谨慎操作。
           </p>
         </div>
-        <div className="p-6 border-t flex justify-end gap-3">
+        <div className="p-6 border-t dark:border-gray-700 flex justify-end gap-3">
           <Button variant="outline" onClick={onCancel}>
             取消
           </Button>

@@ -188,7 +188,7 @@ export default function PaymentMethodsPage() {
           </div>
 
           {/* 支付方式列表骨架 */}
-          <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
+          <Card className="border-0 shadow-md bg-white dark:bg-gray-800 dark:bg-gray-800">
             <CardHeader>
               <Skeleton className="h-6 w-32" />
             </CardHeader>
@@ -213,7 +213,7 @@ export default function PaymentMethodsPage() {
           <Link href="/settings/expenses">
             <Button
               variant="ghost"
-              className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:text-gray-100 hover:bg-gray-50 rounded-lg px-3 py-2"
+              className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:text-gray-100 dark:text-gray-100 hover:bg-gray-50 rounded-lg px-3 py-2"
             >
               <ChevronLeft className="h-4 w-4 mr-2" />
               返回消费配置
@@ -223,7 +223,7 @@ export default function PaymentMethodsPage() {
 
         {/* 页面标题 */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100 mb-2 flex items-center gap-2">
             <CreditCard className="h-7 w-7 text-blue-600" />
             支付方式管理
           </h2>
@@ -239,7 +239,7 @@ export default function PaymentMethodsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">支付方式总数</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{stats.total}</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">{stats.total}</p>
                 </div>
                 <div className="p-3 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded-lg">
                   <CreditCard className="h-8 w-8 text-blue-600" />
@@ -253,7 +253,7 @@ export default function PaymentMethodsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">默认支付方式</p>
-                  <p className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
+                  <p className="text-lg font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100 truncate">
                     {stats.default}
                   </p>
                 </div>
@@ -269,7 +269,7 @@ export default function PaymentMethodsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">最常使用</p>
-                  <p className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
+                  <p className="text-lg font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100 truncate">
                     {stats.mostUsed?.name || '暂无数据'}
                   </p>
                   {stats.mostUsed && (
@@ -287,7 +287,7 @@ export default function PaymentMethodsPage() {
         </div>
 
         {/* 支付方式列表 */}
-        <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
+        <Card className="border-0 shadow-md bg-white dark:bg-gray-800 dark:bg-gray-800">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-xl">我的支付方式</CardTitle>
             <Button onClick={() => setShowAddDialog(true)} className="gap-2">
@@ -301,7 +301,7 @@ export default function PaymentMethodsPage() {
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 mb-4">
                   <CreditCard className="h-8 w-8 text-gray-400 dark:text-gray-400" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 dark:text-gray-100 mb-2">
                   还没有支付方式
                 </h3>
                 <p className="text-gray-500 dark:text-gray-400 mb-6">
@@ -411,7 +411,7 @@ function PaymentMethodCard({
 
   return (
     <div
-      className="group relative rounded-xl border-2 border-gray-200 p-5 hover:border-blue-300 dark:border-blue-700 hover:shadow-lg transition-all duration-200"
+      className="group relative rounded-xl border-2 border-gray-200 dark:border-gray-700 p-5 hover:border-blue-300 dark:border-blue-700 hover:shadow-lg transition-all duration-200"
       style={{
         borderLeftColor: method.color || typeConfig.color,
         borderLeftWidth: '4px',
@@ -441,7 +441,7 @@ function PaymentMethodCard({
 
           {/* 名称和类型 */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100 flex items-center gap-2">
               {method.name}
               {method.last_4_digits && (
                 <span className="text-sm text-gray-500 dark:text-gray-400 font-normal">
@@ -460,7 +460,7 @@ function PaymentMethodCard({
       <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
         <div>
           <p className="text-gray-500 dark:text-gray-400">使用次数</p>
-          <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          <p className="text-lg font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100">
             {method.usage_count || 0} 次
           </p>
         </div>
@@ -565,9 +565,9 @@ function AddPaymentMethodDialog({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100 mb-6">
             添加支付方式
           </h3>
 
@@ -589,7 +589,7 @@ function AddPaymentMethodDialog({
                   className={`p-3 border-2 rounded-lg text-center transition-all flex flex-col items-center justify-center ${
                     type === t.value
                       ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                   }`}
                 >
                   <div className="flex items-center justify-center mb-2 h-8 w-8">
@@ -669,7 +669,7 @@ function AddPaymentMethodDialog({
                   className={`h-10 rounded-lg border-2 transition-all ${
                     color === c
                       ? 'border-gray-900 scale-110'
-                      : 'border-gray-200 hover:scale-105'
+                      : 'border-gray-200 dark:border-gray-700 hover:scale-105'
                   }`}
                   style={{ backgroundColor: c }}
                 />
@@ -688,7 +688,7 @@ function AddPaymentMethodDialog({
                 {icon}
               </div>
               <div>
-                <p className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                <p className="font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100 flex items-center gap-2">
                   {name || '支付方式名称'}
                   {isCardType && last4Digits && (
                     <span className="text-sm text-gray-500 dark:text-gray-400">
@@ -780,9 +780,9 @@ function EditPaymentMethodDialog({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100 mb-6">
             编辑支付方式
           </h3>
 
@@ -854,7 +854,7 @@ function EditPaymentMethodDialog({
                   className={`h-10 rounded-lg border-2 transition-all ${
                     color === c
                       ? 'border-gray-900 scale-110'
-                      : 'border-gray-200 hover:scale-105'
+                      : 'border-gray-200 dark:border-gray-700 hover:scale-105'
                   }`}
                   style={{ backgroundColor: c }}
                 />
@@ -873,7 +873,7 @@ function EditPaymentMethodDialog({
                 {icon}
               </div>
               <div>
-                <p className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                <p className="font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100 flex items-center gap-2">
                   {name || '支付方式名称'}
                   {isCardType && last4Digits && (
                     <span className="text-sm text-gray-500 dark:text-gray-400">
@@ -958,9 +958,9 @@ function DeletePaymentMethodDialog({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-md w-full">
+      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full">
         <div className="p-6">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100 mb-4">
             删除支付方式
           </h3>
 

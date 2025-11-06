@@ -206,7 +206,7 @@ export default function AIFeedbackManagementPage() {
       {/* 页面标题 */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">AI反馈管理</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">AI反馈管理</h1>
           <p className="text-gray-600 mt-1">管理和分析用户对AI功能的反馈</p>
         </div>
         <div className="flex items-center gap-2">
@@ -233,7 +233,7 @@ export default function AIFeedbackManagementPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-300 dark:text-gray-300">总反馈数</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.totalFeedbacks}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.totalFeedbacks}</p>
                 </div>
                 <MessageSquare className="h-8 w-8 text-blue-600" />
               </div>
@@ -245,7 +245,7 @@ export default function AIFeedbackManagementPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-300 dark:text-gray-300">平均评分</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.averageRating.toFixed(1)}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.averageRating.toFixed(1)}</p>
                 </div>
                 <Star className="h-8 w-8 text-yellow-500" />
               </div>
@@ -257,7 +257,7 @@ export default function AIFeedbackManagementPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-300 dark:text-gray-300">积极率</p>
-                  <p className="text-2xl font-bold text-gray-900">{(stats.positiveRate * 100).toFixed(1)}%</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{(stats.positiveRate * 100).toFixed(1)}%</p>
                 </div>
                 <ThumbsUp className="h-8 w-8 text-green-600" />
               </div>
@@ -269,7 +269,7 @@ export default function AIFeedbackManagementPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-300 dark:text-gray-300">本周反馈</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.timeStats.thisWeek}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.timeStats.thisWeek}</p>
                 </div>
                 <Users className="h-8 w-8 text-purple-600" />
               </div>
@@ -405,7 +405,7 @@ export default function AIFeedbackManagementPage() {
         <CardContent>
           <div className="space-y-4">
             {feedbacks.slice(0, 10).map((feedback) => (
-              <div key={feedback.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+              <div key={feedback.id} className="border border-gray-200 dark:border-gray-700 dark:border-gray-700 rounded-lg p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
