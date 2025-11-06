@@ -48,7 +48,7 @@ export default function AIAnalysisSettingsPage() {
         {/* 返回导航 */}
         <div className="mb-6">
           <Link href="/settings">
-            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg px-3 py-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200">
+            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 dark:text-gray-100 hover:bg-gray-50 rounded-lg px-3 py-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200">
               <ChevronLeft className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1" />
               返回设置中心
             </Button>
@@ -57,7 +57,7 @@ export default function AIAnalysisSettingsPage() {
 
         {/* 页面标题 */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">AI分析配置</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">AI分析配置</h2>
           <p className="text-gray-600 dark:text-gray-300">个性化您的智能分析体验，让AI更好地为您服务</p>
         </div>
 
@@ -160,7 +160,7 @@ export default function AIAnalysisSettingsPage() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
-                <h4 className="font-medium text-gray-900">分析频率控制</h4>
+                <h4 className="font-medium text-gray-900 dark:text-gray-100">分析频率控制</h4>
                 <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
                   <li>• 实时分析：每次消费后立即分析</li>
                   <li>• 每日分析：每日固定时间汇总分析</li>
@@ -170,7 +170,7 @@ export default function AIAnalysisSettingsPage() {
               </div>
 
               <div className="space-y-3">
-                <h4 className="font-medium text-gray-900">智能提醒</h4>
+                <h4 className="font-medium text-gray-900 dark:text-gray-100">智能提醒</h4>
                 <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
                   <li>• 消费异常提醒：超出预算时通知</li>
                   <li>• 趋势变化提醒：消费习惯改变时提醒</li>
@@ -182,7 +182,7 @@ export default function AIAnalysisSettingsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
-                <h4 className="font-medium text-gray-900">分析偏好</h4>
+                <h4 className="font-medium text-gray-900 dark:text-gray-100">分析偏好</h4>
                 <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
                   <li>• 关注的消费类别</li>
                   <li>• 分析深度（简单/详细/深度）</li>
@@ -192,7 +192,7 @@ export default function AIAnalysisSettingsPage() {
               </div>
 
               <div className="space-y-3">
-                <h4 className="font-medium text-gray-900">数据管理</h4>
+                <h4 className="font-medium text-gray-900 dark:text-gray-100">数据管理</h4>
                 <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
                   <li>• 分析数据保留时间</li>
                   <li>• 数据导出格式选择</li>
@@ -215,11 +215,11 @@ export default function AIAnalysisSettingsPage() {
                 您希望AI分析功能包含哪些特性？您的反馈对我们很重要！
               </p>
               <div className="flex gap-4 justify-center">
-                <Button variant="outline" className="bg-white">
+                <Button variant="outline" className="bg-white dark:bg-gray-800">
                   <Zap className="h-4 w-4 mr-2" />
                   提交建议
                 </Button>
-                <Button variant="outline" className="bg-white">
+                <Button variant="outline" className="bg-white dark:bg-gray-800">
                   <TrendingUp className="h-4 w-4 mr-2" />
                   功能投票
                 </Button>

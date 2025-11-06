@@ -139,7 +139,7 @@ export default function RecurringHistoryPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-6">
             <Link href="/settings/expenses/recurring">
-              <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
+              <Button variant="ghost" className="text-gray-600 hover:text-gray-900 dark:text-gray-100">
                 <ChevronLeft className="h-4 w-4 mr-2" />
                 返回固定支出
               </Button>
@@ -160,7 +160,7 @@ export default function RecurringHistoryPage() {
         {/* 返回导航 */}
         <div className="mb-6">
           <Link href="/settings/expenses/recurring">
-            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg px-3 py-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200">
+            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 dark:text-gray-100 hover:bg-gray-50 rounded-lg px-3 py-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200">
               <ChevronLeft className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1" />
               返回固定支出
             </Button>
@@ -173,7 +173,7 @@ export default function RecurringHistoryPage() {
             <div className="p-2 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded-lg">
               <History className="h-6 w-6 text-blue-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">生成历史记录</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">生成历史记录</h2>
           </div>
           <p className="text-gray-600 dark:text-gray-300">查看固定支出的自动生成记录和执行状态</p>
         </div>
@@ -184,7 +184,7 @@ export default function RecurringHistoryPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.total}</div>
                   <div className="text-sm text-gray-600 mt-1">总记录数</div>
                 </div>
                 <div className="p-3 bg-blue-50 dark:bg-blue-950 dark:bg-blue-950 rounded-lg">
@@ -269,8 +269,8 @@ export default function RecurringHistoryPage() {
 
         {/* 历史记录列表 */}
         <Card className="border-0 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
-            <CardTitle className="flex items-center gap-3 text-gray-900">
+          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b dark:border-gray-700">
+            <CardTitle className="flex items-center gap-3 text-gray-900 dark:text-gray-100">
               <div className="p-2 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded-lg">
                 <History className="h-5 w-5 text-blue-600" />
               </div>
@@ -286,7 +286,7 @@ export default function RecurringHistoryPage() {
                 <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-6">
                   <History className="h-10 w-10 text-gray-400 dark:text-gray-500" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                   {filterStatus === 'all' ? '还没有生成记录' : `没有${getStatusStyle(filterStatus).label}的记录`}
                 </h3>
                 <p className="text-gray-500 mb-6 max-w-md mx-auto">
@@ -329,7 +329,7 @@ export default function RecurringHistoryPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-4 mb-2">
                             <div>
-                              <h3 className="font-semibold text-gray-900 text-lg">
+                              <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">
                                 {log.recurring_expense?.name || '未知支出'}
                               </h3>
                               <div className="flex items-center gap-4 mt-1">
@@ -337,7 +337,7 @@ export default function RecurringHistoryPage() {
                                   {statusStyle.label}
                                 </span>
                                 {log.recurring_expense && (
-                                  <span className="text-lg font-bold text-gray-900">
+                                  <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
                                     ¥{log.recurring_expense.amount.toFixed(2)}
                                   </span>
                                 )}
@@ -359,11 +359,11 @@ export default function RecurringHistoryPage() {
 
                           {/* 关联交易信息 */}
                           {log.transaction && (
-                            <div className="mt-3 p-3 bg-white rounded-lg border border-gray-200 dark:border-gray-700">
+                            <div className="mt-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 dark:border-gray-700">
                               <div className="flex items-center justify-between">
                                 <div className="text-sm">
                                   <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">生成交易：</span>
-                                  <span className="text-gray-900 font-medium ml-2">{log.transaction.note}</span>
+                                  <span className="text-gray-900 dark:text-gray-100 font-medium ml-2">{log.transaction.note}</span>
                                 </div>
                                 <Link href={`/records`}>
                                   <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950 dark:bg-blue-950">

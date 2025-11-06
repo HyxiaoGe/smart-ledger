@@ -51,7 +51,7 @@ export default function NotificationsSettingsPage() {
         {/* 返回导航 */}
         <div className="mb-6">
           <Link href="/settings">
-            <Button variant="ghost" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 hover:bg-gray-50 rounded-lg px-3 py-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200">
+            <Button variant="ghost" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:text-gray-100 hover:bg-gray-50 rounded-lg px-3 py-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200">
               <ChevronLeft className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1" />
               返回设置中心
             </Button>
@@ -60,7 +60,7 @@ export default function NotificationsSettingsPage() {
 
         {/* 页面标题 */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">通知设置</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">通知设置</h2>
           <p className="text-gray-600 dark:text-gray-300">配置各类通知提醒，及时掌握您的财务动态</p>
         </div>
 
@@ -149,8 +149,8 @@ export default function NotificationsSettingsPage() {
                 我们正在构建一个智能通知系统，帮助您更好地管理财务。
               </p>
               <div className="max-w-2xl mx-auto">
-                <div className="bg-white rounded-lg p-6 shadow-sm">
-                  <h4 className="font-medium text-gray-900 mb-4">预计功能特性</h4>
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+                  <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-4">预计功能特性</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
                     <div>
                       <h5 className="font-medium text-gray-800 mb-2">📧 多渠道通知</h5>
@@ -186,7 +186,7 @@ export default function NotificationsSettingsPage() {
             <div className="space-y-4">
               <div className="border-l-4 border-blue-500 pl-4 py-2">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-medium text-gray-900">预算超支提醒</span>
+                  <span className="font-medium text-gray-900 dark:text-gray-100">预算超支提醒</span>
                   <span className="text-xs text-gray-500 dark:text-gray-400">2025-10-26 15:30</span>
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">
@@ -197,7 +197,7 @@ export default function NotificationsSettingsPage() {
 
               <div className="border-l-4 border-orange-500 pl-4 py-2">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-medium text-gray-900">固定支出提醒</span>
+                  <span className="font-medium text-gray-900 dark:text-gray-100">固定支出提醒</span>
                   <span className="text-xs text-gray-500 dark:text-gray-400">2025-11-01 09:00</span>
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">
@@ -207,7 +207,7 @@ export default function NotificationsSettingsPage() {
 
               <div className="border-l-4 border-red-500 pl-4 py-2">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-medium text-gray-900">异常消费提醒</span>
+                  <span className="font-medium text-gray-900 dark:text-gray-100">异常消费提醒</span>
                   <span className="text-xs text-gray-500 dark:text-gray-400">2025-10-26 20:45</span>
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">
@@ -218,7 +218,7 @@ export default function NotificationsSettingsPage() {
 
               <div className="border-l-4 border-green-500 pl-4 py-2">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-medium text-gray-900">周报通知</span>
+                  <span className="font-medium text-gray-900 dark:text-gray-100">周报通知</span>
                   <span className="text-xs text-gray-500 dark:text-gray-400">2025-10-27 09:00</span>
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">
@@ -241,7 +241,7 @@ export default function NotificationsSettingsPage() {
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h4 className="font-medium text-gray-900 mb-3">通知渠道</h4>
+                <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-3">通知渠道</h4>
                 <div className="space-y-2">
                   <label className="flex items-center justify-between">
                     <span className="text-sm text-gray-700">应用内通知</span>
@@ -274,7 +274,7 @@ export default function NotificationsSettingsPage() {
             </div>
 
             <div>
-              <h4 className="font-medium text-gray-900 mb-3">通知频率</h4>
+              <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-3">通知频率</h4>
               <div className="space-y-2">
                 <label className="flex items-center justify-between">
                   <div>

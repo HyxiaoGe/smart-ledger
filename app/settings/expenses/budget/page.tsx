@@ -135,7 +135,7 @@ export default function BudgetPage() {
         {/* 返回导航 */}
         <div className="mb-6">
           <Link href="/settings/expenses">
-            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 dark:text-gray-100">
+            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 dark:text-gray-100 dark:text-gray-100">
               <ChevronLeft className="h-4 w-4 mr-2" />
               返回消费配置
             </Button>
@@ -145,7 +145,7 @@ export default function BudgetPage() {
         {/* 页面标题和月份 */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">月度预算设置</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100 mb-2">月度预算设置</h2>
             <p className="text-gray-600 dark:text-gray-300">管理您的月度预算，控制支出更轻松</p>
           </div>
           <div className="flex items-center gap-3">
@@ -173,7 +173,7 @@ export default function BudgetPage() {
                 <Button
                   size="sm"
                   onClick={() => openSetBudgetDialog(null)}
-                  className="w-full bg-white text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 dark:bg-blue-950"
+                  className="w-full bg-white dark:bg-gray-800 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 dark:bg-blue-950"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   设置总预算
@@ -182,12 +182,12 @@ export default function BudgetPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
+          <Card className="border-0 shadow-md bg-white dark:bg-gray-800 dark:bg-gray-800">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-sm text-gray-600 mb-1">已支出</div>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  <div className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">
                     ¥{totalSpent.toLocaleString()}
                   </div>
                 </div>
@@ -198,7 +198,7 @@ export default function BudgetPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
+          <Card className="border-0 shadow-md bg-white dark:bg-gray-800 dark:bg-gray-800">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -214,12 +214,12 @@ export default function BudgetPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
+          <Card className="border-0 shadow-md bg-white dark:bg-gray-800 dark:bg-gray-800">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-2">
                 <div>
                   <div className="text-sm text-gray-600 mb-1">使用率</div>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{usagePercentage.toFixed(1)}%</div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">{usagePercentage.toFixed(1)}%</div>
                 </div>
                 <div className={`p-3 rounded-lg ${usagePercentage > 100 ? 'bg-red-50 dark:bg-red-950' : usagePercentage >= 80 ? 'bg-orange-50 dark:bg-orange-950' : 'bg-green-50 dark:bg-green-950'}`}>
                   {usagePercentage > 100 ? (
@@ -259,10 +259,10 @@ export default function BudgetPage() {
         )}
 
         {/* 分类预算列表 */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-gray-800">
-          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-750 dark:from-gray-800 dark:to-gray-750 border-b dark:border-gray-700">
+        <Card className="border-0 shadow-lg bg-white dark:bg-gray-800 dark:bg-gray-800">
+          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-750 dark:from-gray-800 dark:to-gray-750 border-b dark:border-gray-700 dark:border-gray-700">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-3 text-gray-900 dark:text-gray-100">
+              <CardTitle className="flex items-center gap-3 text-gray-900 dark:text-gray-100 dark:text-gray-100">
                 <div className="p-2 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded-lg">
                   <PiggyBank className="h-5 w-5 text-blue-600" />
                 </div>
@@ -287,7 +287,7 @@ export default function BudgetPage() {
                 <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full mb-4">
                   <PiggyBank className="h-10 w-10 text-gray-400 dark:text-gray-500" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">还没有设置分类预算</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100 mb-2">还没有设置分类预算</h3>
                 <p className="text-gray-500 mb-6">
                   为不同的消费类别设置预算上限，帮助您更好地控制支出
                 </p>
@@ -305,7 +305,7 @@ export default function BudgetPage() {
                   return (
                     <div
                       key={budget.id}
-                      className="group rounded-xl border-2 border-gray-200 p-5 hover:shadow-md transition-all"
+                      className="group rounded-xl border-2 border-gray-200 dark:border-gray-700 p-5 hover:shadow-md transition-all"
                     >
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-3">
@@ -316,7 +316,7 @@ export default function BudgetPage() {
                             {budget.category_icon}
                           </div>
                           <div>
-                            <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">{budget.category_label}</h3>
+                            <h3 className="font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100 text-lg">{budget.category_label}</h3>
                             <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium mt-1 ${statusLabel.bgColor} ${statusLabel.color}`}>
                               <span>{statusLabel.icon}</span>
                               <span>{statusLabel.label}</span>
@@ -346,7 +346,7 @@ export default function BudgetPage() {
                       <div className="grid grid-cols-3 gap-4 mb-3">
                         <div>
                           <div className="text-xs text-gray-500 mb-1">预算</div>
-                          <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                          <div className="text-lg font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100">
                             ¥{budget.budget_amount.toLocaleString()}
                           </div>
                         </div>
@@ -367,7 +367,7 @@ export default function BudgetPage() {
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-gray-600 dark:text-gray-300">使用率</span>
-                          <span className="font-semibold text-gray-900 dark:text-gray-100">{budget.usage_percentage.toFixed(1)}%</span>
+                          <span className="font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100">{budget.usage_percentage.toFixed(1)}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-3">
                           <div
@@ -437,8 +437,8 @@ function SetBudgetDialog({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-md w-full">
-        <div className="p-6 border-b">
+      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full">
+        <div className="p-6 border-b dark:border-gray-700">
           <h3 className="font-semibold text-xl">
             {budget ? '编辑预算' : '设置预算'}
           </h3>
@@ -485,7 +485,7 @@ function SetBudgetDialog({
             </p>
           </div>
         </div>
-        <div className="p-6 border-t flex justify-end gap-3">
+        <div className="p-6 border-t dark:border-gray-700 flex justify-end gap-3">
           <Button variant="outline" onClick={onCancel}>
             取消
           </Button>

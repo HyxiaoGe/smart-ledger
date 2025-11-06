@@ -173,7 +173,7 @@ export default function AddRecurringExpensePage() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl mb-4 shadow-lg">
             <Calendar className="h-8 w-8 text-white" />
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">添加固定支出</h2>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3">添加固定支出</h2>
           <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             设置定期自动生成的支出项目，让您无需重复手动记账，享受智能化的财务管理体验
           </p>
@@ -205,7 +205,7 @@ export default function AddRecurringExpensePage() {
                         value={formData.name}
                         onChange={(e) => handleInputChange('name', e.target.value)}
                         placeholder="例如：房租、地铁费、健身房会员"
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-all"
+                        className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-all"
                         required
                       />
                       <div className="absolute right-3 top-3 text-gray-400 dark:text-gray-400">
@@ -230,7 +230,7 @@ export default function AddRecurringExpensePage() {
                         placeholder="0.00"
                         step="0.01"
                         min="0"
-                        className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-green-500 dark:focus:border-green-400 transition-all text-lg font-semibold"
+                        className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-green-500 dark:focus:border-green-400 transition-all text-lg font-semibold"
                         required
                       />
                     </div>
@@ -245,7 +245,7 @@ export default function AddRecurringExpensePage() {
                       <select
                         value={formData.category}
                         onChange={(e) => handleInputChange('category', e.target.value)}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-purple-500 dark:focus:border-purple-400 transition-all appearance-none bg-white"
+                        className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-purple-500 dark:focus:border-purple-400 transition-all appearance-none bg-white dark:bg-gray-800"
                         required
                       >
                         <option value="">请选择类别</option>
@@ -345,7 +345,7 @@ export default function AddRecurringExpensePage() {
                           className={`flex items-start gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${
                             formData.frequency === frequency.value
                               ? 'border-purple-500 bg-purple-50 dark:bg-purple-950 ring-2 ring-purple-200'
-                              : 'border-gray-200 hover:border-purple-300 dark:hover:border-purple-700 hover:bg-purple-50/50 dark:bg-purple-950/50'
+                              : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700 hover:bg-purple-50/50 dark:bg-purple-950/50'
                           }`}
                         >
                           <div className="relative">
@@ -363,12 +363,12 @@ export default function AddRecurringExpensePage() {
                           </div>
                           <div className="flex-1">
                             <div className={`font-semibold ${
-                              formData.frequency === frequency.value ? 'text-purple-900' : 'text-gray-900'
+                              formData.frequency === frequency.value ? 'text-purple-900 dark:text-purple-100' : 'text-gray-900 dark:text-gray-100'
                             }`}>
                               {frequency.label}
                             </div>
                             <div className={`text-sm mt-1 ${
-                              formData.frequency === frequency.value ? 'text-purple-700' : 'text-gray-500 dark:text-gray-400'
+                              formData.frequency === frequency.value ? 'text-purple-700 dark:text-purple-300' : 'text-gray-500 dark:text-gray-400'
                             }`}>
                               {frequency.description}
                             </div>
@@ -380,7 +380,7 @@ export default function AddRecurringExpensePage() {
 
                   {/* 月度设置（当选择月度时显示） */}
                   {formData.frequency === 'monthly' && (
-                    <div className="border-t border-purple-200 dark:border-purple-800 dark:border-purple-800 pt-6">
+                    <div className="border-t dark:border-gray-700 border-purple-200 dark:border-purple-800 dark:border-purple-800 pt-6">
                       <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
                         <div className="w-1 h-4 bg-pink-500 rounded-full"></div>
                         每月日期
@@ -388,7 +388,7 @@ export default function AddRecurringExpensePage() {
                             <select
                         value={formData.frequency_config.day_of_month}
                         onChange={(e) => handleFrequencyConfigChange('day_of_month', parseInt(e.target.value))}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all appearance-none bg-white"
+                        className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all appearance-none bg-white dark:bg-gray-800"
                       >
                         {[...Array(31)].map((_, i) => (
                           <option key={i + 1} value={i + 1}>
@@ -401,7 +401,7 @@ export default function AddRecurringExpensePage() {
 
                   {/* 周度设置（当选择周度时显示） */}
                   {formData.frequency === 'weekly' && (
-                    <div className="border-t border-purple-200 dark:border-purple-800 dark:border-purple-800 pt-6">
+                    <div className="border-t dark:border-gray-700 border-purple-200 dark:border-purple-800 dark:border-purple-800 pt-6">
                       <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
                         <div className="w-1 h-4 bg-indigo-500 rounded-full"></div>
                         星期设置
@@ -413,7 +413,7 @@ export default function AddRecurringExpensePage() {
                             className={`flex items-center justify-center p-3 border-2 rounded-xl cursor-pointer transition-all ${
                               formData.frequency_config.days_of_week?.includes(index)
                                 ? 'border-indigo-500 bg-indigo-50'
-                                : 'border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/50'
+                                : 'border-gray-200 dark:border-gray-700 hover:border-indigo-300 hover:bg-indigo-50/50'
                             }`}
                           >
                             <input
@@ -510,11 +510,11 @@ export default function AddRecurringExpensePage() {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="text-2xl p-2 bg-white rounded-lg shadow-sm">
+                          <div className="text-2xl p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
                             {template.icon}
                           </div>
                           <div>
-                            <div className="font-semibold text-gray-900 group-hover:text-blue-700 dark:text-blue-300 transition-colors">
+                            <div className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-700 dark:text-blue-300 transition-colors">
                               {template.name}
                             </div>
                             <div className="text-sm text-gray-600 dark:text-gray-300 mt-0.5">
@@ -523,7 +523,7 @@ export default function AddRecurringExpensePage() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="font-bold text-lg text-gray-900">
+                          <div className="font-bold text-lg text-gray-900 dark:text-gray-100">
                             ¥{template.amount}
                           </div>
                           <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -531,9 +531,9 @@ export default function AddRecurringExpensePage() {
                           </div>
                         </div>
                       </div>
-                      <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                      <div className="mt-3 pt-3 border-t dark:border-gray-700 border-gray-200 dark:border-gray-700 dark:border-gray-700">
                         <div className="flex items-center justify-center">
-                          <span className="text-xs text-gray-500 dark:text-gray-400 bg-white px-3 py-1 rounded-full">
+                          <span className="text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 px-3 py-1 rounded-full">
                             点击应用模板
                           </span>
                         </div>
@@ -545,7 +545,7 @@ export default function AddRecurringExpensePage() {
 
               {/* 使用提示 */}
               <Card className="border-0 shadow-lg overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-                <CardHeader className="bg-gradient-to-r from-blue-100 to-indigo-100 border-b border-blue-200 dark:border-blue-800 dark:border-blue-800">
+                <CardHeader className="bg-gradient-to-r from-blue-100 to-indigo-100 border-b dark:border-gray-700 border-blue-200 dark:border-blue-800 dark:border-blue-800">
                   <CardTitle className="text-base text-blue-900 dark:text-blue-100 dark:text-blue-100 flex items-center gap-2">
                     <div className="p-1.5 bg-blue-200 dark:bg-blue-800 rounded-lg">
                       <span className="text-lg">💡</span>
