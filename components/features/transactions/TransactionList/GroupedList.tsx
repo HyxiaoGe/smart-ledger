@@ -258,7 +258,7 @@ export function TransactionGroupedList({
           <div>
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">分类</label>
             <select
-              className="h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 text-sm focus:border-blue-500 focus:ring-blue-500"
+              className="h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 text-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
               value={(form.category as string) || transaction.category}
               onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
             >
@@ -285,7 +285,7 @@ export function TransactionGroupedList({
           <div>
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">币种</label>
             <select
-              className="h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 text-sm focus:border-blue-500 focus:ring-blue-500"
+              className="h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 text-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
               value={form.currency as string || transaction.currency || 'CNY'}
               onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value }))}
             >
@@ -296,7 +296,7 @@ export function TransactionGroupedList({
           <div>
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">支付方式</label>
             <select
-              className="h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 text-sm focus:border-blue-500 focus:ring-blue-500"
+              className="h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 text-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
               value={form.payment_method as string || transaction.payment_method || ''}
               onChange={(e) => setForm((f) => ({ ...f, payment_method: e.target.value }))}
             >

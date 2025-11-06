@@ -561,7 +561,7 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
                     支付方式：
                   </label>
                   <select
-                    className="flex-1 h-9 rounded-md border border-green-200 dark:border-green-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 text-sm focus:border-green-500 focus:ring-green-500"
+                    className="flex-1 h-9 rounded-md border border-green-200 dark:border-green-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 text-sm focus:border-green-500 focus:ring-green-500 transition-all duration-200 ease-in-out hover:border-green-400 dark:hover:border-green-500 hover:shadow-sm cursor-pointer"
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value)}
                   >
