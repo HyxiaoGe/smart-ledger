@@ -121,30 +121,30 @@ export default function CronManagementPage() {
       case 'business':
         return {
           icon: Database,
-          bgColor: 'bg-blue-50',
+          bgColor: 'bg-blue-50 dark:bg-blue-950',
           iconColor: 'text-blue-600',
-          borderColor: 'border-blue-200'
+          borderColor: 'border-blue-200 dark:border-blue-800'
         };
       case 'ai':
         return {
           icon: Sparkles,
-          bgColor: 'bg-purple-50',
+          bgColor: 'bg-purple-50 dark:bg-purple-950',
           iconColor: 'text-purple-600',
-          borderColor: 'border-purple-200'
+          borderColor: 'border-purple-200 dark:border-purple-800'
         };
       case 'maintenance':
         return {
           icon: Settings,
-          bgColor: 'bg-green-50',
+          bgColor: 'bg-green-50 dark:bg-green-950',
           iconColor: 'text-green-600',
-          borderColor: 'border-green-200'
+          borderColor: 'border-green-200 dark:border-green-800'
         };
       default:
         return {
           icon: Cpu,
-          bgColor: 'bg-gray-50',
+          bgColor: 'bg-gray-50 dark:bg-gray-900',
           iconColor: 'text-gray-600',
-          borderColor: 'border-gray-200'
+          borderColor: 'border-gray-200 dark:border-gray-700'
         };
     }
   };
@@ -156,32 +156,32 @@ export default function CronManagementPage() {
         return {
           icon: CheckCircle2,
           color: 'text-green-600',
-          bg: 'bg-green-50',
-          border: 'border-green-200',
+          bg: 'bg-green-50 dark:bg-green-950',
+          border: 'border-green-200 dark:border-green-800',
           label: '成功'
         };
       case 'failed':
         return {
           icon: XCircle,
           color: 'text-red-600',
-          bg: 'bg-red-50',
-          border: 'border-red-200',
+          bg: 'bg-red-50 dark:bg-red-950',
+          border: 'border-red-200 dark:border-red-800',
           label: '失败'
         };
       case 'running':
         return {
           icon: Activity,
           color: 'text-blue-600',
-          bg: 'bg-blue-50',
-          border: 'border-blue-200',
+          bg: 'bg-blue-50 dark:bg-blue-950',
+          border: 'border-blue-200 dark:border-blue-800',
           label: '运行中'
         };
       default:
         return {
           icon: AlertCircle,
           color: 'text-gray-600',
-          bg: 'bg-gray-50',
-          border: 'border-gray-200',
+          bg: 'bg-gray-50 dark:bg-gray-900',
+          border: 'border-gray-200 dark:border-gray-700',
           label: '未知'
         };
     }
@@ -240,7 +240,7 @@ export default function CronManagementPage() {
         {/* 页面标题 */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-blue-100 rounded-lg">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
               <Clock className="h-6 w-6 text-blue-600" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900">定时任务管理</h2>
@@ -257,7 +257,7 @@ export default function CronManagementPage() {
                   <div className="text-2xl font-bold text-gray-900">{totalStats.totalJobs}</div>
                   <div className="text-sm text-gray-600 mt-1">总任务数</div>
                 </div>
-                <div className="p-3 bg-blue-50 rounded-lg">
+                <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
                   <Database className="h-6 w-6 text-blue-600" />
                 </div>
               </div>
@@ -271,7 +271,7 @@ export default function CronManagementPage() {
                   <div className="text-2xl font-bold text-green-600">{totalStats.activeJobs}</div>
                   <div className="text-sm text-gray-600 mt-1">活跃任务</div>
                 </div>
-                <div className="p-3 bg-green-50 rounded-lg">
+                <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg">
                   <Activity className="h-6 w-6 text-green-600" />
                 </div>
               </div>
@@ -285,7 +285,7 @@ export default function CronManagementPage() {
                   <div className="text-2xl font-bold text-purple-600">{totalStats.totalRuns}</div>
                   <div className="text-sm text-gray-600 mt-1">总执行次数</div>
                 </div>
-                <div className="p-3 bg-purple-50 rounded-lg">
+                <div className="p-3 bg-purple-50 dark:bg-purple-950 rounded-lg">
                   <TrendingUp className="h-6 w-6 text-purple-600" />
                 </div>
               </div>
@@ -299,7 +299,7 @@ export default function CronManagementPage() {
                   <div className="text-2xl font-bold text-orange-600">{totalStats.successRate}%</div>
                   <div className="text-sm text-gray-600 mt-1">成功率</div>
                 </div>
-                <div className="p-3 bg-orange-50 rounded-lg">
+                <div className="p-3 bg-orange-50 dark:bg-orange-950 rounded-lg">
                   <CheckCircle2 className="h-6 w-6 text-orange-600" />
                 </div>
               </div>
@@ -311,7 +311,7 @@ export default function CronManagementPage() {
         <Card className="border-0 shadow-lg mb-6">
           <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
             <CardTitle className="flex items-center gap-3 text-gray-900">
-              <div className="p-2 bg-blue-100 rounded-lg">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
                 <Clock className="h-5 w-5 text-blue-600" />
               </div>
               <span>定时任务</span>
@@ -490,9 +490,9 @@ export default function CronManagementPage() {
         </Card>
 
         {/* 说明信息 */}
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
           <div className="flex items-start gap-3">
-            <div className="p-1 bg-blue-100 rounded">
+            <div className="p-1 bg-blue-100 dark:bg-blue-900 rounded">
               <Clock className="h-4 w-4 text-blue-600" />
             </div>
             <div className="text-sm text-blue-900">
