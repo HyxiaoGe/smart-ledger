@@ -446,13 +446,13 @@ function SetBudgetDialog({
         <div className="p-6 space-y-4">
           {!budget && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 选择类别
               </label>
               <select
                 value={selectedCategoryKey || ''}
                 onChange={(e) => setSelectedCategoryKey(e.target.value || null)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
               >
                 <option value="">总预算</option>
                 {categories.map((cat) => (

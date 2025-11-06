@@ -342,7 +342,7 @@ export default function EditRecurringExpensePage() {
                       <select
                         value={formData.category}
                         onChange={(e) => handleInputChange('category', e.target.value)}
-                        className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-purple-500 dark:focus:border-purple-400 transition-all appearance-none bg-white dark:bg-gray-800"
+                        className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-purple-500 dark:focus:border-purple-400 transition-all appearance-none bg-white dark:bg-gray-800 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-sm cursor-pointer"
                         required
                       >
                         <option value="">请选择类别</option>
@@ -481,7 +481,7 @@ export default function EditRecurringExpensePage() {
                       <select
                         value={formData.frequency_config.day_of_month}
                         onChange={(e) => handleFrequencyConfigChange('day_of_month', parseInt(e.target.value))}
-                        className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all appearance-none bg-white dark:bg-gray-800"
+                        className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all appearance-none bg-white dark:bg-gray-800 hover:border-pink-300 dark:hover:border-pink-600 hover:shadow-sm cursor-pointer"
                       >
                         {[...Array(31)].map((_, i) => (
                           <option key={i + 1} value={i + 1}>

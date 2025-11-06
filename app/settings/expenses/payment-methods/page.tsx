@@ -970,13 +970,13 @@ function DeletePaymentMethodDialog({
                   删除前需要将这些交易记录迁移到其他支付方式，以保证数据完整性
                 </p>
 
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   迁移到 <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={migrateToId}
                   onChange={(e) => setMigrateToId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
                 >
                   <option value="">-- 请选择目标支付方式 --</option>
                   {availableMethods.map((pm) => (
