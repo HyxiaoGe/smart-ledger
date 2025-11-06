@@ -174,12 +174,12 @@ export default function CategoriesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 返回导航 */}
         <div className="mb-6">
           <Link href="/settings/expenses">
-            <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
+            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 dark:text-gray-100">
               <ChevronLeft className="h-4 w-4 mr-2" />
               返回消费配置
             </Button>
@@ -189,7 +189,7 @@ export default function CategoriesPage() {
         {/* 页面标题和操作 */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">类别自定义</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">类别自定义</h2>
             <p className="text-gray-600 dark:text-gray-300">管理消费类别，打造个性化的记账体验</p>
           </div>
           <Button
@@ -206,11 +206,11 @@ export default function CategoriesPage() {
 
         {/* 统计卡片 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card className="border-0 shadow-md">
+          <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-2xl font-bold text-gray-900">{categories.length}</div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{categories.length}</div>
                   <div className="text-sm text-gray-600 mt-1">总类别数</div>
                 </div>
                 <div className="p-3 bg-blue-50 dark:bg-blue-950 dark:bg-blue-950 rounded-lg">
@@ -220,7 +220,7 @@ export default function CategoriesPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-md">
+          <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -234,7 +234,7 @@ export default function CategoriesPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-md">
+          <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -250,9 +250,9 @@ export default function CategoriesPage() {
         </div>
 
         {/* 类别列表 */}
-        <Card className="border-0 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
-            <CardTitle className="flex items-center gap-3 text-gray-900">
+        <Card className="border-0 shadow-lg bg-white dark:bg-gray-800">
+          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-750 dark:from-gray-800 dark:to-gray-750 border-b dark:border-gray-700">
+            <CardTitle className="flex items-center gap-3 text-gray-900 dark:text-gray-100">
               <div className="p-2 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded-lg">
                 <Tag className="h-5 w-5 text-blue-600" />
               </div>
@@ -279,7 +279,7 @@ export default function CategoriesPage() {
                         {category.icon}
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900 text-lg">{category.label}</h3>
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">{category.label}</h3>
                         {category.is_system && (
                           <span className="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">
                             <Lock className="h-3 w-3" />
@@ -292,7 +292,7 @@ export default function CategoriesPage() {
 
                   <div className="flex items-center justify-between text-sm mb-3">
                     <span className="text-gray-600 dark:text-gray-300">使用次数</span>
-                    <span className="font-semibold text-gray-900">{category.usage_count || 0}</span>
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">{category.usage_count || 0}</span>
                   </div>
 
                   {category.last_used && (
@@ -494,7 +494,7 @@ function CategoryDialog({
                   >
                     {icon}
                   </div>
-                  <span className="font-semibold text-gray-900">
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">
                     {label || '类别名称'}
                   </span>
                 </div>
