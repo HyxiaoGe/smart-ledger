@@ -9,13 +9,14 @@ interface MonthlyExpenseSummaryProps {
   yesterdayTransactions?: { amount: number; date: string; note?: string }[];
   monthTotalAmount?: number;
   monthTotalCount?: number;
+  monthlyBudget?: number; // 月度预算，从预算设置中获取
   currency: string;
   dateRange?: string;
   rangeType?: string;
 }
 
-export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTransactions = [], monthTotalAmount = 0, monthTotalCount = 0, dateRange, rangeType }: MonthlyExpenseSummaryProps) {
-  const [monthlyBudget] = useState(5000); // 默认月预算，后续可以做成可配置
+export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTransactions = [], monthTotalAmount = 0, monthTotalCount = 0, monthlyBudget = 5000, dateRange, rangeType }: MonthlyExpenseSummaryProps) {
+  // monthlyBudget 现在从 props 获取，默认值为 5000
 
   const statistics = useMemo(() => {
     if (!items || items.length === 0) {

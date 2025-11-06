@@ -169,7 +169,7 @@ export default function BudgetPage() {
                   <PiggyBank className="h-6 w-6" />
                 </div>
               </div>
-              {totalBudget === 0 && (
+              {totalBudget === 0 ? (
                 <Button
                   size="sm"
                   onClick={() => openSetBudgetDialog(null)}
@@ -177,6 +177,23 @@ export default function BudgetPage() {
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   设置总预算
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    // 找到总预算记录（category_key 为 null 的）
+                    const totalBudgetRecord = budgetStatuses.find(b => !b.category_key);
+                    if (totalBudgetRecord) {
+                      openSetBudgetDialog(totalBudgetRecord);
+                    } else {
+                      openSetBudgetDialog(null);
+                    }
+                  }}
+                  className="w-full bg-white dark:bg-gray-800 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 dark:bg-blue-950"
+                >
+                  <Edit2 className="h-4 w-4 mr-1" />
+                  调整预算
                 </Button>
               )}
             </CardContent>
