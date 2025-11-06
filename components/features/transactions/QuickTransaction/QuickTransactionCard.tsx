@@ -12,6 +12,7 @@ import { HiSparkles } from 'react-icons/hi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/clients/supabase/client';
 import { formatDateToLocal } from '@/lib/utils/date';
+import { getPaymentMethodsWithStats, type PaymentMethod } from '@/lib/services/paymentMethodService';
 
 interface QuickTransactionItem {
   id: string;
@@ -90,6 +91,8 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
   const [todayCategories, setTodayCategories] = useState<Set<string>>(new Set());
   const [todayItems, setTodayItems] = useState<Set<string>>(new Set());
   const [loadingCategories, setLoadingCategories] = useState(false);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [paymentMethod, setPaymentMethod] = useState<string>('');
 
   // 获取今天的日期字符串
   const getTodayDateString = () => {
@@ -166,6 +169,24 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
     }
   }, [open]);
 
+  // 加载支付方式列表
+  useEffect(() => {
+    async function loadPaymentMethods() {
+      try {
+        const methods = await getPaymentMethodsWithStats();
+        setPaymentMethods(methods);
+        // 设置默认支付方式
+        const defaultMethod = methods.find(m => m.is_default);
+        if (defaultMethod) {
+          setPaymentMethod(defaultMethod.id);
+        }
+      } catch (err) {
+        console.error('加载支付方式失败:', err);
+      }
+    }
+    loadPaymentMethods();
+  }, []);
+
   // 处理金额输入
   const handleAmountChange = (itemId: string, value: string) => {
     // 只允许数字和小数点
@@ -217,7 +238,8 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
           category: item.category,
           amount: finalAmount,
           note: item.title,
-          currency: 'CNY'
+          currency: 'CNY',
+          paymentMethod: paymentMethod || null
         })
       });
 
@@ -526,6 +548,32 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
                   <div className="text-xs text-purple-600 dark:text-purple-400">完成进度</div>
                 </motion.div>
               </div>
+
+              {/* 支付方式选择 */}
+              <motion.div
+                className="flex items-center gap-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 rounded-lg border border-green-100 dark:border-green-800"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 }}
+              >
+                <div className="flex items-center gap-2 flex-1">
+                  <label className="text-sm font-medium text-green-700 dark:text-green-300">
+                    支付方式：
+                  </label>
+                  <select
+                    className="flex-1 h-9 rounded-md border border-green-200 dark:border-green-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 text-sm focus:border-green-500 focus:ring-green-500"
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                  >
+                    <option value="">未设置</option>
+                    {paymentMethods.map((pm) => (
+                      <option key={pm.id} value={pm.id}>
+                        {pm.name}{pm.is_default ? ' (默认)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </motion.div>
 
               {/* 提示信息 */}
               <motion.div

@@ -15,6 +15,7 @@ import { MerchantInput, SubcategorySelect } from '@/components/features/input/Me
 import { dataSync } from '@/lib/core/dataSync';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { formatDateToLocal } from '@/lib/utils/date';
+import { getPaymentMethodsWithStats, type PaymentMethod } from '@/lib/services/paymentMethodService';
 
 type Transaction = {
   id: string;
@@ -27,6 +28,7 @@ type Transaction = {
   merchant?: string;
   subcategory?: string;
   product?: string;
+  payment_method?: string;
 };
 
 interface TransactionGroupedListProps {
@@ -53,6 +55,20 @@ export function TransactionGroupedList({
   const [showEditToast, setShowEditToast] = useState(false);
   const [showDeleteToast, setShowDeleteToast] = useState(false);
   const [showUndoToast, setShowUndoToast] = useState(false);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+
+  // 加载支付方式列表
+  useEffect(() => {
+    async function loadPaymentMethods() {
+      try {
+        const methods = await getPaymentMethodsWithStats();
+        setPaymentMethods(methods);
+      } catch (err) {
+        console.error('加载支付方式失败:', err);
+      }
+    }
+    loadPaymentMethods();
+  }, []);
 
   async function handleEdit(transaction: Transaction) {
     setEditingId(transaction.id);
@@ -265,7 +281,7 @@ export function TransactionGroupedList({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">币种</label>
             <select
@@ -275,6 +291,21 @@ export function TransactionGroupedList({
             >
               <option value="CNY">CNY</option>
               <option value="USD">USD</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">支付方式</label>
+            <select
+              className="h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 text-sm focus:border-blue-500 focus:ring-blue-500"
+              value={form.payment_method as string || transaction.payment_method || ''}
+              onChange={(e) => setForm((f) => ({ ...f, payment_method: e.target.value }))}
+            >
+              <option value="">未设置</option>
+              {paymentMethods.map((pm) => (
+                <option key={pm.id} value={pm.id}>
+                  {pm.name}{pm.is_default ? ' (默认)' : ''}
+                </option>
+              ))}
             </select>
           </div>
           <div>
