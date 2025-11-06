@@ -193,7 +193,7 @@ export function AIAnalysisPanel({
     <div className={`space-y-4 ${className}`}>
       {/* 刷新按钮 */}
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-900">智能财务分析</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">智能财务分析</h2>
         <div className="flex items-center gap-2">
           {/* 刷新状态提示 */}
           <AnimatePresence>
@@ -203,9 +203,9 @@ export function AIAnalysisPanel({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                  refreshStatus === 'refreshing' ? 'bg-blue-100 text-blue-700' :
-                  refreshStatus === 'success' ? 'bg-green-100 text-green-700' :
-                  'bg-red-100 text-red-700'
+                  refreshStatus === 'refreshing' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' :
+                  refreshStatus === 'success' ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' :
+                  'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300'
                 }`}
               >
                 {refreshStatus === 'refreshing' && (
@@ -235,7 +235,7 @@ export function AIAnalysisPanel({
             size="sm"
             onClick={handleRefresh}
             disabled={loading || refreshStatus === 'refreshing'}
-            className="text-gray-500 hover:text-gray-700 hover:bg-blue-50 transition-colors"
+            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors"
             title="清除缓存并重新分析数据"
           >
             <RefreshCw className="h-4 w-4 mr-1" />
@@ -320,32 +320,32 @@ export function AIAnalysisPanel({
 
       {/* AI智能分析结果 */}
       {aiSummary && (
-        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border-green-200 dark:border-green-800">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <Brain className="h-5 w-5 text-green-600" />
-              <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent font-semibold">
+              <Brain className="h-5 w-5 text-green-600 dark:text-green-400" />
+              <span className="bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400 bg-clip-text text-transparent font-semibold">
                 AI智能分析
               </span>
-              <span className="ml-2 px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+              <span className="ml-2 px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs rounded-full">
                 DeepSeek
               </span>
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="prose prose-sm max-w-none text-sm text-gray-700 leading-relaxed">
+            <div className="prose prose-sm max-w-none text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
               {/* 将Markdown文本转换为HTML显示 */}
               <div
-                className="whitespace-pre-wrap"
+                className="whitespace-pre-wrap ai-analysis-content"
                 dangerouslySetInnerHTML={{
                   __html: aiSummary
-                    .replace(/### (.*?)\n/g, '<h3 class="font-semibold text-gray-900 mb-2 mt-3">$1</h3>')
-                    .replace(/^- (.*?)\n/g, '<li class="ml-4">• $1</li>')
-                    .replace(/1\. (.*?)\n/g, '<li class="ml-4">1. $1</li>')
-                    .replace(/2\. (.*?)\n/g, '<li class="ml-4">2. $1</li>')
-                    .replace(/3\. (.*?)\n/g, '<li class="ml-4">3. $1</li>')
-                    .replace(/\n\n/g, '</p><p class="mb-2">')
-                    .replace(/^(?!<[h|l])/g, '<p class="mb-2">')
+                    .replace(/### (.*?)\n/g, '<h3 class="font-semibold text-gray-900 dark:text-gray-100 mb-2 mt-3">$1</h3>')
+                    .replace(/^- (.*?)\n/g, '<li class="ml-4 dark:text-gray-300">• $1</li>')
+                    .replace(/1\. (.*?)\n/g, '<li class="ml-4 dark:text-gray-300">1. $1</li>')
+                    .replace(/2\. (.*?)\n/g, '<li class="ml-4 dark:text-gray-300">2. $1</li>')
+                    .replace(/3\. (.*?)\n/g, '<li class="ml-4 dark:text-gray-300">3. $1</li>')
+                    .replace(/\n\n/g, '</p><p class="mb-2 dark:text-gray-300">')
+                    .replace(/^(?!<[h|l])/g, '<p class="mb-2 dark:text-gray-300">')
                     .replace(/(<p[^>]*>)<p/g, '$1') // 修复连续的p标签
                     + '</p>'
                 }}
@@ -357,7 +357,7 @@ export function AIAnalysisPanel({
 
       {/* AI分析反馈 */}
       {aiSummary && (
-        <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+        <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border-blue-200 dark:border-blue-800">
           <CardContent className="p-4">
             <QuickFeedback
               featureType="smart_analysis"

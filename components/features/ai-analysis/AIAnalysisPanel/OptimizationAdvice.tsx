@@ -47,8 +47,8 @@ export function OptimizationAdvice({
       >
         <CardTitle className="flex items-center justify-between text-base">
           <div className="flex items-center gap-2">
-            <Lightbulb className="h-5 w-5 text-purple-600" />
-            <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent font-semibold">
+            <Lightbulb className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+            <span className="bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 bg-clip-text text-transparent font-semibold">
               智能优化建议
             </span>
           </div>
@@ -75,11 +75,11 @@ export function OptimizationAdvice({
                 <>
                   <div className="space-y-3">
                     {displayedSuggestions.map((suggestion, index) => (
-                      <div key={index} className="bg-white rounded-lg p-4 border border-purple-100">
+                      <div key={index} className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-purple-100 dark:border-purple-800">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <span className="text-sm font-medium text-gray-900">
+                              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                 {suggestion.category}
                               </span>
                               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -88,17 +88,17 @@ export function OptimizationAdvice({
                                 {PRIORITY_CONFIG[suggestion.priority].label}
                               </span>
                             </div>
-                            <div className="text-lg font-bold text-green-600">
+                            <div className="text-lg font-bold text-green-600 dark:text-green-400">
                               ¥{suggestion.potential.toFixed(2)}
                             </div>
-                            <p className="text-xs text-gray-600 leading-relaxed">
+                            <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
                               {suggestion.suggestion}
                             </p>
                             {onSuggestionClick && (
                               <div className="mt-2">
                                 <button
                                   onClick={() => onSuggestionClick(suggestion)}
-                                  className="text-xs text-purple-600 hover:text-purple-800"
+                                  className="text-xs text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300"
                                 >
                                   查看详细分析 →
                                 </button>
@@ -113,15 +113,15 @@ export function OptimizationAdvice({
                   {/* 查看更多按钮 */}
                   {hasMore && (
                     <div className="text-center pt-2">
-                      <button className="text-sm text-purple-600 hover:text-purple-800 font-medium">
+                      <button className="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 font-medium">
                         查看全部 {data.suggestions.length} 条建议 →
                       </button>
                     </div>
                   )}
                 </>
               ) : (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400 dark:text-gray-500">
-                  <Lightbulb className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <Lightbulb className="h-8 w-8 mx-auto mb-2 text-gray-300 dark:text-gray-600" />
                   <div className="text-sm">
                     {loading ? '分析中...' : '暂无建议'}
                   </div>
