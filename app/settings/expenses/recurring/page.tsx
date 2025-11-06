@@ -253,8 +253,8 @@ export default function RecurringExpensesPage() {
         {/* 页面标题和操作按钮 */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">固定支出管理</h2>
-            <p className="text-gray-600 dark:text-gray-300">设置和管理您的定期固定支出，系统将自动生成记录</p>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">固定支出管理</h2>
+            <p className="text-gray-600 dark:text-gray-400">设置和管理您的定期固定支出，系统将自动生成记录</p>
           </div>
           <div className="flex gap-3">
             <Link href="/settings/expenses/recurring/history">
@@ -410,12 +410,12 @@ export default function RecurringExpensesPage() {
         </div>
 
         {/* 固定支出列表 */}
-        <Card className="border-0 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
+        <Card className="border-0 shadow-lg bg-white dark:bg-gray-800">
+          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-750 border-b dark:border-gray-700">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-3 text-gray-900">
-                <div className="p-2 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded-lg">
-                  <DollarSign className="h-5 w-5 text-blue-600" />
+              <CardTitle className="flex items-center gap-3 text-gray-900 dark:text-gray-100">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                  <DollarSign className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <span>固定支出列表</span>
                 <span className="text-sm text-gray-500 dark:text-gray-400 font-normal">
@@ -426,17 +426,17 @@ export default function RecurringExpensesPage() {
                 <span className="text-sm text-gray-500 dark:text-gray-400">
                   {recurringExpenses.filter(e => e.is_active).length} 个活跃
                 </span>
-                <div className="w-2 h-2 rounded-full bg-green-50 dark:bg-green-950 dark:bg-green-9500 animate-pulse"></div>
+                <div className="w-2 h-2 rounded-full bg-green-500 dark:bg-green-400 animate-pulse"></div>
               </div>
             </div>
           </CardHeader>
           <CardContent>
             {recurringExpenses.length === 0 ? (
               <div className="text-center py-16">
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded-full mb-6">
-                  <Calendar className="h-10 w-10 text-blue-600" />
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 dark:bg-blue-900 rounded-full mb-6">
+                  <Calendar className="h-10 w-10 text-blue-600 dark:text-blue-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">还没有设置固定支出</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">还没有设置固定支出</h3>
                 <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
                   设置固定支出后，系统会自动生成定期账单，让记账更轻松高效
                 </p>
@@ -454,8 +454,8 @@ export default function RecurringExpensesPage() {
                     key={expense.id}
                     className={`group relative overflow-hidden rounded-xl border-2 transition-all duration-200 hover:shadow-md ${
                       expense.is_active
-                        ? 'border-gray-200 bg-white hover:border-blue-300'
-                        : 'border-gray-100 bg-gray-50 hover:border-gray-300'
+                        ? 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-blue-300 dark:hover:border-blue-600'
+                        : 'border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-850 hover:border-gray-300 dark:hover:border-gray-600'
                     }`}
                   >
                     {/* 状态指示条 */}
@@ -469,28 +469,28 @@ export default function RecurringExpensesPage() {
                           {/* 类别图标 */}
                           <div className={`relative p-3 rounded-xl transition-transform group-hover:scale-110 ${
                             expense.is_active
-                              ? 'bg-gradient-to-br from-blue-50 to-blue-100 shadow-sm'
-                              : 'bg-gray-100'
+                              ? 'bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 shadow-sm'
+                              : 'bg-gray-100 dark:bg-gray-700'
                           }`}>
                             <div className="text-2xl">
                               {categoryIcons[expense.category as keyof typeof categoryIcons] || '💰'}
                             </div>
                             {expense.is_active && (
-                              <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-50 dark:bg-green-950 dark:bg-green-9500 rounded-full border-2 border-white"></div>
+                              <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 dark:bg-green-400 rounded-full border-2 border-white dark:border-gray-800"></div>
                             )}
                           </div>
 
                           {/* 详细信息 */}
                           <div className="space-y-2">
                             <div className="flex items-center gap-3">
-                              <h3 className="font-semibold text-gray-900 text-lg">{expense.name}</h3>
+                              <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">{expense.name}</h3>
                               {expense.is_active ? (
-                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 dark:bg-green-900 text-green-700 dark:text-green-300">
-                                  <div className="w-1.5 h-1.5 bg-green-50 dark:bg-green-950 dark:bg-green-9500 rounded-full mr-1.5 animate-pulse"></div>
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300">
+                                  <div className="w-1.5 h-1.5 bg-green-500 dark:bg-green-400 rounded-full mr-1.5 animate-pulse"></div>
                                   活跃
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:text-gray-300">
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
                                   <Pause className="h-3 w-3 mr-1" />
                                   暂停
                                 </span>
@@ -499,12 +499,12 @@ export default function RecurringExpensesPage() {
 
                             {/* 金额和频率 */}
                             <div className="flex items-center gap-4">
-                              <div className="flex items-center gap-1 text-2xl font-bold text-gray-900">
+                              <div className="flex items-center gap-1 text-2xl font-bold text-gray-900 dark:text-gray-100">
                                 <span className="text-lg">¥</span>
                                 <span>{expense.amount.toFixed(0)}</span>
                                 <span className="text-sm text-gray-500 dark:text-gray-400 font-normal">.{(expense.amount % 1).toFixed(2).slice(2)}</span>
                               </div>
-                              <div className="text-sm text-gray-600 dark:text-gray-300 bg-gray-100 px-3 py-1 rounded-full">
+                              <div className="text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
                                 {frequencyLabels[expense.frequency]}
                                 {expense.frequency === 'monthly' && expense.frequency_config.day_of_month &&
                                   ` · 每月${expense.frequency_config.day_of_month}号`

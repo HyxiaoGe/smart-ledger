@@ -240,67 +240,67 @@ export default function CronManagementPage() {
         {/* 页面标题 */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 dark:bg-blue-900 rounded-lg">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
               <Clock className="h-6 w-6 text-blue-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">定时任务管理</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">定时任务管理</h2>
           </div>
-          <p className="text-gray-600 dark:text-gray-300">查看和管理系统自动化任务</p>
+          <p className="text-gray-600 dark:text-gray-400">查看和管理系统自动化任务</p>
         </div>
 
         {/* 统计卡片 */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card className="border-0 shadow-md">
+          <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-2xl font-bold text-gray-900">{totalStats.totalJobs}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">总任务数</div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{totalStats.totalJobs}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">总任务数</div>
                 </div>
-                <div className="p-3 bg-blue-50 dark:bg-blue-950 dark:bg-blue-950 dark:bg-blue-950 rounded-lg">
-                  <Database className="h-6 w-6 text-blue-600" />
+                <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                  <Database className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-md">
+          <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-2xl font-bold text-green-600">{totalStats.activeJobs}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">活跃任务</div>
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">{totalStats.activeJobs}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">活跃任务</div>
                 </div>
-                <div className="p-3 bg-green-50 dark:bg-green-950 dark:bg-green-950 dark:bg-green-950 rounded-lg">
-                  <Activity className="h-6 w-6 text-green-600" />
+                <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg">
+                  <Activity className="h-6 w-6 text-green-600 dark:text-green-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-md">
+          <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-2xl font-bold text-purple-600">{totalStats.totalRuns}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">总执行次数</div>
+                  <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{totalStats.totalRuns}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">总执行次数</div>
                 </div>
-                <div className="p-3 bg-purple-50 dark:bg-purple-950 dark:bg-purple-950 dark:bg-purple-950 rounded-lg">
-                  <TrendingUp className="h-6 w-6 text-purple-600" />
+                <div className="p-3 bg-purple-50 dark:bg-purple-950 rounded-lg">
+                  <TrendingUp className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-md">
+          <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-2xl font-bold text-orange-600">{totalStats.successRate}%</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">成功率</div>
+                  <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{totalStats.successRate}%</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">成功率</div>
                 </div>
-                <div className="p-3 bg-orange-50 dark:bg-orange-950 dark:bg-orange-950 dark:bg-orange-950 rounded-lg">
-                  <CheckCircle2 className="h-6 w-6 text-orange-600" />
+                <div className="p-3 bg-orange-50 dark:bg-orange-950 rounded-lg">
+                  <CheckCircle2 className="h-6 w-6 text-orange-600 dark:text-orange-400" />
                 </div>
               </div>
             </CardContent>
@@ -308,11 +308,11 @@ export default function CronManagementPage() {
         </div>
 
         {/* 任务列表 */}
-        <Card className="border-0 shadow-lg mb-6">
-          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
-            <CardTitle className="flex items-center gap-3 text-gray-900">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 dark:bg-blue-900 rounded-lg">
-                <Clock className="h-5 w-5 text-blue-600" />
+        <Card className="border-0 shadow-lg mb-6 bg-white dark:bg-gray-800">
+          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-750 border-b dark:border-gray-700">
+            <CardTitle className="flex items-center gap-3 text-gray-900 dark:text-gray-100">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
               <span>定时任务</span>
               <span className="text-sm text-gray-500 dark:text-gray-400 font-normal">
@@ -338,7 +338,9 @@ export default function CronManagementPage() {
                     <div
                       key={job.jobid}
                       className={`group relative rounded-xl border-2 p-5 transition-all duration-200 hover:shadow-md ${
-                        job.active ? 'border-gray-200 bg-white' : 'border-gray-100 bg-gray-50'
+                        job.active
+                          ? 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+                          : 'border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-850'
                       }`}
                     >
                       <div className="flex items-start gap-4">
@@ -351,21 +353,21 @@ export default function CronManagementPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-4 mb-3">
                             <div>
-                              <h3 className="font-semibold text-gray-900 text-lg mb-1">
+                              <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg mb-1">
                                 {jobDesc.title}
                               </h3>
-                              <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                                 {jobDesc.description}
                               </p>
                               <div className="flex items-center gap-4 flex-wrap">
                                 <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
                                   job.active
-                                    ? 'bg-green-100 text-green-700'
-                                    : 'bg-gray-100 text-gray-600'
+                                    ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
+                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                                 }`}>
                                   {job.active ? '● 活跃' : '○ 禁用'}
                                 </span>
-                                <span className="text-sm text-gray-600 dark:text-gray-300 font-mono bg-gray-100 px-2 py-1 rounded">
+                                <span className="text-sm text-gray-600 dark:text-gray-400 font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
                                   {parseCronExpression(job.schedule)}
                                 </span>
                               </div>
@@ -385,22 +387,22 @@ export default function CronManagementPage() {
 
                           {/* 统计信息 */}
                           {jobStat && (
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-3 bg-gray-50 rounded-lg border border-gray-200 dark:border-gray-700">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
                               <div>
                                 <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">总执行</div>
-                                <div className="text-lg font-semibold text-gray-900">{jobStat.total_runs}</div>
+                                <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">{jobStat.total_runs}</div>
                               </div>
                               <div>
                                 <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">成功</div>
-                                <div className="text-lg font-semibold text-green-600">{jobStat.success_count}</div>
+                                <div className="text-lg font-semibold text-green-600 dark:text-green-400">{jobStat.success_count}</div>
                               </div>
                               <div>
                                 <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">失败</div>
-                                <div className="text-lg font-semibold text-red-600">{jobStat.failed_count}</div>
+                                <div className="text-lg font-semibold text-red-600 dark:text-red-400">{jobStat.failed_count}</div>
                               </div>
                               <div>
                                 <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">上次执行</div>
-                                <div className="text-xs font-medium text-gray-900">{formatTime(jobStat.last_run_time)}</div>
+                                <div className="text-xs font-medium text-gray-900 dark:text-gray-100">{formatTime(jobStat.last_run_time)}</div>
                               </div>
                             </div>
                           )}
@@ -408,9 +410,9 @@ export default function CronManagementPage() {
                           {/* 下次执行时间 */}
                           {nextRun && (
                             <div className="mt-3 flex items-center gap-2 text-sm">
-                              <Calendar className="h-4 w-4 text-blue-600" />
-                              <span className="text-gray-600 dark:text-gray-300">下次执行：</span>
-                              <span className="text-blue-600 font-medium">{formatTime(nextRun.toISOString())}</span>
+                              <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                              <span className="text-gray-600 dark:text-gray-400">下次执行：</span>
+                              <span className="text-blue-600 dark:text-blue-400 font-medium">{formatTime(nextRun.toISOString())}</span>
                             </div>
                           )}
                         </div>
@@ -424,11 +426,11 @@ export default function CronManagementPage() {
         </Card>
 
         {/* 最近执行历史 */}
-        <Card className="border-0 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
-            <CardTitle className="flex items-center gap-3 text-gray-900">
-              <div className="p-2 bg-purple-100 dark:bg-purple-900 dark:bg-purple-900 rounded-lg">
-                <Activity className="h-5 w-5 text-purple-600" />
+        <Card className="border-0 shadow-lg bg-white dark:bg-gray-800">
+          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-750 border-b dark:border-gray-700">
+            <CardTitle className="flex items-center gap-3 text-gray-900 dark:text-gray-100">
+              <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
+                <Activity className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               </div>
               <span>最近执行记录</span>
               <span className="text-sm text-gray-500 dark:text-gray-400 font-normal">
@@ -454,29 +456,29 @@ export default function CronManagementPage() {
                       key={run.runid}
                       className={`flex items-center gap-4 p-4 rounded-lg border-2 ${statusStyle.border} ${statusStyle.bg} transition-all hover:shadow-sm`}
                     >
-                      <div className={`p-2 rounded-lg bg-white border ${statusStyle.border}`}>
+                      <div className={`p-2 rounded-lg bg-white dark:bg-gray-800 border ${statusStyle.border}`}>
                         <StatusIcon className={`h-4 w-4 ${statusStyle.color}`} />
                       </div>
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-1">
-                          <h4 className="font-medium text-gray-900">
+                          <h4 className="font-medium text-gray-900 dark:text-gray-100">
                             {jobDesc?.title || `Job #${run.jobid}`}
                           </h4>
                           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusStyle.bg} ${statusStyle.color} border ${statusStyle.border}`}>
                             {statusStyle.label}
                           </span>
                         </div>
-                        <div className="text-sm text-gray-600 dark:text-gray-300">
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
                           {formatTime(run.start_time)}
                           {run.end_time && (
-                            <span className="ml-2 text-gray-400 dark:text-gray-400">
+                            <span className="ml-2 text-gray-400 dark:text-gray-500">
                               • 耗时 {Math.round((new Date(run.end_time).getTime() - new Date(run.start_time).getTime()) / 1000)}s
                             </span>
                           )}
                         </div>
                         {run.return_message && run.status === 'failed' && (
-                          <div className="mt-2 text-xs text-red-600 bg-red-50 dark:bg-red-950 dark:bg-red-950 p-2 rounded border border-red-200 dark:border-red-800 dark:border-red-800">
+                          <div className="mt-2 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950 p-2 rounded border border-red-200 dark:border-red-800">
                             {run.return_message}
                           </div>
                         )}
@@ -490,12 +492,12 @@ export default function CronManagementPage() {
         </Card>
 
         {/* 说明信息 */}
-        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 dark:bg-blue-950 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800 dark:border-blue-800 dark:border-blue-800">
+        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
           <div className="flex items-start gap-3">
-            <div className="p-1 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 dark:bg-blue-900 rounded">
-              <Clock className="h-4 w-4 text-blue-600" />
+            <div className="p-1 bg-blue-100 dark:bg-blue-900 rounded">
+              <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
             </div>
-            <div className="text-sm text-blue-900 dark:text-blue-100 dark:text-blue-100">
+            <div className="text-sm text-blue-900 dark:text-blue-100">
               <p className="font-medium mb-1">关于定时任务</p>
               <p className="text-blue-700 dark:text-blue-300">
                 所有定时任务由 PostgreSQL pg_cron 扩展管理，按照设定的时间表自动执行。

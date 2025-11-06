@@ -55,13 +55,13 @@ export default function ExpensesSettingsPage() {
 
   
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 dark:bg-gray-900">
       {/* 主内容区域 */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 返回导航 */}
         <div className="mb-6">
           <Link href="/settings">
-            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg px-3 py-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200">
+            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 dark:text-gray-100 hover:bg-gray-50 rounded-lg px-3 py-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200">
               <ChevronLeft className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1" />
               返回设置中心
             </Button>
@@ -70,7 +70,7 @@ export default function ExpensesSettingsPage() {
 
         {/* 页面标题和描述 */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">消费配置中心</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">消费配置中心</h2>
           <p className="text-gray-600 dark:text-gray-300">
             个性化您的消费管理体验，让智能记账更符合您的生活习惯
           </p>
