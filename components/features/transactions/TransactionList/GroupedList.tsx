@@ -290,10 +290,10 @@ export function TransactionGroupedList({
 
         {/* 商家信息编辑区域 */}
         <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4">
-          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
             <Store className="h-4 w-4" />
             <span className="font-medium">商家信息</span>
-            <span className="text-xs text-gray-400 dark:text-gray-500">（可选）</span>
+            <span className="text-xs text-gray-400 dark:text-gray-400">（可选）</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -489,7 +489,7 @@ export function TransactionGroupedList({
         <div className="fixed inset-0 z-50 bg-black/40 dark:bg-black/60 flex items-center justify-center p-4" onMouseDown={(e) => { if (e.target === e.currentTarget) setConfirmRow(null); }}>
           <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm w-full max-w-sm z-50" role="dialog" aria-modal="true" onMouseDown={(e) => e.stopPropagation()}>
             <div className="p-4 border-b border-gray-200 dark:border-gray-700 font-semibold">确认删除</div>
-            <div className="p-4 text-sm text-gray-600 dark:text-gray-400">确定要删除这条记录吗？删除后可在短时间内"撤销"。</div>
+            <div className="p-4 text-sm text-gray-600 dark:text-gray-300">确定要删除这条记录吗？删除后可在短时间内"撤销"。</div>
             <div className="p-4 flex justify-end gap-2 border-t border-gray-200 dark:border-gray-700">
               <Button variant="secondary" onClick={() => setConfirmRow(null)}>取消</Button>
               <Button variant="destructive" onClick={async () => { const row = confirmRow; setConfirmRow(null); if (row) await confirmDelete(row); }}>确认删除</Button>
@@ -552,9 +552,9 @@ export function TransactionGroupedList({
                           >
                             <div className="flex items-center gap-3">
                               {isCategoryExpanded ? (
-                                <ChevronDown className="h-3 w-3 text-gray-400 dark:text-gray-500" />
+                                <ChevronDown className="h-3 w-3 text-gray-400 dark:text-gray-400" />
                               ) : (
-                                <ChevronUp className="h-3 w-3 text-gray-400 dark:text-gray-500" />
+                                <ChevronUp className="h-3 w-3 text-gray-400 dark:text-gray-400" />
                               )}
                               <CategoryChip category={categoryData.category} />
                               <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -591,9 +591,9 @@ export function TransactionGroupedList({
                                           >
                                             {merchantData.items.length > 1 && (
                                               isMerchantExpanded ? (
-                                                <ChevronDown className="h-3 w-3 text-gray-400 dark:text-gray-500" />
+                                                <ChevronDown className="h-3 w-3 text-gray-400 dark:text-gray-400" />
                                               ) : (
-                                                <ChevronUp className="h-3 w-3 text-gray-400 dark:text-gray-500" />
+                                                <ChevronUp className="h-3 w-3 text-gray-400 dark:text-gray-400" />
                                               )
                                             )}
                                             {merchantData.items.length === 1 && (
@@ -602,7 +602,7 @@ export function TransactionGroupedList({
                                             <Store className="h-3 w-3 text-blue-600 dark:text-blue-400" />
                                             <span className="text-sm text-gray-900 dark:text-gray-100">{merchantData.merchant}</span>
                                             {merchantData.items.length > 1 && (
-                                              <span className="text-xs text-gray-400 dark:text-gray-500">
+                                              <span className="text-xs text-gray-400 dark:text-gray-400">
                                                 {merchantData.items.length}笔
                                               </span>
                                             )}
@@ -655,7 +655,7 @@ export function TransactionGroupedList({
                                                 </div>
                                               ) : (
                                                 <div className="p-2 pl-24 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-between group border-t border-gray-100 dark:border-gray-700">
-                                                  <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                                                  <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
                                                     <div className="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-600" />
                                                     <span>{item.product || item.note || '无备注'}</span>
                                                   </div>

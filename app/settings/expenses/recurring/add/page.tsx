@@ -150,7 +150,7 @@ export default function AddRecurringExpensePage() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-center min-h-96">
-            <div className="text-gray-500 dark:text-gray-400 dark:text-gray-500">加载中...</div>
+            <div className="text-gray-500 dark:text-gray-400">加载中...</div>
           </div>
         </div>
       </div>
@@ -174,7 +174,7 @@ export default function AddRecurringExpensePage() {
             <Calendar className="h-8 w-8 text-white" />
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-3">添加固定支出</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             设置定期自动生成的支出项目，让您无需重复手动记账，享受智能化的财务管理体验
           </p>
         </div>
@@ -208,7 +208,7 @@ export default function AddRecurringExpensePage() {
                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-all"
                         required
                       />
-                      <div className="absolute right-3 top-3 text-gray-400 dark:text-gray-500">
+                      <div className="absolute right-3 top-3 text-gray-400 dark:text-gray-400">
                         <Tag className="h-5 w-5" />
                       </div>
                     </div>
@@ -220,7 +220,7 @@ export default function AddRecurringExpensePage() {
                       金额 (元) *
                     </label>
                     <div className="relative">
-                      <div className="absolute left-4 top-3 text-gray-500 font-medium">
+                      <div className="absolute left-4 top-3 text-gray-500 dark:text-gray-400 font-medium">
                         ¥
                       </div>
                       <input
@@ -255,7 +255,7 @@ export default function AddRecurringExpensePage() {
                           </option>
                         ))}
                       </select>
-                      <div className="absolute right-3 top-3 text-gray-400 pointer-events-none">
+                      <div className="absolute right-3 top-3 text-gray-400 dark:text-gray-400 pointer-events-none">
                         <Tag className="h-5 w-5" />
                       </div>
                     </div>
@@ -368,7 +368,7 @@ export default function AddRecurringExpensePage() {
                               {frequency.label}
                             </div>
                             <div className={`text-sm mt-1 ${
-                              formData.frequency === frequency.value ? 'text-purple-700' : 'text-gray-500'
+                              formData.frequency === frequency.value ? 'text-purple-700' : 'text-gray-500 dark:text-gray-400'
                             }`}>
                               {frequency.description}
                             </div>
@@ -517,7 +517,7 @@ export default function AddRecurringExpensePage() {
                             <div className="font-semibold text-gray-900 group-hover:text-blue-700 dark:text-blue-300 transition-colors">
                               {template.name}
                             </div>
-                            <div className="text-sm text-gray-600 mt-0.5">
+                            <div className="text-sm text-gray-600 dark:text-gray-300 mt-0.5">
                               {template.frequency === 'monthly' ? `每月${template.day}号` : '工作日'}
                             </div>
                           </div>
@@ -526,14 +526,14 @@ export default function AddRecurringExpensePage() {
                           <div className="font-bold text-lg text-gray-900">
                             ¥{template.amount}
                           </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
                             自动填充
                           </div>
                         </div>
                       </div>
                       <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                         <div className="flex items-center justify-center">
-                          <span className="text-xs text-gray-500 bg-white px-3 py-1 rounded-full">
+                          <span className="text-xs text-gray-500 dark:text-gray-400 bg-white px-3 py-1 rounded-full">
                             点击应用模板
                           </span>
                         </div>

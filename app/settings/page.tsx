@@ -65,7 +65,7 @@ export default function SettingsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">设置中心</h2>
-          <p className="text-gray-600 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500">配置您的智能记账系统，让财务管理更加个性化和高效</p>
+          <p className="text-gray-600 dark:text-gray-300">配置您的智能记账系统，让财务管理更加个性化和高效</p>
         </div>
 
         {/* 配置模块网格 */}
@@ -86,7 +86,7 @@ export default function SettingsPage() {
                     }`}>
                       <section.icon className={`h-6 w-6 ${
                         section.comingSoon
-                          ? 'text-gray-400'
+                          ? 'text-gray-400 dark:text-gray-400'
                           : section.title === '消费配置'
                           ? 'text-blue-600'
                           : section.title === '定时任务管理'
@@ -97,7 +97,7 @@ export default function SettingsPage() {
                     <div>
                       <CardTitle className="text-lg">{section.title}</CardTitle>
                       {section.comingSoon && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 dark:bg-gray-800 text-gray-600 dark:text-gray-300 dark:text-gray-400 mt-1">
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 dark:bg-gray-800 text-gray-600 dark:text-gray-300 mt-1">
                           即将推出
                         </span>
                       )}
@@ -152,19 +152,19 @@ export default function SettingsPage() {
                   </Button>
                 </Link>
                 <Button variant="outline" disabled className="w-full h-auto p-4 flex flex-col items-center gap-2">
-                  <Bell className="h-8 w-8 text-gray-400 dark:text-gray-500 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500" />
+                  <Bell className="h-8 w-8 text-gray-400 dark:text-gray-400" />
                   <span className="text-sm">设置提醒</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500">即将推出</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">即将推出</span>
                 </Button>
                 <Button variant="outline" disabled className="w-full h-auto p-4 flex flex-col items-center gap-2">
-                  <Database className="h-8 w-8 text-gray-400 dark:text-gray-500 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500" />
+                  <Database className="h-8 w-8 text-gray-400 dark:text-gray-400" />
                   <span className="text-sm">数据备份</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500">即将推出</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">即将推出</span>
                 </Button>
                 <Button variant="outline" disabled className="w-full h-auto p-4 flex flex-col items-center gap-2">
-                  <User className="h-8 w-8 text-gray-400 dark:text-gray-500 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500" />
+                  <User className="h-8 w-8 text-gray-400 dark:text-gray-400" />
                   <span className="text-sm">个人资料</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500">即将推出</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">即将推出</span>
                 </Button>
               </div>
             </CardContent>
@@ -173,7 +173,7 @@ export default function SettingsPage() {
 
         {/* 使用提示 */}
         <div className="mt-8 text-center">
-          <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             💡 提示：点击进入各个配置模块，根据您的个人需求自定义智能记账系统
           </p>
         </div>
