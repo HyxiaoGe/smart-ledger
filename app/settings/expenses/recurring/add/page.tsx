@@ -476,11 +476,11 @@ export default function AddRecurringExpensePage() {
             {/* 侧边栏 */}
             <div className="space-y-6">
               {/* 快速模板 */}
-              <Card>
+              <Card className="bg-white dark:bg-gray-800">
                 <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <div className="p-1.5 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded-lg">
-                      <Plus className="h-4 w-4 text-blue-600" />
+                  <CardTitle className="text-base text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                    <div className="p-1.5 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                      <Plus className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                     </div>
                     快速模板
                   </CardTitle>
@@ -488,8 +488,8 @@ export default function AddRecurringExpensePage() {
                 <CardContent className="space-y-3">
                   {[
                     { name: '房租', amount: '1400', frequency: 'monthly', day: 1, color: 'bg-orange-50 dark:bg-orange-950 border-orange-200 dark:border-orange-800 hover:bg-orange-100 dark:hover:bg-orange-900', icon: '🏠' },
-                    { name: '地铁通勤', amount: '6', frequency: 'weekly', days: [1,2,3,4,5], color: 'bg-blue-50 border-blue-200 dark:border-blue-800 hover:bg-blue-100', icon: '🚇' },
-                    { name: '健身房', amount: '299', frequency: 'monthly', day: 15, color: 'bg-green-50 border-green-200 dark:border-green-800 hover:bg-green-100', icon: '💪' }
+                    { name: '地铁通勤', amount: '6', frequency: 'weekly', days: [1,2,3,4,5], color: 'bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900', icon: '🚇' },
+                    { name: '健身房', amount: '299', frequency: 'monthly', day: 15, color: 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900', icon: '💪' }
                   ].map((template, index) => (
                     <div
                       key={index}
@@ -514,7 +514,7 @@ export default function AddRecurringExpensePage() {
                             {template.icon}
                           </div>
                           <div>
-                            <div className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-700 dark:text-blue-300 transition-colors">
+                            <div className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors">
                               {template.name}
                             </div>
                             <div className="text-sm text-gray-600 dark:text-gray-300 mt-0.5">
