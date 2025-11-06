@@ -35,9 +35,9 @@ export default function Navigation() {
             prefetch={true}
             onClick={() => handleClick(item.href)}
             className={cn(
-              'relative px-3 py-2 text-sm font-medium transition-all duration-200 rounded-lg group',
+              'relative px-4 py-2.5 text-sm font-medium transition-all duration-200 rounded-lg group',
               isActive
-                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md'
+                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30 scale-105'
                 : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:shadow-sm'
             )}
           >
@@ -45,13 +45,6 @@ export default function Navigation() {
               <span className="text-base">{item.icon}</span>
               <span>{item.label}</span>
             </span>
-
-            {/* 选中状态指示器 */}
-            {isActive && (
-              <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2">
-                <div className="w-8 h-1 bg-white rounded-full"></div>
-              </div>
-            )}
 
             {/* 悬停效果 */}
             <div
