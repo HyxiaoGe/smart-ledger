@@ -241,7 +241,7 @@ export default function PaymentMethodsPage() {
                   <p className="text-sm text-gray-500 mb-1">支付方式总数</p>
                   <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
                 </div>
-                <div className="p-3 bg-blue-100 rounded-lg">
+                <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
                   <CreditCard className="h-8 w-8 text-blue-600" />
                 </div>
               </div>
@@ -278,7 +278,7 @@ export default function PaymentMethodsPage() {
                     </p>
                   )}
                 </div>
-                <div className="p-3 bg-green-100 rounded-lg">
+                <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
                   <TrendingUp className="h-8 w-8 text-green-600" />
                 </div>
               </div>
@@ -500,7 +500,7 @@ function PaymentMethodCard({
           variant="outline"
           size="sm"
           onClick={onDelete}
-          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:bg-red-950 dark:bg-red-50"
         >
           <Trash2 className="h-3 w-3 mr-1" />
           删除
@@ -970,7 +970,7 @@ function DeletePaymentMethodDialog({
             </p>
 
             {hasUsage && (
-              <div className="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded">
+              <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-950 border-l-4 border-yellow-500 rounded">
                 <p className="text-sm text-yellow-800 font-medium mb-2">
                   ⚠️ 该支付方式有 {method.usage_count} 笔交易记录
                 </p>
@@ -1010,7 +1010,7 @@ function DeletePaymentMethodDialog({
             <Button
               onClick={handleDelete}
               disabled={deleting}
-              className="flex-1 bg-red-600 hover:bg-red-700"
+              className="flex-1 bg-red-600 hover:bg-red-700 dark:bg-red-700"
             >
               {deleting ? '删除中...' : '确认删除'}
             </Button>

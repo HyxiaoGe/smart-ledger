@@ -209,7 +209,7 @@ export default function CronManagementPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-6">
             <Link href="/settings">
-              <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
+              <Button variant="ghost" className="text-gray-600 hover:text-gray-900 dark:text-gray-100">
                 <ChevronLeft className="h-4 w-4 mr-2" />
                 返回设置
               </Button>
@@ -243,7 +243,7 @@ export default function CronManagementPage() {
             <div className="p-2 bg-blue-100 rounded-lg">
               <Clock className="h-6 w-6 text-blue-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">定时任务管理</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">定时任务管理</h2>
           </div>
           <p className="text-gray-600 dark:text-gray-300">查看和管理系统自动化任务</p>
         </div>
@@ -254,7 +254,7 @@ export default function CronManagementPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-2xl font-bold text-gray-900">{totalStats.totalJobs}</div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{totalStats.totalJobs}</div>
                   <div className="text-sm text-gray-600 mt-1">总任务数</div>
                 </div>
                 <div className="p-3 bg-blue-50 rounded-lg">
@@ -309,8 +309,8 @@ export default function CronManagementPage() {
 
         {/* 任务列表 */}
         <Card className="border-0 shadow-lg mb-6">
-          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
-            <CardTitle className="flex items-center gap-3 text-gray-900">
+          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 border-b">
+            <CardTitle className="flex items-center gap-3 text-gray-900 dark:text-gray-100">
               <div className="p-2 bg-blue-100 rounded-lg">
                 <Clock className="h-5 w-5 text-blue-600" />
               </div>
@@ -322,7 +322,7 @@ export default function CronManagementPage() {
           </CardHeader>
           <CardContent className="p-6">
             {jobs.length === 0 ? (
-              <div className="text-center py-12 text-gray-500 dark:text-gray-400 dark:text-gray-500">
+              <div className="text-center py-12 text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500">
                 暂无定时任务
               </div>
             ) : (
@@ -388,7 +388,7 @@ export default function CronManagementPage() {
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-3 bg-gray-50 rounded-lg border border-gray-200 dark:border-gray-700">
                               <div>
                                 <div className="text-xs text-gray-500 mb-1">总执行</div>
-                                <div className="text-lg font-semibold text-gray-900">{jobStat.total_runs}</div>
+                                <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">{jobStat.total_runs}</div>
                               </div>
                               <div>
                                 <div className="text-xs text-gray-500 mb-1">成功</div>
@@ -400,7 +400,7 @@ export default function CronManagementPage() {
                               </div>
                               <div>
                                 <div className="text-xs text-gray-500 mb-1">上次执行</div>
-                                <div className="text-xs font-medium text-gray-900">{formatTime(jobStat.last_run_time)}</div>
+                                <div className="text-xs font-medium text-gray-900 dark:text-gray-100">{formatTime(jobStat.last_run_time)}</div>
                               </div>
                             </div>
                           )}
@@ -425,8 +425,8 @@ export default function CronManagementPage() {
 
         {/* 最近执行历史 */}
         <Card className="border-0 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
-            <CardTitle className="flex items-center gap-3 text-gray-900">
+          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 border-b">
+            <CardTitle className="flex items-center gap-3 text-gray-900 dark:text-gray-100">
               <div className="p-2 bg-purple-100 rounded-lg">
                 <Activity className="h-5 w-5 text-purple-600" />
               </div>
@@ -438,7 +438,7 @@ export default function CronManagementPage() {
           </CardHeader>
           <CardContent className="p-6">
             {history.length === 0 ? (
-              <div className="text-center py-12 text-gray-500 dark:text-gray-400 dark:text-gray-500">
+              <div className="text-center py-12 text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500">
                 暂无执行记录
               </div>
             ) : (
@@ -460,7 +460,7 @@ export default function CronManagementPage() {
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-1">
-                          <h4 className="font-medium text-gray-900">
+                          <h4 className="font-medium text-gray-900 dark:text-gray-100">
                             {jobDesc?.title || `Job #${run.jobid}`}
                           </h4>
                           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusStyle.bg} ${statusStyle.color} border ${statusStyle.border}`}>
@@ -470,13 +470,13 @@ export default function CronManagementPage() {
                         <div className="text-sm text-gray-600 dark:text-gray-300">
                           {formatTime(run.start_time)}
                           {run.end_time && (
-                            <span className="ml-2 text-gray-400 dark:text-gray-500">
+                            <span className="ml-2 text-gray-400 dark:text-gray-500 dark:text-gray-400 dark:text-gray-500">
                               • 耗时 {Math.round((new Date(run.end_time).getTime() - new Date(run.start_time).getTime()) / 1000)}s
                             </span>
                           )}
                         </div>
                         {run.return_message && run.status === 'failed' && (
-                          <div className="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded border border-red-200">
+                          <div className="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded border border-red-200 dark:border-red-800">
                             {run.return_message}
                           </div>
                         )}
@@ -490,14 +490,14 @@ export default function CronManagementPage() {
         </Card>
 
         {/* 说明信息 */}
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200 dark:border-blue-800">
           <div className="flex items-start gap-3">
             <div className="p-1 bg-blue-100 rounded">
               <Clock className="h-4 w-4 text-blue-600" />
             </div>
-            <div className="text-sm text-blue-900">
+            <div className="text-sm text-blue-900 dark:text-blue-100">
               <p className="font-medium mb-1">关于定时任务</p>
-              <p className="text-blue-700">
+              <p className="text-blue-700 dark:text-blue-300">
                 所有定时任务由 PostgreSQL pg_cron 扩展管理，按照设定的时间表自动执行。
                 您可以手动触发任务进行测试，但这不会影响定时调度。
               </p>

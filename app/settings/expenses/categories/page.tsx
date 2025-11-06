@@ -197,7 +197,7 @@ export default function CategoriesPage() {
               resetForm();
               setShowAddDialog(true);
             }}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700"
           >
             <Plus className="h-4 w-4 mr-2" />
             添加类别
@@ -213,7 +213,7 @@ export default function CategoriesPage() {
                   <div className="text-2xl font-bold text-gray-900">{categories.length}</div>
                   <div className="text-sm text-gray-600 mt-1">总类别数</div>
                 </div>
-                <div className="p-3 bg-blue-50 rounded-lg">
+                <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
                   <Tag className="h-6 w-6 text-blue-600" />
                 </div>
               </div>
@@ -227,7 +227,7 @@ export default function CategoriesPage() {
                   <div className="text-2xl font-bold text-green-600">{activeCategories}</div>
                   <div className="text-sm text-gray-600 mt-1">启用中</div>
                 </div>
-                <div className="p-3 bg-green-50 rounded-lg">
+                <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg">
                   <Check className="h-6 w-6 text-green-600" />
                 </div>
               </div>
@@ -241,7 +241,7 @@ export default function CategoriesPage() {
                   <div className="text-2xl font-bold text-purple-600">{totalUsage}</div>
                   <div className="text-sm text-gray-600 mt-1">总使用次数</div>
                 </div>
-                <div className="p-3 bg-purple-50 rounded-lg">
+                <div className="p-3 bg-purple-50 dark:bg-purple-950 rounded-lg">
                   <TrendingUp className="h-6 w-6 text-purple-600" />
                 </div>
               </div>
@@ -253,7 +253,7 @@ export default function CategoriesPage() {
         <Card className="border-0 shadow-lg">
           <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
             <CardTitle className="flex items-center gap-3 text-gray-900">
-              <div className="p-2 bg-blue-100 rounded-lg">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
                 <Tag className="h-5 w-5 text-blue-600" />
               </div>
               <span>类别列表</span>
@@ -306,7 +306,7 @@ export default function CategoriesPage() {
                       size="sm"
                       variant="outline"
                       onClick={() => openEditDialog(category)}
-                      className="flex-1 hover:bg-blue-50 hover:border-blue-300"
+                      className="flex-1 hover:bg-blue-50 dark:bg-blue-950 hover:border-blue-300 dark:border-blue-300"
                     >
                       <Edit2 className="h-3 w-3 mr-1" />
                       编辑
@@ -316,7 +316,7 @@ export default function CategoriesPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => openDeleteDialog(category)}
-                        className="hover:bg-red-50 hover:border-red-300 hover:text-red-600"
+                        className="hover:bg-red-50 dark:bg-red-950 hover:border-red-300 hover:text-red-600"
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>
@@ -451,7 +451,7 @@ function CategoryDialog({
                       key={emoji}
                       onClick={() => onIconChange(emoji)}
                       className={`p-2 text-2xl hover:bg-gray-100 rounded-lg transition-colors ${
-                        icon === emoji ? 'bg-blue-100 ring-2 ring-blue-500' : ''
+                        icon === emoji ? 'bg-blue-100 dark:bg-blue-900 ring-2 ring-blue-500' : ''
                       }`}
                     >
                       {emoji}
@@ -546,7 +546,7 @@ function DeleteDialog({
 
           {hasUsage && (
             <>
-              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="p-4 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 rounded-lg">
                 <p className="text-sm text-yellow-800">
                   ⚠️ 该类别有 <span className="font-semibold">{category.usage_count}</span> 笔交易记录
                 </p>
