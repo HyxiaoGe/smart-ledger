@@ -76,7 +76,7 @@ function AIAnalysisModal({
       onClick={onClose} // 点击背景关闭弹窗
     >
       <div
-        className="bg-white rounded-xl w-full max-w-6xl max-h-[90vh] overflow-hidden shadow-2xl"
+        className="bg-white dark:bg-gray-900 rounded-xl w-full max-w-6xl max-h-[90vh] overflow-hidden shadow-2xl"
         onClick={(e) => e.stopPropagation()} // 阻止点击内容区域时关闭弹窗
       >
         {/* 弹窗头部 */}
@@ -86,22 +86,22 @@ function AIAnalysisModal({
               <Brain className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">智能财务分析</h2>
-              <p className="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-300">基于AI的个性化消费分析和建议</p>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">智能财务分析</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-300">基于AI的个性化消费分析和建议</p>
             </div>
           </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
           >
             ✕
           </Button>
         </div>
 
         {/* 弹窗内容区域 */}
-        <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 100px)' }}>
+        <div className="p-6 overflow-y-auto bg-gray-50 dark:bg-gray-900" style={{ maxHeight: 'calc(90vh - 100px)' }}>
           <AIAnalysisPanel
             dateRange={dateRange}
             currentMonth={currentMonth}
@@ -123,7 +123,7 @@ const AIAnalysisPanel = dynamic(
   {
     loading: () => (
       <div className="flex items-center justify-center h-64">
-        <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">
+        <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
           <Brain className="h-6 w-6 animate-pulse" />
           <span>AI分析加载中...</span>
         </div>

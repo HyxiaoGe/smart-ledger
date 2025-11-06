@@ -247,18 +247,18 @@ export function HomeQuickTransaction({ onSuccess }: HomeQuickTransactionProps) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.9 }}
               transition={{ duration: 0.2 }}
-              className="absolute bottom-full right-0 mb-3 bg-gradient-to-r from-gray-900 to-gray-800 text-white text-sm px-4 py-3 rounded-2xl whitespace-nowrap shadow-xl border border-gray-700"
+              className="absolute bottom-full right-0 mb-3 bg-gradient-to-r from-gray-900 to-gray-800 dark:from-gray-800 dark:to-gray-700 text-white text-sm px-4 py-3 rounded-2xl whitespace-nowrap shadow-xl border border-gray-700 dark:border-gray-600"
             >
               <div className="flex items-center gap-3">
                 <BsEmojiSmileFill className="h-5 w-5 text-pink-400" />
                 <div>
                   <div className="font-semibold">小助手来啦~</div>
-                  <div className="text-xs text-gray-300">点击快速记账 💕</div>
+                  <div className="text-xs text-gray-300 dark:text-gray-400">点击快速记账 💕</div>
                 </div>
               </div>
               {/* 小三角 */}
               <div className="absolute top-full right-6 -mt-1">
-                <div className="border-4 border-transparent border-t-gray-900"></div>
+                <div className="border-4 border-transparent border-t-gray-900 dark:border-t-gray-800"></div>
               </div>
             </motion.div>
           )}
@@ -272,7 +272,7 @@ export function HomeQuickTransaction({ onSuccess }: HomeQuickTransactionProps) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.8 }}
               transition={{ duration: 0.3 }}
-              className="absolute bottom-full right-0 mb-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm px-4 py-3 rounded-2xl whitespace-nowrap shadow-xl border border-purple-300"
+              className="absolute bottom-full right-0 mb-3 bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-700 dark:to-pink-700 text-white text-sm px-4 py-3 rounded-2xl whitespace-nowrap shadow-xl border border-purple-300 dark:border-purple-500"
             >
               <div className="flex items-center gap-3">
                 <motion.div
@@ -285,7 +285,7 @@ export function HomeQuickTransaction({ onSuccess }: HomeQuickTransactionProps) {
                     ease: "easeInOut"
                   }}
                 >
-                  <HiSparkles className="h-4 w-4 text-yellow-300" />
+                  <HiSparkles className="h-4 w-4 text-yellow-300 dark:text-yellow-200" />
                 </motion.div>
                 <div>
                   <div className="font-medium">{currentTip}</div>
@@ -293,7 +293,7 @@ export function HomeQuickTransaction({ onSuccess }: HomeQuickTransactionProps) {
               </div>
               {/* 小三角 */}
               <div className="absolute top-full right-6 -mt-1">
-                <div className="border-4 border-transparent border-t-purple-600"></div>
+                <div className="border-4 border-transparent border-t-purple-600 dark:border-t-purple-700"></div>
               </div>
             </motion.div>
           )}
