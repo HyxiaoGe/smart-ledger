@@ -278,10 +278,10 @@ export default function NotificationsSettingsPage() {
               <div className="space-y-2">
                 <label className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm font-medium text-gray-700">紧急通知</div>
+                    <div className="text-sm font-medium text-gray-700 dark:text-gray-300">紧急通知</div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">异常消费、账户安全等</div>
                   </div>
-                  <select className="px-3 py-1 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-sm">
+                  <select className="px-3 py-1 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-sm transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer">
                     <option>立即</option>
                     <option>延迟5分钟</option>
                     <option>延迟15分钟</option>

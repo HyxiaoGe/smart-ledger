@@ -301,7 +301,7 @@ export function SpendingPredictionPanel({
                 ...prev,
                 monthsToAnalyze: parseInt(e.target.value)
               }))}
-              className="text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
             >
               <option value={3}>3个月</option>
               <option value={6}>6个月</option>
@@ -318,7 +318,7 @@ export function SpendingPredictionPanel({
                 ...prev,
                 predictionMonths: parseInt(e.target.value)
               }))}
-              className="text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
             >
               <option value={1}>1个月</option>
               <option value={3}>3个月</option>
@@ -334,7 +334,7 @@ export function SpendingPredictionPanel({
                 ...prev,
                 confidenceThreshold: parseInt(e.target.value)
               }))}
-              className="text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
             >
               <option value={60}>60% (低)</option>
               <option value={70}>70% (中)</option>

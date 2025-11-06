@@ -290,7 +290,7 @@ export default function AIFeedbackManagementPage() {
             <select
               value={filter.featureType}
               onChange={(e) => setFilter(prev => ({ ...prev, featureType: e.target.value }))}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-sm"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md text-sm transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
             >
               <option value="all">所有功能</option>
               <option value="spending_prediction">支出预测</option>
@@ -303,7 +303,7 @@ export default function AIFeedbackManagementPage() {
             <select
               value={filter.status}
               onChange={(e) => setFilter(prev => ({ ...prev, status: e.target.value }))}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-sm"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md text-sm transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
             >
               <option value="all">所有状态</option>
               <option value="pending">待处理</option>
@@ -315,7 +315,7 @@ export default function AIFeedbackManagementPage() {
             <select
               value={filter.timeRange}
               onChange={(e) => setFilter(prev => ({ ...prev, timeRange: e.target.value }))}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-sm"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md text-sm transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
             >
               <option value="1d">最近1天</option>
               <option value="7d">最近7天</option>

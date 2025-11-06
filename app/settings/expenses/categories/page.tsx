@@ -553,13 +553,13 @@ function DeleteDialog({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   将现有交易迁移到 <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={migrateToKey}
                   onChange={(e) => onMigrateChange(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
                 >
                   <option value="">-- 请选择目标类别 --</option>
                   {categories.map((cat) => (
