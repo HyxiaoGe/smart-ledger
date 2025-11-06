@@ -288,12 +288,8 @@ export default function PaymentMethodsPage() {
 
         {/* 支付方式列表 */}
         <Card className="border-0 shadow-md bg-white dark:bg-gray-800 dark:bg-gray-800">
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader>
             <CardTitle className="text-xl">我的支付方式</CardTitle>
-            <Button onClick={() => setShowAddDialog(true)} className="gap-2">
-              <Plus className="h-4 w-4" />
-              添加支付方式
-            </Button>
           </CardHeader>
           <CardContent>
             {paymentMethods.length === 0 ? (
@@ -304,13 +300,9 @@ export default function PaymentMethodsPage() {
                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 dark:text-gray-100 mb-2">
                   还没有支付方式
                 </h3>
-                <p className="text-gray-500 dark:text-gray-400 mb-6">
-                  添加您常用的支付方式，让记账更加便捷
+                <p className="text-gray-500 dark:text-gray-400">
+                  您常用的支付方式会在这里显示
                 </p>
-                <Button onClick={() => setShowAddDialog(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  添加第一个支付方式
-                </Button>
               </div>
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
