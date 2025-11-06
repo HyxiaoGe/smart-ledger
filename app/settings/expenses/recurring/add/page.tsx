@@ -544,9 +544,9 @@ export default function AddRecurringExpensePage() {
               </Card>
 
               {/* 使用提示 */}
-              <Card className="border-0 shadow-lg overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-                <CardHeader className="bg-gradient-to-r from-blue-100 to-indigo-100 border-b dark:border-gray-700 border-blue-200 dark:border-blue-800 dark:border-blue-800">
-                  <CardTitle className="text-base text-blue-900 dark:text-blue-100 dark:text-blue-100 flex items-center gap-2">
+              <Card className="border-0 shadow-lg overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-blue-950 dark:via-gray-800 dark:to-indigo-950">
+                <CardHeader className="bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 border-b dark:border-gray-700 border-blue-200 dark:border-blue-800">
+                  <CardTitle className="text-base text-blue-900 dark:text-blue-100 flex items-center gap-2">
                     <div className="p-1.5 bg-blue-200 dark:bg-blue-800 rounded-lg">
                       <span className="text-lg">💡</span>
                     </div>
@@ -556,34 +556,34 @@ export default function AddRecurringExpensePage() {
                 <CardContent className="p-6">
                   <div className="space-y-4">
                     <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 bg-green-100 dark:bg-green-900 dark:bg-green-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <div className="w-2 h-2 bg-green-50 dark:bg-green-950 dark:bg-green-9500 rounded-full"></div>
+                      <div className="w-6 h-6 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full"></div>
                       </div>
-                      <p className="text-sm text-gray-700 leading-relaxed">
+                      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                         固定支出会在指定时间自动生成，无需手动重复记账
                       </p>
                     </div>
                     <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Pause className="h-3 w-3 text-blue-600" />
+                      <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Pause className="h-3 w-3 text-blue-600 dark:text-blue-400" />
                       </div>
-                      <p className="text-sm text-gray-700 leading-relaxed">
+                      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                         可以随时暂停或启用固定支出，灵活控制
                       </p>
                     </div>
                     <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 bg-purple-100 dark:bg-purple-900 dark:bg-purple-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Clock className="h-3 w-3 text-purple-600" />
+                      <div className="w-6 h-6 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Clock className="h-3 w-3 text-purple-600 dark:text-purple-400" />
                       </div>
-                      <p className="text-sm text-gray-700 leading-relaxed">
+                      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                         支持多种重复频率设置，满足不同需求
                       </p>
                     </div>
                     <div className="flex items-start gap-3">
                       <div className="w-6 h-6 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Calendar className="h-3 w-3 text-orange-600" />
+                        <Calendar className="h-3 w-3 text-orange-600 dark:text-orange-400" />
                       </div>
-                      <p className="text-sm text-gray-700 leading-relaxed">
+                      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                         系统会提前提醒即将生成的支出，帮助您做好财务规划
                       </p>
                     </div>

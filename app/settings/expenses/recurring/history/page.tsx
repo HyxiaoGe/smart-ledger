@@ -180,56 +180,56 @@ export default function RecurringHistoryPage() {
 
         {/* 统计卡片 */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card className="border-0 shadow-md">
+          <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.total}</div>
-                  <div className="text-sm text-gray-600 mt-1">总记录数</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">总记录数</div>
                 </div>
-                <div className="p-3 bg-blue-50 dark:bg-blue-950 dark:bg-blue-950 rounded-lg">
-                  <TrendingUp className="h-6 w-6 text-blue-600" />
+                <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                  <TrendingUp className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-md">
+          <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-2xl font-bold text-green-600">{stats.success}</div>
-                  <div className="text-sm text-gray-600 mt-1">成功生成</div>
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.success}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">成功生成</div>
                 </div>
-                <div className="p-3 bg-green-50 dark:bg-green-950 dark:bg-green-950 rounded-lg">
-                  <CheckCircle2 className="h-6 w-6 text-green-600" />
+                <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg">
+                  <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-md">
+          <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-2xl font-bold text-red-600">{stats.failed}</div>
-                  <div className="text-sm text-gray-600 mt-1">生成失败</div>
+                  <div className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.failed}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">生成失败</div>
                 </div>
-                <div className="p-3 bg-red-50 dark:bg-red-950 dark:bg-red-950 rounded-lg">
-                  <XCircle className="h-6 w-6 text-red-600" />
+                <div className="p-3 bg-red-50 dark:bg-red-950 rounded-lg">
+                  <XCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-md">
+          <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-2xl font-bold text-gray-600 dark:text-gray-300">{stats.skipped}</div>
-                  <div className="text-sm text-gray-600 mt-1">已跳过</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">已跳过</div>
                 </div>
-                <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <Clock className="h-6 w-6 text-gray-600 dark:text-gray-300" />
                 </div>
               </div>
@@ -238,10 +238,10 @@ export default function RecurringHistoryPage() {
         </div>
 
         {/* 筛选器 */}
-        <Card className="border-0 shadow-md mb-6">
+        <Card className="border-0 shadow-md mb-6 bg-white dark:bg-gray-800">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 text-gray-700">
+              <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                 <Filter className="h-4 w-4" />
                 <span className="font-medium">筛选状态：</span>
               </div>
@@ -268,14 +268,14 @@ export default function RecurringHistoryPage() {
         </Card>
 
         {/* 历史记录列表 */}
-        <Card className="border-0 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b dark:border-gray-700">
+        <Card className="border-0 shadow-lg bg-white dark:bg-gray-800">
+          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-750 border-b dark:border-gray-700">
             <CardTitle className="flex items-center gap-3 text-gray-900 dark:text-gray-100">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded-lg">
-                <History className="h-5 w-5 text-blue-600" />
+              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                <History className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
               <span>生成记录</span>
-              <span className="text-sm text-gray-500 font-normal">
+              <span className="text-sm text-gray-500 dark:text-gray-400 font-normal">
                 ({filteredLogs.length} 条记录)
               </span>
             </CardTitle>
@@ -283,13 +283,13 @@ export default function RecurringHistoryPage() {
           <CardContent className="p-6">
             {filteredLogs.length === 0 ? (
               <div className="text-center py-16">
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-6">
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full mb-6">
                   <History className="h-10 w-10 text-gray-400 dark:text-gray-500" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                   {filterStatus === 'all' ? '还没有生成记录' : `没有${getStatusStyle(filterStatus).label}的记录`}
                 </h3>
-                <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
                   {filterStatus === 'all'
                     ? '系统会在每天 00:01 自动检查并生成符合条件的固定支出，生成记录会显示在这里'
                     : '尝试切换其他筛选条件查看记录'
