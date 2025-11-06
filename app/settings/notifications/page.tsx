@@ -65,9 +65,9 @@ export default function NotificationsSettingsPage() {
         </div>
 
         {/* 当前状态 */}
-        <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 mb-8">
+        <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 dark:border-green-800 dark:border-green-800 mb-8">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-green-900">
+            <CardTitle className="flex items-center gap-2 text-green-900 dark:text-green-100 dark:text-green-100">
               <CheckCircle className="h-5 w-5" />
               通知状态
             </CardTitle>
@@ -99,7 +99,7 @@ export default function NotificationsSettingsPage() {
                   <div className="flex items-center gap-3">
                     <div className={`p-2 rounded-lg ${
                       notification.status === 'available'
-                        ? 'bg-blue-100'
+                        ? 'bg-blue-100 dark:bg-blue-900'
                         : 'bg-gray-100'
                     }`}>
                       <notification.icon className={`h-6 w-6 ${
@@ -135,7 +135,7 @@ export default function NotificationsSettingsPage() {
         </div>
 
         {/* 开发进度 */}
-        <Card className="bg-gradient-to-r from-orange-50 to-amber-50 border-orange-200">
+        <Card className="bg-gradient-to-r from-orange-50 to-amber-50 border-orange-200 dark:border-orange-800">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-orange-900">
               <Bell className="h-5 w-5" />
@@ -281,7 +281,7 @@ export default function NotificationsSettingsPage() {
                     <div className="text-sm font-medium text-gray-700">紧急通知</div>
                     <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">异常消费、账户安全等</div>
                   </div>
-                  <select className="px-3 py-1 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                  <select className="px-3 py-1 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-sm">
                     <option>立即</option>
                     <option>延迟5分钟</option>
                     <option>延迟15分钟</option>
@@ -294,8 +294,8 @@ export default function NotificationsSettingsPage() {
         </Card>
 
         {/* 使用提示 */}
-        <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <h3 className="font-medium text-blue-900 mb-2">💡 使用提示</h3>
+        <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-950 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800 dark:border-blue-800">
+          <h3 className="font-medium text-blue-900 dark:text-blue-100 dark:text-blue-100 mb-2">💡 使用提示</h3>
           <ul className="text-sm text-blue-800 space-y-1">
             <li>• 合理设置通知频率，避免通知过频繁</li>
             <li>• 重要通知建议开启多个渠道，确保不会遗漏</li>
