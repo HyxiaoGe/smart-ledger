@@ -34,15 +34,15 @@ export function TrendAnalysis({
   onToggle
 }: TrendAnalysisProps) {
   return (
-    <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+    <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border-blue-200 dark:border-blue-800">
       <CardHeader
         className="pb-3 cursor-pointer"
         onClick={onToggle}
       >
         <CardTitle className="flex items-center justify-between text-base">
           <div className="flex items-center gap-2">
-            <Brain className="h-5 w-5 text-blue-600" />
-            <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent font-semibold">
+            <Brain className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <span className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent font-semibold">
               可变支出趋势分析
             </span>
           </div>
@@ -68,10 +68,10 @@ export function TrendAnalysis({
               {data ? (
                 <>
                   {/* 月度总览 */}
-                  <div className="bg-white rounded-lg p-4 border border-blue-100 mb-4">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-blue-100 dark:border-blue-800 mb-4">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm text-gray-600 dark:text-gray-300">本月可变支出</span>
-                      <span className="text-2xl font-bold text-gray-900">
+                      <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                         ¥{data.currentMonth.toFixed(0)}
                       </span>
                     </div>
@@ -87,7 +87,7 @@ export function TrendAnalysis({
                         {data.changePercent >= 0 ? '+' : ''}
                         {data.changePercent.toFixed(1)}%
                       </span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
                         (¥{Math.abs(data.changeAmount).toFixed(0)})
                       </span>
                     </div>
@@ -95,20 +95,20 @@ export function TrendAnalysis({
 
                   {/* 分类趋势 */}
                   <div className="space-y-2">
-                    <div className="text-sm font-medium text-gray-700">主要类别趋势</div>
+                    <div className="text-sm font-medium text-gray-700 dark:text-gray-300">主要类别趋势</div>
                     {data.categories.map((category) => (
-                      <div key={category.category} className="flex items-center justify-between p-2 bg-white rounded border border-gray-100">
+                      <div key={category.category} className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded border border-gray-100 dark:border-gray-700">
                         <div className="flex items-center gap-2">
                           <span className="text-lg">{category.icon}</span>
-                          <span className="text-sm text-gray-700">
+                          <span className="text-sm text-gray-700 dark:text-gray-300">
                             {CATEGORY_NAMES[category.category] || category.category}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">¥{category.current.toFixed(0)}</span>
+                          <span className="text-sm font-medium text-gray-900 dark:text-gray-100">¥{category.current.toFixed(0)}</span>
                           {category.changePercent !== 0 && (
                             <span className={`text-xs px-1 rounded ${
-                              category.changePercent > 0 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
+                              category.changePercent > 0 ? 'bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300' : 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300'
                             }`}>
                               {category.changePercent > 0 ? '+' : ''}
                               {category.changePercent.toFixed(1)}%
@@ -120,8 +120,8 @@ export function TrendAnalysis({
                   </div>
                 </>
               ) : (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400 dark:text-gray-500">
-                  <Brain className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <Brain className="h-8 w-8 mx-auto mb-2 text-gray-300 dark:text-gray-600" />
                   <div className="text-sm">
                     {loading ? '分析中...' : '暂无数据'}
                   </div>

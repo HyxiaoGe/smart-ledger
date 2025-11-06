@@ -450,18 +450,18 @@ export function DeepInsightPanel({
 
   if (!aiData) {
     return (
-      <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+      <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border-green-200 dark:border-green-800">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
-            <Brain className="h-5 w-5 text-green-600" />
-            <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent font-semibold">
+            <Brain className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <span className="bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400 bg-clip-text text-transparent font-semibold">
               可变支出深度洞察
             </span>
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-            <Brain className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+            <Brain className="h-8 w-8 mx-auto mb-2 text-gray-300 dark:text-gray-600" />
             <div className="text-sm">等待数据加载...</div>
           </div>
         </CardContent>
@@ -470,15 +470,15 @@ export function DeepInsightPanel({
   }
 
   return (
-    <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+    <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border-green-200 dark:border-green-800">
       <CardHeader
         className="pb-3 cursor-pointer"
         onClick={() => setCollapsed(!collapsed)}
       >
         <CardTitle className="flex items-center justify-between text-base">
           <div className="flex items-center gap-2">
-            <Brain className="h-5 w-5 text-green-600" />
-            <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent font-semibold">
+            <Brain className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <span className="bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400 bg-clip-text text-transparent font-semibold">
               可变支出深度洞察
             </span>
           </div>
@@ -491,7 +491,7 @@ export function DeepInsightPanel({
                 processData();
               }}
               disabled={loading}
-              className="h-6 w-6 p-0 text-gray-500 dark:text-gray-400 hover:text-gray-700"
+              className="h-6 w-6 p-0 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
             >
               <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
             </Button>
@@ -499,7 +499,7 @@ export function DeepInsightPanel({
               animate={{ rotate: collapsed ? 180 : 0 }}
               transition={{ duration: 0.2 }}
             >
-              <ChevronDown className="h-4 w-4 text-gray-400 dark:text-gray-400" />
+              <ChevronDown className="h-4 w-4 text-gray-400 dark:text-gray-500" />
             </motion.div>
           </div>
         </CardTitle>
@@ -517,16 +517,16 @@ export function DeepInsightPanel({
             <CardContent className="pt-0 space-y-4">
               {loading ? (
                 <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  <Brain className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                  <Brain className="h-8 w-8 mx-auto mb-2 text-gray-300 dark:text-gray-600" />
                   <div className="text-sm">分析中...</div>
                 </div>
               ) : data ? (
                 <>
                   {/* 习惯评分 */}
-                  <div className="bg-white rounded-lg p-4 border border-green-100">
-                    <h4 className="text-sm font-medium text-gray-700 mb-3">可变支出习惯评分</h4>
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-green-100 dark:border-green-800">
+                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">可变支出习惯评分</h4>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-2xl font-bold text-green-600">
+                      <span className="text-2xl font-bold text-green-600 dark:text-green-400">
                         {data.habitScore.overall}
                       </span>
                       <span className="text-sm text-gray-500 dark:text-gray-400">综合评分</span>
@@ -534,15 +534,15 @@ export function DeepInsightPanel({
                     <p className="text-xs text-gray-600 dark:text-gray-300 mb-3">{data.habitScore.description}</p>
                     <div className="grid grid-cols-3 gap-2 text-xs">
                       <div className="text-center">
-                        <div className="font-medium text-blue-600">{data.habitScore.predictability}</div>
+                        <div className="font-medium text-blue-600 dark:text-blue-400">{data.habitScore.predictability}</div>
                         <div className="text-gray-500 dark:text-gray-400">预测性</div>
                       </div>
                       <div className="text-center">
-                        <div className="font-medium text-purple-600">{data.habitScore.diversity}</div>
+                        <div className="font-medium text-purple-600 dark:text-purple-400">{data.habitScore.diversity}</div>
                         <div className="text-gray-500 dark:text-gray-400">多样性</div>
                       </div>
                       <div className="text-center">
-                        <div className="font-medium text-orange-600">{data.habitScore.regularity}</div>
+                        <div className="font-medium text-orange-600 dark:text-orange-400">{data.habitScore.regularity}</div>
                         <div className="text-gray-500 dark:text-gray-400">规律性</div>
                       </div>
                     </div>
@@ -551,7 +551,7 @@ export function DeepInsightPanel({
                   {/* 洞察模式 */}
                   {data.patterns.length > 0 && (
                     <div className="space-y-2">
-                      <h4 className="text-sm font-medium text-gray-700">可变支出洞察</h4>
+                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">可变支出洞察</h4>
                       {data.patterns.map((pattern) => (
                         <div
                           key={pattern.id}
@@ -565,7 +565,7 @@ export function DeepInsightPanel({
                                 <div className="text-xs opacity-80">{pattern.description}</div>
                               </div>
                             </div>
-                            <span className="text-xs px-2 py-1 rounded-full bg-white bg-opacity-50">
+                            <span className="text-xs px-2 py-1 rounded-full bg-white dark:bg-gray-700 bg-opacity-50 dark:bg-opacity-50">
                               {Math.round(pattern.confidence)}%
                             </span>
                           </div>
@@ -578,17 +578,17 @@ export function DeepInsightPanel({
                   {/* 月度趋势 */}
                   {data.monthlyTrends.length > 0 && (
                     <div className="space-y-2">
-                      <h4 className="text-sm font-medium text-gray-700">可变支出月度趋势</h4>
+                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">可变支出月度趋势</h4>
                       {data.monthlyTrends.map((trend, index) => (
-                        <div key={index} className="flex items-center justify-between p-2 bg-white rounded border border-gray-100">
+                        <div key={index} className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded border border-gray-100 dark:border-gray-700">
                           <div className="flex items-center gap-2">
                             <span>{getTrendIcon(trend.trend)}</span>
-                            <span className="text-sm text-gray-700">{trend.category}</span>
+                            <span className="text-sm text-gray-700 dark:text-gray-300">{trend.category}</span>
                           </div>
                           <span className={`text-xs px-2 py-1 rounded ${
-                            trend.trend === 'increasing' ? 'bg-red-100 text-red-600' :
-                            trend.trend === 'decreasing' ? 'bg-green-100 text-green-600' :
-                            'bg-gray-100 text-gray-600 dark:text-gray-300'
+                            trend.trend === 'increasing' ? 'bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300' :
+                            trend.trend === 'decreasing' ? 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300' :
+                            'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300'
                           }`}>
                             {trend.changeRate > 0 ? '+' : ''}{trend.changeRate}%
                           </span>
@@ -598,11 +598,11 @@ export function DeepInsightPanel({
                   )}
 
                   {/* 改进建议 */}
-                  <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
-                    <h4 className="text-sm font-medium text-blue-700 mb-2">改进建议</h4>
+                  <div className="bg-blue-50 dark:bg-blue-950 rounded-lg p-4 border border-blue-100 dark:border-blue-800">
+                    <h4 className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-2">改进建议</h4>
                     <ul className="space-y-1">
                       {data.habitScore.improvements.map((improvement, index) => (
-                        <li key={index} className="text-xs text-blue-600 flex items-start gap-1">
+                        <li key={index} className="text-xs text-blue-600 dark:text-blue-300 flex items-start gap-1">
                           <span>•</span>
                           <span>{improvement}</span>
                         </li>
@@ -612,7 +612,7 @@ export function DeepInsightPanel({
                 </>
               ) : (
                 <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  <Brain className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                  <Brain className="h-8 w-8 mx-auto mb-2 text-gray-300 dark:text-gray-600" />
                   <div className="text-sm">暂无足够数据进行分析</div>
                 </div>
               )}

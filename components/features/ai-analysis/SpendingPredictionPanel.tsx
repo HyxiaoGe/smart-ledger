@@ -236,13 +236,13 @@ export function SpendingPredictionPanel({
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'high':
-        return 'bg-red-100 text-red-700 border-red-200';
+        return 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800';
       case 'medium':
-        return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+        return 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800';
       case 'low':
-        return 'bg-green-100 text-green-700 border-green-200';
+        return 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800';
       default:
-        return 'bg-gray-100 text-gray-700 border-gray-200 dark:border-gray-700';
+        return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700';
     }
   };
 
@@ -254,27 +254,27 @@ export function SpendingPredictionPanel({
 
   if (error) {
     return (
-      <Card className="bg-gradient-to-br from-orange-50 to-red-50 border-orange-200">
+      <Card className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950 dark:to-red-950 border-orange-200 dark:border-orange-800">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
-            <Target className="h-5 w-5 text-orange-600" />
-            <span className="bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent font-semibold">
+            <Target className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+            <span className="bg-gradient-to-r from-orange-600 to-red-600 dark:from-orange-400 dark:to-red-400 bg-clip-text text-transparent font-semibold">
               支出预测
             </span>
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <div className="text-center py-8 text-orange-600">
+          <div className="text-center py-8 text-orange-600 dark:text-orange-400">
             <AlertTriangle className="h-8 w-8 mx-auto mb-2" />
             <div className="text-sm font-medium">{error}</div>
-            <div className="text-xs mt-1 text-orange-500">
+            <div className="text-xs mt-1 text-orange-500 dark:text-orange-400">
               需要至少3个月的历史数据才能进行预测
             </div>
             <Button
               variant="outline"
               size="sm"
               onClick={handleRefresh}
-              className="mt-3 text-orange-600 border-orange-300 hover:bg-orange-50"
+              className="mt-3 text-orange-600 dark:text-orange-400 border-orange-300 dark:border-orange-700 hover:bg-orange-50 dark:hover:bg-orange-950"
             >
               <RefreshCw className="h-3 w-3 mr-1" />
               重试
@@ -289,10 +289,10 @@ export function SpendingPredictionPanel({
     <div className={`space-y-4 ${className}`}>
       {/* 参数设置和刷新按钮 */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h2 className="text-xl font-semibold text-gray-900">智能支出预测</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">智能支出预测</h2>
 
         {/* 参数设置 */}
-        <div className="flex items-center gap-4 bg-white rounded-lg p-3 border border-gray-200 dark:border-gray-700 dark:border-gray-700">
+        <div className="flex items-center gap-4 bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
             <label className="text-sm text-gray-600 dark:text-gray-300">历史数据:</label>
             <select
@@ -301,7 +301,7 @@ export function SpendingPredictionPanel({
                 ...prev,
                 monthsToAnalyze: parseInt(e.target.value)
               }))}
-              className="text-sm border border-gray-300 dark:border-gray-700 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value={3}>3个月</option>
               <option value={6}>6个月</option>
@@ -318,7 +318,7 @@ export function SpendingPredictionPanel({
                 ...prev,
                 predictionMonths: parseInt(e.target.value)
               }))}
-              className="text-sm border border-gray-300 dark:border-gray-700 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value={1}>1个月</option>
               <option value={3}>3个月</option>
@@ -334,7 +334,7 @@ export function SpendingPredictionPanel({
                 ...prev,
                 confidenceThreshold: parseInt(e.target.value)
               }))}
-              className="text-sm border border-gray-300 dark:border-gray-700 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value={60}>60% (低)</option>
               <option value={70}>70% (中)</option>
@@ -353,9 +353,9 @@ export function SpendingPredictionPanel({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                  refreshStatus === 'refreshing' ? 'bg-blue-100 text-blue-700' :
-                  refreshStatus === 'success' ? 'bg-green-100 text-green-700' :
-                  'bg-red-100 text-red-700'
+                  refreshStatus === 'refreshing' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' :
+                  refreshStatus === 'success' ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' :
+                  'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300'
                 }`}
               >
                 {refreshStatus === 'refreshing' && (
@@ -386,12 +386,12 @@ export function SpendingPredictionPanel({
       </div>
 
       {loading ? (
-        <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+        <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border-blue-200 dark:border-blue-800">
           <CardContent className="p-8">
-            <div className="text-center text-blue-600">
+            <div className="text-center text-blue-600 dark:text-blue-400">
               <RefreshCw className="h-8 w-8 mx-auto mb-2 animate-spin" />
               <div className="text-sm font-medium">AI正在分析您的支出模式...</div>
-              <div className="text-xs mt-1 text-blue-500">
+              <div className="text-xs mt-1 text-blue-500 dark:text-blue-400">
                 这可能需要几秒钟时间
               </div>
             </div>
@@ -400,15 +400,15 @@ export function SpendingPredictionPanel({
       ) : (
         <>
           {/* 支出预测模块 */}
-          <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+          <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border-blue-200 dark:border-blue-800">
             <CardHeader
               className="pb-3 cursor-pointer"
               onClick={() => toggleModule('prediction')}
             >
               <CardTitle className="flex items-center justify-between text-base">
                 <div className="flex items-center gap-2">
-                  <Target className="h-5 w-5 text-blue-600" />
-                  <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent font-semibold">
+                  <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  <span className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent font-semibold">
                     支出预测
                   </span>
                 </div>
@@ -432,20 +432,20 @@ export function SpendingPredictionPanel({
                 >
                   <CardContent className="pt-0">
                     {/* 预测概览 */}
-                    <div className="bg-white rounded-lg p-4 border border-blue-100 mb-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-blue-100 dark:border-blue-800 mb-4">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm text-gray-600 dark:text-gray-300">下月预测支出</span>
                         <div className="flex items-center gap-2">
                           {getTrendIcon(predictionData.trends.overall)}
-                          <span className="text-2xl font-bold text-gray-900">
+                          <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                             ¥{predictionData.predictions[0]?.totalAmount?.toFixed(0) || '0'}
                           </span>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-gray-200 rounded-full h-2">
+                        <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                           <div
-                            className="bg-blue-600 h-2 rounded-full"
+                            className="bg-blue-600 dark:bg-blue-500 h-2 rounded-full"
                             style={{ width: `${predictionData.predictions[0]?.confidence || 0}%` }}
                           />
                         </div>
@@ -457,19 +457,19 @@ export function SpendingPredictionPanel({
 
                     {/* 预测明细 */}
                     <div className="space-y-2">
-                      <div className="text-sm font-medium text-gray-700">未来预测</div>
+                      <div className="text-sm font-medium text-gray-700 dark:text-gray-300">未来预测</div>
                       {predictionData.predictions.slice(0, 3).map((prediction, index) => (
-                        <div key={prediction.month} className="flex items-center justify-between p-2 bg-white rounded border border-gray-100">
+                        <div key={prediction.month} className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded border border-gray-100 dark:border-gray-700">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-700">{formatMonth(prediction.month)}</span>
-                            {index === 0 && <span className="text-xs bg-blue-100 text-blue-600 px-1 rounded">下月</span>}
+                            <span className="text-sm text-gray-700 dark:text-gray-300">{formatMonth(prediction.month)}</span>
+                            {index === 0 && <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 px-1 rounded">下月</span>}
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">¥{prediction.totalAmount.toFixed(0)}</span>
+                            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">¥{prediction.totalAmount.toFixed(0)}</span>
                             <span className={`text-xs px-1 rounded ${
-                              prediction.confidence > 80 ? 'bg-green-100 text-green-600' :
-                              prediction.confidence > 60 ? 'bg-yellow-100 text-yellow-600' :
-                              'bg-red-100 text-red-600'
+                              prediction.confidence > 80 ? 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300' :
+                              prediction.confidence > 60 ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300' :
+                              'bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300'
                             }`}>
                               {prediction.confidence}%
                             </span>
@@ -480,11 +480,11 @@ export function SpendingPredictionPanel({
 
                     {/* AI洞察 */}
                     {predictionData.insights.length > 0 && (
-                      <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
-                        <div className="text-sm font-medium text-blue-700 mb-1">AI洞察</div>
+                      <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-100 dark:border-blue-800">
+                        <div className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">AI洞察</div>
                         <ul className="space-y-1">
                           {predictionData.insights.slice(0, 2).map((insight, index) => (
-                            <li key={index} className="text-xs text-blue-600 flex items-start gap-1">
+                            <li key={index} className="text-xs text-blue-600 dark:text-blue-300 flex items-start gap-1">
                               <span>•</span>
                               <span>{insight}</span>
                             </li>
@@ -499,15 +499,15 @@ export function SpendingPredictionPanel({
           </Card>
 
           {/* 预测趋势图表 */}
-          <Card className="bg-gradient-to-br from-indigo-50 to-blue-50 border-indigo-200">
+          <Card className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950 dark:to-blue-950 border-indigo-200 dark:border-indigo-800">
             <CardHeader
               className="pb-3 cursor-pointer"
               onClick={() => toggleModule('chart')}
             >
               <CardTitle className="flex items-center justify-between text-base">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-indigo-600" />
-                  <span className="bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent font-semibold">
+                  <TrendingUp className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                  <span className="bg-gradient-to-r from-indigo-600 to-blue-600 dark:from-indigo-400 dark:to-blue-400 bg-clip-text text-transparent font-semibold">
                     趋势图表
                   </span>
                 </div>
@@ -556,19 +556,19 @@ export function SpendingPredictionPanel({
 
           {/* 异常检测模块 */}
           {anomalyData && (
-            <Card className="bg-gradient-to-br from-orange-50 to-yellow-50 border-orange-200">
+            <Card className="bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-950 dark:to-yellow-950 border-orange-200 dark:border-orange-800">
               <CardHeader
                 className="pb-3 cursor-pointer"
                 onClick={() => toggleModule('anomaly')}
               >
                 <CardTitle className="flex items-center justify-between text-base">
                   <div className="flex items-center gap-2">
-                    <AlertTriangle className="h-5 w-5 text-orange-600" />
-                    <span className="bg-gradient-to-r from-orange-600 to-yellow-600 bg-clip-text text-transparent font-semibold">
+                    <AlertTriangle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                    <span className="bg-gradient-to-r from-orange-600 to-yellow-600 dark:from-orange-400 dark:to-yellow-400 bg-clip-text text-transparent font-semibold">
                       异常检测
                     </span>
                     {anomalyData.anomalies.length > 0 && (
-                      <span className="bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full">
+                      <span className="bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300 text-xs px-2 py-1 rounded-full">
                         {anomalyData.anomalies.length}
                       </span>
                     )}
@@ -612,7 +612,7 @@ export function SpendingPredictionPanel({
                           ))}
                         </div>
                       ) : (
-                        <div className="text-center py-4 text-green-600">
+                        <div className="text-center py-4 text-green-600 dark:text-green-400">
                           <div className="text-sm font-medium">支出模式正常</div>
                           <div className="text-xs mt-1">未发现异常支出</div>
                         </div>
@@ -626,15 +626,15 @@ export function SpendingPredictionPanel({
 
           {/* 预算建议模块 */}
           {budgetData && (
-            <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+            <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border-green-200 dark:border-green-800">
               <CardHeader
                 className="pb-3 cursor-pointer"
                 onClick={() => toggleModule('budget')}
               >
                 <CardTitle className="flex items-center justify-between text-base">
                   <div className="flex items-center gap-2">
-                    <Target className="h-5 w-5 text-green-600" />
-                    <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent font-semibold">
+                    <Target className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    <span className="bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400 bg-clip-text text-transparent font-semibold">
                       预算建议
                     </span>
                   </div>
@@ -658,16 +658,16 @@ export function SpendingPredictionPanel({
                   >
                     <CardContent className="pt-0">
                       {/* 预算概览 */}
-                      <div className="bg-white rounded-lg p-4 border border-green-100 mb-4">
+                      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-green-100 dark:border-green-800 mb-4">
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm text-gray-600 dark:text-gray-300">建议月度预算</span>
-                          <span className="text-xl font-bold text-green-600">
+                          <span className="text-xl font-bold text-green-600 dark:text-green-400">
                             ¥{budgetData.monthlyBudget.recommended.toFixed(0)}
                           </span>
                         </div>
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-gray-500 dark:text-gray-400">当前平均: ¥{budgetData.monthlyBudget.current.toFixed(0)}</span>
-                          <span className="text-green-600 font-medium">
+                          <span className="text-green-600 dark:text-green-400 font-medium">
                             可节省 ¥{budgetData.monthlyBudget.potentialSavings.toFixed(0)} ({budgetData.monthlyBudget.savingsRate}%)
                           </span>
                         </div>
@@ -675,20 +675,20 @@ export function SpendingPredictionPanel({
 
                       {/* 分类预算建议 */}
                       <div className="space-y-2">
-                        <div className="text-sm font-medium text-gray-700">分类优化建议</div>
+                        <div className="text-sm font-medium text-gray-700 dark:text-gray-300">分类优化建议</div>
                         {budgetData.categoryBudgets.slice(0, 3).map((budget, index) => (
-                          <div key={budget.category} className="flex items-center justify-between p-2 bg-white rounded border border-gray-100">
+                          <div key={budget.category} className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded border border-gray-100 dark:border-gray-700">
                             <div className="flex items-center gap-2">
-                              <span className="text-sm text-gray-700">
+                              <span className="text-sm text-gray-700 dark:text-gray-300">
                                 {categoryNames[budget.category] || budget.category}
                               </span>
                               {budget.priority === 'high' && (
-                                <span className="text-xs bg-red-100 text-red-600 px-1 rounded">高优先级</span>
+                                <span className="text-xs bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300 px-1 rounded">高优先级</span>
                               )}
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="text-sm text-gray-500 dark:text-gray-400">¥{budget.currentAvg.toFixed(0)}</span>
-                              <span className="text-sm font-medium text-green-600">→ ¥{budget.recommendedBudget.toFixed(0)}</span>
+                              <span className="text-sm font-medium text-green-600 dark:text-green-400">→ ¥{budget.recommendedBudget.toFixed(0)}</span>
                             </div>
                           </div>
                         ))}
@@ -702,7 +702,7 @@ export function SpendingPredictionPanel({
 
           {/* AI快速反馈 */}
           {predictionData && !loading && (
-            <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+            <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border-blue-200 dark:border-blue-800">
               <CardContent className="p-4">
                 <QuickFeedback
                   featureType="spending_prediction"
@@ -775,7 +775,7 @@ export function SpendingPredictionPanel({
 
                         {/* 准确性评分 */}
                         <div>
-                          <label className="text-sm font-medium text-gray-700 mb-2 block">
+                          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                             预测准确性评分
                           </label>
                           <div className="flex items-center gap-2">
@@ -786,7 +786,7 @@ export function SpendingPredictionPanel({
                                 className={`w-8 h-8 rounded-full border-2 transition-colors ${
                                   userFeedback.accuracyRating >= rating
                                     ? 'bg-purple-500 border-purple-500 text-white'
-                                    : 'bg-white border-gray-300 dark:border-gray-700 text-gray-400 dark:text-gray-400 hover:border-purple-300'
+                                    : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-400 hover:border-purple-300 dark:hover:border-purple-600'
                                 }`}
                               >
                                 {rating}
@@ -800,7 +800,7 @@ export function SpendingPredictionPanel({
 
                         {/* 有用性评分 */}
                         <div>
-                          <label className="text-sm font-medium text-gray-700 mb-2 block">
+                          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                             预测有用性评分
                           </label>
                           <div className="flex items-center gap-2">
@@ -811,7 +811,7 @@ export function SpendingPredictionPanel({
                                 className={`w-8 h-8 rounded-full border-2 transition-colors ${
                                   userFeedback.helpfulRating >= rating
                                     ? 'bg-pink-500 border-pink-500 text-white'
-                                    : 'bg-white border-gray-300 dark:border-gray-700 text-gray-400 dark:text-gray-400 hover:border-pink-300'
+                                    : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-400 hover:border-pink-300 dark:hover:border-pink-600'
                                 }`}
                               >
                                 {rating}
@@ -825,14 +825,14 @@ export function SpendingPredictionPanel({
 
                         {/* 评论 */}
                         <div>
-                          <label className="text-sm font-medium text-gray-700 mb-2 block">
+                          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                             具体建议（可选）
                           </label>
                           <textarea
                             value={userFeedback.comment}
                             onChange={(e) => setUserFeedback(prev => ({ ...prev, comment: e.target.value }))}
                             placeholder="请告诉我们如何改进预测功能..."
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm resize-none"
+                            className="w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm resize-none"
                             rows={3}
                           />
                         </div>
@@ -850,7 +850,7 @@ export function SpendingPredictionPanel({
 
                         {/* 提交成功提示 */}
                         {userFeedback.submitted && (
-                          <div className="text-center py-2 text-green-600 text-sm">
+                          <div className="text-center py-2 text-green-600 dark:text-green-400 text-sm">
                             感谢您的反馈！这将帮助我们改进预测算法。
                           </div>
                         )}
