@@ -378,10 +378,11 @@ const SmartNoteInputComponent = function SmartNoteInput({
                     event.preventDefault();
                     handleChooseSuggestion(suggestion);
                   }}
-                  className={`w-full px-3 py-2 text-left text-sm border-b border-gray-50 dark:border-gray-700 last:border-b-0 transition-all duration-200 ${
+                  onMouseEnter={() => setActiveIndex(index)}
+                  className={`w-full px-3 py-2 text-left text-sm border-b border-gray-50 dark:border-gray-700 last:border-b-0 transition-all duration-200 ease-in-out ${
                     index === activeIndex
-                      ? 'bg-blue-50 dark:bg-blue-950 border-blue-100 dark:border-blue-800'
-                      : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                      ? 'bg-blue-50 dark:bg-blue-950 border-blue-100 dark:border-blue-800 scale-[1.02] shadow-sm'
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-800 hover:scale-[1.01] hover:shadow-sm'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
