@@ -463,7 +463,7 @@ export default function AddPage() {
               <div>
                 <Label>币种 <span className="text-destructive">*</span></Label>
                 <select
-                  className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800"
+                  className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
                   value={currency}
                   onChange={(e) => setCurrency(e.target.value as Currency)}
                   disabled={loading}
@@ -476,7 +476,7 @@ export default function AddPage() {
               <div>
                 <Label>支付方式</Label>
                 <select
-                  className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800"
+                  className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
                   value={paymentMethod}
                   onChange={(e) => setPaymentMethod(e.target.value)}
                   disabled={loading}
