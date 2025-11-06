@@ -213,7 +213,7 @@ export default function CategoriesPage() {
                   <div className="text-2xl font-bold text-gray-900">{categories.length}</div>
                   <div className="text-sm text-gray-600 mt-1">总类别数</div>
                 </div>
-                <div className="p-3 bg-blue-50 rounded-lg">
+                <div className="p-3 bg-blue-50 dark:bg-blue-950 dark:bg-blue-950 rounded-lg">
                   <Tag className="h-6 w-6 text-blue-600" />
                 </div>
               </div>
@@ -227,7 +227,7 @@ export default function CategoriesPage() {
                   <div className="text-2xl font-bold text-green-600">{activeCategories}</div>
                   <div className="text-sm text-gray-600 mt-1">启用中</div>
                 </div>
-                <div className="p-3 bg-green-50 rounded-lg">
+                <div className="p-3 bg-green-50 dark:bg-green-950 dark:bg-green-950 rounded-lg">
                   <Check className="h-6 w-6 text-green-600" />
                 </div>
               </div>
@@ -241,7 +241,7 @@ export default function CategoriesPage() {
                   <div className="text-2xl font-bold text-purple-600">{totalUsage}</div>
                   <div className="text-sm text-gray-600 mt-1">总使用次数</div>
                 </div>
-                <div className="p-3 bg-purple-50 rounded-lg">
+                <div className="p-3 bg-purple-50 dark:bg-purple-950 dark:bg-purple-950 rounded-lg">
                   <TrendingUp className="h-6 w-6 text-purple-600" />
                 </div>
               </div>
@@ -253,7 +253,7 @@ export default function CategoriesPage() {
         <Card className="border-0 shadow-lg">
           <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
             <CardTitle className="flex items-center gap-3 text-gray-900">
-              <div className="p-2 bg-blue-100 rounded-lg">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded-lg">
                 <Tag className="h-5 w-5 text-blue-600" />
               </div>
               <span>类别列表</span>
@@ -267,7 +267,7 @@ export default function CategoriesPage() {
               {categories.map((category) => (
                 <div
                   key={category.id}
-                  className="group relative rounded-xl border-2 border-gray-200 p-4 hover:shadow-md hover:border-blue-300 transition-all"
+                  className="group relative rounded-xl border-2 border-gray-200 p-4 hover:shadow-md hover:border-blue-300 dark:border-blue-700 transition-all"
                   style={{ borderLeftColor: category.color || undefined, borderLeftWidth: '4px' }}
                 >
                   <div className="flex items-start justify-between mb-3">
@@ -306,7 +306,7 @@ export default function CategoriesPage() {
                       size="sm"
                       variant="outline"
                       onClick={() => openEditDialog(category)}
-                      className="flex-1 hover:bg-blue-50 hover:border-blue-300"
+                      className="flex-1 hover:bg-blue-50 dark:hover:bg-blue-950 dark:bg-blue-950 hover:border-blue-300 dark:border-blue-700"
                     >
                       <Edit2 className="h-3 w-3 mr-1" />
                       编辑
@@ -316,7 +316,7 @@ export default function CategoriesPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => openDeleteDialog(category)}
-                        className="hover:bg-red-50 hover:border-red-300 hover:text-red-600"
+                        className="hover:bg-red-50 dark:bg-red-950 hover:border-red-300 hover:text-red-600"
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>
@@ -432,7 +432,7 @@ function CategoryDialog({
               type="text"
               value={label}
               onChange={(e) => onLabelChange(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
               placeholder="例如：早餐、健身、理发..."
               maxLength={20}
             />
@@ -546,7 +546,7 @@ function DeleteDialog({
 
           {hasUsage && (
             <>
-              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="p-4 bg-yellow-50 dark:bg-yellow-950 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                 <p className="text-sm text-yellow-800">
                   ⚠️ 该类别有 <span className="font-semibold">{category.usage_count}</span> 笔交易记录
                 </p>

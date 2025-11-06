@@ -414,7 +414,7 @@ export default function RecurringExpensesPage() {
           <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-3 text-gray-900">
-                <div className="p-2 bg-blue-100 rounded-lg">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded-lg">
                   <DollarSign className="h-5 w-5 text-blue-600" />
                 </div>
                 <span>固定支出列表</span>
@@ -426,14 +426,14 @@ export default function RecurringExpensesPage() {
                 <span className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
                   {recurringExpenses.filter(e => e.is_active).length} 个活跃
                 </span>
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                <div className="w-2 h-2 rounded-full bg-green-50 dark:bg-green-950 dark:bg-green-9500 animate-pulse"></div>
               </div>
             </div>
           </CardHeader>
           <CardContent>
             {recurringExpenses.length === 0 ? (
               <div className="text-center py-16">
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-6">
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded-full mb-6">
                   <Calendar className="h-10 w-10 text-blue-600" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">还没有设置固定支出</h3>
@@ -476,7 +476,7 @@ export default function RecurringExpensesPage() {
                               {categoryIcons[expense.category as keyof typeof categoryIcons] || '💰'}
                             </div>
                             {expense.is_active && (
-                              <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                              <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-50 dark:bg-green-950 dark:bg-green-9500 rounded-full border-2 border-white"></div>
                             )}
                           </div>
 
@@ -485,8 +485,8 @@ export default function RecurringExpensesPage() {
                             <div className="flex items-center gap-3">
                               <h3 className="font-semibold text-gray-900 text-lg">{expense.name}</h3>
                               {expense.is_active ? (
-                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5 animate-pulse"></div>
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 dark:bg-green-900 text-green-700 dark:text-green-300">
+                                  <div className="w-1.5 h-1.5 bg-green-50 dark:bg-green-950 dark:bg-green-9500 rounded-full mr-1.5 animate-pulse"></div>
                                   活跃
                                 </span>
                               ) : (
@@ -537,7 +537,7 @@ export default function RecurringExpensesPage() {
                             variant={expense.is_active ? "outline" : "default"}
                             size="sm"
                             onClick={() => toggleActiveStatus(expense)}
-                            className={expense.is_active ? "hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700" : "bg-green-600 hover:bg-green-700"}
+                            className={expense.is_active ? "hover:bg-orange-50 dark:hover:bg-orange-950 hover:border-orange-300 dark:hover:border-orange-700 hover:text-orange-700 dark:hover:text-orange-300" : "bg-green-600 hover:bg-green-700"}
                           >
                             {expense.is_active ? (
                               <><Pause className="h-4 w-4 mr-1" /> 暂停</>
@@ -547,7 +547,7 @@ export default function RecurringExpensesPage() {
                           </Button>
 
                           <Link href={`/settings/expenses/recurring/${expense.id}/edit`}>
-                            <Button variant="outline" size="sm" className="hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700">
+                            <Button variant="outline" size="sm" className="hover:bg-blue-50 dark:hover:bg-blue-950 dark:bg-blue-950 hover:border-blue-300 dark:border-blue-700 hover:text-blue-700 dark:text-blue-300">
                               <Edit className="h-4 w-4" />
                             </Button>
                           </Link>
@@ -556,7 +556,7 @@ export default function RecurringExpensesPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => deleteExpense(expense)}
-                            className="hover:bg-red-50 hover:border-red-300 hover:text-red-700"
+                            className="hover:bg-red-50 dark:bg-red-950 hover:border-red-300 hover:text-red-700"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -571,17 +571,17 @@ export default function RecurringExpensesPage() {
         </Card>
 
         {/* 功能说明 */}
-        <div className="mt-8 p-6 bg-gradient-to-br from-blue-50 via-white to-purple-50 rounded-2xl border border-blue-100">
+        <div className="mt-8 p-6 bg-gradient-to-br from-blue-50 dark:from-blue-950 via-white dark:via-gray-900 to-purple-50 dark:to-purple-950 rounded-2xl border border-blue-100 dark:border-blue-800">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-blue-100 rounded-lg">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded-lg">
               <Settings2 className="h-5 w-5 text-blue-600" />
             </div>
             <h3 className="font-semibold text-gray-900 text-lg">功能说明</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <div className="w-8 h-8 bg-green-100 dark:bg-green-900 dark:bg-green-900 rounded-lg flex items-center justify-center flex-shrink-0">
+                <div className="w-2 h-2 bg-green-50 dark:bg-green-950 dark:bg-green-9500 rounded-full"></div>
               </div>
               <div>
                 <h4 className="font-medium text-gray-900 mb-1">自动生成</h4>
@@ -589,7 +589,7 @@ export default function RecurringExpensesPage() {
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded-lg flex items-center justify-center flex-shrink-0">
                 <Pause className="h-4 w-4 text-blue-600" />
               </div>
               <div>
@@ -598,7 +598,7 @@ export default function RecurringExpensesPage() {
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900 dark:bg-purple-900 rounded-lg flex items-center justify-center flex-shrink-0">
                 <Calendar className="h-4 w-4 text-purple-600" />
               </div>
               <div>
@@ -607,7 +607,7 @@ export default function RecurringExpensesPage() {
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center flex-shrink-0">
                 <Clock className="h-4 w-4 text-orange-600" />
               </div>
               <div>

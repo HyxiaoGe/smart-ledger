@@ -241,7 +241,7 @@ export default function PaymentMethodsPage() {
                   <p className="text-sm text-gray-500 mb-1">支付方式总数</p>
                   <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
                 </div>
-                <div className="p-3 bg-blue-100 rounded-lg">
+                <div className="p-3 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded-lg">
                   <CreditCard className="h-8 w-8 text-blue-600" />
                 </div>
               </div>
@@ -257,7 +257,7 @@ export default function PaymentMethodsPage() {
                     {stats.default}
                   </p>
                 </div>
-                <div className="p-3 bg-yellow-100 rounded-lg">
+                <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
                   <Star className="h-8 w-8 text-yellow-600" />
                 </div>
               </div>
@@ -278,7 +278,7 @@ export default function PaymentMethodsPage() {
                     </p>
                   )}
                 </div>
-                <div className="p-3 bg-green-100 rounded-lg">
+                <div className="p-3 bg-green-100 dark:bg-green-900 dark:bg-green-900 rounded-lg">
                   <TrendingUp className="h-8 w-8 text-green-600" />
                 </div>
               </div>
@@ -411,7 +411,7 @@ function PaymentMethodCard({
 
   return (
     <div
-      className="group relative rounded-xl border-2 border-gray-200 p-5 hover:border-blue-300 hover:shadow-lg transition-all duration-200"
+      className="group relative rounded-xl border-2 border-gray-200 p-5 hover:border-blue-300 dark:border-blue-700 hover:shadow-lg transition-all duration-200"
       style={{
         borderLeftColor: method.color || typeConfig.color,
         borderLeftWidth: '4px',
@@ -420,7 +420,7 @@ function PaymentMethodCard({
       {/* 默认标记 */}
       {method.is_default && (
         <div className="absolute -top-2 -right-2">
-          <div className="bg-yellow-500 text-white text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1 shadow-md">
+          <div className="bg-yellow-50 dark:bg-yellow-9500 text-white text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1 shadow-md">
             <Star className="h-3 w-3 fill-white" />
             默认
           </div>
@@ -500,7 +500,7 @@ function PaymentMethodCard({
           variant="outline"
           size="sm"
           onClick={onDelete}
-          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:bg-red-950"
         >
           <Trash2 className="h-3 w-3 mr-1" />
           删除
@@ -611,7 +611,7 @@ function AddPaymentMethodDialog({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="例如：招商银行信用卡"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
             />
           </div>
 
@@ -629,7 +629,7 @@ function AddPaymentMethodDialog({
                 }
                 placeholder="例如：1234"
                 maxLength={4}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
               />
             </div>
           )}
@@ -796,7 +796,7 @@ function EditPaymentMethodDialog({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="例如：招商银行信用卡"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
             />
           </div>
 
@@ -814,7 +814,7 @@ function EditPaymentMethodDialog({
                 }
                 placeholder="例如：1234"
                 maxLength={4}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
               />
             </div>
           )}
@@ -970,7 +970,7 @@ function DeletePaymentMethodDialog({
             </p>
 
             {hasUsage && (
-              <div className="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded">
+              <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-950 dark:bg-yellow-950 border-l-4 border-yellow-500 rounded">
                 <p className="text-sm text-yellow-800 font-medium mb-2">
                   ⚠️ 该支付方式有 {method.usage_count} 笔交易记录
                 </p>
@@ -984,7 +984,7 @@ function DeletePaymentMethodDialog({
                 <select
                   value={migrateToId}
                   onChange={(e) => setMigrateToId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
                 >
                   <option value="">-- 请选择目标支付方式 --</option>
                   {availableMethods.map((pm) => (

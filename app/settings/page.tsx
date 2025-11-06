@@ -79,9 +79,9 @@ export default function SettingsPage() {
                       section.comingSoon
                         ? 'bg-gray-100'
                         : section.title === '消费配置'
-                        ? 'bg-blue-100'
+                        ? 'bg-blue-100 dark:bg-blue-900'
                         : section.title === '定时任务管理'
-                        ? 'bg-purple-100'
+                        ? 'bg-purple-100 dark:bg-purple-900'
                         : 'bg-gradient-to-r from-blue-100 to-purple-100'
                     }`}>
                       <section.icon className={`h-6 w-6 ${
@@ -122,7 +122,7 @@ export default function SettingsPage() {
                   <Link href={section.href}>
                     <Button
                       variant={section.title === '消费配置' || section.title === '定时任务管理' ? 'default' : 'outline'}
-                      className={`w-full ${section.title === '定时任务管理' ? 'bg-purple-600 hover:bg-purple-700' : ''}`}
+                      className={`w-full ${section.title === '定时任务管理' ? 'bg-purple-600 dark:bg-purple-700 hover:bg-purple-700 dark:hover:bg-purple-600' : ''}`}
                     >
                       <ChevronRight className="h-4 w-4 mr-2" />
                       进入配置
@@ -136,9 +136,9 @@ export default function SettingsPage() {
 
         {/* 快速操作区域 */}
         <div className="mt-12">
-          <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 border-blue-200 dark:border-blue-800">
+          <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 border-blue-200 dark:border-blue-800 dark:border-blue-800 dark:border-blue-800">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-300">
+              <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100 dark:text-blue-100 dark:text-blue-300">
                 <Brain className="h-5 w-5" />
                 快速操作
               </CardTitle>
