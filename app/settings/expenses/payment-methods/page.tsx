@@ -412,7 +412,7 @@ function PaymentMethodCard({
       {/* 默认标记 */}
       {method.is_default && (
         <div className="absolute -top-2 -right-2">
-          <div className="bg-yellow-50 dark:bg-yellow-9500 text-white text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1 shadow-md">
+          <div className="bg-gradient-to-r from-yellow-400 to-amber-500 dark:from-yellow-600 dark:to-amber-700 text-white text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1 shadow-md">
             <Star className="h-3 w-3 fill-white" />
             默认
           </div>
