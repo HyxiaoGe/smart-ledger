@@ -6,6 +6,7 @@ import {
   listYesterdayTransactions,
   getAIAnalysisData
 } from '@/lib/services/transactions';
+import { getTotalBudgetSummary, getCurrentYearMonth } from '@/lib/services/budgetService';
 import { RangePicker } from '@/components/shared/RangePicker';
 import { CollapsibleTransactionList } from '@/components/features/transactions/TransactionList/CollapsibleList';
 import { SkeletonBlock, SkeletonGrid } from '@/components/shared/Skeletons';
@@ -42,7 +43,10 @@ export default async function RecordsPage({
   const start = searchParams?.start;
   const end = searchParams?.end;
 
-  const [mainResult, yesterdayData, monthSummary, aiAnalysisData] = await Promise.all([
+  // 获取当前年月用于预算查询
+  const { year, month: currentMonth } = getCurrentYearMonth();
+
+  const [mainResult, yesterdayData, monthSummary, aiAnalysisData, budgetSummary] = await Promise.all([
     listTransactionsByRange(month, range, start, end).catch(() => ({
       rows: [],
       monthLabel: '全部'
@@ -59,7 +63,8 @@ export default async function RecordsPage({
       currentMonthTop20: [],
       currentMonthStr: '',
       lastMonthStr: ''
-    }))
+    })),
+    getTotalBudgetSummary(year, currentMonth).catch(() => null)
   ]);
 
   const rows = mainResult.rows;
@@ -86,6 +91,9 @@ export default async function RecordsPage({
             rows as any[]
           );
 
+          // 从预算设置中获取总预算，如果没有设置则使用默认值 5000
+          const monthlyBudget = budgetSummary?.total_budget || 5000;
+
           return (
             <>
               <SummaryModule
@@ -94,6 +102,7 @@ export default async function RecordsPage({
                 yesterdayTransactions={yesterdayData}
                 monthTotalAmount={monthSummary.monthTotalAmount}
                 monthTotalCount={monthSummary.monthTotalCount}
+                monthlyBudget={monthlyBudget}
                 currency={'CNY'}
                 dateRange={monthLabel}
                 rangeType={range}

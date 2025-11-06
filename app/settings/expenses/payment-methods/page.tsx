@@ -8,7 +8,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import {
   ChevronLeft,
   Plus,
-  Pencil,
   Trash2,
   Star,
   CreditCard,
@@ -26,7 +25,6 @@ import {
 import {
   getPaymentMethodsWithStats,
   addPaymentMethod,
-  updatePaymentMethod,
   deletePaymentMethod,
   setDefaultPaymentMethod,
   getPaymentMethodTypeConfig,
@@ -114,7 +112,6 @@ export default function PaymentMethodsPage() {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [editingMethod, setEditingMethod] = useState<PaymentMethod | null>(null);
   const [deletingMethod, setDeletingMethod] = useState<PaymentMethod | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -310,7 +307,6 @@ export default function PaymentMethodsPage() {
                   <PaymentMethodCard
                     key={method.id}
                     method={method}
-                    onEdit={() => setEditingMethod(method)}
                     onDelete={() => setDeletingMethod(method)}
                     onSetDefault={() => handleSetDefault(method.id)}
                   />
@@ -336,22 +332,6 @@ export default function PaymentMethodsPage() {
             setShowAddDialog(false);
             loadPaymentMethods();
             setToastMessage('✅ 支付方式添加成功！');
-            setShowToast(true);
-          }}
-          setToastMessage={setToastMessage}
-          setShowToast={setShowToast}
-        />
-      )}
-
-      {/* 编辑支付方式对话框 */}
-      {editingMethod && (
-        <EditPaymentMethodDialog
-          method={editingMethod}
-          onClose={() => setEditingMethod(null)}
-          onSuccess={() => {
-            setEditingMethod(null);
-            loadPaymentMethods();
-            setToastMessage('✅ 支付方式更新成功！');
             setShowToast(true);
           }}
           setToastMessage={setToastMessage}
@@ -390,12 +370,10 @@ export default function PaymentMethodsPage() {
 // 支付方式卡片组件
 function PaymentMethodCard({
   method,
-  onEdit,
   onDelete,
   onSetDefault,
 }: {
   method: PaymentMethod;
-  onEdit: () => void;
   onDelete: () => void;
   onSetDefault: () => void;
 }) {
@@ -482,17 +460,8 @@ function PaymentMethodCard({
         <Button
           variant="outline"
           size="sm"
-          onClick={onEdit}
-          className="flex-1"
-        >
-          <Pencil className="h-3 w-3 mr-1" />
-          编辑
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
           onClick={onDelete}
-          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:bg-red-950"
+          className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:bg-red-950"
         >
           <Trash2 className="h-3 w-3 mr-1" />
           删除
@@ -707,188 +676,6 @@ function AddPaymentMethodDialog({
             </Button>
             <Button onClick={handleSubmit} disabled={saving} className="flex-1">
               {saving ? '添加中...' : '添加支付方式'}
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// 编辑支付方式对话框
-function EditPaymentMethodDialog({
-  method,
-  onClose,
-  onSuccess,
-  setToastMessage,
-  setShowToast,
-}: {
-  method: PaymentMethod;
-  onClose: () => void;
-  onSuccess: () => void;
-  setToastMessage: (msg: string) => void;
-  setShowToast: (show: boolean) => void;
-}) {
-  const [name, setName] = useState(method.name);
-  const [icon, setIcon] = useState(method.icon || '📱');
-  const [color, setColor] = useState(method.color || PAYMENT_COLORS[0]);
-  const [last4Digits, setLast4Digits] = useState(method.last_4_digits || '');
-  const [saving, setSaving] = useState(false);
-
-  const isCardType =
-    method.type === 'credit_card' || method.type === 'debit_card';
-
-  const handleSubmit = async () => {
-    if (!name.trim()) {
-      setToastMessage('❌ 请输入支付方式名称');
-      setShowToast(true);
-      return;
-    }
-
-    if (isCardType && last4Digits && !/^\d{4}$/.test(last4Digits)) {
-      setToastMessage('❌ 卡号后四位必须是4位数字');
-      setShowToast(true);
-      return;
-    }
-
-    try {
-      setSaving(true);
-      await updatePaymentMethod({
-        id: method.id,
-        name: name.trim(),
-        icon,
-        color,
-        last4Digits: isCardType && last4Digits ? last4Digits : undefined,
-      });
-      onSuccess();
-    } catch (error) {
-      console.error('更新支付方式失败:', error);
-      setToastMessage('❌ 更新支付方式失败，请重试');
-      setShowToast(true);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100 mb-6">
-            编辑支付方式
-          </h3>
-
-          {/* 支付方式名称 */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              支付方式名称 <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="例如：招商银行信用卡"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
-            />
-          </div>
-
-          {/* 卡号后四位（仅卡类型显示） */}
-          {isCardType && (
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                卡号后四位（可选）
-              </label>
-              <input
-                type="text"
-                value={last4Digits}
-                onChange={(e) =>
-                  setLast4Digits(e.target.value.replace(/\D/g, '').slice(0, 4))
-                }
-                placeholder="例如：1234"
-                maxLength={4}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
-              />
-            </div>
-          )}
-
-          {/* 图标选择 */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              选择图标
-            </label>
-            <div className="grid grid-cols-10 gap-2">
-              {PAYMENT_ICONS.map((ic) => (
-                <button
-                  key={ic}
-                  type="button"
-                  onClick={() => setIcon(ic)}
-                  className={`p-2 text-2xl border-2 rounded-lg hover:scale-110 transition-transform ${
-                    icon === ic ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
-                  }`}
-                >
-                  {ic}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* 颜色选择 */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              选择颜色
-            </label>
-            <div className="grid grid-cols-6 gap-3">
-              {PAYMENT_COLORS.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setColor(c)}
-                  className={`h-10 rounded-lg border-2 transition-all ${
-                    color === c
-                      ? 'border-gray-900 scale-110'
-                      : 'border-gray-200 dark:border-gray-700 hover:scale-105'
-                  }`}
-                  style={{ backgroundColor: c }}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* 预览 */}
-          <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-            <p className="text-sm font-medium text-gray-700 mb-3">预览效果</p>
-            <div className="flex items-center gap-3">
-              <div
-                className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl"
-                style={{ backgroundColor: `${color}20` }}
-              >
-                {icon}
-              </div>
-              <div>
-                <p className="font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100 flex items-center gap-2">
-                  {name || '支付方式名称'}
-                  {isCardType && last4Digits && (
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      **** {last4Digits}
-                    </span>
-                  )}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* 按钮 */}
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              disabled={saving}
-              className="flex-1"
-            >
-              取消
-            </Button>
-            <Button onClick={handleSubmit} disabled={saving} className="flex-1">
-              {saving ? '保存中...' : '保存更改'}
             </Button>
           </div>
         </div>
