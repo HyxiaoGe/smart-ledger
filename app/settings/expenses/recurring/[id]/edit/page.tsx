@@ -569,11 +569,11 @@ export default function EditRecurringExpensePage() {
             {/* 侧边栏 */}
             <div className="space-y-6">
               {/* 编辑说明 */}
-              <Card className="border-0 shadow-lg overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-                <CardHeader className="bg-gradient-to-r from-blue-100 to-indigo-100 border-b dark:border-gray-700 border-blue-200 dark:border-blue-800 dark:border-blue-800">
-                  <CardTitle className="text-base text-blue-900 dark:text-blue-100 dark:text-blue-100 flex items-center gap-2">
+              <Card className="border-0 shadow-lg overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-blue-950 dark:via-gray-800 dark:to-indigo-950">
+                <CardHeader className="bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 border-b dark:border-gray-700 border-blue-200 dark:border-blue-800">
+                  <CardTitle className="text-base text-blue-900 dark:text-blue-100 flex items-center gap-2">
                     <div className="p-1.5 bg-blue-200 dark:bg-blue-800 rounded-lg">
-                      <Edit3 className="h-4 w-4 text-blue-600" />
+                      <Edit3 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                     </div>
                     编辑说明
                   </CardTitle>
@@ -581,34 +581,34 @@ export default function EditRecurringExpensePage() {
                 <CardContent className="p-6">
                   <div className="space-y-4">
                     <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <div className="w-2 h-2 bg-blue-50 dark:bg-blue-950 dark:bg-blue-9500 rounded-full"></div>
+                      <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full"></div>
                       </div>
-                      <p className="text-sm text-gray-700 leading-relaxed">
+                      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                         修改后的设置只会影响未来的生成记录，不会改变已创建的历史记录
                       </p>
                     </div>
                     <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 bg-green-100 dark:bg-green-900 dark:bg-green-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Calendar className="h-3 w-3 text-green-600" />
+                      <div className="w-6 h-6 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Calendar className="h-3 w-3 text-green-600 dark:text-green-400" />
                       </div>
-                      <p className="text-sm text-gray-700 leading-relaxed">
+                      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                         系统会根据新设置重新计算下次生成时间
                       </p>
                     </div>
                     <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 bg-purple-100 dark:bg-purple-900 dark:bg-purple-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Pause className="h-3 w-3 text-purple-600" />
+                      <div className="w-6 h-6 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Pause className="h-3 w-3 text-purple-600 dark:text-purple-400" />
                       </div>
-                      <p className="text-sm text-gray-700 leading-relaxed">
+                      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                         可以随时暂停或恢复固定支出的自动生成
                       </p>
                     </div>
                     <div className="flex items-start gap-3">
                       <div className="w-6 h-6 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <History className="h-3 w-3 text-orange-600" />
+                        <History className="h-3 w-3 text-orange-600 dark:text-orange-400" />
                       </div>
-                      <p className="text-sm text-gray-700 leading-relaxed">
+                      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                         之前的记录保持不变，确保数据完整性
                       </p>
                     </div>
