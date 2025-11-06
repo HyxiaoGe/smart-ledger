@@ -161,15 +161,15 @@ export function CategoryStatistics({ transactions }: CategoryStatisticsProps) {
         </div>
         <div className="text-sm space-y-1">
           <div className="flex justify-between gap-4">
-            <span className="text-gray-600 dark:text-gray-400">金额:</span>
+            <span className="text-gray-600 dark:text-gray-300">金额:</span>
             <span className="font-medium text-gray-900 dark:text-gray-100">¥{formatCurrency(data.value)}</span>
           </div>
           <div className="flex justify-between gap-4">
-            <span className="text-gray-600 dark:text-gray-400">占比:</span>
+            <span className="text-gray-600 dark:text-gray-300">占比:</span>
             <span className="font-medium text-gray-900 dark:text-gray-100">{data.percentage.toFixed(1)}%</span>
           </div>
           <div className="flex justify-between gap-4">
-            <span className="text-gray-600 dark:text-gray-400">笔数:</span>
+            <span className="text-gray-600 dark:text-gray-300">笔数:</span>
             <span className="font-medium text-gray-900 dark:text-gray-100">{categoryStats.sortedStats.find(s => s.category === data.category)?.count || 0}笔</span>
           </div>
         </div>
@@ -208,7 +208,7 @@ export function CategoryStatistics({ transactions }: CategoryStatisticsProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
             暂无支出数据
           </div>
         </CardContent>
@@ -376,11 +376,11 @@ export function CategoryStatistics({ transactions }: CategoryStatisticsProps) {
                               {merchantData.subcategories.length > 0 && (
                                 <div className="ml-5 space-y-1">
                                   {merchantData.subcategories.map((sub, subIdx) => (
-                                    <div key={subIdx} className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
+                                    <div key={subIdx} className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-300">
                                       <div className="flex items-center gap-2">
                                         <div className="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-600" />
                                         <span>{sub.name}</span>
-                                        <span className="text-gray-400 dark:text-gray-500">({sub.count}笔)</span>
+                                        <span className="text-gray-400 dark:text-gray-400">({sub.count}笔)</span>
                                       </div>
                                       <span>¥{formatCurrency(sub.total)}</span>
                                     </div>
