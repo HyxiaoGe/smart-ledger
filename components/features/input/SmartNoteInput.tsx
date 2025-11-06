@@ -100,7 +100,7 @@ const SmartNoteInputComponent = function SmartNoteInput({
     if (confidence >= 0.8) return 'text-green-600';
     if (confidence >= 0.6) return 'text-blue-600';
     if (confidence >= 0.4) return 'text-yellow-600';
-    return 'text-gray-500';
+    return 'text-gray-500 dark:text-gray-400';
   };
 
   // 获取智能建议
@@ -409,12 +409,12 @@ const SmartNoteInputComponent = function SmartNoteInput({
                         {'metadata' in suggestion && suggestion.metadata && (
                           <div className="flex items-center gap-2 mt-1">
                             {suggestion.metadata.avg_amount && (
-                              <span className="text-xs text-gray-400 dark:text-gray-500">
+                              <span className="text-xs text-gray-400 dark:text-gray-400">
                                 ¥{suggestion.metadata.avg_amount}
                               </span>
                             )}
                             {suggestion.metadata.usage_count && (
-                              <span className="text-xs text-gray-400 dark:text-gray-500">
+                              <span className="text-xs text-gray-400 dark:text-gray-400">
                                 {suggestion.metadata.usage_count}次
                               </span>
                             )}
@@ -440,7 +440,7 @@ const SmartNoteInputComponent = function SmartNoteInput({
             <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
               <Lightbulb className="h-8 w-8 mx-auto mb-2 text-gray-300" />
               <div>暂无智能建议</div>
-              <div className="text-xs text-gray-400 mt-1">
+              <div className="text-xs text-gray-400 dark:text-gray-400 mt-1">
                 请直接输入备注内容
               </div>
             </div>
@@ -449,7 +449,7 @@ const SmartNoteInputComponent = function SmartNoteInput({
           {/* 无上下文提示 */}
           {!isLoading && !error && suggestions.length === 0 && !category && !amount && (
             <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
-              <div className="text-xs text-gray-400 dark:text-gray-500">
+              <div className="text-xs text-gray-400 dark:text-gray-400">
                 选择类别和金额后，将显示智能备注建议
               </div>
             </div>

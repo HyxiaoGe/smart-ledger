@@ -198,7 +198,7 @@ export function ConsumptionPredictionPanel({
             animate={{ rotate: collapsed ? 180 : 0 }}
             transition={{ duration: 0.2 }}
           >
-            <ChevronDown className="h-4 w-4 text-gray-400 dark:text-gray-500 dark:text-gray-500" />
+            <ChevronDown className="h-4 w-4 text-gray-400 dark:text-gray-400" />
           </motion.div>
         </CardTitle>
       </CardHeader>
@@ -218,7 +218,7 @@ export function ConsumptionPredictionPanel({
                   {/* 预测总览 */}
                   <div className="bg-white rounded-lg p-4 border border-amber-100">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-300">预计本月支出</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-300">预计本月支出</span>
                       <span className="text-2xl font-bold text-gray-900">
                         ¥{data.predictedMonthTotal}
                       </span>
@@ -229,7 +229,7 @@ export function ConsumptionPredictionPanel({
                         <span className="text-sm text-gray-700">当前: ¥{data.currentMonthTotal}</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">预测准确度:</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">预测准确度:</span>
                         <span className="text-xs font-semibold text-amber-600">{data.accuracy}%</span>
                       </div>
                     </div>
@@ -244,7 +244,7 @@ export function ConsumptionPredictionPanel({
                           <span className="text-lg">{prediction.icon}</span>
                           <div>
                             <div className="text-sm font-medium text-gray-800">{prediction.category}</div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
                               当前: ¥{prediction.currentAmount} | 预测: ¥{prediction.predictedAmount}
                             </div>
                           </div>
@@ -279,7 +279,7 @@ export function ConsumptionPredictionPanel({
                   </div>
                 </>
               ) : (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                   <BarChart className="h-8 w-8 mx-auto mb-2 text-gray-300" />
                   <div className="text-sm">预测分析中...</div>
                 </div>

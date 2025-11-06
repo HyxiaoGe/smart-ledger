@@ -461,7 +461,7 @@ export default function EditRecurringExpensePage() {
                               {frequency.label}
                             </div>
                             <div className={`text-sm mt-1 ${
-                              formData.frequency === frequency.value ? 'text-purple-700' : 'text-gray-500'
+                              formData.frequency === frequency.value ? 'text-purple-700' : 'text-gray-500 dark:text-gray-400'
                             }`}>
                               {frequency.description}
                             </div>

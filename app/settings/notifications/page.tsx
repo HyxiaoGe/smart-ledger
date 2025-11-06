@@ -51,7 +51,7 @@ export default function NotificationsSettingsPage() {
         {/* 返回导航 */}
         <div className="mb-6">
           <Link href="/settings">
-            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg px-3 py-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200">
+            <Button variant="ghost" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 hover:bg-gray-50 rounded-lg px-3 py-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200">
               <ChevronLeft className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1" />
               返回设置中心
             </Button>
@@ -76,15 +76,15 @@ export default function NotificationsSettingsPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600">0</div>
-                <div className="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-300">活跃通知</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">活跃通知</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-gray-400 dark:text-gray-500 dark:text-gray-500">4</div>
-                <div className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">待配置</div>
+                <div className="text-2xl font-bold text-gray-400 dark:text-gray-400">4</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">待配置</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-600">24/7</div>
-                <div className="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-300">通知服务</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">通知服务</div>
               </div>
             </div>
           </CardContent>
@@ -105,7 +105,7 @@ export default function NotificationsSettingsPage() {
                       <notification.icon className={`h-6 w-6 ${
                         notification.status === 'available'
                           ? 'text-blue-600'
-                          : 'text-gray-400'
+                          : 'text-gray-400 dark:text-gray-400'
                       }`} />
                     </div>
                     <div>
@@ -115,7 +115,7 @@ export default function NotificationsSettingsPage() {
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
-                <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 leading-relaxed">
                   {notification.description}
                 </p>
                 {notification.status === 'available' ? (
@@ -187,9 +187,9 @@ export default function NotificationsSettingsPage() {
               <div className="border-l-4 border-blue-500 pl-4 py-2">
                 <div className="flex items-center justify-between mb-1">
                   <span className="font-medium text-gray-900">预算超支提醒</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">2025-10-26 15:30</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">2025-10-26 15:30</span>
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-300">
+                <div className="text-sm text-gray-600 dark:text-gray-300">
                   您的餐饮支出已达本月预算的85%，建议控制剩余消费。
                   已消费：¥2,550 / 预算：¥3,000
                 </div>
@@ -198,9 +198,9 @@ export default function NotificationsSettingsPage() {
               <div className="border-l-4 border-orange-500 pl-4 py-2">
                 <div className="flex items-center justify-between mb-1">
                   <span className="font-medium text-gray-900">固定支出提醒</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">2025-11-01 09:00</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">2025-11-01 09:00</span>
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-300">
+                <div className="text-sm text-gray-600 dark:text-gray-300">
                   您的房租（¥3,500）将在1天后到期，请确保账户余额充足。
                 </div>
               </div>
@@ -208,9 +208,9 @@ export default function NotificationsSettingsPage() {
               <div className="border-l-4 border-red-500 pl-4 py-2">
                 <div className="flex items-center justify-between mb-1">
                   <span className="font-medium text-gray-900">异常消费提醒</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">2025-10-26 20:45</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">2025-10-26 20:45</span>
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-300">
+                <div className="text-sm text-gray-600 dark:text-gray-300">
                   检测到异常大额消费：¥1,200，超出日常消费水平。
                   请确认是否为正常支出。
                 </div>
@@ -219,9 +219,9 @@ export default function NotificationsSettingsPage() {
               <div className="border-l-4 border-green-500 pl-4 py-2">
                 <div className="flex items-center justify-between mb-1">
                   <span className="font-medium text-gray-900">周报通知</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">2025-10-27 09:00</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">2025-10-27 09:00</span>
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-300">
+                <div className="text-sm text-gray-600 dark:text-gray-300">
                   本周消费总额：¥1,850，较上周减少15%。
                   趋势良好，继续保持！
                 </div>
@@ -279,7 +279,7 @@ export default function NotificationsSettingsPage() {
                 <label className="flex items-center justify-between">
                   <div>
                     <div className="text-sm font-medium text-gray-700">紧急通知</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">异常消费、账户安全等</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">异常消费、账户安全等</div>
                   </div>
                   <select className="px-3 py-1 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 text-sm">
                     <option>立即</option>

@@ -91,7 +91,7 @@ export default function ExpensesSettingsPage() {
                       <section.icon className={`h-6 w-6 ${
                         section.status === 'available'
                           ? 'text-blue-600'
-                          : 'text-gray-400'
+                          : 'text-gray-400 dark:text-gray-400'
                       }`} />
                     </div>
                     <div>

@@ -139,7 +139,7 @@ export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTrans
                 <Calendar className="h-5 w-5 text-green-600" />
                 <h4 className="font-semibold text-gray-800 dark:text-gray-200">本月时间进度</h4>
               </div>
-              <span className="text-sm text-gray-600 dark:text-gray-400">
+              <span className="text-sm text-gray-600 dark:text-gray-300">
                 第 {new Date().getDate()} 天 / {new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()} 天
               </span>
             </div>
@@ -167,11 +167,11 @@ export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTrans
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-purple-600" />
                 <h4 className="font-semibold text-gray-800 dark:text-gray-200">月度预算进度</h4>
-                <div className="text-xs text-gray-500 bg-white/60 dark:bg-gray-800/60 px-2 py-1 rounded">
+                <div className="text-xs text-gray-500 dark:text-gray-400 bg-white/60 dark:bg-gray-800/60 px-2 py-1 rounded">
                   本月累计
                 </div>
               </div>
-              <span className="text-sm text-gray-600 dark:text-gray-400">
+              <span className="text-sm text-gray-600 dark:text-gray-300">
                 ¥{formatCurrency(statistics.monthTotalAmount)} / ¥{formatCurrency(monthlyBudget)}
               </span>
             </div>
@@ -208,7 +208,7 @@ export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTrans
             <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">支出统计</h3>
           </div>
           {dateRange && (
-            <span className="text-sm text-gray-600 bg-white/50 dark:bg-gray-800/50 px-3 py-1 rounded-full">
+            <span className="text-sm text-gray-600 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 px-3 py-1 rounded-full">
               {dateRange}
             </span>
           )}
@@ -223,7 +223,7 @@ export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTrans
                   <TrendingUp className="h-5 w-5 text-amber-600" />
                   <h4 className="font-semibold text-gray-800 dark:text-gray-200">较昨日变化</h4>
                 </div>
-                <span className="text-sm text-gray-600 dark:text-gray-400">
+                <span className="text-sm text-gray-600 dark:text-gray-300">
                   昨日: ¥{formatCurrency(statistics.trend.yesterdayAmount)} ({statistics.trend.yesterdayCount}笔)
                 </span>
               </div>
@@ -249,7 +249,7 @@ export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTrans
                       </>
                     ) : (
                       <>
-                        <Minus className="h-4 w-4 text-gray-400 dark:text-gray-500 group-hover:scale-110 group-hover:text-gray-500 dark:group-hover:text-gray-400 transition-all duration-200" />
+                        <Minus className="h-4 w-4 text-gray-400 dark:text-gray-400 group-hover:scale-110 group-hover:text-gray-500 dark:group-hover:text-gray-400 transition-all duration-200" />
                         <span className="font-semibold text-gray-600 dark:text-gray-300 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors duration-200">
                           无变化 (0%)
                         </span>
@@ -278,7 +278,7 @@ export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTrans
                       </>
                     ) : (
                       <>
-                        <Minus className="h-4 w-4 text-gray-400 dark:text-gray-500 group-hover:scale-110 group-hover:text-gray-500 dark:group-hover:text-gray-400 transition-all duration-200" />
+                        <Minus className="h-4 w-4 text-gray-400 dark:text-gray-400 group-hover:scale-110 group-hover:text-gray-500 dark:group-hover:text-gray-400 transition-all duration-200" />
                         <span className="font-semibold text-gray-600 dark:text-gray-300 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors duration-200">
                           无变化
                         </span>
@@ -326,28 +326,28 @@ export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTrans
           {/* 第二行：详细分析 */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="bg-white/40 dark:bg-gray-800/40 rounded-lg p-3 text-center transition-all duration-200 hover:bg-white/60 dark:bg-gray-800/60 hover:shadow-md hover:scale-105 cursor-pointer group">
-              <div className="text-xs text-gray-600 dark:text-gray-400 mb-1 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-200">单笔最高</div>
+              <div className="text-xs text-gray-600 dark:text-gray-300 mb-1 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-200">单笔最高</div>
               <div className="text-lg font-bold text-orange-600 dark:text-orange-400 group-hover:text-orange-700 dark:group-hover:text-orange-300 group-hover:scale-110 transition-all duration-200">
                 ¥{formatCurrency(statistics.maxTransactionAmount)}
               </div>
             </div>
 
             <div className="bg-white/40 dark:bg-gray-800/40 rounded-lg p-3 text-center transition-all duration-200 hover:bg-white/60 dark:bg-gray-800/60 hover:shadow-md hover:scale-105 cursor-pointer group">
-              <div className="text-xs text-gray-600 dark:text-gray-400 mb-1 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-200">单笔最低</div>
+              <div className="text-xs text-gray-600 dark:text-gray-300 mb-1 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-200">单笔最低</div>
               <div className="text-lg font-bold text-teal-600 dark:text-teal-400 group-hover:text-teal-700 dark:group-hover:text-teal-300 group-hover:scale-110 transition-all duration-200">
                 ¥{formatCurrency(statistics.minTransactionAmount)}
               </div>
             </div>
 
             <div className="bg-white/40 dark:bg-gray-800/40 rounded-lg p-3 text-center transition-all duration-200 hover:bg-white/60 dark:bg-gray-800/60 hover:shadow-md hover:scale-105 cursor-pointer group">
-              <div className="text-xs text-gray-600 dark:text-gray-400 mb-1 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-200">平均单笔</div>
+              <div className="text-xs text-gray-600 dark:text-gray-300 mb-1 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-200">平均单笔</div>
               <div className="text-lg font-bold text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 group-hover:scale-110 transition-all duration-200">
                 ¥{formatCurrency(statistics.avgTransactionAmount)}
               </div>
             </div>
 
             <div className="bg-white/40 dark:bg-gray-800/40 rounded-lg p-3 text-center transition-all duration-200 hover:bg-white/60 dark:bg-gray-800/60 hover:shadow-md hover:scale-105 cursor-pointer group">
-              <div className="text-xs text-gray-600 dark:text-gray-400 mb-1 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-200">消费强度</div>
+              <div className="text-xs text-gray-600 dark:text-gray-300 mb-1 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-200">消费强度</div>
               <div className="text-lg font-bold text-purple-600 dark:text-purple-400 group-hover:text-purple-700 dark:group-hover:text-purple-300 group-hover:scale-110 transition-all duration-200">
                 {statistics.totalCount > 0 ? (statistics.totalCount / items.length).toFixed(1) : '0'}笔/日
               </div>
@@ -365,7 +365,7 @@ export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTrans
               <Calendar className="h-5 w-5 text-green-600" />
               <h4 className="font-semibold text-gray-800 dark:text-gray-200">本月时间进度</h4>
             </div>
-            <span className="text-sm text-gray-600 dark:text-gray-400">
+            <span className="text-sm text-gray-600 dark:text-gray-300">
               第 {new Date().getDate()} 天 / {new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()} 天
             </span>
           </div>
@@ -393,11 +393,11 @@ export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTrans
             <div className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-purple-600" />
               <h4 className="font-semibold text-gray-800 dark:text-gray-200">月度预算进度</h4>
-              <div className="text-xs text-gray-500 bg-white/60 dark:bg-gray-800/60 px-2 py-1 rounded">
+              <div className="text-xs text-gray-500 dark:text-gray-400 bg-white/60 dark:bg-gray-800/60 px-2 py-1 rounded">
                 本月累计
               </div>
             </div>
-            <span className="text-sm text-gray-600 dark:text-gray-400">
+            <span className="text-sm text-gray-600 dark:text-gray-300">
               ¥{formatCurrency(statistics.monthTotalAmount)} / ¥{formatCurrency(monthlyBudget)}
             </span>
           </div>

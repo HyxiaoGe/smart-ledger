@@ -177,7 +177,7 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
 
             {/* 加载状态 */}
             {loading && suggestions.length === 0 && (
-              <div className="flex items-center justify-center py-8 text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">
+              <div className="flex items-center justify-center py-8 text-gray-500 dark:text-gray-400">
                 <div className="text-sm">AI正在分析您的消费模式...</div>
               </div>
             )}
@@ -223,7 +223,7 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
                               >
                                 {Math.round(suggestion.confidence * 100)}% 置信度
                               </Badge>
-                              <span className="text-xs text-gray-400 dark:text-gray-500 dark:text-gray-500">
+                              <span className="text-xs text-gray-400 dark:text-gray-400">
                                 {suggestion.reason}
                               </span>
                             </div>
@@ -264,10 +264,10 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
 
             {/* 空状态 */}
             {!loading && suggestions.length === 0 && !error && (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <Clock className="h-8 w-8 mx-auto mb-2 text-gray-300" />
                 <div className="text-sm">暂无快速记账建议</div>
-                <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                <div className="text-xs text-gray-400 dark:text-gray-400 mt-1">
                   请稍后再试或使用详细记账功能
                 </div>
               </div>
@@ -280,7 +280,7 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
                 size="sm"
                 onClick={fetchSuggestions}
                 disabled={loading}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-700"
               >
                 <RefreshCw className={`h-4 w-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
                 刷新建议
@@ -290,7 +290,7 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
                 <Button
                   variant="outline"
                   onClick={() => window.open('/add', '_blank')}
-                  className="text-gray-600 hover:text-gray-800"
+                  className="text-gray-600 dark:text-gray-300 hover:text-gray-800"
                 >
                   详细记账
                 </Button>
@@ -301,7 +301,7 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
             </div>
 
             {/* 提示信息 */}
-            <div className="text-xs text-gray-400 dark:text-gray-500 pt-2 border-t border-gray-100">
+            <div className="text-xs text-gray-400 dark:text-gray-400 pt-2 border-t border-gray-100">
               快速记账适用于日常高频消费，基于您的个人历史数据进行智能预测。
             </div>
           </CardContent>

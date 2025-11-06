@@ -213,7 +213,7 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
             <Zap className="h-5 w-5 text-orange-500" />
             一键快速记账
           </CardTitle>
-          <p className="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-300">
+          <p className="text-sm text-gray-600 dark:text-gray-300">
             基于当前时间的智能记账建议，点击即可快速记录
           </p>
         </CardHeader>
@@ -221,7 +221,7 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
         <CardContent className="space-y-4">
           {/* 加载状态 */}
           {loading && suggestions.length === 0 && (
-            <div className="flex items-center justify-center py-8 text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">
+            <div className="flex items-center justify-center py-8 text-gray-500 dark:text-gray-400">
               <div className="text-sm">AI正在生成快速记账建议...</div>
             </div>
           )}
@@ -262,7 +262,7 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
                           >
                             {Math.round(suggestion.confidence * 100)}% 置信度
                           </Badge>
-                          <span className="text-xs text-gray-400 dark:text-gray-500 dark:text-gray-500">
+                          <span className="text-xs text-gray-400 dark:text-gray-400">
                             {suggestion.reason}
                           </span>
                         </div>
@@ -309,10 +309,10 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
 
           {/* 空状态 */}
           {!loading && suggestions.length === 0 && (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               <Clock className="h-8 w-8 mx-auto mb-2 text-gray-300" />
               <div className="text-sm">暂无快速记账建议</div>
-              <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+              <div className="text-xs text-gray-400 dark:text-gray-400 mt-1">
                 请稍后再试或手动添加账单
               </div>
             </div>
@@ -325,7 +325,7 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
                 variant="ghost"
                 size="sm"
                 onClick={fetchQuickSuggestions}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-700"
               >
                 刷新建议
               </Button>
@@ -335,7 +335,7 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
           {/* 统计信息 */}
           {suggestions.length > 0 && (
             <div className="flex items-center justify-center pt-2 border-t border-gray-100">
-              <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">
+              <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                 <div className="flex items-center gap-1">
                   <TrendingUp className="h-3 w-3" />
                   <span>平均置信度: {Math.round(suggestions.reduce((sum, s) => sum + s.confidence, 0) / suggestions.length * 100)}%</span>
