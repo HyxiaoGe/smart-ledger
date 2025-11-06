@@ -34,17 +34,17 @@ export default function ProfileSettingsPage() {
         </div>
 
         {/* 敬请期待提示 */}
-        <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 mb-8">
+        <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 dark:border-blue-800 dark:border-blue-800 mb-8">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-blue-900">
+            <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100 dark:text-blue-100">
               <User className="h-5 w-5" />
               敬请期待
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-center py-6">
-              <div className="text-lg text-blue-900 mb-4">个人信息管理功能正在开发中</div>
-              <p className="text-blue-700 mb-6">
+              <div className="text-lg text-blue-900 dark:text-blue-100 dark:text-blue-100 mb-4">个人信息管理功能正在开发中</div>
+              <p className="text-blue-700 dark:text-blue-300 mb-6">
                 我们正在构建一个完整的个人信息管理系统，让您能够更好地管理个人资料和账户设置。
               </p>
               <div className="max-w-2xl mx-auto">
@@ -91,8 +91,8 @@ export default function ProfileSettingsPage() {
         </Card>
 
         {/* 使用提示 */}
-        <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <h3 className="font-medium text-blue-900 mb-2">💡 开发提示</h3>
+        <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-950 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800 dark:border-blue-800">
+          <h3 className="font-medium text-blue-900 dark:text-blue-100 dark:text-blue-100 mb-2">💡 开发提示</h3>
           <ul className="text-sm text-blue-800 space-y-1">
             <li>• 个人信息管理功能即将上线</li>
             <li>• 将支持完整的用户资料编辑功能</li>

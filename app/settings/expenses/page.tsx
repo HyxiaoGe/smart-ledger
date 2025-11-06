@@ -85,7 +85,7 @@ export default function ExpensesSettingsPage() {
                   <div className="flex items-center gap-3">
                     <div className={`p-3 rounded-lg ${
                       section.status === 'available'
-                        ? 'bg-blue-100'
+                        ? 'bg-blue-100 dark:bg-blue-900'
                         : 'bg-gray-100'
                     }`}>
                       <section.icon className={`h-6 w-6 ${

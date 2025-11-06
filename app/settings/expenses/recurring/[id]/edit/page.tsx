@@ -295,7 +295,7 @@ export default function EditRecurringExpensePage() {
                 <CardContent className="p-6 space-y-6">
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                      <div className="w-1 h-4 bg-blue-500 rounded-full"></div>
+                      <div className="w-1 h-4 bg-blue-50 dark:bg-blue-950 dark:bg-blue-9500 rounded-full"></div>
                       支出名称 *
                     </label>
                     <div className="relative">
@@ -303,7 +303,7 @@ export default function EditRecurringExpensePage() {
                         type="text"
                         value={formData.name}
                         onChange={(e) => handleInputChange('name', e.target.value)}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-all"
                         required
                       />
                       <div className="absolute right-3 top-3 text-gray-400 dark:text-gray-500">
@@ -314,7 +314,7 @@ export default function EditRecurringExpensePage() {
 
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                      <div className="w-1 h-4 bg-green-500 rounded-full"></div>
+                      <div className="w-1 h-4 bg-green-50 dark:bg-green-950 dark:bg-green-9500 rounded-full"></div>
                       金额 (元) *
                     </label>
                     <div className="relative">
@@ -327,7 +327,7 @@ export default function EditRecurringExpensePage() {
                         onChange={(e) => handleInputChange('amount', e.target.value)}
                         step="0.01"
                         min="0"
-                        className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-lg font-semibold"
+                        className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-green-500 dark:focus:border-green-400 transition-all text-lg font-semibold"
                         required
                       />
                     </div>
@@ -335,14 +335,14 @@ export default function EditRecurringExpensePage() {
 
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                      <div className="w-1 h-4 bg-purple-500 rounded-full"></div>
+                      <div className="w-1 h-4 bg-purple-50 dark:bg-purple-950 dark:bg-purple-9500 rounded-full"></div>
                       消费类别 *
                     </label>
                     <div className="relative">
                       <select
                         value={formData.category}
                         onChange={(e) => handleInputChange('category', e.target.value)}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all appearance-none bg-white"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-purple-500 dark:focus:border-purple-400 transition-all appearance-none bg-white"
                         required
                       >
                         <option value="">请选择类别</option>
@@ -391,7 +391,7 @@ export default function EditRecurringExpensePage() {
 
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                      <div className="w-1 h-4 bg-orange-500 rounded-full"></div>
+                      <div className="w-1 h-4 bg-orange-50 dark:bg-orange-950 dark:bg-orange-9500 rounded-full"></div>
                       结束日期（可选）
                     </label>
                     <DateInput
@@ -405,9 +405,9 @@ export default function EditRecurringExpensePage() {
                       onClose={() => setActiveDateInput(null)}
                       containerZIndex={10000}
                     />
-                    <div className="mt-2 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                    <div className="mt-2 p-3 bg-orange-50 dark:bg-orange-950 dark:bg-orange-950 border border-orange-200 dark:border-orange-800 rounded-lg">
                       <p className="text-sm text-orange-700 flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+                        <div className="w-1.5 h-1.5 bg-orange-50 dark:bg-orange-950 dark:bg-orange-9500 rounded-full"></div>
                         不填写则永久有效
                       </p>
                     </div>
@@ -428,7 +428,7 @@ export default function EditRecurringExpensePage() {
                 <CardContent className="p-6 space-y-6">
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                      <div className="w-1 h-4 bg-purple-500 rounded-full"></div>
+                      <div className="w-1 h-4 bg-purple-50 dark:bg-purple-950 dark:bg-purple-9500 rounded-full"></div>
                       重复频率 *
                     </label>
                     <div className="space-y-3">
@@ -437,8 +437,8 @@ export default function EditRecurringExpensePage() {
                           key={frequency.value}
                           className={`flex items-start gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${
                             formData.frequency === frequency.value
-                              ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200'
-                              : 'border-gray-200 hover:border-purple-300 hover:bg-purple-50/50'
+                              ? 'border-purple-500 bg-purple-50 dark:bg-purple-950 ring-2 ring-purple-200'
+                              : 'border-gray-200 hover:border-purple-300 dark:hover:border-purple-700 hover:bg-purple-50/50 dark:bg-purple-950/50'
                           }`}
                         >
                           <div className="relative">
@@ -473,7 +473,7 @@ export default function EditRecurringExpensePage() {
 
                   {/* 月度设置（当选择月度时显示） */}
                   {formData.frequency === 'monthly' && (
-                    <div className="border-t border-purple-200 pt-6">
+                    <div className="border-t border-purple-200 dark:border-purple-800 dark:border-purple-800 pt-6">
                       <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
                         <div className="w-1 h-4 bg-pink-500 rounded-full"></div>
                         每月日期
@@ -494,7 +494,7 @@ export default function EditRecurringExpensePage() {
 
                   {/* 周度设置（当选择周度时显示） */}
                   {formData.frequency === 'weekly' && (
-                    <div className="border-t border-purple-200 pt-6">
+                    <div className="border-t border-purple-200 dark:border-purple-800 dark:border-purple-800 pt-6">
                       <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
                         <div className="w-1 h-4 bg-indigo-500 rounded-full"></div>
                         星期设置
@@ -570,9 +570,9 @@ export default function EditRecurringExpensePage() {
             <div className="space-y-6">
               {/* 编辑说明 */}
               <Card className="border-0 shadow-lg overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-                <CardHeader className="bg-gradient-to-r from-blue-100 to-indigo-100 border-b border-blue-200">
-                  <CardTitle className="text-base text-blue-900 flex items-center gap-2">
-                    <div className="p-1.5 bg-blue-200 rounded-lg">
+                <CardHeader className="bg-gradient-to-r from-blue-100 to-indigo-100 border-b border-blue-200 dark:border-blue-800 dark:border-blue-800">
+                  <CardTitle className="text-base text-blue-900 dark:text-blue-100 dark:text-blue-100 flex items-center gap-2">
+                    <div className="p-1.5 bg-blue-200 dark:bg-blue-800 rounded-lg">
                       <Edit3 className="h-4 w-4 text-blue-600" />
                     </div>
                     编辑说明
@@ -581,15 +581,15 @@ export default function EditRecurringExpensePage() {
                 <CardContent className="p-6">
                   <div className="space-y-4">
                     <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <div className="w-2 h-2 bg-blue-50 dark:bg-blue-950 dark:bg-blue-9500 rounded-full"></div>
                       </div>
                       <p className="text-sm text-gray-700 leading-relaxed">
                         修改后的设置只会影响未来的生成记录，不会改变已创建的历史记录
                       </p>
                     </div>
                     <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-6 h-6 bg-green-100 dark:bg-green-900 dark:bg-green-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                         <Calendar className="h-3 w-3 text-green-600" />
                       </div>
                       <p className="text-sm text-gray-700 leading-relaxed">
@@ -597,7 +597,7 @@ export default function EditRecurringExpensePage() {
                       </p>
                     </div>
                     <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-6 h-6 bg-purple-100 dark:bg-purple-900 dark:bg-purple-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                         <Pause className="h-3 w-3 text-purple-600" />
                       </div>
                       <p className="text-sm text-gray-700 leading-relaxed">
@@ -605,7 +605,7 @@ export default function EditRecurringExpensePage() {
                       </p>
                     </div>
                     <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-6 h-6 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                         <History className="h-3 w-3 text-orange-600" />
                       </div>
                       <p className="text-sm text-gray-700 leading-relaxed">

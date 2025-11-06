@@ -83,7 +83,7 @@ export default function RecurringHistoryPage() {
       case 'success':
         return {
           icon: CheckCircle2,
-          bgColor: 'bg-green-50',
+          bgColor: 'bg-green-50 dark:bg-green-950',
           borderColor: 'border-green-200',
           textColor: 'text-green-700',
           dotColor: 'bg-green-500',
@@ -92,7 +92,7 @@ export default function RecurringHistoryPage() {
       case 'failed':
         return {
           icon: XCircle,
-          bgColor: 'bg-red-50',
+          bgColor: 'bg-red-50 dark:bg-red-950',
           borderColor: 'border-red-200',
           textColor: 'text-red-700',
           dotColor: 'bg-red-500',
@@ -170,7 +170,7 @@ export default function RecurringHistoryPage() {
         {/* 页面标题 */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-blue-100 rounded-lg">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded-lg">
               <History className="h-6 w-6 text-blue-600" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900">生成历史记录</h2>
@@ -187,7 +187,7 @@ export default function RecurringHistoryPage() {
                   <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
                   <div className="text-sm text-gray-600 mt-1">总记录数</div>
                 </div>
-                <div className="p-3 bg-blue-50 rounded-lg">
+                <div className="p-3 bg-blue-50 dark:bg-blue-950 dark:bg-blue-950 rounded-lg">
                   <TrendingUp className="h-6 w-6 text-blue-600" />
                 </div>
               </div>
@@ -201,7 +201,7 @@ export default function RecurringHistoryPage() {
                   <div className="text-2xl font-bold text-green-600">{stats.success}</div>
                   <div className="text-sm text-gray-600 mt-1">成功生成</div>
                 </div>
-                <div className="p-3 bg-green-50 rounded-lg">
+                <div className="p-3 bg-green-50 dark:bg-green-950 dark:bg-green-950 rounded-lg">
                   <CheckCircle2 className="h-6 w-6 text-green-600" />
                 </div>
               </div>
@@ -215,7 +215,7 @@ export default function RecurringHistoryPage() {
                   <div className="text-2xl font-bold text-red-600">{stats.failed}</div>
                   <div className="text-sm text-gray-600 mt-1">生成失败</div>
                 </div>
-                <div className="p-3 bg-red-50 rounded-lg">
+                <div className="p-3 bg-red-50 dark:bg-red-950 dark:bg-red-950 rounded-lg">
                   <XCircle className="h-6 w-6 text-red-600" />
                 </div>
               </div>
@@ -271,7 +271,7 @@ export default function RecurringHistoryPage() {
         <Card className="border-0 shadow-lg">
           <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
             <CardTitle className="flex items-center gap-3 text-gray-900">
-              <div className="p-2 bg-blue-100 rounded-lg">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded-lg">
                 <History className="h-5 w-5 text-blue-600" />
               </div>
               <span>生成记录</span>
@@ -366,7 +366,7 @@ export default function RecurringHistoryPage() {
                                   <span className="text-gray-900 font-medium ml-2">{log.transaction.note}</span>
                                 </div>
                                 <Link href={`/records`}>
-                                  <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50">
+                                  <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950 dark:bg-blue-950">
                                     查看详情 →
                                   </Button>
                                 </Link>
@@ -384,14 +384,14 @@ export default function RecurringHistoryPage() {
         </Card>
 
         {/* 说明信息 */}
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800 dark:border-blue-800">
           <div className="flex items-start gap-3">
-            <div className="p-1 bg-blue-100 rounded">
+            <div className="p-1 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded">
               <Clock className="h-4 w-4 text-blue-600" />
             </div>
-            <div className="text-sm text-blue-900">
+            <div className="text-sm text-blue-900 dark:text-blue-100 dark:text-blue-100">
               <p className="font-medium mb-1">自动生成说明</p>
-              <p className="text-blue-700">
+              <p className="text-blue-700 dark:text-blue-300">
                 系统会在每天 00:01 自动执行定时任务，检查所有启用的固定支出并根据频率规则生成相应的交易记录。
                 所有执行结果（成功/失败）都会记录在此页面。
               </p>

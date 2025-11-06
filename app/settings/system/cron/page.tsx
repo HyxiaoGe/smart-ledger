@@ -240,7 +240,7 @@ export default function CronManagementPage() {
         {/* 页面标题 */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 dark:bg-blue-900 rounded-lg">
               <Clock className="h-6 w-6 text-blue-600" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900">定时任务管理</h2>
@@ -257,7 +257,7 @@ export default function CronManagementPage() {
                   <div className="text-2xl font-bold text-gray-900">{totalStats.totalJobs}</div>
                   <div className="text-sm text-gray-600 mt-1">总任务数</div>
                 </div>
-                <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                <div className="p-3 bg-blue-50 dark:bg-blue-950 dark:bg-blue-950 dark:bg-blue-950 rounded-lg">
                   <Database className="h-6 w-6 text-blue-600" />
                 </div>
               </div>
@@ -271,7 +271,7 @@ export default function CronManagementPage() {
                   <div className="text-2xl font-bold text-green-600">{totalStats.activeJobs}</div>
                   <div className="text-sm text-gray-600 mt-1">活跃任务</div>
                 </div>
-                <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg">
+                <div className="p-3 bg-green-50 dark:bg-green-950 dark:bg-green-950 dark:bg-green-950 rounded-lg">
                   <Activity className="h-6 w-6 text-green-600" />
                 </div>
               </div>
@@ -285,7 +285,7 @@ export default function CronManagementPage() {
                   <div className="text-2xl font-bold text-purple-600">{totalStats.totalRuns}</div>
                   <div className="text-sm text-gray-600 mt-1">总执行次数</div>
                 </div>
-                <div className="p-3 bg-purple-50 dark:bg-purple-950 rounded-lg">
+                <div className="p-3 bg-purple-50 dark:bg-purple-950 dark:bg-purple-950 dark:bg-purple-950 rounded-lg">
                   <TrendingUp className="h-6 w-6 text-purple-600" />
                 </div>
               </div>
@@ -299,7 +299,7 @@ export default function CronManagementPage() {
                   <div className="text-2xl font-bold text-orange-600">{totalStats.successRate}%</div>
                   <div className="text-sm text-gray-600 mt-1">成功率</div>
                 </div>
-                <div className="p-3 bg-orange-50 dark:bg-orange-950 rounded-lg">
+                <div className="p-3 bg-orange-50 dark:bg-orange-950 dark:bg-orange-950 dark:bg-orange-950 rounded-lg">
                   <CheckCircle2 className="h-6 w-6 text-orange-600" />
                 </div>
               </div>
@@ -311,7 +311,7 @@ export default function CronManagementPage() {
         <Card className="border-0 shadow-lg mb-6">
           <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
             <CardTitle className="flex items-center gap-3 text-gray-900">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 dark:bg-blue-900 rounded-lg">
                 <Clock className="h-5 w-5 text-blue-600" />
               </div>
               <span>定时任务</span>
@@ -427,7 +427,7 @@ export default function CronManagementPage() {
         <Card className="border-0 shadow-lg">
           <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
             <CardTitle className="flex items-center gap-3 text-gray-900">
-              <div className="p-2 bg-purple-100 rounded-lg">
+              <div className="p-2 bg-purple-100 dark:bg-purple-900 dark:bg-purple-900 rounded-lg">
                 <Activity className="h-5 w-5 text-purple-600" />
               </div>
               <span>最近执行记录</span>
@@ -476,7 +476,7 @@ export default function CronManagementPage() {
                           )}
                         </div>
                         {run.return_message && run.status === 'failed' && (
-                          <div className="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded border border-red-200">
+                          <div className="mt-2 text-xs text-red-600 bg-red-50 dark:bg-red-950 dark:bg-red-950 p-2 rounded border border-red-200 dark:border-red-800 dark:border-red-800">
                             {run.return_message}
                           </div>
                         )}
@@ -490,14 +490,14 @@ export default function CronManagementPage() {
         </Card>
 
         {/* 说明信息 */}
-        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 dark:bg-blue-950 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800 dark:border-blue-800 dark:border-blue-800">
           <div className="flex items-start gap-3">
-            <div className="p-1 bg-blue-100 dark:bg-blue-900 rounded">
+            <div className="p-1 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 dark:bg-blue-900 rounded">
               <Clock className="h-4 w-4 text-blue-600" />
             </div>
-            <div className="text-sm text-blue-900">
+            <div className="text-sm text-blue-900 dark:text-blue-100 dark:text-blue-100">
               <p className="font-medium mb-1">关于定时任务</p>
-              <p className="text-blue-700">
+              <p className="text-blue-700 dark:text-blue-300">
                 所有定时任务由 PostgreSQL pg_cron 扩展管理，按照设定的时间表自动执行。
                 您可以手动触发任务进行测试，但这不会影响定时调度。
               </p>

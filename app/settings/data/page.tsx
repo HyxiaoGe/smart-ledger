@@ -67,9 +67,9 @@ export default function DataSettingsPage() {
         </div>
 
         {/* 数据概览 */}
-        <Card className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950 dark:to-indigo-950 border-purple-200 dark:border-purple-800 mb-8">
+        <Card className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950 dark:to-indigo-950 border-purple-200 dark:border-purple-800 dark:border-purple-800 dark:border-purple-800 mb-8">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-purple-900 dark:text-purple-300">
+            <CardTitle className="flex items-center gap-2 text-purple-900 dark:text-purple-100 dark:text-purple-100 dark:text-purple-300">
               <Database className="h-5 w-5" />
               数据概览
             </CardTitle>
@@ -141,24 +141,24 @@ export default function DataSettingsPage() {
         </div>
 
         {/* 开发进度 */}
-        <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 border-purple-200 dark:border-purple-800">
+        <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 border-purple-200 dark:border-purple-800 dark:border-purple-800 dark:border-purple-800">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-purple-900 dark:text-purple-300">
+            <CardTitle className="flex items-center gap-2 text-purple-900 dark:text-purple-100 dark:text-purple-100 dark:text-purple-300">
               <RefreshCw className="h-5 w-5" />
               开发进度
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-center py-6">
-              <div className="text-lg text-purple-900 dark:text-purple-300 mb-4">数据管理系统正在完善中</div>
-              <p className="text-purple-700 dark:text-purple-400 mb-6">
+              <div className="text-lg text-purple-900 dark:text-purple-100 dark:text-purple-100 dark:text-purple-300 mb-4">数据管理系统正在完善中</div>
+              <p className="text-purple-700 dark:text-purple-300 dark:text-purple-400 mb-6">
                 我们正在构建一个完整的数据管理系统，让您完全掌控自己的财务数据。
               </p>
               <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
                 <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-4">开发计划</h4>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                    <div className="w-8 h-8 bg-green-50 dark:bg-green-950 dark:bg-green-9500 rounded-full flex items-center justify-center">
                       <CheckCircle className="h-5 w-5 text-white" />
                     </div>
                     <div className="flex-1">
@@ -167,7 +167,7 @@ export default function DataSettingsPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                    <div className="w-8 h-8 bg-yellow-50 dark:bg-yellow-950 dark:bg-yellow-9500 rounded-full flex items-center justify-center">
                       <Clock className="h-5 w-5 text-white" />
                     </div>
                     <div className="flex-1">
@@ -176,7 +176,7 @@ export default function DataSettingsPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                    <div className="w-8 h-8 bg-blue-50 dark:bg-blue-950 dark:bg-blue-9500 rounded-full flex items-center justify-center">
                       <Clock className="h-5 w-5 text-white" />
                     </div>
                     <div className="flex-1">
@@ -234,7 +234,7 @@ export default function DataSettingsPage() {
         </Card>
 
         {/* 数据安全 */}
-        <Card className="bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-950 dark:to-orange-950 border-red-200 dark:border-red-800">
+        <Card className="bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-950 dark:to-orange-950 border-red-200 dark:border-red-800 dark:border-red-800 dark:border-red-800">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-red-900 dark:text-red-300">
               <Lock className="h-5 w-5" />
@@ -243,7 +243,7 @@ export default function DataSettingsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-800">
+              <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-800 dark:border-red-800 dark:border-red-800">
                 <div>
                   <div className="font-medium text-gray-900 dark:text-gray-100">端到端加密</div>
                   <div className="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400 dark:text-gray-500">所有数据传输均采用SSL加密</div>
@@ -251,7 +251,7 @@ export default function DataSettingsPage() {
                 <CheckCircle className="h-5 w-5 text-green-500" />
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-800">
+              <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-800 dark:border-red-800 dark:border-red-800">
                 <div>
                   <div className="font-medium text-gray-900 dark:text-gray-100">本地存储</div>
                   <div className="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400 dark:text-gray-500">敏感数据本地加密存储</div>
@@ -259,7 +259,7 @@ export default function DataSettingsPage() {
                 <CheckCircle className="h-5 w-5 text-green-500" />
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-800">
+              <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-800 dark:border-red-800 dark:border-red-800">
                 <div>
                   <div className="font-medium text-gray-900 dark:text-gray-100">定期备份</div>
                   <div className="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400 dark:text-gray-500">自动备份策略保护数据安全</div>
@@ -267,7 +267,7 @@ export default function DataSettingsPage() {
                 <CheckCircle className="h-5 w-5 text-green-500" />
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-800">
+              <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-800 dark:border-red-800 dark:border-red-800">
                 <div>
                   <div className="font-medium text-gray-900 dark:text-gray-100">权限控制</div>
                   <div className="text-sm text-gray-600 dark:text-gray-300 dark:text-gray-400 dark:text-gray-500">严格的数据访问权限管理</div>
@@ -279,8 +279,8 @@ export default function DataSettingsPage() {
         </Card>
 
         {/* 使用提示 */}
-        <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
-          <h3 className="font-medium text-blue-900 dark:text-blue-300 mb-2">💡 数据安全建议</h3>
+        <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-950 dark:bg-blue-950 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800 dark:border-blue-800 dark:border-blue-800">
+          <h3 className="font-medium text-blue-900 dark:text-blue-100 dark:text-blue-100 dark:text-blue-300 mb-2">💡 数据安全建议</h3>
           <ul className="text-sm text-blue-800 dark:text-blue-400 space-y-1">
             <li>• 定期备份重要数据，避免数据丢失</li>
             <li>• 使用强密码并定期更换</li>

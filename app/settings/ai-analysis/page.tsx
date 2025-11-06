@@ -68,7 +68,7 @@ export default function AIAnalysisSettingsPage() {
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded-lg">
                       <feature.icon className="h-6 w-6 text-blue-600" />
                     </div>
                     <div>
@@ -93,9 +93,9 @@ export default function AIAnalysisSettingsPage() {
         </div>
 
         {/* 开发中提示 */}
-        <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+        <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 dark:border-blue-800 dark:border-blue-800">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-blue-900">
+            <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100 dark:text-blue-100">
               <Lightbulb className="h-5 w-5" />
               开发进度
             </CardTitle>
@@ -104,10 +104,10 @@ export default function AIAnalysisSettingsPage() {
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <div className="flex-1">
-                  <div className="font-medium text-blue-900">智能分析配置</div>
-                  <div className="text-sm text-blue-700">正在进行UI设计和功能规划</div>
+                  <div className="font-medium text-blue-900 dark:text-blue-100 dark:text-blue-100">智能分析配置</div>
+                  <div className="text-sm text-blue-700 dark:text-blue-300 dark:text-blue-300">正在进行UI设计和功能规划</div>
                   <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                    <div className="bg-blue-500 h-2 rounded-full" style={{ width: '30%' }}></div>
+                    <div className="bg-blue-50 dark:bg-blue-9500 h-2 rounded-full" style={{ width: '30%' }}></div>
                   </div>
                 </div>
                 <span className="text-sm text-blue-600">开发中</span>
@@ -115,10 +115,10 @@ export default function AIAnalysisSettingsPage() {
 
               <div className="flex items-center gap-3">
                 <div className="flex-1">
-                  <div className="font-medium text-blue-900">提醒规则设置</div>
-                  <div className="text-sm text-blue-700">功能设计和数据库架构已完成</div>
+                  <div className="font-medium text-blue-900 dark:text-blue-100 dark:text-blue-100">提醒规则设置</div>
+                  <div className="text-sm text-blue-700 dark:text-blue-300 dark:text-blue-300">功能设计和数据库架构已完成</div>
                   <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                    <div className="bg-blue-500 h-2 rounded-full" style={{ width: '15%' }}></div>
+                    <div className="bg-blue-50 dark:bg-blue-9500 h-2 rounded-full" style={{ width: '15%' }}></div>
                   </div>
                 </div>
                 <span className="text-sm text-blue-600">规划中</span>
@@ -126,10 +126,10 @@ export default function AIAnalysisSettingsPage() {
 
               <div className="flex items-center gap-3">
                 <div className="flex-1">
-                  <div className="font-medium text-blue-900">个性化偏好</div>
-                  <div className="text-sm text-blue-700">正在收集用户需求和反馈</div>
+                  <div className="font-medium text-blue-900 dark:text-blue-100 dark:text-blue-100">个性化偏好</div>
+                  <div className="text-sm text-blue-700 dark:text-blue-300 dark:text-blue-300">正在收集用户需求和反馈</div>
                   <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                    <div className="bg-blue-500 h-2 rounded-full" style={{ width: '5%' }}></div>
+                    <div className="bg-blue-50 dark:bg-blue-9500 h-2 rounded-full" style={{ width: '5%' }}></div>
                   </div>
                 </div>
                 <span className="text-sm text-blue-600">需求收集中</span>
@@ -137,10 +137,10 @@ export default function AIAnalysisSettingsPage() {
 
               <div className="flex items-center gap-3">
                 <div className="flex-1">
-                  <div className="font-medium text-blue-900">数据源配置</div>
-                  <div className="text-sm text-blue-700">功能规划阶段</div>
+                  <div className="font-medium text-blue-900 dark:text-blue-100 dark:text-blue-100">数据源配置</div>
+                  <div className="text-sm text-blue-700 dark:text-blue-300 dark:text-blue-300">功能规划阶段</div>
                   <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                    <div className="bg-blue-500 h-2 rounded-full" style={{ width: '0%' }}></div>
+                    <div className="bg-blue-50 dark:bg-blue-9500 h-2 rounded-full" style={{ width: '0%' }}></div>
                   </div>
                 </div>
                 <span className="text-sm text-blue-600">待开始</span>
@@ -205,9 +205,9 @@ export default function AIAnalysisSettingsPage() {
         </Card>
 
         {/* 反馈收集 */}
-        <Card className="bg-blue-50 border-blue-200">
+        <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800 dark:border-blue-800">
           <CardHeader>
-            <CardTitle className="text-blue-900">💬 需求反馈</CardTitle>
+            <CardTitle className="text-blue-900 dark:text-blue-100">💬 需求反馈</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-center py-6">

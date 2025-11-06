@@ -149,9 +149,9 @@ export default function BudgetPage() {
             <p className="text-gray-600 dark:text-gray-300">管理您的月度预算，控制支出更轻松</p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="px-4 py-2 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="px-4 py-2 bg-blue-50 dark:bg-blue-950 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800 dark:border-blue-800">
               <Calendar className="inline h-4 w-4 mr-2 text-blue-600" />
-              <span className="font-semibold text-blue-900">{formatMonth(year, month)}</span>
+              <span className="font-semibold text-blue-900 dark:text-blue-100 dark:text-blue-100">{formatMonth(year, month)}</span>
             </div>
           </div>
         </div>
@@ -173,7 +173,7 @@ export default function BudgetPage() {
                 <Button
                   size="sm"
                   onClick={() => openSetBudgetDialog(null)}
-                  className="w-full bg-white text-blue-600 hover:bg-blue-50"
+                  className="w-full bg-white text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 dark:bg-blue-950"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   设置总预算
@@ -191,7 +191,7 @@ export default function BudgetPage() {
                     ¥{totalSpent.toLocaleString()}
                   </div>
                 </div>
-                <div className="p-3 bg-red-50 rounded-lg">
+                <div className="p-3 bg-red-50 dark:bg-red-950 dark:bg-red-950 rounded-lg">
                   <TrendingUp className="h-6 w-6 text-red-600" />
                 </div>
               </div>
@@ -207,7 +207,7 @@ export default function BudgetPage() {
                     ¥{totalRemaining.toLocaleString()}
                   </div>
                 </div>
-                <div className="p-3 bg-green-50 rounded-lg">
+                <div className="p-3 bg-green-50 dark:bg-green-950 dark:bg-green-950 rounded-lg">
                   <DollarSign className="h-6 w-6 text-green-600" />
                 </div>
               </div>
@@ -221,7 +221,7 @@ export default function BudgetPage() {
                   <div className="text-sm text-gray-600 mb-1">使用率</div>
                   <div className="text-2xl font-bold text-gray-900">{usagePercentage.toFixed(1)}%</div>
                 </div>
-                <div className={`p-3 rounded-lg ${usagePercentage > 100 ? 'bg-red-50' : usagePercentage >= 80 ? 'bg-orange-50' : 'bg-green-50'}`}>
+                <div className={`p-3 rounded-lg ${usagePercentage > 100 ? 'bg-red-50 dark:bg-red-950' : usagePercentage >= 80 ? 'bg-orange-50 dark:bg-orange-950' : 'bg-green-50 dark:bg-green-950'}`}>
                   {usagePercentage > 100 ? (
                     <AlertCircle className="h-6 w-6 text-red-600" />
                   ) : usagePercentage >= 80 ? (
@@ -243,7 +243,7 @@ export default function BudgetPage() {
 
         {/* 预算警告 */}
         {summary && (summary.over_budget_count > 0 || summary.near_limit_count > 0) && (
-          <div className="mb-6 p-4 bg-orange-50 border-l-4 border-orange-500 rounded-lg">
+          <div className="mb-6 p-4 bg-orange-50 dark:bg-orange-950 dark:bg-orange-950 border-l-4 border-orange-500 rounded-lg">
             <div className="flex items-start gap-3">
               <AlertCircle className="h-5 w-5 text-orange-600 flex-shrink-0 mt-0.5" />
               <div className="text-sm text-orange-900">
@@ -263,7 +263,7 @@ export default function BudgetPage() {
           <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-3 text-gray-900">
-                <div className="p-2 bg-blue-100 rounded-lg">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded-lg">
                   <PiggyBank className="h-5 w-5 text-blue-600" />
                 </div>
                 <span>分类预算</span>
@@ -328,7 +328,7 @@ export default function BudgetPage() {
                             size="sm"
                             variant="outline"
                             onClick={() => openSetBudgetDialog(budget)}
-                            className="hover:bg-blue-50"
+                            className="hover:bg-blue-50 dark:hover:bg-blue-950 dark:bg-blue-950"
                           >
                             <Edit2 className="h-3 w-3" />
                           </Button>
@@ -336,7 +336,7 @@ export default function BudgetPage() {
                             size="sm"
                             variant="outline"
                             onClick={() => handleDeleteBudget(budget.id, budget.category_label)}
-                            className="hover:bg-red-50 hover:text-red-600"
+                            className="hover:bg-red-50 dark:bg-red-950 hover:text-red-600"
                           >
                             <Trash2 className="h-3 w-3" />
                           </Button>
@@ -479,8 +479,8 @@ function SetBudgetDialog({
             />
           </div>
 
-          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-sm text-blue-900">
+          <div className="p-4 bg-blue-50 dark:bg-blue-950 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800 dark:border-blue-800">
+            <p className="text-sm text-blue-900 dark:text-blue-100 dark:text-blue-100">
               💡 提示：系统会在预算使用达到 80% 时提醒您
             </p>
           </div>
