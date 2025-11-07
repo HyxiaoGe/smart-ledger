@@ -68,8 +68,8 @@ export function useAutoRefresh({
     consumeDirty: consumeTransactionsDirty
   });
 
-  // 保存数据快照的引用
-  const latestSnapshot = useRef<Record<string, any>>(dataSnapshot || {});
+  // 保存上一次的数据快照
+  const prevSnapshotRef = useRef<Record<string, any> | undefined>(undefined);
 
   // 监听数据同步事件
   useEffect(() => {
@@ -109,16 +109,25 @@ export function useAutoRefresh({
   }, [triggerQueue, enableVisibilityCheck]);
 
   // 检测数据变化并自动停止刷新队列
+  // 使用 useMemo 包装的 dataSnapshot 确保只有数据真正变化时对象引用才会改变
   useEffect(() => {
     if (!dataSnapshot) return;
 
-    const snapshot = latestSnapshot.current;
+    const prevSnapshot = prevSnapshotRef.current;
+
+    // 如果是第一次，直接保存快照，不触发 stopQueue
+    if (!prevSnapshot) {
+      prevSnapshotRef.current = dataSnapshot;
+      return;
+    }
+
+    // 检查数据是否真的变化了
     const changed = Object.keys(dataSnapshot).some(
-      key => snapshot[key] !== dataSnapshot[key]
+      key => prevSnapshot[key] !== dataSnapshot[key]
     );
 
     if (changed) {
-      latestSnapshot.current = { ...dataSnapshot };
+      prevSnapshotRef.current = dataSnapshot;
       stopQueue({ consume: true });
     }
   }, [dataSnapshot, stopQueue]);
