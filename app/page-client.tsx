@@ -92,16 +92,22 @@ export default function HomePageClient({
     }
   }, [lastResult, router]);
 
-  // 使用通用的自动刷新 Hook
-  const { isRefreshing } = useAutoRefresh({
-    events: ['transaction_added', 'transaction_updated', 'transaction_deleted'],
-    onRefresh: () => router.refresh(),
-    dataSnapshot: {
+  // 使用 useMemo 稳定数据快照对象的引用
+  const dataSnapshot = useMemo(
+    () => ({
       income: data.income,
       expense: data.expense,
       balance: data.balance,
       rangeExpense: data.rangeExpense
-    }
+    }),
+    [data.income, data.expense, data.balance, data.rangeExpense]
+  );
+
+  // 使用通用的自动刷新 Hook
+  const { isRefreshing } = useAutoRefresh({
+    events: ['transaction_added', 'transaction_updated', 'transaction_deleted'],
+    onRefresh: () => router.refresh(),
+    dataSnapshot
   });
 
   const pieRange = useMemo(
