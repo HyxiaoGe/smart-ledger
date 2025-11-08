@@ -249,7 +249,76 @@ export function formatMonth(year: number, month: number): string {
 }
 
 /**
- * 获取预算使用状态标签
+ * 获取动态预算建议
+ */
+export async function getBudgetSuggestions(
+  year: number,
+  month: number
+): Promise<Array<{
+  categoryKey: string;
+  suggestedAmount: number;
+  confidenceLevel: string;
+  reason: string;
+  historicalAvg: number;
+  historicalMonths: number;
+  currentMonthSpending: number;
+  currentDailyRate: number;
+  predictedMonthTotal: number;
+  trendDirection: string;
+  daysIntoMonth: number;
+  calculatedAt: string;
+}>> {
+  const { data, error } = await supabase
+    .from('budget_suggestions')
+    .select('*')
+    .eq('year', year)
+    .eq('month', month)
+    .eq('is_active', true)
+    .order('calculated_at', { ascending: false });
+
+  if (error) {
+    console.error('获取预算建议失败:', error);
+    throw error;
+  }
+
+  return (data || []).map(row => ({
+    categoryKey: row.category_key,
+    suggestedAmount: Number(row.suggested_amount),
+    confidenceLevel: row.confidence_level,
+    reason: row.reason,
+    historicalAvg: Number(row.historical_avg || 0),
+    historicalMonths: row.historical_months || 0,
+    currentMonthSpending: Number(row.current_month_spending || 0),
+    currentDailyRate: Number(row.current_daily_rate || 0),
+    predictedMonthTotal: Number(row.predicted_month_total || 0),
+    trendDirection: row.trend_direction || 'unknown',
+    daysIntoMonth: row.days_into_month || 0,
+    calculatedAt: row.calculated_at,
+  }));
+}
+
+/**
+ * 手动刷新预算建议（如果需要立即更新）
+ */
+export async function refreshBudgetSuggestions(
+  year: number,
+  month: number
+): Promise<number> {
+  const { data, error } = await supabase.rpc('refresh_all_budget_suggestions', {
+    p_year: year,
+    p_month: month,
+  });
+
+  if (error) {
+    console.error('刷新预算建议失败:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * 计算预算使用状态标签
  */
 export function getBudgetStatusLabel(status: BudgetStatus): {
   label: string;
