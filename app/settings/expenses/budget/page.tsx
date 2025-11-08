@@ -19,6 +19,7 @@ import {
   type BudgetStatus,
   type TotalBudgetSummary,
 } from '@/lib/services/budgetService';
+import { markTransactionsDirty } from '@/lib/core/dataSync';
 import { getCategoriesWithStats, type Category } from '@/lib/services/categoryService';
 import {
   ChevronLeft,
@@ -86,6 +87,9 @@ export default function BudgetPage() {
         amount,
       });
 
+      // 触发跨页面数据同步，让账单列表也刷新
+      markTransactionsDirty();
+
       setToastMessage('✅ 预算设置成功');
       setShowToast(true);
       setShowSetBudgetDialog(false);
@@ -104,6 +108,10 @@ export default function BudgetPage() {
 
     try {
       await deleteBudget(id);
+
+      // 触发跨页面数据同步，让账单列表也刷新
+      markTransactionsDirty();
+
       setToastMessage('✅ 预算已删除');
       setShowToast(true);
       await fetchData();
@@ -173,7 +181,7 @@ export default function BudgetPage() {
                 <Button
                   size="sm"
                   onClick={() => openSetBudgetDialog(null)}
-                  className="w-full bg-white dark:bg-gray-800 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 dark:bg-blue-950"
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white hover:from-orange-600 hover:to-orange-700 dark:from-orange-600 dark:to-orange-700 shadow-md hover:shadow-lg transition-all duration-200"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   设置总预算
@@ -190,7 +198,7 @@ export default function BudgetPage() {
                       openSetBudgetDialog(null);
                     }
                   }}
-                  className="w-full bg-white dark:bg-gray-800 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 dark:bg-blue-950"
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium px-4 py-2.5 rounded-lg"
                 >
                   <Edit2 className="h-4 w-4 mr-1" />
                   调整预算
