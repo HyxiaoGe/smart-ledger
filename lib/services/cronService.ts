@@ -107,6 +107,7 @@ export async function manualTriggerCronJob(jobName: string): Promise<any> {
     'annotate-patterns': 'annotate_consumption_patterns',
     'export-training-snapshot': 'snapshot_training_data',
     'check-data-quality': 'check_data_quality',
+    'refresh-budget-suggestions-daily': 'refresh_budget_suggestions',
   };
 
   const functionName = functionMap[jobName];
@@ -296,6 +297,11 @@ export function getJobDescription(jobName: string): { title: string; description
       title: '数据质量检查',
       description: '检查数据完整性、一致性和异常情况',
       category: 'maintenance'
+    },
+    'refresh-budget-suggestions-daily': {
+      title: '预算建议刷新',
+      description: '每日刷新AI生成的预算建议和消费洞察',
+      category: 'ai'
     },
   };
 
