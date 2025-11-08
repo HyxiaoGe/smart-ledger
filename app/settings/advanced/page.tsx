@@ -10,9 +10,20 @@ import {
   Server,
   Database
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+
+interface AdvancedConfigSection {
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  href: string;
+  status: 'available' | 'coming-soon';
+  badge: string;
+  badgeColor: 'purple' | 'green' | 'gray';
+}
 
 export default function AdvancedSettingsPage() {
-  const advancedConfigSections = [
+  const advancedConfigSections: AdvancedConfigSection[] = [
     {
       title: '定时任务管理',
       description: '查看和管理系统自动化任务、执行历史、手动触发任务',
@@ -117,7 +128,7 @@ export default function AdvancedSettingsPage() {
                   {section.description}
                 </p>
                 {section.status === 'available' ? (
-                  <Link href={section.href}>
+                  <Link href={section.href as any}>
                     <Button className="w-full bg-purple-600 dark:bg-purple-700 hover:bg-purple-700 dark:hover:bg-purple-600">
                       <Settings2 className="h-4 w-4 mr-2" />
                       开始配置

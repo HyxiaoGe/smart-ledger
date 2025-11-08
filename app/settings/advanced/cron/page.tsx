@@ -11,6 +11,7 @@ import {
   getAllCronJobs,
   getCronJobHistory,
   getCronJobStats,
+  getTodayCronSummary,
   manualTriggerCronJob,
   parseCronExpression,
   calculateNextRun,
@@ -40,6 +41,12 @@ export default function CronManagementPage() {
   const [jobs, setJobs] = useState<CronJob[]>([]);
   const [stats, setStats] = useState<CronJobStats[]>([]);
   const [history, setHistory] = useState<CronJobRun[]>([]);
+  const [todaySummary, setTodaySummary] = useState<{
+    total_runs: number;
+    success_count: number;
+    failed_count: number;
+    running_count: number;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
@@ -60,15 +67,17 @@ export default function CronManagementPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [jobsData, statsData, historyData] = await Promise.all([
+      const [jobsData, statsData, historyData, todayData] = await Promise.all([
         getAllCronJobs(),
         getCronJobStats(),
         getCronJobHistory(undefined, 20),
+        getTodayCronSummary(),
       ]);
 
       setJobs(jobsData);
       setStats(statsData);
       setHistory(historyData);
+      setTodaySummary(todayData);
     } catch (error) {
       console.error('获取 Cron 数据失败:', error);
       setError('获取 Cron 数据失败');
@@ -293,8 +302,8 @@ export default function CronManagementPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{totalStats.totalRuns}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">总执行次数</div>
+                  <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{todaySummary?.total_runs || 0}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">今日执行</div>
                 </div>
                 <div className="p-3 bg-purple-50 dark:bg-purple-950 rounded-lg">
                   <TrendingUp className="h-6 w-6 text-purple-600 dark:text-purple-400" />
@@ -307,8 +316,12 @@ export default function CronManagementPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{totalStats.successRate}%</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">成功率</div>
+                  <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                    {todaySummary && todaySummary.total_runs > 0
+                      ? ((todaySummary.success_count / todaySummary.total_runs) * 100).toFixed(1)
+                      : '0'}%
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">今日成功率</div>
                 </div>
                 <div className="p-3 bg-orange-50 dark:bg-orange-950 rounded-lg">
                   <CheckCircle2 className="h-6 w-6 text-orange-600 dark:text-orange-400" />

@@ -95,6 +95,31 @@ export async function getCronJobStats(): Promise<CronJobStats[]> {
 }
 
 /**
+ * 获取今日任务汇总
+ */
+export async function getTodayCronSummary(): Promise<{
+  total_runs: number;
+  success_count: number;
+  failed_count: number;
+  running_count: number;
+}> {
+  const { data, error } = await supabase
+    .rpc('get_today_cron_summary');
+
+  if (error) {
+    console.error('获取今日任务汇总失败:', error);
+    throw error;
+  }
+
+  return data?.[0] || {
+    total_runs: 0,
+    success_count: 0,
+    failed_count: 0,
+    running_count: 0,
+  };
+}
+
+/**
  * 手动触发任务（根据任务名称调用对应函数）
  */
 export async function manualTriggerCronJob(jobName: string): Promise<any> {
