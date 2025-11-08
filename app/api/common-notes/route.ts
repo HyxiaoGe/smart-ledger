@@ -65,10 +65,9 @@ export async function POST(request: NextRequest) {
       .select('*')
       .eq('content', trimmedContent)
       .eq('is_active', true)
-      .single();
+      .maybeSingle();
 
-    if (fetchError && fetchError.code !== 'PGRST116') {
-      // PGRST116 = not found
+    if (fetchError) {
       return NextResponse.json({ error: 'Failed to check existing note' }, { status: 500 });
     }
 
@@ -169,7 +168,7 @@ async function updateAnalytics(noteId: string, amount: number) {
       .from('note_analytics')
       .select('*')
       .eq('note_id', noteId)
-      .single();
+      .maybeSingle();
 
     if (existingAnalytics) {
       // 更新现有分析数据

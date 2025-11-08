@@ -102,7 +102,7 @@ export function TransactionGroupedList({
             .from('transactions')
             .select('*')
             .eq('id', editingId)
-            .single();
+            .maybeSingle();
 
           if (verifyError || !verifyData) {
             return null;
@@ -168,10 +168,10 @@ export function TransactionGroupedList({
             .from('transactions')
             .select('id, deleted_at')
             .eq('id', transaction.id)
-            .single();
+            .maybeSingle();
 
-          if (verifyError) {
-            // 如果查询失败，可能是记录已被物理删除
+          if (verifyError || !verifyData) {
+            // 如果查询失败或记录不存在，可能是记录已被物理删除
             return { deleted: true, transaction };
           }
 

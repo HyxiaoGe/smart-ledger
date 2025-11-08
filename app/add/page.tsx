@@ -77,69 +77,23 @@ export default function AddPage() {
       // 使用本地时区格式化日期，避免时区问题
       const dateStr = formatDateToLocal(formData.date);
 
-      // 先查询是否存在相同业务记录（包括已删除的）
-      // 注意：不要用 .single()，因为可能查不到记录会报错
-      const { data: existingRecords, error: queryError } = await supabase
-        .from('transactions')
-        .select('*')
-        .eq('type', type)
-        .eq('category', formData.category)
-        .eq('date', dateStr)
-        .eq('currency', formData.currency)
-        .eq('note', formData.note)
-        .limit(1);
-
-      const existingRecord = existingRecords && existingRecords.length > 0 ? existingRecords[0] : null;
-
-      let transactionError;
-
-      if (existingRecord) {
-        if (existingRecord.deleted_at) {
-          // 记录已删除，替换为新金额而不是累加
-          const { error: updateError } = await supabase
-            .from('transactions')
-            .update({
-              amount: formData.amt, // 使用新金额，不累加
-              deleted_at: null // 恢复记录
-            })
-            .eq('id', existingRecord.id);
-
-          transactionError = updateError;
-        } else {
-          // 记录未删除，累加金额
-          const { error: updateError } = await supabase
-            .from('transactions')
-            .update({
-              amount: existingRecord.amount + formData.amt
-            })
-            .eq('id', existingRecord.id);
-
-          transactionError = updateError;
-        }
-      } else {
-        // 不存在任何记录，插入新记录
-        const { error: insertError } = await supabase
-          .from('transactions')
-          .insert([{
-            type,
-            category: formData.category,
-            amount: formData.amt,
-            note: formData.note,
-            date: dateStr,
-            currency: formData.currency,
-            payment_method: formData.paymentMethod || null,
-            // 新增：三层数据结构
-            merchant: formData.merchant || null,
-            subcategory: formData.subcategory || null,
-            product: formData.product || null
-          }]);
-
-        transactionError = insertError;
-      }
+      // 使用原子化的数据库函数来避免竞态条件
+      const { data: transactionId, error: upsertError } = await supabase
+        .rpc('upsert_transaction', {
+          p_type: type,
+          p_category: formData.category,
+          p_amount: formData.amt,
+          p_note: formData.note,
+          p_date: dateStr,
+          p_currency: formData.currency,
+          p_payment_method: formData.paymentMethod || null,
+          p_merchant: formData.merchant || null,
+          p_subcategory: formData.subcategory || null,
+          p_product: formData.product || null
+        });
 
       // 处理错误
-      if (queryError) throw queryError;
-      if (transactionError) throw transactionError;
+      if (upsertError) throw upsertError;
 
       // 显示Toast成功提示（带进度条），包含日期信息
       const formattedDate = formData.date.toLocaleDateString('zh-CN', {
@@ -176,16 +130,22 @@ export default function AddPage() {
         product: formData.product
       });
       markTransactionsDirty();
-      void fetch('/api/revalidate', {
+
+      // 异步刷新缓存（带错误日志）
+      fetch('/api/revalidate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tag: 'transactions' }),
         cache: 'no-store'
-      }).catch(() => {});
+      }).catch((err) => {
+        console.error('缓存刷新失败:', err);
+      });
 
-      // 更新常用备注
+      // 更新常用备注（带错误日志）
       if (formData.note && formData.note.trim()) {
-        void updateCommonNote(formData.note.trim(), formData.amt);
+        updateCommonNote(formData.note.trim(), formData.amt).catch((err) => {
+          console.error('更新常用备注失败:', err);
+        });
       }
 
       // 延迟重置表单，让用户看到成功提示

@@ -438,7 +438,7 @@ class AIFeedbackServiceDB {
         .from('ai_feedbacks')
         .select('*')
         .eq('id', feedbackId)
-        .single();
+        .maybeSingle();
 
       if (!feedback) return;
 
@@ -576,7 +576,7 @@ class AIFeedbackServiceDB {
         .select('*')
         .eq('id', templateId)
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('获取反馈模板失败:', error);

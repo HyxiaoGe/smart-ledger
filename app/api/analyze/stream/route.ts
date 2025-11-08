@@ -64,7 +64,16 @@ export async function POST(req: NextRequest) {
     const reader = upstream.body!.getReader();
     let buffer = '';
     const heartbeat = setInterval(() => {
-      writer.write(encoder.encode(': hb\n\n'));
+      // 添加 try-catch 防止 write 失败导致 timer 泄漏
+      try {
+        writer.write(encoder.encode(': hb\n\n')).catch(() => {
+          // write 失败时清理 timer
+          clearInterval(heartbeat);
+        });
+      } catch (err) {
+        // 同步异常也要清理
+        clearInterval(heartbeat);
+      }
     }, 1000);
 
     (async () => {
@@ -178,7 +187,16 @@ export async function GET(req: NextRequest) {
     const reader = upstream.body!.getReader();
     let buffer = '';
     const heartbeat = setInterval(() => {
-      writer.write(encoder.encode(': hb\n\n'));
+      // 添加 try-catch 防止 write 失败导致 timer 泄漏
+      try {
+        writer.write(encoder.encode(': hb\n\n')).catch(() => {
+          // write 失败时清理 timer
+          clearInterval(heartbeat);
+        });
+      } catch (err) {
+        // 同步异常也要清理
+        clearInterval(heartbeat);
+      }
     }, 1000);
 
     (async () => {
