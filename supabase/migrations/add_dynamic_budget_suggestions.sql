@@ -30,10 +30,7 @@ CREATE TABLE IF NOT EXISTS budget_suggestions (
   days_into_month INT,                     -- 月份第几天
   is_active BOOLEAN DEFAULT true,
 
-  created_at TIMESTAMP DEFAULT NOW(),
-
-  -- 唯一约束：每个分类每月每天只有一条最新建议
-  UNIQUE(category_key, year, month, calculated_at::date)
+  created_at TIMESTAMP DEFAULT NOW()
 );
 
 -- 创建索引
