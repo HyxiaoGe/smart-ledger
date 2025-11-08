@@ -46,6 +46,68 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- 创建原子化的交易记录更新或插入函数（解决竞态条件）
+CREATE OR REPLACE FUNCTION upsert_transaction(
+  p_type text,
+  p_category text,
+  p_amount numeric,
+  p_note text,
+  p_date date,
+  p_currency text,
+  p_payment_method uuid DEFAULT NULL,
+  p_merchant text DEFAULT NULL,
+  p_subcategory text DEFAULT NULL,
+  p_product text DEFAULT NULL
+) RETURNS uuid AS $$
+DECLARE
+  v_transaction_id uuid;
+  v_existing_amount numeric;
+  v_deleted_at timestamptz;
+BEGIN
+  -- 使用 FOR UPDATE 锁定查询，防止竞态条件
+  SELECT id, amount, deleted_at
+  INTO v_transaction_id, v_existing_amount, v_deleted_at
+  FROM public.transactions
+  WHERE type = p_type
+    AND category = p_category
+    AND date = p_date
+    AND currency = p_currency
+    AND note = p_note
+  FOR UPDATE;
+
+  IF v_transaction_id IS NOT NULL THEN
+    -- 记录存在，更新
+    IF v_deleted_at IS NOT NULL THEN
+      -- 已删除的记录，恢复并替换金额
+      UPDATE public.transactions
+      SET amount = p_amount,
+          deleted_at = NULL,
+          payment_method = p_payment_method,
+          merchant = p_merchant,
+          subcategory = p_subcategory,
+          product = p_product
+      WHERE id = v_transaction_id;
+    ELSE
+      -- 未删除的记录，累加金额
+      UPDATE public.transactions
+      SET amount = v_existing_amount + p_amount,
+          payment_method = COALESCE(p_payment_method, payment_method),
+          merchant = COALESCE(p_merchant, merchant),
+          subcategory = COALESCE(p_subcategory, subcategory),
+          product = COALESCE(p_product, product)
+      WHERE id = v_transaction_id;
+    END IF;
+  ELSE
+    -- 记录不存在，插入
+    INSERT INTO public.transactions (type, category, amount, note, date, currency, payment_method, merchant, subcategory, product)
+    VALUES (p_type, p_category, p_amount, p_note, p_date, p_currency, p_payment_method, p_merchant, p_subcategory, p_product)
+    RETURNING id INTO v_transaction_id;
+  END IF;
+
+  RETURN v_transaction_id;
+END;
+$$ LANGUAGE plpgsql;
+
 -- ========================================
 -- 2. 基础表结构
 -- ========================================

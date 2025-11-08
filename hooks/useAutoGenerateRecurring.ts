@@ -30,7 +30,18 @@ export function useAutoGenerateRecurring(recurringExpenses: any[]) {
     };
   }, []);
 
+  // 空的 checkAndGenerate 函数 - 保持向后兼容
+  // 实际的生成逻辑由 Supabase Cron 处理
+  const checkAndGenerate = useCallback(() => {
+    // No-op: 自动生成已迁移到 Supabase Cron
+    return Promise.resolve();
+  }, []);
+
   return {
-    getExpenseGenerationStatus
+    getExpenseGenerationStatus,
+    // 保持向后兼容的属性
+    isChecking: false,
+    lastResult: undefined,
+    checkAndGenerate
   };
 }

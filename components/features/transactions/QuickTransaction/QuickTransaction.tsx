@@ -52,62 +52,23 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
       const type = 'expense';
       const date = formatDateToLocal(new Date());
 
-      // 检查是否存在相同业务记录
-      const { data: existingRecord, error: queryError } = await supabase
-        .from('transactions')
-        .select('*')
-        .eq('type', type)
-        .eq('category', suggestion.category)
-        .eq('date', date)
-        .eq('currency', 'CNY')
-        .eq('note', suggestion.note)
-        .single();
+      // 使用原子化的数据库函数来避免竞态条件
+      const { error: upsertError } = await supabase
+        .rpc('upsert_transaction', {
+          p_type: type,
+          p_category: suggestion.category,
+          p_amount: suggestion.amount,
+          p_note: suggestion.note,
+          p_date: date,
+          p_currency: 'CNY',
+          p_payment_method: null,
+          p_merchant: null,
+          p_subcategory: null,
+          p_product: null
+        });
 
-      let transactionError;
-
-      if (existingRecord) {
-        if (existingRecord.deleted_at) {
-          // 记录已删除，替换为新金额
-          const { error: updateError } = await supabase
-            .from('transactions')
-            .update({
-              amount: suggestion.amount,
-              deleted_at: null
-            })
-            .eq('id', existingRecord.id);
-          transactionError = updateError;
-        } else {
-          // 记录未删除，累加金额
-          const { error: updateError } = await supabase
-            .from('transactions')
-            .update({
-              amount: existingRecord.amount + suggestion.amount
-            })
-            .eq('id', existingRecord.id);
-          transactionError = updateError;
-        }
-      } else {
-        // 插入新记录
-        const { error: insertError } = await supabase
-          .from('transactions')
-          .insert([{
-            type,
-            category: suggestion.category,
-            amount: suggestion.amount,
-            note: suggestion.note,
-            date,
-            currency: 'CNY'
-          }]);
-
-        transactionError = insertError;
-      }
-
-      if (queryError && queryError.code !== 'PGRST116') {
-        throw queryError;
-      }
-
-      if (transactionError) {
-        throw transactionError;
+      if (upsertError) {
+        throw upsertError;
       }
 
       // 更新常用备注

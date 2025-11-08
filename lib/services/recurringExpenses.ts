@@ -131,11 +131,15 @@ export class RecurringExpenseService {
       .from('recurring_expenses')
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error('获取固定支出失败:', error);
       throw new Error('获取固定支出失败: ' + error.message);
+    }
+
+    if (!data) {
+      throw new Error('固定支出不存在');
     }
 
     return data;
@@ -260,7 +264,7 @@ export class RecurringExpenseService {
       .select('id')
       .eq('recurring_expense_id', expense.id)
       .eq('date', today)
-      .single();
+      .maybeSingle();
 
     if (existing) {
       console.log(`固定支出 "${expense.name}" 今天已生成，跳过`);

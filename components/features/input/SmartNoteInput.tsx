@@ -168,7 +168,9 @@ const SmartNoteInputComponent = function SmartNoteInput({
 
       // 防抖获取建议
       debounceRef.current = setTimeout(() => {
-        void fetchSmartSuggestions(params);
+        fetchSmartSuggestions(params).catch((err) => {
+          console.error('获取智能建议失败:', err);
+        });
       }, 300);
 
       // 如果用户开始输入，立即显示建议（如果有缓存的话）
@@ -224,7 +226,9 @@ const SmartNoteInputComponent = function SmartNoteInput({
       };
 
       lastParamsRef.current = params;
-      void fetchSmartSuggestions(params);
+      fetchSmartSuggestions(params).catch((err) => {
+        console.error('获取智能建议失败:', err);
+      });
     } else {
       // 没有金额时不显示建议面板
       setShowSuggestions(false);
@@ -306,7 +310,9 @@ const SmartNoteInputComponent = function SmartNoteInput({
       lastParamsRef.current = params;
       autoTriggeredRef.current = true; // 标记已自动触发
 
-      void fetchSmartSuggestions(params);
+      fetchSmartSuggestions(params).catch((err) => {
+        console.error('获取智能建议失败:', err);
+      });
     } else if ((!category || !amount || amount <= 0) && autoTriggeredRef.current) {
       // 如果条件不满足，重置自动触发标记并隐藏建议
       autoTriggeredRef.current = false;
