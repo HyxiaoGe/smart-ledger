@@ -208,10 +208,10 @@ export default function CronManagementPage() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-6">
-            <Link href="/settings">
+            <Link href="/settings/advanced">
               <Button variant="ghost" className="text-gray-600 dark:text-gray-300 hover:text-gray-900">
                 <ChevronLeft className="h-4 w-4 mr-2" />
-                返回设置
+                返回高级配置
               </Button>
             </Link>
           </div>
@@ -229,10 +229,10 @@ export default function CronManagementPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 返回导航 */}
         <div className="mb-6">
-          <Link href="/settings">
+          <Link href="/settings/advanced">
             <Button variant="ghost" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 hover:bg-gray-50 rounded-lg px-3 py-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200">
               <ChevronLeft className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1" />
-              返回设置
+              返回高级配置
             </Button>
           </Link>
         </div>
