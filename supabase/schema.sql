@@ -54,7 +54,7 @@ CREATE OR REPLACE FUNCTION upsert_transaction(
   p_note text,
   p_date date,
   p_currency text,
-  p_payment_method uuid DEFAULT NULL,
+  p_payment_method text DEFAULT NULL,
   p_merchant text DEFAULT NULL,
   p_subcategory text DEFAULT NULL,
   p_product text DEFAULT NULL
@@ -124,6 +124,34 @@ create table if not exists public.transactions (
   currency text not null default 'CNY' check (currency in ('CNY','USD')),
   created_at timestamptz not null default now()
 );
+
+-- 添加扩展字段（如果不存在）
+DO $$
+BEGIN
+  -- 添加支付方式字段
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                 WHERE table_name='transactions' AND column_name='payment_method') THEN
+    ALTER TABLE public.transactions ADD COLUMN payment_method text;
+  END IF;
+
+  -- 添加商家字段
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                 WHERE table_name='transactions' AND column_name='merchant') THEN
+    ALTER TABLE public.transactions ADD COLUMN merchant text;
+  END IF;
+
+  -- 添加子分类字段
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                 WHERE table_name='transactions' AND column_name='subcategory') THEN
+    ALTER TABLE public.transactions ADD COLUMN subcategory text;
+  END IF;
+
+  -- 添加产品字段
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                 WHERE table_name='transactions' AND column_name='product') THEN
+    ALTER TABLE public.transactions ADD COLUMN product text;
+  END IF;
+END $$;
 
 -- 常用索引
 create index if not exists idx_transactions_date on public.transactions (date desc);
