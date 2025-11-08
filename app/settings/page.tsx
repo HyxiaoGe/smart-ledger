@@ -60,7 +60,7 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* 主内容区域 */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
@@ -97,7 +97,7 @@ export default function SettingsPage() {
                     <div>
                       <CardTitle className="text-lg">{section.title}</CardTitle>
                       {section.comingSoon && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 dark:bg-gray-800 text-gray-600 dark:text-gray-300 mt-1">
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 mt-1">
                           即将推出
                         </span>
                       )}
@@ -136,9 +136,9 @@ export default function SettingsPage() {
 
         {/* 快速操作区域 */}
         <div className="mt-12">
-          <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 border-blue-200 dark:border-blue-800 dark:border-blue-800 dark:border-blue-800">
+          <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 border-blue-200 dark:border-blue-800">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100 dark:text-blue-100 dark:text-blue-300">
+              <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-300">
                 <Brain className="h-5 w-5" />
                 快速操作
               </CardTitle>

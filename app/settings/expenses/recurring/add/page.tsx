@@ -196,7 +196,7 @@ export default function AddRecurringExpensePage() {
                 <CardContent className="p-6 space-y-6">
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                      <div className="w-1 h-4 bg-blue-50 dark:bg-blue-950 dark:bg-blue-9500 rounded-full"></div>
+                      <div className="w-1 h-4 bg-blue-50 dark:bg-blue-950 dark:bg-blue-950 rounded-full"></div>
                       支出名称 *
                     </label>
                     <div className="relative">
@@ -216,7 +216,7 @@ export default function AddRecurringExpensePage() {
 
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                      <div className="w-1 h-4 bg-green-50 dark:bg-green-950 dark:bg-green-9500 rounded-full"></div>
+                      <div className="w-1 h-4 bg-green-50 dark:bg-green-950 dark:bg-green-950 rounded-full"></div>
                       金额 (元) *
                     </label>
                     <div className="relative">
@@ -238,7 +238,7 @@ export default function AddRecurringExpensePage() {
 
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                      <div className="w-1 h-4 bg-purple-50 dark:bg-purple-950 dark:bg-purple-9500 rounded-full"></div>
+                      <div className="w-1 h-4 bg-purple-50 dark:bg-purple-950 dark:bg-purple-950 rounded-full"></div>
                       消费类别 *
                     </label>
                     <div className="relative">
@@ -296,7 +296,7 @@ export default function AddRecurringExpensePage() {
 
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                      <div className="w-1 h-4 bg-orange-50 dark:bg-orange-950 dark:bg-orange-9500 rounded-full"></div>
+                      <div className="w-1 h-4 bg-orange-50 dark:bg-orange-950 dark:bg-orange-950 rounded-full"></div>
                       结束日期（可选）
                     </label>
                     <div className="relative z-[10000] w-full">
@@ -314,7 +314,7 @@ export default function AddRecurringExpensePage() {
                     </div>
                     <div className="mt-2 p-3 bg-orange-50 dark:bg-orange-950 dark:bg-orange-950 border border-orange-200 dark:border-orange-800 rounded-lg">
                       <p className="text-sm text-orange-700 flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bg-orange-50 dark:bg-orange-950 dark:bg-orange-9500 rounded-full"></div>
+                        <div className="w-1.5 h-1.5 bg-orange-50 dark:bg-orange-950 dark:bg-orange-950 rounded-full"></div>
                         不填写则永久有效
                       </p>
                     </div>
@@ -335,7 +335,7 @@ export default function AddRecurringExpensePage() {
                 <CardContent className="p-6 space-y-6">
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                      <div className="w-1 h-4 bg-purple-50 dark:bg-purple-950 dark:bg-purple-9500 rounded-full"></div>
+                      <div className="w-1 h-4 bg-purple-50 dark:bg-purple-950 dark:bg-purple-950 rounded-full"></div>
                       重复频率 *
                     </label>
                     <div className="space-y-3">
@@ -380,7 +380,7 @@ export default function AddRecurringExpensePage() {
 
                   {/* 月度设置（当选择月度时显示） */}
                   {formData.frequency === 'monthly' && (
-                    <div className="border-t dark:border-gray-700 border-purple-200 dark:border-purple-800 dark:border-purple-800 pt-6">
+                    <div className="border-t dark:border-gray-700 border-purple-200 dark:border-purple-800 pt-6">
                       <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
                         <div className="w-1 h-4 bg-pink-500 rounded-full"></div>
                         每月日期
@@ -401,7 +401,7 @@ export default function AddRecurringExpensePage() {
 
                   {/* 周度设置（当选择周度时显示） */}
                   {formData.frequency === 'weekly' && (
-                    <div className="border-t dark:border-gray-700 border-purple-200 dark:border-purple-800 dark:border-purple-800 pt-6">
+                    <div className="border-t dark:border-gray-700 border-purple-200 dark:border-purple-800 pt-6">
                       <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
                         <div className="w-1 h-4 bg-indigo-500 rounded-full"></div>
                         星期设置
@@ -531,7 +531,7 @@ export default function AddRecurringExpensePage() {
                           </div>
                         </div>
                       </div>
-                      <div className="mt-3 pt-3 border-t dark:border-gray-700 border-gray-200 dark:border-gray-700 dark:border-gray-700">
+                      <div className="mt-3 pt-3 border-t dark:border-gray-700 border-gray-200">
                         <div className="flex items-center justify-center">
                           <span className="text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 px-3 py-1 rounded-full">
                             点击应用模板
