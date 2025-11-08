@@ -383,7 +383,7 @@ export default function BudgetPage() {
                       </div>
                     </div>
                     <div className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-                      {suggestion.reason.split('**').map((part, i) =>
+                      {suggestion.reason.split('**').map((part: string, i: number) =>
                         i % 2 === 1 ? <strong key={i} className="font-bold text-purple-700 dark:text-purple-300">{part}</strong> : part
                       )}
                     </div>

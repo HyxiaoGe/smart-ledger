@@ -412,7 +412,7 @@ export default function AIFeedbackManagementPage() {
                       <Badge variant="outline">
                         {getFeatureTypeName(feedback.featureType)}
                       </Badge>
-                      <Badge variant={feedback.status === 'pending' ? 'destructive' : 'secondary'}>
+                      <Badge variant={feedback.status === 'pending' ? 'default' : 'outline'}>
                         {feedback.status}
                       </Badge>
                       {feedback.rating && (

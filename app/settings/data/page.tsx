@@ -15,7 +15,9 @@ import {
   Lock,
   Clock,
   CheckCircle,
-  ChevronLeft
+  ChevronLeft,
+  Settings,
+  Zap
 } from 'lucide-react';
 
 export default function DataSettingsPage() {

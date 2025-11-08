@@ -90,8 +90,9 @@ export default function HomePageClient({
   };
 
   // 监听自动生成结果，静默刷新数据（完全无感知）
+  // 注意：自动生成已迁移到 Supabase Cron，此效果不再触发
   useEffect(() => {
-    if (lastResult && lastResult.generated > 0) {
+    if (lastResult && typeof lastResult === 'object' && 'generated' in lastResult && (lastResult as any).generated > 0) {
       // 静默刷新页面数据，不显示任何提示
       setTimeout(() => {
         router.refresh();

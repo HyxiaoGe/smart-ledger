@@ -239,14 +239,14 @@ async function handleAnomalyDetection(predictionData: any) {
   const { monthlyData, categoryAnalysis } = predictionData;
 
   // 规则引擎异常检测
-  const anomalies = [];
+  const anomalies: any[] = [];
 
   // 检测月度支出异常
-  const amounts = monthlyData.map(m => m.totalAmount);
-  const avgAmount = amounts.reduce((sum, a) => sum + a, 0) / amounts.length;
-  const stdDev = Math.sqrt(amounts.reduce((sum, a) => sum + Math.pow(a - avgAmount, 2), 0) / amounts.length);
+  const amounts = monthlyData.map((m: any) => m.totalAmount);
+  const avgAmount = amounts.reduce((sum: number, a: number) => sum + a, 0) / amounts.length;
+  const stdDev = Math.sqrt(amounts.reduce((sum: number, a: number) => sum + Math.pow(a - avgAmount, 2), 0) / amounts.length);
 
-  monthlyData.forEach((month) => {
+  monthlyData.forEach((month: any) => {
     const zScore = Math.abs((month.totalAmount - avgAmount) / stdDev);
     if (zScore > 2) { // 2个标准差外视为异常
       anomalies.push({
@@ -262,7 +262,7 @@ async function handleAnomalyDetection(predictionData: any) {
   });
 
   // 检测类别支出异常
-  categoryAnalysis.forEach(category => {
+  categoryAnalysis.forEach((category: any) => {
     if (category.trend > 50) { // 增长超过50%
       anomalies.push({
         type: 'category_increase',
@@ -293,7 +293,7 @@ async function handleBudgetRecommendation(predictionData: any, predictionMonths:
   // 基于历史平均支出生成预算建议
   const avgMonthlySpending = overallStats.avgMonthlySpending;
 
-  const categoryBudgets = categoryAnalysis.map(category => {
+  const categoryBudgets = categoryAnalysis.map((category: any) => {
     const avgCategorySpending = category.avgAmount;
     const recommendedBudget = Math.round(avgCategorySpending * 0.9); // 建议减少10%
     const potentialSavings = Math.round(avgCategorySpending * 0.1);
@@ -308,8 +308,8 @@ async function handleBudgetRecommendation(predictionData: any, predictionMonths:
   });
 
   // 总体预算建议
-  const totalRecommendedBudget = categoryBudgets.reduce((sum, b) => sum + b.recommendedBudget, 0);
-  const totalPotentialSavings = categoryBudgets.reduce((sum, b) => sum + b.potentialSavings, 0);
+  const totalRecommendedBudget = categoryBudgets.reduce((sum: number, b: any) => sum + b.recommendedBudget, 0);
+  const totalPotentialSavings = categoryBudgets.reduce((sum: number, b: any) => sum + b.potentialSavings, 0);
 
   return {
     monthlyBudget: {
@@ -318,7 +318,7 @@ async function handleBudgetRecommendation(predictionData: any, predictionMonths:
       potentialSavings: totalPotentialSavings,
       savingsRate: Math.round((totalPotentialSavings / avgMonthlySpending) * 100)
     },
-    categoryBudgets: categoryBudgets.sort((a, b) => b.potentialSavings - a.potentialSavings),
+    categoryBudgets: categoryBudgets.sort((a: any, b: any) => b.potentialSavings - a.potentialSavings),
     timeframe: `${predictionMonths}个月预算规划`,
     achievable: totalPotentialSavings > 0
   };
@@ -356,9 +356,9 @@ function generateRuleBasedPrediction(predictionData: any, predictionMonths: numb
 
   // 简单的移动平均预测
   const recentMonths = monthlyData.slice(0, 3); // 最近3个月
-  const avgSpending = recentMonths.reduce((sum, m) => sum + m.totalAmount, 0) / recentMonths.length;
+  const avgSpending = recentMonths.reduce((sum: number, m: any) => sum + m.totalAmount, 0) / recentMonths.length;
 
-  const predictions = [];
+  const predictions: any[] = [];
   for (let i = 1; i <= predictionMonths; i++) {
     const futureDate = new Date();
     futureDate.setMonth(futureDate.getMonth() + i);
@@ -368,7 +368,7 @@ function generateRuleBasedPrediction(predictionData: any, predictionMonths: numb
       month: monthStr,
       totalAmount: Math.round(avgSpending * (1 + (Math.random() - 0.5) * 0.2)), // ±10%随机波动
       confidence: 60, // 规则引擎置信度较低
-      categoryBreakdown: categoryAnalysis.map(cat => ({
+      categoryBreakdown: categoryAnalysis.map((cat: any) => ({
         category: cat.category,
         amount: Math.round(cat.avgAmount * (1 + (Math.random() - 0.5) * 0.2)),
         confidence: 60
@@ -380,7 +380,7 @@ function generateRuleBasedPrediction(predictionData: any, predictionMonths: numb
     predictions,
     trends: {
       overall: 'stable',
-      keyCategories: categoryAnalysis.slice(0, 3).map(cat => ({
+      keyCategories: categoryAnalysis.slice(0, 3).map((cat: any) => ({
         category: cat.category,
         trend: cat.trend > 10 ? 'increasing' : cat.trend < -10 ? 'decreasing' : 'stable',
         changeRate: Math.round(cat.trend)

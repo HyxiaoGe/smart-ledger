@@ -3,8 +3,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import type { CommonNote } from '@/types/transaction';
 import { supabaseServerClient } from '@/lib/clients/supabase/server';
 import { unstable_cache, revalidateTag } from 'next/cache';
+import { z } from 'zod';
+import { validateRequest, commonSchemas } from '@/lib/utils/validation';
 
 export const runtime = 'nodejs';
+
+// POST 验证 schema
+const createNoteSchema = z.object({
+  content: commonSchemas.nonEmptyString,
+  amount: z.number().optional(),
+  category: z.string().optional(),
+  time_context: z.string().optional()
+});
 
 const supabase = supabaseServerClient;
 
@@ -51,12 +61,15 @@ export async function GET(request: NextRequest) {
 // POST - 创建或更新常用备注
 export async function POST(request: NextRequest) {
   try {
-    const { content, amount, category, time_context } = await request.json();
+    const body = await request.json();
 
-    if (!content || content.trim().length === 0) {
-      return NextResponse.json({ error: 'Note content is required' }, { status: 400 });
+    // 验证输入
+    const validation = validateRequest(createNoteSchema, body);
+    if (!validation.success) {
+      return validation.response;
     }
 
+    const { content, amount, category, time_context } = validation.data;
     const trimmedContent = content.trim();
 
     // 检查是否已存在相同内容的备注

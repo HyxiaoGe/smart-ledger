@@ -206,7 +206,7 @@ export default function AddPage() {
     // 使用防抖提交
     submitTimeoutRef.current = setTimeout(() => {
       debouncedSubmit({ amt, category, note, date, currency, paymentMethod, merchant, subcategory, product });
-    }, 200); // 200ms 延迟
+    }, 200) as any as number; // 200ms 延迟
   }
 
   // 处理AI预测选择
