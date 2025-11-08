@@ -144,7 +144,14 @@ export default function BudgetPage() {
       markTransactionsDirty();
       setToastMessage('✅ 已应用建议预算');
       setShowToast(true);
-      await fetchData();
+
+      // 只刷新预算状态数据，不刷新整个页面
+      const [statusData, summaryData] = await Promise.all([
+        getMonthlyBudgetStatus(year, month),
+        getTotalBudgetSummary(year, month, 'CNY'),
+      ]);
+      setBudgetStatuses(statusData);
+      setSummary(summaryData);
     } catch (error: any) {
       console.error('应用建议失败:', error);
       setToastMessage(`❌ ${error.message || '应用失败'}`);
@@ -325,14 +332,25 @@ export default function BudgetPage() {
                 if (!category) return null;
 
                 const confidenceColor =
-                  suggestion.confidenceLevel === 'high' ? 'text-green-600' :
-                  suggestion.confidenceLevel === 'medium' ? 'text-blue-600' :
-                  'text-gray-600';
+                  suggestion.confidenceLevel === 'high' ? 'text-orange-600 bg-orange-100 dark:bg-orange-900' :
+                  suggestion.confidenceLevel === 'medium' ? 'text-blue-600 bg-blue-100 dark:bg-blue-900' :
+                  'text-gray-600 bg-gray-100 dark:bg-gray-700';
 
                 const confidenceLabel =
                   suggestion.confidenceLevel === 'high' ? '高' :
                   suggestion.confidenceLevel === 'medium' ? '中' :
                   '低';
+
+                // 计算趋势图标
+                const trendIcon =
+                  suggestion.predictedMonthTotal > suggestion.historicalAvg * 1.1 ? '↑' :
+                  suggestion.predictedMonthTotal < suggestion.historicalAvg * 0.9 ? '↓' :
+                  '~';
+
+                const trendColor =
+                  trendIcon === '↑' ? 'text-red-500' :
+                  trendIcon === '↓' ? 'text-green-500' :
+                  'text-gray-500';
 
                 return (
                   <div
@@ -352,7 +370,7 @@ export default function BudgetPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700 ${confidenceColor}`}>
+                        <span className={`text-xs px-2 py-1 rounded-full ${confidenceColor}`}>
                           可信度: {confidenceLabel}
                         </span>
                         <Button
@@ -360,12 +378,14 @@ export default function BudgetPage() {
                           onClick={() => handleApplySuggestion(suggestion.categoryKey, suggestion.suggestedAmount)}
                           className="bg-purple-600 hover:bg-purple-700 text-white"
                         >
-                          应用
+                          {budgetStatuses.find(b => b.category_key === suggestion.categoryKey) ? '重新应用' : '应用'}
                         </Button>
                       </div>
                     </div>
                     <div className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-                      {suggestion.reason}
+                      {suggestion.reason.split('**').map((part, i) =>
+                        i % 2 === 1 ? <strong key={i} className="font-bold text-purple-700 dark:text-purple-300">{part}</strong> : part
+                      )}
                     </div>
                     <div className="grid grid-cols-3 gap-2 text-xs text-gray-600 dark:text-gray-400">
                       <div>
@@ -374,8 +394,9 @@ export default function BudgetPage() {
                       <div>
                         当前已支出: ¥{suggestion.currentMonthSpending.toLocaleString()}
                       </div>
-                      <div>
+                      <div className="flex items-center gap-1">
                         预测月底: ¥{suggestion.predictedMonthTotal.toLocaleString()}
+                        <span className={`font-bold ${trendColor}`}>{trendIcon}</span>
                       </div>
                     </div>
                   </div>
