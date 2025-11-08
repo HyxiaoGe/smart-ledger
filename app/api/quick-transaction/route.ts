@@ -4,6 +4,7 @@ import { revalidateTag, revalidatePath } from 'next/cache';
 import { formatDateToLocal } from '@/lib/utils/date';
 import { z } from 'zod';
 import { validateRequest, commonSchemas } from '@/lib/utils/validation';
+import { withErrorHandler } from '@/lib/utils/apiErrorHandler';
 
 export const runtime = 'nodejs';
 
@@ -20,71 +21,59 @@ const quickTransactionSchema = z.object({
  * 快速记账API - 简化版本
  * 支持一键快速记录常见消费
  */
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
+export const POST = withErrorHandler(async (req: NextRequest) => {
+  const body = await req.json();
 
-    // 验证输入
-    const validation = validateRequest(quickTransactionSchema, body);
-    if (!validation.success) {
-      return validation.response;
-    }
+  // 验证输入
+  const validation = validateRequest(quickTransactionSchema, body);
+  if (!validation.success) {
+    return validation.response;
+  }
 
-    const { category, amount, note, currency, date } = validation.data;
+  const { category, amount, note, currency, date } = validation.data;
 
-    const type = 'expense';
-    const transactionDate = date || formatDateToLocal(new Date());
+  const type = 'expense';
+  const transactionDate = date || formatDateToLocal(new Date());
 
-    // 使用原子化的数据库函数来避免竞态条件
-    const { data: transactionId, error: upsertError } = await supabase
-      .rpc('upsert_transaction', {
-        p_type: type,
-        p_category: category,
-        p_amount: amount,
-        p_note: note,
-        p_date: transactionDate,
-        p_currency: currency,
-        p_payment_method: null,
-        p_merchant: null,
-        p_subcategory: null,
-        p_product: null
-      });
-
-    // 处理错误
-    if (upsertError) {
-      throw upsertError;
-    }
-
-    // 获取创建/更新后的记录
-    const { data: result, error: fetchError } = await supabase
-      .from('transactions')
-      .select('*')
-      .eq('id', transactionId)
-      .maybeSingle();
-
-    if (fetchError) {
-      throw fetchError;
-    }
-
-    // 刷新缓存 - 确保页面显示最新数据
-    revalidateTag('transactions');
-    revalidatePath('/');
-    revalidatePath('/records');
-
-    return Response.json({
-      success: true,
-      transaction: result,
-      message: '快速记账成功'
+  // 使用原子化的数据库函数来避免竞态条件
+  const { data: transactionId, error: upsertError } = await supabase
+    .rpc('upsert_transaction', {
+      p_type: type,
+      p_category: category,
+      p_amount: amount,
+      p_note: note,
+      p_date: transactionDate,
+      p_currency: currency,
+      p_payment_method: null,
+      p_merchant: null,
+      p_subcategory: null,
+      p_product: null
     });
 
-  } catch (err: any) {
-    console.error('快速记账失败:', err);
-    return new Response(
-      JSON.stringify({
-        error: err.message || '快速记账失败',
-        details: err.details || null
-      }),
-      { status: 500 }
-    );
+  // 处理错误
+  if (upsertError) {
+    throw upsertError;
   }
-}
+
+  // 获取创建/更新后的记录
+  const { data: result, error: fetchError } = await supabase
+    .from('transactions')
+    .select('*')
+    .eq('id', transactionId)
+    .maybeSingle();
+
+  if (fetchError) {
+    throw fetchError;
+  }
+
+  // 刷新缓存 - 确保页面显示最新数据
+  revalidateTag('transactions');
+  revalidatePath('/');
+  revalidatePath('/records');
+
+  return Response.json({
+    success: true,
+    transaction: result,
+    message: '快速记账成功'
+  });
+});

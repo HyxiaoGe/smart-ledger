@@ -6,6 +6,7 @@ import Navigation from '@/components/layout/Navigation';
 import { ErrorBoundary } from '@/components/layout/ErrorBoundary';
 import { NavigationProgress } from '@/components/layout/NavigationProgress';
 import { ThemeProvider } from '@/components/layout/ThemeProvider';
+import { GlobalErrorHandler } from '@/components/layout/GlobalErrorHandler';
 
 export const metadata: Metadata = {
   title: 'Smart Ledger',
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="zh-CN" suppressHydrationWarning>
       <body className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 text-foreground transition-colors duration-300">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <GlobalErrorHandler />
           <NavigationProgress />
           <header className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 shadow-sm transition-colors duration-300">
             <div className="container flex h-16 items-center justify-between">
