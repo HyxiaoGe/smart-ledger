@@ -55,7 +55,7 @@ export default function BudgetPage() {
       setLoading(true);
       const [statusData, summaryData, categoriesData] = await Promise.all([
         getMonthlyBudgetStatus(year, month),
-        getTotalBudgetSummary(year, month),
+        getTotalBudgetSummary(year, month, 'CNY'), // 传入币种，和首页保持一致
         getCategoriesWithStats(),
       ]);
 
@@ -181,7 +181,7 @@ export default function BudgetPage() {
                 <Button
                   size="sm"
                   onClick={() => openSetBudgetDialog(null)}
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white hover:from-orange-600 hover:to-orange-700 dark:from-orange-600 dark:to-orange-700 shadow-md hover:shadow-lg transition-all duration-200"
+                  className="w-full bg-white hover:bg-gray-50 text-blue-600 hover:text-blue-700 border-2 border-white/30 font-medium shadow-md hover:shadow-lg transition-all duration-200"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   设置总预算
@@ -198,7 +198,7 @@ export default function BudgetPage() {
                       openSetBudgetDialog(null);
                     }
                   }}
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium px-4 py-2.5 rounded-lg"
+                  className="w-full bg-white hover:bg-gray-50 text-blue-600 hover:text-blue-700 border-2 border-white/30 font-medium shadow-md hover:shadow-lg transition-all duration-200"
                 >
                   <Edit2 className="h-4 w-4 mr-1" />
                   调整预算

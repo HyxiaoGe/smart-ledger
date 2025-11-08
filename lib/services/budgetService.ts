@@ -105,23 +105,93 @@ export async function getMonthlyBudgetStatus(
 }
 
 /**
- * 获取总预算汇总
+ * 直接查询本月实际支出（和首页统计逻辑一致）
  */
-export async function getTotalBudgetSummary(
+export async function getMonthlyActualExpense(
   year: number,
-  month: number
-): Promise<TotalBudgetSummary> {
-  const { data, error } = await supabase.rpc('get_total_budget_summary', {
-    p_year: year,
-    p_month: month,
-  });
+  month: number,
+  currency: string = 'CNY'
+): Promise<number> {
+  // 计算本月的开始和结束日期
+  const startDate = new Date(year, month - 1, 1);
+  const endDate = new Date(year, month, 1);
+
+  const start = startDate.toISOString().slice(0, 10);
+  const end = endDate.toISOString().slice(0, 10);
+
+  const { data, error } = await supabase
+    .from('transactions')
+    .select('amount')
+    .is('deleted_at', null)
+    .eq('type', 'expense')
+    .eq('currency', currency)
+    .gte('date', start)
+    .lt('date', end);
 
   if (error) {
-    console.error('获取总预算汇总失败:', error);
+    console.error('获取本月支出失败:', error);
     throw error;
   }
 
-  return data[0];
+  const totalExpense = (data || []).reduce((sum, row) => sum + Number(row.amount || 0), 0);
+  return totalExpense;
+}
+
+/**
+ * 获取总预算汇总（纯前端实现，不依赖存储过程）
+ */
+export async function getTotalBudgetSummary(
+  year: number,
+  month: number,
+  currency: string = 'CNY'
+): Promise<TotalBudgetSummary> {
+  try {
+    // 1. 获取所有预算设置
+    const { data: budgets, error: budgetError } = await supabase
+      .from('budgets')
+      .select('*')
+      .eq('year', year)
+      .eq('month', month)
+      .eq('is_active', true);
+
+    if (budgetError) {
+      console.error('获取预算列表失败:', budgetError);
+      throw budgetError;
+    }
+
+    // 2. 获取本月实际支出（和首页统计逻辑一致）
+    const actualExpense = await getMonthlyActualExpense(year, month, currency);
+
+    // 3. 计算总预算
+    const totalBudgetRecord = (budgets || []).find(b => b.category_key === null);
+    const totalBudget = totalBudgetRecord ? Number(totalBudgetRecord.amount) : 0;
+
+    // 4. 计算分类预算相关统计
+    const categoryBudgets = (budgets || []).filter(b => b.category_key !== null);
+    const categoryBudgetsCount = categoryBudgets.length;
+
+    // 5. 获取所有分类的实际支出（用于计算超支和接近上限）
+    const budgetStatuses = await getMonthlyBudgetStatus(year, month);
+    const overBudgetCount = budgetStatuses.filter(b => b.is_over_budget && b.category_key).length;
+    const nearLimitCount = budgetStatuses.filter(b => b.is_near_limit && !b.is_over_budget && b.category_key).length;
+
+    // 6. 计算汇总数据
+    const totalRemaining = totalBudget - actualExpense;
+    const usagePercentage = totalBudget > 0 ? (actualExpense / totalBudget) * 100 : 0;
+
+    return {
+      total_budget: totalBudget,
+      total_spent: actualExpense,
+      total_remaining: totalRemaining,
+      usage_percentage: usagePercentage,
+      category_budgets_count: categoryBudgetsCount,
+      over_budget_count: overBudgetCount,
+      near_limit_count: nearLimitCount,
+    };
+  } catch (error) {
+    console.error('获取总预算汇总失败:', error);
+    throw error;
+  }
 }
 
 /**
