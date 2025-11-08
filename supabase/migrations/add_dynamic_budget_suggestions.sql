@@ -232,7 +232,7 @@ BEGIN
       -- 月初：使用上月 × 1.1
       v_suggested := v_hist.avg_spending * 1.1;
       v_confidence := 'low';
-      v_reason := '基于上月支出 ¥' || ROUND(v_hist.avg_spending, 0) || ' 并增加 10% 缓冲';
+      v_reason := '上月支出 **¥' || ROUND(v_hist.avg_spending, 0) || '**，建议略高以留余地';
     ELSE
       -- 月中/月末：结合预测
       v_suggested := GREATEST(v_hist.avg_spending * 1.1, v_pred.predicted_total * 1.05);
@@ -246,14 +246,14 @@ BEGIN
       -- 月初：使用历史平均
       v_suggested := v_hist.avg_spending * 1.05;
       v_confidence := 'medium';
-      v_reason := '基于过去 ' || v_hist.months_count || ' 个月平均支出 ¥' || ROUND(v_hist.avg_spending, 0);
+      v_reason := '过去 ' || v_hist.months_count || ' 个月平均支出 **¥' || ROUND(v_hist.avg_spending, 0) || '**';
 
     ELSIF v_days_into_month <= 20 THEN
       -- 月中：开始考虑当前速度
       IF v_pred.predicted_total > v_hist.avg_spending * 1.2 THEN
         v_suggested := v_pred.predicted_total * 1.1;
         v_confidence := 'medium';
-        v_reason := '⚠️ 当前消费速度较快，预测月底 ¥' || ROUND(v_pred.predicted_total, 0) || '，建议控制';
+        v_reason := '⚠️ 当前消费速度较快，预测月底 **¥' || ROUND(v_pred.predicted_total, 0) || '**，建议控制';
       ELSE
         v_suggested := v_hist.avg_spending * 1.05;
         v_confidence := 'medium';
@@ -264,7 +264,7 @@ BEGIN
       -- 月末：以预测为准
       v_suggested := GREATEST(v_pred.predicted_total, v_pred.current_spending);
       v_confidence := 'high';
-      v_reason := '根据本月实际支出 ¥' || ROUND(v_pred.current_spending, 0) || ' 动态调整';
+      v_reason := '本月实际支出 **¥' || ROUND(v_pred.current_spending, 0) || '**，动态调整';
     END IF;
   END IF;
 
@@ -302,15 +302,21 @@ BEGIN
   SET is_active = false
   WHERE year = p_year AND month = p_month;
 
-  -- 为每个活跃分类生成建议
+  -- 为每个活跃分类生成建议（排除固定支出）
   FOR v_category IN
     SELECT DISTINCT category as key
     FROM transactions
     WHERE type = 'expense' AND deleted_at IS NULL
+      AND category NOT IN (
+        SELECT DISTINCT category FROM fixed_expenses WHERE is_active = true
+      )
     UNION
     SELECT DISTINCT category_key as key
     FROM budgets
     WHERE is_active = true
+      AND category_key NOT IN (
+        SELECT DISTINCT category FROM fixed_expenses WHERE is_active = true
+      )
   LOOP
     INSERT INTO budget_suggestions (
       category_key, year, month, currency,
