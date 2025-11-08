@@ -170,7 +170,7 @@ export default function RecurringHistoryPage() {
         {/* 页面标题 */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded-lg">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
               <History className="h-6 w-6 text-blue-600" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">生成历史记录</h2>
@@ -343,7 +343,7 @@ export default function RecurringHistoryPage() {
                                 )}
                               </div>
                             </div>
-                            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">
+                            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                               <Calendar className="h-4 w-4" />
                               <div className="text-right">
                                 <div className="font-medium">{time.date}</div>
@@ -359,10 +359,10 @@ export default function RecurringHistoryPage() {
 
                           {/* 关联交易信息 */}
                           {log.transaction && (
-                            <div className="mt-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 dark:border-gray-700">
+                            <div className="mt-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                               <div className="flex items-center justify-between">
                                 <div className="text-sm">
-                                  <span className="text-gray-500 dark:text-gray-400 dark:text-gray-500">生成交易：</span>
+                                  <span className="text-gray-500 dark:text-gray-400">生成交易：</span>
                                   <span className="text-gray-900 dark:text-gray-100 font-medium ml-2">{log.transaction.note}</span>
                                 </div>
                                 <Link href={`/records`}>
@@ -384,12 +384,12 @@ export default function RecurringHistoryPage() {
         </Card>
 
         {/* 说明信息 */}
-        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800 dark:border-blue-800">
+        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
           <div className="flex items-start gap-3">
-            <div className="p-1 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded">
+            <div className="p-1 bg-blue-100 dark:bg-blue-900 rounded">
               <Clock className="h-4 w-4 text-blue-600" />
             </div>
-            <div className="text-sm text-blue-900 dark:text-blue-100 dark:text-blue-100">
+            <div className="text-sm text-blue-900 dark:text-blue-100">
               <p className="font-medium mb-1">自动生成说明</p>
               <p className="text-blue-700 dark:text-blue-300">
                 系统会在每天 00:01 自动执行定时任务，检查所有启用的固定支出并根据频率规则生成相应的交易记录。
