@@ -199,6 +199,17 @@ export default function CronManagementPage() {
     });
   };
 
+  // 过滤今天的执行记录
+  const todayHistory = history.filter((run) => {
+    const runDate = new Date(run.start_time);
+    const today = new Date();
+    return (
+      runDate.getFullYear() === today.getFullYear() &&
+      runDate.getMonth() === today.getMonth() &&
+      runDate.getDate() === today.getDate()
+    );
+  });
+
   if (loading) {
     return <PageSkeleton stats={4} listColumns={1} />;
   }
@@ -432,20 +443,20 @@ export default function CronManagementPage() {
               <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
                 <Activity className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               </div>
-              <span>最近执行记录</span>
+              <span>今日执行记录</span>
               <span className="text-sm text-gray-500 dark:text-gray-400 font-normal">
-                (最近 {history.length} 条)
+                (今天 {todayHistory.length} 条)
               </span>
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            {history.length === 0 ? (
+            {todayHistory.length === 0 ? (
               <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                暂无执行记录
+                今天暂无执行记录
               </div>
             ) : (
               <div className="space-y-2">
-                {history.map((run) => {
+                {todayHistory.map((run) => {
                   const statusStyle = getStatusStyle(run.status);
                   const StatusIcon = statusStyle.icon;
                   const job = jobs.find(j => j.jobid === run.jobid);
