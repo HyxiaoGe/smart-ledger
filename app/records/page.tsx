@@ -6,7 +6,6 @@ import {
   listYesterdayTransactions,
   getAIAnalysisData
 } from '@/lib/services/transactions';
-import { getMonthlyBudgetStatus, getCurrentYearMonth } from '@/lib/services/budgetService';
 import { RangePicker } from '@/components/shared/RangePicker';
 import { CollapsibleTransactionList } from '@/components/features/transactions/TransactionList/CollapsibleList';
 import { SkeletonBlock, SkeletonGrid } from '@/components/shared/Skeletons';
@@ -43,10 +42,7 @@ export default async function RecordsPage({
   const start = searchParams?.start;
   const end = searchParams?.end;
 
-  // 获取当前年月用于预算查询
-  const { year, month: currentMonth } = getCurrentYearMonth();
-
-  const [mainResult, yesterdayData, monthSummary, aiAnalysisData, budgetStatuses] = await Promise.all([
+  const [mainResult, yesterdayData, monthSummary, aiAnalysisData] = await Promise.all([
     listTransactionsByRange(month, range, start, end).catch(() => ({
       rows: [],
       monthLabel: '全部'
@@ -63,13 +59,8 @@ export default async function RecordsPage({
       currentMonthTop20: [],
       currentMonthStr: '',
       lastMonthStr: ''
-    })),
-    getMonthlyBudgetStatus(year, currentMonth).catch(() => [])
+    }))
   ]);
-
-  // 从预算状态中提取总预算（category_key 为 null 的记录）
-  const totalBudgetRecord = budgetStatuses.find(b => !b.category_key);
-  const monthlyBudget = totalBudgetRecord?.budget_amount || 5000;
 
   const rows = mainResult.rows;
   const monthLabel = mainResult.monthLabel;
@@ -103,7 +94,6 @@ export default async function RecordsPage({
                 yesterdayTransactions={yesterdayData}
                 monthTotalAmount={monthSummary.monthTotalAmount}
                 monthTotalCount={monthSummary.monthTotalCount}
-                monthlyBudget={monthlyBudget}
                 currency={'CNY'}
                 dateRange={monthLabel}
                 rangeType={range}

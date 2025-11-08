@@ -9,20 +9,15 @@ interface MonthlyExpenseSummaryProps {
   yesterdayTransactions?: { amount: number; date: string; note?: string }[];
   monthTotalAmount?: number;
   monthTotalCount?: number;
-  monthlyBudget?: number; // 月度预算，从预算设置中获取
   currency: string;
   dateRange?: string;
   rangeType?: string;
 }
 
-export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTransactions = [], monthTotalAmount = 0, monthTotalCount = 0, monthlyBudget = 5000, dateRange, rangeType }: MonthlyExpenseSummaryProps) {
-  // monthlyBudget 现在从 props 获取，默认值为 5000
+export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTransactions = [], monthTotalAmount = 0, monthTotalCount = 0, dateRange, rangeType }: MonthlyExpenseSummaryProps) {
 
   const statistics = useMemo(() => {
     if (!items || items.length === 0) {
-      // 即使当前查询范围没有数据，月度进度仍然要基于当月累计计算
-      const monthProgress = (monthTotalAmount / monthlyBudget) * 100;
-
       return {
         totalAmount: 0,
         totalCount: 0,
@@ -34,7 +29,6 @@ export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTrans
         maxTransactionNote: '',
         monthTotalAmount,
         monthTotalCount,
-        monthProgress: Math.min(monthProgress, 100),
         trend: null
       };
     }
@@ -99,9 +93,6 @@ export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTrans
       }
     }
 
-    // 月度进度基于当月累计数据，而不是当前查询范围的数据
-    const monthProgress = (monthTotalAmount / monthlyBudget) * 100;
-
     return {
       totalAmount,
       totalCount,
@@ -113,10 +104,9 @@ export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTrans
       maxTransactionNote,
       monthTotalAmount,
       monthTotalCount,
-      monthProgress: Math.min(monthProgress, 100),
       trend
     };
-  }, [items, transactions, yesterdayTransactions, rangeType, monthTotalAmount, monthTotalCount, monthlyBudget]);
+  }, [items, transactions, yesterdayTransactions, rangeType, monthTotalAmount, monthTotalCount]);
 
   const formatCurrency = (amount: number) => {
     return amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -124,77 +114,10 @@ export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTrans
 
   if (!items || items.length === 0) {
     return (
-      <div className="space-y-6">
-        {/* 如果当前查询范围没有数据，显示提示 */}
-        <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-xl p-8 text-center">
-          <div className="text-gray-500 dark:text-gray-400 text-lg">📊</div>
-          <div className="text-gray-600 dark:text-gray-300 mt-2">当前时间范围暂无支出记录</div>
-        </div>
-
-        {/* 月度进度条 - 即使没有当前范围数据也要显示 */}
-        <div className="space-y-4">
-          {/* 月天数进度条 */}
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 rounded-xl p-6 shadow-lg border border-green-100 dark:border-green-800 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] hover:from-green-100 hover:to-emerald-100 cursor-pointer">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-green-600" />
-                <h4 className="font-semibold text-gray-800 dark:text-gray-200">本月时间进度</h4>
-              </div>
-              <span className="text-sm text-gray-600 dark:text-gray-300">
-                第 {new Date().getDate()} 天 / {new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()} 天
-              </span>
-            </div>
-
-            <div className="relative">
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all duration-500 ease-out"
-                  style={{ width: `${(new Date().getDate() / new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()) * 100}%` }}
-                />
-              </div>
-              <div className="flex justify-between mt-2">
-                <span className="text-xs text-gray-500 dark:text-gray-400">月初</span>
-                <span className="text-xs font-semibold text-green-600">
-                  {((new Date().getDate() / new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()) * 100).toFixed(1)}%
-                </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">月末</span>
-              </div>
-            </div>
-          </div>
-
-          {/* 月度预算进度条 */}
-          <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 rounded-xl p-6 shadow-lg border border-purple-100 dark:border-purple-800 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] hover:from-purple-100 hover:to-pink-100 cursor-pointer">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-purple-600" />
-                <h4 className="font-semibold text-gray-800 dark:text-gray-200">月度预算进度</h4>
-                <div className="text-xs text-gray-500 dark:text-gray-400 bg-white/60 dark:bg-gray-800/60 px-2 py-1 rounded">
-                  本月累计
-                </div>
-              </div>
-              <span className="text-sm text-gray-600 dark:text-gray-300">
-                ¥{formatCurrency(statistics.monthTotalAmount)} / ¥{formatCurrency(monthlyBudget)}
-              </span>
-            </div>
-
-            <div className="relative">
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-500 ease-out"
-                  style={{ width: `${statistics.monthProgress}%` }}
-                />
-              </div>
-              <div className="flex justify-between mt-2">
-                <span className="text-xs text-gray-500 dark:text-gray-400">0%</span>
-                <span className="text-xs font-semibold text-purple-600">
-                  {statistics.monthProgress.toFixed(1)}%
-                </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">100%</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        </div>
+      <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-xl p-8 text-center">
+        <div className="text-gray-500 dark:text-gray-400 text-lg">📊</div>
+        <div className="text-gray-600 dark:text-gray-300 mt-2">当前时间范围暂无支出记录</div>
+      </div>
     );
   }
 
@@ -356,71 +279,7 @@ export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTrans
           </div>
         </div>
       </div>
-
-      {/* 月度进度条 */}
-      <div className="space-y-4">
-        {/* 月天数进度条 */}
-        <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 rounded-xl p-6 shadow-lg border border-green-100 dark:border-green-800 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] hover:from-green-100 hover:to-emerald-100 cursor-pointer">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-green-600" />
-              <h4 className="font-semibold text-gray-800 dark:text-gray-200">本月时间进度</h4>
-            </div>
-            <span className="text-sm text-gray-600 dark:text-gray-300">
-              第 {new Date().getDate()} 天 / {new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()} 天
-            </span>
-          </div>
-
-          <div className="relative">
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden group-hover:h-4 transition-all duration-200">
-              <div
-                className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all duration-500 ease-out group-hover:from-green-600 group-hover:to-emerald-600 group-hover:shadow-inner"
-                style={{ width: `${(new Date().getDate() / new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()) * 100}%` }}
-              />
-            </div>
-            <div className="flex justify-between mt-2">
-              <span className="text-xs text-gray-500 dark:text-gray-400">月初</span>
-              <span className="text-xs font-semibold text-green-600">
-                {((new Date().getDate() / new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()) * 100).toFixed(1)}%
-              </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">月末</span>
-            </div>
-          </div>
-        </div>
-
-        {/* 月度预算进度条 */}
-        <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 rounded-xl p-6 shadow-lg border border-purple-100 dark:border-purple-800 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] hover:from-purple-100 hover:to-pink-100 cursor-pointer">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-purple-600" />
-              <h4 className="font-semibold text-gray-800 dark:text-gray-200">月度预算进度</h4>
-              <div className="text-xs text-gray-500 dark:text-gray-400 bg-white/60 dark:bg-gray-800/60 px-2 py-1 rounded">
-                本月累计
-              </div>
-            </div>
-            <span className="text-sm text-gray-600 dark:text-gray-300">
-              ¥{formatCurrency(statistics.monthTotalAmount)} / ¥{formatCurrency(monthlyBudget)}
-            </span>
-          </div>
-
-          <div className="relative">
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-500 ease-out"
-                style={{ width: `${statistics.monthProgress}%` }}
-              />
-            </div>
-            <div className="flex justify-between mt-2">
-              <span className="text-xs text-gray-500 dark:text-gray-400">0%</span>
-              <span className="text-xs font-semibold text-purple-600">
-                {statistics.monthProgress.toFixed(1)}%
-              </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">100%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      </div>
+    </div>
   );
 }
 
