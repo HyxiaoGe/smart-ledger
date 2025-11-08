@@ -16,6 +16,7 @@ import {
   formatMonth,
   getBudgetStatusLabel,
   getProgressBarColor,
+  getBudgetSuggestions,
   type BudgetStatus,
   type TotalBudgetSummary,
 } from '@/lib/services/budgetService';
@@ -45,6 +46,7 @@ export default function BudgetPage() {
   const [budgetAmount, setBudgetAmount] = useState('');
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [suggestions, setSuggestions] = useState<any[]>([]);
 
   useEffect(() => {
     fetchData();
@@ -53,15 +55,17 @@ export default function BudgetPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [statusData, summaryData, categoriesData] = await Promise.all([
+      const [statusData, summaryData, categoriesData, suggestionsData] = await Promise.all([
         getMonthlyBudgetStatus(year, month),
-        getTotalBudgetSummary(year, month, 'CNY'), // 传入币种，和首页保持一致
+        getTotalBudgetSummary(year, month, 'CNY'),
         getCategoriesWithStats(),
+        getBudgetSuggestions(year, month),
       ]);
 
       setBudgetStatuses(statusData);
       setSummary(summaryData);
       setCategories(categoriesData.filter(c => c.is_active));
+      setSuggestions(suggestionsData);
     } catch (error) {
       console.error('获取预算数据失败:', error);
       setToastMessage('❌ 获取数据失败');
@@ -126,6 +130,26 @@ export default function BudgetPage() {
     setSelectedBudget(budget);
     setBudgetAmount(budget ? budget.budget_amount.toString() : '');
     setShowSetBudgetDialog(true);
+  };
+
+  const handleApplySuggestion = async (categoryKey: string, amount: number) => {
+    try {
+      await setBudget({
+        year,
+        month,
+        categoryKey,
+        amount,
+      });
+
+      markTransactionsDirty();
+      setToastMessage('✅ 已应用建议预算');
+      setShowToast(true);
+      await fetchData();
+    } catch (error: any) {
+      console.error('应用建议失败:', error);
+      setToastMessage(`❌ ${error.message || '应用失败'}`);
+      setShowToast(true);
+    }
   };
 
   const totalBudget = summary?.total_budget || 0;
@@ -281,6 +305,84 @@ export default function BudgetPage() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* 智能预算建议 */}
+        {suggestions.length > 0 && (
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950 dark:to-blue-950 mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-purple-900 dark:text-purple-100">
+                <span>💡</span>
+                <span>智能预算建议</span>
+                <span className="text-xs font-normal text-purple-600 dark:text-purple-300">
+                  基于历史消费数据分析
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {suggestions.map((suggestion) => {
+                const category = categories.find(c => c.key === suggestion.categoryKey);
+                if (!category) return null;
+
+                const confidenceColor =
+                  suggestion.confidenceLevel === 'high' ? 'text-green-600' :
+                  suggestion.confidenceLevel === 'medium' ? 'text-blue-600' :
+                  'text-gray-600';
+
+                const confidenceLabel =
+                  suggestion.confidenceLevel === 'high' ? '高' :
+                  suggestion.confidenceLevel === 'medium' ? '中' :
+                  '低';
+
+                return (
+                  <div
+                    key={suggestion.categoryKey}
+                    className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-purple-200 dark:border-purple-800"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="text-2xl">{category.icon}</div>
+                        <div>
+                          <div className="font-semibold text-gray-900 dark:text-gray-100">
+                            {category.label}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            建议预算: <span className="font-bold text-purple-600">¥{suggestion.suggestedAmount.toLocaleString()}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700 ${confidenceColor}`}>
+                          可信度: {confidenceLabel}
+                        </span>
+                        <Button
+                          size="sm"
+                          onClick={() => handleApplySuggestion(suggestion.categoryKey, suggestion.suggestedAmount)}
+                          className="bg-purple-600 hover:bg-purple-700 text-white"
+                        >
+                          应用
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                      {suggestion.reason}
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 text-xs text-gray-600 dark:text-gray-400">
+                      <div>
+                        历史平均: ¥{suggestion.historicalAvg.toLocaleString()}
+                      </div>
+                      <div>
+                        当前已支出: ¥{suggestion.currentMonthSpending.toLocaleString()}
+                      </div>
+                      <div>
+                        预测月底: ¥{suggestion.predictedMonthTotal.toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
         )}
 
         {/* 分类预算列表 */}
