@@ -7,7 +7,8 @@ import {
   Settings2,
   ChevronLeft,
   Sparkles,
-  Server
+  Server,
+  Database
 } from 'lucide-react';
 
 export default function AdvancedSettingsPage() {
@@ -20,6 +21,15 @@ export default function AdvancedSettingsPage() {
       status: 'available',
       badge: '核心功能',
       badgeColor: 'purple'
+    },
+    {
+      title: '函数管理',
+      description: '了解系统所有业务功能，查看每个函数的作用和使用场景',
+      icon: Database,
+      href: '/settings/advanced/functions',
+      status: 'available',
+      badge: 'NEW',
+      badgeColor: 'green'
     },
     {
       title: '系统维护',
@@ -65,7 +75,7 @@ export default function AdvancedSettingsPage() {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">高级配置中心</h2>
           </div>
           <p className="text-gray-600 dark:text-gray-300">
-            管理系统高级功能，包括定时任务、系统维护和 AI 高级设置
+            管理系统高级功能，包括定时任务、函数管理、系统维护和 AI 高级设置
           </p>
         </div>
 
@@ -92,6 +102,8 @@ export default function AdvancedSettingsPage() {
                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-1 ${
                         section.badgeColor === 'purple'
                           ? 'bg-purple-100 text-purple-700'
+                          : section.badgeColor === 'green'
+                          ? 'bg-green-100 text-green-700'
                           : 'bg-gray-100 text-gray-600 dark:text-gray-300'
                       }`}>
                         {section.badge}
