@@ -1,5 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { recurringExpenseService } from '@/lib/services/recurringExpenses';
+import { z } from 'zod';
+import { validateRequest, commonSchemas } from '@/lib/utils/validation';
+
+// POST 验证 schema
+const createRecurringExpenseSchema = z.object({
+  name: commonSchemas.nonEmptyString,
+  amount: commonSchemas.amount,
+  category: commonSchemas.nonEmptyString,
+  frequency: z.enum(['daily', 'weekly', 'monthly'], {
+    message: 'Frequency must be daily, weekly, or monthly'
+  }),
+  frequency_config: z.record(z.string(), z.any()),
+  start_date: commonSchemas.date,
+  note: z.string().optional(),
+  currency: commonSchemas.currency.optional().default('CNY'),
+  payment_method: z.string().optional(),
+  is_active: z.boolean().optional().default(true)
+});
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,35 +36,13 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // 验证必填字段
-    const requiredFields = ['name', 'amount', 'category', 'frequency', 'frequency_config', 'start_date'];
-    for (const field of requiredFields) {
-      if (!body[field]) {
-        return NextResponse.json(
-          { error: `缺少必填字段: ${field}` },
-          { status: 400 }
-        );
-      }
+    // 验证输入
+    const validation = validateRequest(createRecurringExpenseSchema, body);
+    if (!validation.success) {
+      return validation.response;
     }
 
-    // 验证金额
-    if (body.amount <= 0) {
-      return NextResponse.json(
-        { error: '金额必须大于0' },
-        { status: 400 }
-      );
-    }
-
-    // 验证频率
-    const validFrequencies = ['daily', 'weekly', 'monthly'];
-    if (!validFrequencies.includes(body.frequency)) {
-      return NextResponse.json(
-        { error: '无效的频率设置' },
-        { status: 400 }
-      );
-    }
-
-    const expense = await recurringExpenseService.createRecurringExpense(body);
+    const expense = await recurringExpenseService.createRecurringExpense(validation.data);
     return NextResponse.json(expense, { status: 201 });
   } catch (error) {
     console.error('创建固定支出失败:', error);

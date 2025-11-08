@@ -2,8 +2,19 @@ import { NextRequest } from 'next/server';
 import { supabase } from '@/lib/clients/supabase/client';
 import { revalidateTag, revalidatePath } from 'next/cache';
 import { formatDateToLocal } from '@/lib/utils/date';
+import { z } from 'zod';
+import { validateRequest, commonSchemas } from '@/lib/utils/validation';
 
 export const runtime = 'nodejs';
+
+// 验证 schema
+const quickTransactionSchema = z.object({
+  category: commonSchemas.nonEmptyString,
+  amount: commonSchemas.amount,
+  note: commonSchemas.nonEmptyString,
+  currency: commonSchemas.currency.optional().default('CNY'),
+  date: z.string().optional()
+});
 
 /**
  * 快速记账API - 简化版本
@@ -12,23 +23,14 @@ export const runtime = 'nodejs';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { category, amount, note, currency = 'CNY', date } = body;
 
-    // 验证必填字段
-    if (!category || !amount || !note) {
-      return new Response(
-        JSON.stringify({ error: '缺少必填字段：category, amount, note' }),
-        { status: 400 }
-      );
+    // 验证输入
+    const validation = validateRequest(quickTransactionSchema, body);
+    if (!validation.success) {
+      return validation.response;
     }
 
-    // 验证金额
-    if (typeof amount !== 'number' || amount <= 0) {
-      return new Response(
-        JSON.stringify({ error: '金额必须大于0' }),
-        { status: 400 }
-      );
-    }
+    const { category, amount, note, currency, date } = validation.data;
 
     const type = 'expense';
     const transactionDate = date || formatDateToLocal(new Date());

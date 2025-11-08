@@ -13,7 +13,8 @@ import {
   Calendar,
   AlertTriangle,
   CheckCircle,
-  ChevronLeft
+  ChevronLeft,
+  Clock
 } from 'lucide-react';
 
 export default function NotificationsSettingsPage() {
@@ -171,8 +172,9 @@ export default function NotificationsSettingsPage() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* 通知示例 */}
         <Card>
@@ -259,7 +261,7 @@ export default function NotificationsSettingsPage() {
               </div>
 
               <div>
-                <h4 className="font-medium text-900 mb-3">免打扰时段</h4>
+                <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-3">免打扰时段</h4>
                 <div className="space-y-2">
                   <label className="flex items-center justify-between">
                     <span className="text-sm text-gray-700">夜间免打扰 (22:00-08:00)</span>

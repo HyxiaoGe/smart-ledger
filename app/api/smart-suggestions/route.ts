@@ -8,8 +8,20 @@ import {
 } from '@/types/transaction';
 import { generateTimeContext, categorizeAmount, generateConsumptionScenario } from '@/lib/domain/noteContext';
 import { getPatternBasedSuggestions, matchConsumptionPattern } from '@/lib/services/smartPatterns';
+import { z } from 'zod';
+import { validateRequest, commonSchemas } from '@/lib/utils/validation';
 
 export const runtime = 'nodejs';
+
+// 验证 schema
+const smartSuggestionsSchema = z.object({
+  category: z.string().optional(),
+  amount: z.number().optional(),
+  currency: commonSchemas.currency.optional().default('CNY'),
+  time_context: z.string().optional(),
+  partial_input: z.string().optional().default(''),
+  limit: z.number().int().positive().max(50).optional().default(5)
+});
 
 /**
  * 智能备注提示 API
@@ -17,15 +29,22 @@ export const runtime = 'nodejs';
  */
 export async function POST(req: NextRequest) {
   try {
-    const params: SmartSuggestionParams = await req.json();
+    const body = await req.json();
+
+    // 验证输入
+    const validation = validateRequest(smartSuggestionsSchema, body);
+    if (!validation.success) {
+      return validation.response;
+    }
+
     const {
       category,
       amount,
-      currency = 'CNY',
+      currency,
       time_context,
-      partial_input = '',
-      limit = 5
-    } = params;
+      partial_input,
+      limit
+    } = validation.data;
 
     // 生成当前时间上下文
     const currentTimeContext = time_context || generateTimeContext().label;
