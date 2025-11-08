@@ -59,6 +59,19 @@ export interface BudgetHistory {
 }
 
 /**
+ * 预算预测结果
+ */
+export interface BudgetPrediction {
+  current_spending: number;
+  daily_rate: number;
+  predicted_total: number;
+  days_passed: number;
+  days_remaining: number;
+  will_exceed_budget: boolean;
+  predicted_overage?: number;
+}
+
+/**
  * 设置或更新预算
  */
 export async function setBudget(params: {
@@ -315,6 +328,53 @@ export async function refreshBudgetSuggestions(
   }
 
   return data;
+}
+
+/**
+ * 预测月底支出（基于当前消费速率）
+ */
+export async function predictMonthEndSpending(
+  categoryKey: string,
+  year: number,
+  month: number,
+  budgetAmount: number,
+  currency: string = 'CNY'
+): Promise<BudgetPrediction | null> {
+  try {
+    const { data, error } = await supabase.rpc('predict_month_end_spending', {
+      p_category_key: categoryKey,
+      p_year: year,
+      p_month: month,
+      p_currency: currency,
+    });
+
+    if (error) {
+      console.error('预测月底支出失败:', error);
+      return null;
+    }
+
+    if (!data || data.length === 0) {
+      return null;
+    }
+
+    const prediction = data[0];
+    const predictedTotal = Number(prediction.predicted_total || 0);
+    const willExceedBudget = predictedTotal > budgetAmount;
+    const predictedOverage = willExceedBudget ? predictedTotal - budgetAmount : undefined;
+
+    return {
+      current_spending: Number(prediction.current_spending || 0),
+      daily_rate: Number(prediction.daily_rate || 0),
+      predicted_total: predictedTotal,
+      days_passed: prediction.days_passed || 0,
+      days_remaining: prediction.days_remaining || 0,
+      will_exceed_budget: willExceedBudget,
+      predicted_overage: predictedOverage,
+    };
+  } catch (error) {
+    console.error('预测月底支出失败:', error);
+    return null;
+  }
 }
 
 /**

@@ -17,8 +17,10 @@ import {
   getBudgetStatusLabel,
   getProgressBarColor,
   getBudgetSuggestions,
+  predictMonthEndSpending,
   type BudgetStatus,
   type TotalBudgetSummary,
+  type BudgetPrediction,
 } from '@/lib/services/budgetService';
 import { markTransactionsDirty } from '@/lib/core/dataSync';
 import { getCategoriesWithStats, type Category } from '@/lib/services/categoryService';
@@ -47,6 +49,7 @@ export default function BudgetPage() {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [predictions, setPredictions] = useState<Map<string, BudgetPrediction>>(new Map());
 
   useEffect(() => {
     fetchData();
@@ -66,6 +69,29 @@ export default function BudgetPage() {
       setSummary(summaryData);
       setCategories(categoriesData.filter(c => c.is_active));
       setSuggestions(suggestionsData);
+
+      // 获取每个分类预算的月底预测
+      const predictionMap = new Map<string, BudgetPrediction>();
+      const categoryBudgets = statusData.filter(b => b.category_key);
+
+      await Promise.all(
+        categoryBudgets.map(async (budget) => {
+          if (budget.category_key) {
+            const prediction = await predictMonthEndSpending(
+              budget.category_key,
+              year,
+              month,
+              budget.budget_amount,
+              'CNY'
+            );
+            if (prediction) {
+              predictionMap.set(budget.category_key, prediction);
+            }
+          }
+        })
+      );
+
+      setPredictions(predictionMap);
     } catch (error) {
       console.error('获取预算数据失败:', error);
       setToastMessage('❌ 获取数据失败');
@@ -449,6 +475,7 @@ export default function BudgetPage() {
                 {budgetStatuses.filter(b => b.category_key).map((budget) => {
                   const statusLabel = getBudgetStatusLabel(budget);
                   const progressColor = getProgressBarColor(budget.usage_percentage, budget.is_over_budget);
+                  const prediction = budget.category_key ? predictions.get(budget.category_key) : null;
 
                   return (
                     <div
@@ -465,9 +492,17 @@ export default function BudgetPage() {
                           </div>
                           <div>
                             <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">{budget.category_label}</h3>
-                            <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium mt-1 ${statusLabel.bgColor} ${statusLabel.color}`}>
-                              <span>{statusLabel.icon}</span>
-                              <span>{statusLabel.label}</span>
+                            <div className="flex items-center gap-2 mt-1">
+                              <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusLabel.bgColor} ${statusLabel.color}`}>
+                                <span>{statusLabel.icon}</span>
+                                <span>{statusLabel.label}</span>
+                              </div>
+                              {prediction && prediction.will_exceed_budget && !budget.is_over_budget && (
+                                <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300">
+                                  <span>⚠️</span>
+                                  <span>可能超支</span>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -523,8 +558,14 @@ export default function BudgetPage() {
                             style={{ width: `${Math.min(budget.usage_percentage, 100)}%` }}
                           />
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">
-                          {budget.transaction_count} 笔交易
+                        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                          <span>{budget.transaction_count} 笔交易</span>
+                          {prediction && prediction.will_exceed_budget && (
+                            <span className="text-orange-600 dark:text-orange-400 font-medium">
+                              预计月底: ¥{prediction.predicted_total.toLocaleString()}
+                              <span className="ml-1">(超支 ¥{(prediction.predicted_overage || 0).toLocaleString()})</span>
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
