@@ -51,10 +51,10 @@ export default function SettingsPage() {
       comingSoon: true
     },
     {
-      title: '定时任务管理',
-      description: '查看和管理系统自动化任务、执行历史',
-      icon: Clock,
-      href: '/settings/system/cron',
+      title: '高级配置',
+      description: '定时任务管理、系统维护、高级功能设置',
+      icon: Settings,
+      href: '/settings/advanced',
       comingSoon: false
     }
   ];
@@ -80,7 +80,7 @@ export default function SettingsPage() {
                         ? 'bg-gray-100'
                         : section.title === '消费配置'
                         ? 'bg-blue-100 dark:bg-blue-900'
-                        : section.title === '定时任务管理'
+                        : section.title === '高级配置'
                         ? 'bg-purple-100 dark:bg-purple-900'
                         : 'bg-gradient-to-r from-blue-100 to-purple-100'
                     }`}>
@@ -89,7 +89,7 @@ export default function SettingsPage() {
                           ? 'text-gray-400 dark:text-gray-400'
                           : section.title === '消费配置'
                           ? 'text-blue-600'
-                          : section.title === '定时任务管理'
+                          : section.title === '高级配置'
                           ? 'text-purple-600'
                           : 'text-blue-600'
                       }`} />
@@ -121,8 +121,8 @@ export default function SettingsPage() {
                 ) : (
                   <Link href={section.href}>
                     <Button
-                      variant={section.title === '消费配置' || section.title === '定时任务管理' ? 'default' : 'outline'}
-                      className={`w-full ${section.title === '定时任务管理' ? 'bg-purple-600 dark:bg-purple-700 hover:bg-purple-700 dark:hover:bg-purple-600' : ''}`}
+                      variant={section.title === '消费配置' || section.title === '高级配置' ? 'default' : 'outline'}
+                      className={`w-full ${section.title === '高级配置' ? 'bg-purple-600 dark:bg-purple-700 hover:bg-purple-700 dark:hover:bg-purple-600' : ''}`}
                     >
                       <ChevronRight className="h-4 w-4 mr-2" />
                       进入配置
