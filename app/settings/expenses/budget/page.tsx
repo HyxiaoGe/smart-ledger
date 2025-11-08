@@ -212,7 +212,7 @@ export default function BudgetPage() {
                 <Button
                   size="sm"
                   onClick={() => openSetBudgetDialog(null)}
-                  className="w-full bg-white hover:bg-gray-50 text-blue-600 hover:text-blue-700 border-2 border-white/30 font-medium shadow-md hover:shadow-lg transition-all duration-200"
+                  className="w-full bg-blue-700 hover:bg-blue-800 text-white font-medium"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   设置总预算
@@ -229,7 +229,7 @@ export default function BudgetPage() {
                       openSetBudgetDialog(null);
                     }
                   }}
-                  className="w-full bg-white hover:bg-gray-50 text-blue-600 hover:text-blue-700 border-2 border-white/30 font-medium shadow-md hover:shadow-lg transition-all duration-200"
+                  className="w-full bg-blue-700 hover:bg-blue-800 text-white font-medium"
                 >
                   <Edit2 className="h-4 w-4 mr-1" />
                   调整预算
