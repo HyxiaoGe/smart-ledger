@@ -1,6 +1,9 @@
 import { unstable_cache } from 'next/cache';
 import { supabase } from '@/lib/clients/supabase/client';
 import { parseMonthStr, formatMonth, getQuickRange } from '@/lib/utils/date';
+import { createModuleLogger, startPerformanceMeasure } from '@/lib/core/logger';
+
+const txLogger = createModuleLogger('transaction-service');
 
 type DateRange = { start: string; end: string; label: string };
 
@@ -10,8 +13,17 @@ export async function listTransactionsByRange(
   startDate?: string,
   endDate?: string
 ) {
+  const measure = startPerformanceMeasure();
+
   // 计算当前日期，确保缓存键包含日期信息
   const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD格式
+
+  txLogger.debug({
+    month,
+    range,
+    startDate,
+    endDate
+  }, '查询交易记录');
 
   const cacheKey = [
     'records:transactions',
@@ -89,14 +101,32 @@ export async function listTransactionsByRange(
       }
 
       const { data, error } = await query!;
-      if (error) throw error;
+      if (error) {
+        txLogger.error({ error: error.message, code: error.code }, '查询交易记录失败');
+        throw error;
+      }
+
+      txLogger.debug({
+        rowCount: data?.length ?? 0,
+        monthLabel: dateRange?.label ?? '全部'
+      }, '交易记录查询完成');
+
       return { rows: data ?? [], monthLabel: dateRange?.label ?? '全部' } as const;
     },
     cacheKey,
     { revalidate: 60, tags: ['transactions'] }
   );
 
-  return getCached();
+  const result = await getCached();
+
+  txLogger.info({
+    ...measure(),
+    rowCount: result.rows.length,
+    monthLabel: result.monthLabel,
+    cacheHit: true // unstable_cache 会自动处理缓存
+  }, '交易记录返回');
+
+  return result;
 }
 
 export async function listYesterdayTransactions(range?: string) {

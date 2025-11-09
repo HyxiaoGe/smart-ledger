@@ -4,6 +4,7 @@ import { getPredictionData } from '@/lib/services/transactions';
 import { aiPredictionCache } from '@/lib/services/unifiedCache';
 import { aiCacheServiceServer } from '@/lib/services/aiCacheServiceServer';
 import { aiFeedbackServiceDB } from '@/lib/services/aiFeedbackServiceDB';
+import { createRequestLogger, startPerformanceMeasure } from '@/lib/core/logger';
 
 export const runtime = 'nodejs';
 
@@ -12,15 +13,35 @@ export const runtime = 'nodejs';
  * 基于历史数据预测未来支出，包括异常检测和预算建议
  */
 export async function POST(req: NextRequest) {
+  const log = createRequestLogger('/api/predict', req);
+  const measure = startPerformanceMeasure();
+
   try {
+    log.info('支出预测请求开始');
     const body = await req.json();
     const { type = 'spending-prediction', monthsToAnalyze = 6, predictionMonths = 3 } = body;
+
+    log.info({
+      type,
+      monthsToAnalyze,
+      predictionMonths
+    }, '预测参数');
 
     // 获取历史数据
     const predictionData = await getPredictionData(monthsToAnalyze);
 
+    log.debug({
+      totalMonths: predictionData.overallStats.totalMonths,
+      totalTransactions: predictionData.overallStats.totalTransactions,
+      sufficientData: predictionData.overallStats.dataQuality.sufficientData
+    }, '历史数据获取完成');
+
     // 检查数据质量
     if (!predictionData.overallStats.dataQuality.sufficientData) {
+      log.warn({
+        totalMonths: predictionData.overallStats.totalMonths
+      }, '历史数据不足');
+
       return Response.json({
         error: '数据不足',
         message: `需要至少3个月的历史数据，当前只有${predictionData.overallStats.totalMonths}个月`,
@@ -44,11 +65,18 @@ export async function POST(req: NextRequest) {
         result = await handleComprehensiveAnalysis(predictionData, predictionMonths, monthsToAnalyze);
         break;
       default:
+        log.warn({ type }, '不支持的预测类型');
         return new Response(
           JSON.stringify({ error: '不支持的预测类型' }),
           { status: 400 }
         );
     }
+
+    log.info({
+      ...measure(),
+      type,
+      analysisMonths: predictionData.overallStats.totalMonths
+    }, '支出预测完成');
 
     return Response.json({
       type,
@@ -59,7 +87,12 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (err: any) {
-    console.error('支出预测失败:', err);
+    log.error({
+      ...measure(),
+      error: err.message,
+      stack: err.stack
+    }, '支出预测失败');
+
     return new Response(
       JSON.stringify({ error: err.message || '支出预测失败' }),
       { status: 500 }

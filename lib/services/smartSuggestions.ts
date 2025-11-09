@@ -5,6 +5,9 @@ import type {
   SmartSuggestion,
   CommonNote
 } from '@/types/transaction';
+import { createModuleLogger } from '@/lib/core/logger';
+
+const suggestionLogger = createModuleLogger('smart-suggestions');
 
 export type { SmartSuggestionParams, SmartSuggestionResponse, SmartSuggestion };
 
@@ -15,10 +18,30 @@ export const smartSuggestionsService = {
    * 获取智能备注建议
    */
   async getSuggestions(params: SmartSuggestionParams): Promise<SmartSuggestionResponse> {
-    return fetchJson<SmartSuggestionResponse>(BASE_URL, {
-      method: 'POST',
-      body: JSON.stringify(params)
-    });
+    suggestionLogger.debug({
+      category: params.category,
+      amount: params.amount,
+      hasPartialInput: !!params.partial_input
+    }, '请求智能建议');
+
+    try {
+      const result = await fetchJson<SmartSuggestionResponse>(BASE_URL, {
+        method: 'POST',
+        body: JSON.stringify(params)
+      });
+
+      suggestionLogger.debug({
+        suggestionCount: result.suggestions?.length ?? 0
+      }, '智能建议返回');
+
+      return result;
+    } catch (error) {
+      suggestionLogger.error({
+        error: error instanceof Error ? error.message : String(error),
+        params
+      }, '获取智能建议失败');
+      throw error;
+    }
   },
 
   /**
@@ -81,13 +104,20 @@ export class SmartSuggestionsCache {
     const cached = this.cache.get(key);
 
     if (!cached) {
+      suggestionLogger.debug({ cacheKey: key }, '缓存未命中');
       return null;
     }
 
     if (Date.now() - cached.timestamp > this.CACHE_TTL) {
       this.cache.delete(key);
+      suggestionLogger.debug({ cacheKey: key }, '缓存已过期');
       return null;
     }
+
+    suggestionLogger.debug({
+      cacheKey: key,
+      age: Date.now() - cached.timestamp
+    }, '缓存命中');
 
     return cached.data;
   }
@@ -95,6 +125,11 @@ export class SmartSuggestionsCache {
   set(params: SmartSuggestionParams, data: SmartSuggestionResponse): void {
     const key = this.generateCacheKey(params);
     this.cache.set(key, { data, timestamp: Date.now() });
+
+    suggestionLogger.debug({
+      cacheKey: key,
+      suggestionCount: data.suggestions?.length ?? 0
+    }, '缓存已更新');
   }
 
   clear(): void {

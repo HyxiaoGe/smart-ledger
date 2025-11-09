@@ -117,7 +117,7 @@ export default function AdvancedSettingsPage() {
                   {section.description}
                 </p>
                 {section.status === 'available' ? (
-                  <Link href={section.href}>
+                  <Link href={section.href as any}>
                     <Button className="w-full bg-purple-600 dark:bg-purple-700 hover:bg-purple-700 dark:hover:bg-purple-600">
                       <Settings2 className="h-4 w-4 mr-2" />
                       开始配置
