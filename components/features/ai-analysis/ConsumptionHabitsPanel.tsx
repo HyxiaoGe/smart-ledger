@@ -76,7 +76,7 @@ export function ConsumptionHabitsPanel({
   const [collapsed, setCollapsed] = useState(false);
 
   // 监听数据同步事件
-  useDataSync(() => {
+  useDataSync('transaction_updated', () => {
     analyzeConsumptionHabits();
   });
 
@@ -98,7 +98,7 @@ export function ConsumptionHabitsPanel({
           const { data } = await supabase
             .from('transactions')
             .select('amount, date, category, note')
-            .eq('date', 'like', `${month}%`)
+            .like('date', `${month}%`)
             .eq('type', 'expense')
             .is('deleted_at', null)
             .order('date');

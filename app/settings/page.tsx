@@ -119,7 +119,7 @@ export default function SettingsPage() {
                     敬请期待
                   </Button>
                 ) : (
-                  <Link href={section.href}>
+                  <Link href={section.href as any}>
                     <Button
                       variant={section.title === '消费配置' || section.title === '高级配置' ? 'default' : 'outline'}
                       className={`w-full ${section.title === '高级配置' ? 'bg-purple-600 dark:bg-purple-700 hover:bg-purple-700 dark:hover:bg-purple-600' : ''}`}

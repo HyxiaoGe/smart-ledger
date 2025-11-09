@@ -46,7 +46,15 @@ export default function EditRecurringExpensePage() {
   const [notFound, setNotFound] = useState(false);
   const [activeDateInput, setActiveDateInput] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    amount: string;
+    category: string;
+    frequency: string;
+    frequency_config: { day_of_month?: number; days_of_week?: number[] };
+    start_date: Date | null;
+    end_date: Date | null;
+  }>({
     name: '',
     amount: '',
     category: '',
@@ -102,7 +110,7 @@ export default function EditRecurringExpensePage() {
         amount: data.amount.toString(),
         category: data.category,
         frequency: data.frequency,
-        frequency_config: data.frequency_config,
+        frequency_config: (data.frequency_config || { day_of_month: 1 }) as { day_of_month: number },
         start_date: data.start_date ? new Date(data.start_date) : null,
         end_date: data.end_date ? new Date(data.end_date) : null
       });
@@ -377,7 +385,7 @@ export default function EditRecurringExpensePage() {
                       开始日期 *
                     </label>
                     <DateInput
-                      selected={formData.start_date}
+                      selected={formData.start_date || undefined}
                       onSelect={(date) => handleDateChange('start_date', date)}
                       placeholder="选择开始日期"
                       className="w-full"
@@ -395,7 +403,7 @@ export default function EditRecurringExpensePage() {
                       结束日期（可选）
                     </label>
                     <DateInput
-                      selected={formData.end_date}
+                      selected={formData.end_date || undefined}
                       onSelect={(date) => handleDateChange('end_date', date)}
                       placeholder="选择结束日期（可选）"
                       className="w-full"

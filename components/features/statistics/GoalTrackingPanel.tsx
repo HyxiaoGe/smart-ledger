@@ -64,7 +64,7 @@ export function GoalTrackingPanel({
       const { data: incomeData } = await supabase
         .from('transactions')
         .select('amount')
-        .eq('date', 'like', `${month}%`)
+        .like('date', `${month}%`)
         .eq('type', 'income')
         .is('deleted_at', null);
 
@@ -74,7 +74,7 @@ export function GoalTrackingPanel({
       const { data: expenseData } = await supabase
         .from('transactions')
         .select('amount')
-        .eq('date', 'like', `${month}%`)
+        .like('date', `${month}%`)
         .eq('type', 'expense')
         .is('deleted_at', null);
 
