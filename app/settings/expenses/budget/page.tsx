@@ -8,46 +8,33 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { PageSkeleton } from '@/components/shared/PageSkeleton';
 import {
-  getMonthlyBudgetStatus,
   getTotalBudgetSummary,
-  setBudget,
-  deleteBudget,
   getCurrentYearMonth,
   formatMonth,
-  getBudgetStatusLabel,
-  getProgressBarColor,
   getBudgetSuggestions,
   predictMonthEndSpending,
-  type BudgetStatus,
+  getProgressBarColor,
   type TotalBudgetSummary,
   type BudgetPrediction,
 } from '@/lib/services/budgetService';
-import { markTransactionsDirty } from '@/lib/core/dataSync';
 import { getCategoriesWithStats, type Category } from '@/lib/services/categoryService';
 import {
   ChevronLeft,
-  PiggyBank,
   TrendingUp,
   AlertCircle,
   CheckCircle2,
-  Plus,
-  Edit2,
-  Trash2,
   DollarSign,
   Calendar,
   ChevronDown,
   ChevronUp,
+  PiggyBank,
 } from 'lucide-react';
 
 export default function BudgetPage() {
   const { year, month } = getCurrentYearMonth();
-  const [budgetStatuses, setBudgetStatuses] = useState<BudgetStatus[]>([]);
   const [summary, setSummary] = useState<TotalBudgetSummary | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showSetBudgetDialog, setShowSetBudgetDialog] = useState(false);
-  const [selectedBudget, setSelectedBudget] = useState<BudgetStatus | null>(null);
-  const [budgetAmount, setBudgetAmount] = useState('');
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -61,34 +48,31 @@ export default function BudgetPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [statusData, summaryData, categoriesData, suggestionsData] = await Promise.all([
-        getMonthlyBudgetStatus(year, month),
+      const [summaryData, categoriesData, suggestionsData] = await Promise.all([
         getTotalBudgetSummary(year, month, 'CNY'),
         getCategoriesWithStats(),
         getBudgetSuggestions(year, month),
       ]);
 
-      setBudgetStatuses(statusData);
       setSummary(summaryData);
       setCategories(categoriesData.filter(c => c.is_active));
       setSuggestions(suggestionsData);
 
-      // 获取每个分类预算的月底预测
+      // 获取每个分类建议的月底预测
       const predictionMap = new Map<string, BudgetPrediction>();
-      const categoryBudgets = statusData.filter(b => b.category_key);
 
       await Promise.all(
-        categoryBudgets.map(async (budget) => {
-          if (budget.category_key) {
+        suggestionsData.map(async (suggestion) => {
+          if (suggestion.categoryKey) {
             const prediction = await predictMonthEndSpending(
-              budget.category_key,
+              suggestion.categoryKey,
               year,
               month,
-              budget.budget_amount,
+              suggestion.suggestedAmount,
               'CNY'
             );
             if (prediction) {
-              predictionMap.set(budget.category_key, prediction);
+              predictionMap.set(suggestion.categoryKey, prediction);
             }
           }
         })
@@ -104,90 +88,7 @@ export default function BudgetPage() {
     }
   };
 
-  const handleSetBudget = async () => {
-    const amount = parseFloat(budgetAmount);
-    if (!amount || amount <= 0) {
-      setToastMessage('❌ 请输入有效金额');
-      setShowToast(true);
-      return;
-    }
-
-    try {
-      await setBudget({
-        year,
-        month,
-        categoryKey: selectedBudget?.category_key || null,
-        amount,
-      });
-
-      // 触发跨页面数据同步，让账单列表也刷新
-      markTransactionsDirty();
-
-      setToastMessage('✅ 预算设置成功');
-      setShowToast(true);
-      setShowSetBudgetDialog(false);
-      setBudgetAmount('');
-      setSelectedBudget(null);
-      await fetchData();
-    } catch (error: any) {
-      console.error('设置预算失败:', error);
-      setToastMessage(`❌ ${error.message || '设置失败'}`);
-      setShowToast(true);
-    }
-  };
-
-  const handleDeleteBudget = async (id: string, label: string) => {
-    if (!confirm(`确定要删除"${label}"的预算设置吗？`)) return;
-
-    try {
-      await deleteBudget(id);
-
-      // 触发跨页面数据同步，让账单列表也刷新
-      markTransactionsDirty();
-
-      setToastMessage('✅ 预算已删除');
-      setShowToast(true);
-      await fetchData();
-    } catch (error: any) {
-      console.error('删除预算失败:', error);
-      setToastMessage(`❌ ${error.message || '删除失败'}`);
-      setShowToast(true);
-    }
-  };
-
-  const openSetBudgetDialog = (budget: BudgetStatus | null = null) => {
-    setSelectedBudget(budget);
-    setBudgetAmount(budget ? budget.budget_amount.toString() : '');
-    setShowSetBudgetDialog(true);
-  };
-
-  const handleApplySuggestion = async (categoryKey: string, amount: number) => {
-    try {
-      await setBudget({
-        year,
-        month,
-        categoryKey,
-        amount,
-      });
-
-      markTransactionsDirty();
-      setToastMessage('✅ 已应用建议预算');
-      setShowToast(true);
-
-      // 只刷新预算状态数据，不刷新整个页面
-      const [statusData, summaryData] = await Promise.all([
-        getMonthlyBudgetStatus(year, month),
-        getTotalBudgetSummary(year, month, 'CNY'),
-      ]);
-      setBudgetStatuses(statusData);
-      setSummary(summaryData);
-    } catch (error: any) {
-      console.error('应用建议失败:', error);
-      setToastMessage(`❌ ${error.message || '应用失败'}`);
-      setShowToast(true);
-    }
-  };
-
+  
   const totalBudget = summary?.total_budget || 0;
   const totalSpent = summary?.total_spent || 0;
   const totalRemaining = summary?.total_remaining || 0;
@@ -237,33 +138,6 @@ export default function BudgetPage() {
                   <PiggyBank className="h-6 w-6" />
                 </div>
               </div>
-              {totalBudget === 0 ? (
-                <Button
-                  size="sm"
-                  onClick={() => openSetBudgetDialog(null)}
-                  className="w-full bg-blue-700 hover:bg-blue-800 text-white font-medium"
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  设置总预算
-                </Button>
-              ) : (
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    // 找到总预算记录（category_key 为 null 的）
-                    const totalBudgetRecord = budgetStatuses.find(b => !b.category_key);
-                    if (totalBudgetRecord) {
-                      openSetBudgetDialog(totalBudgetRecord);
-                    } else {
-                      openSetBudgetDialog(null);
-                    }
-                  }}
-                  className="w-full bg-blue-700 hover:bg-blue-800 text-white font-medium"
-                >
-                  <Edit2 className="h-4 w-4 mr-1" />
-                  调整预算
-                </Button>
-              )}
             </CardContent>
           </Card>
 
@@ -350,9 +224,9 @@ export default function BudgetPage() {
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2 text-purple-900 dark:text-purple-100">
                   <span>💡</span>
-                  <span>智能预算建议</span>
+                  <span>智能预算管理</span>
                   <span className="text-xs font-normal text-purple-600 dark:text-purple-300">
-                    基于历史消费数据分析 ({suggestions.length} 个建议)
+                    基于历史消费数据分析 ({suggestions.length} 个类别)
                   </span>
                 </CardTitle>
                 {isSuggestionsExpanded ? (
@@ -398,56 +272,75 @@ export default function BudgetPage() {
                       <div className="flex items-center gap-3">
                         <div className="text-2xl">{category.icon}</div>
                         <div>
-                          <div className="font-semibold text-gray-900 dark:text-gray-100">
+                          <div className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
                             {category.label}
                           </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            建议预算: <span className="font-bold text-purple-600">¥{suggestion.suggestedAmount.toLocaleString()}</span>
+                          {/* AI建议预算 - 恢复原来的格式 */}
+                          <div className="mb-3">
+                            <div className="flex items-center gap-3 text-sm">
+                              <div className="flex items-center gap-1">
+                                <span className="text-purple-600 dark:text-purple-400">💡</span>
+                                <span className="text-gray-500 dark:text-gray-400">建议:</span>
+                              </div>
+                              <span className="font-bold text-purple-700 dark:text-purple-300 text-base">
+                                ¥{suggestion.suggestedAmount.toLocaleString()}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
+                      {/* 可信度标签放在右侧 */}
                       <div className="flex items-center gap-2">
-                        <span className={`text-xs px-2 py-1 rounded-full ${confidenceColor}`}>
-                          可信度: {confidenceLabel}
-                        </span>
-                        {(() => {
-                          const existingBudget = budgetStatuses.find(b => b.category_key === suggestion.categoryKey);
-                          const isApplied = existingBudget && Math.abs(existingBudget.budget_amount - suggestion.suggestedAmount) < 0.01;
+                        <span className="text-xs text-gray-500 dark:text-gray-400">可信度:</span>
+                        <div className="relative group">
+                          <span className={`text-xs px-2 py-1 rounded-full ${confidenceColor} cursor-help`}>
+                            {confidenceLabel}
+                          </span>
+                          {/* Tooltip 解释 */}
+                          <div className="absolute right-0 bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
+                            {confidenceLabel === '高' ? '基于充足的历史数据，预测准确度很高' :
+                             confidenceLabel === '中' ? '基于一定的历史数据，预测准确度一般' :
+                             '历史数据不足，预测准确度较低'}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
-                          return isApplied ? (
-                            <Button
-                              size="sm"
-                              disabled
-                              className="bg-gray-400 cursor-not-allowed text-white"
-                            >
-                              已应用
-                            </Button>
-                          ) : (
-                            <Button
-                              size="sm"
-                              onClick={() => handleApplySuggestion(suggestion.categoryKey, suggestion.suggestedAmount)}
-                              className="bg-purple-600 hover:bg-purple-700 text-white"
-                            >
-                              应用
-                            </Button>
-                          );
-                        })()}
+                    
+                    {/* 进度条和使用情况 */}
+                    <div className="mb-3">
+                      {/* 使用率 */}
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-600 dark:text-gray-300">使用率</span>
+                          <span className="font-semibold text-gray-900 dark:text-gray-100">
+                            {Math.min(100, (suggestion.currentMonthSpending / suggestion.suggestedAmount) * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className={`h-2 rounded-full transition-all ${
+                              (suggestion.currentMonthSpending / suggestion.suggestedAmount) > 1 ? 'bg-red-500' :
+                              (suggestion.currentMonthSpending / suggestion.suggestedAmount) >= 0.8 ? 'bg-orange-500' :
+                              (suggestion.currentMonthSpending / suggestion.suggestedAmount) >= 0.5 ? 'bg-blue-500' :
+                              'bg-green-500'
+                            }`}
+                            style={{ width: `${Math.min(100, (suggestion.currentMonthSpending / suggestion.suggestedAmount) * 100)}%` }}
+                          />
+                        </div>
                       </div>
                     </div>
-                    <div className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-                      {suggestion.reason.split('**').map((part: string, i: number) =>
-                        i % 2 === 1 ? <strong key={i} className="font-bold text-purple-700 dark:text-purple-300">{part}</strong> : part
-                      )}
-                    </div>
-                    <div className="grid grid-cols-3 gap-2 text-xs text-gray-600 dark:text-gray-400">
-                      <div>
-                        历史平均: ¥{suggestion.historicalAvg.toLocaleString()}
-                      </div>
-                      <div>
-                        当前已支出: ¥{suggestion.currentMonthSpending.toLocaleString()}
+                    {/* 参考数据 - 紧凑单行显示 */}
+                    <div className="flex justify-between items-center pt-2 mt-2 border-t border-gray-200 dark:border-gray-600 text-xs text-gray-500 dark:text-gray-400">
+                      <div className="flex items-center gap-4">
+                        <span>📅 历史平均: ¥{suggestion.historicalAvg.toLocaleString()}</span>
+                        <span>
+                          🤖 {suggestion.reason.split('**').join('')}
+                        </span>
+                        <span>💰 当月已支出: ¥{suggestion.currentMonthSpending.toLocaleString()}</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        预测月底: ¥{suggestion.predictedMonthTotal.toLocaleString()}
+                        <span>🔮 当月预测支出: ¥{suggestion.predictedMonthTotal.toLocaleString()}</span>
                         <span className={`font-bold ${trendColor}`}>{trendIcon}</span>
                       </div>
                     </div>
@@ -459,156 +352,8 @@ export default function BudgetPage() {
           </Card>
         )}
 
-        {/* 分类预算列表 */}
-        <Card className="border-0 shadow-lg bg-white dark:bg-gray-800">
-          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-750 dark:from-gray-800 dark:to-gray-750 border-b dark:border-gray-700 dark:border-gray-700">
-            <CardTitle className="flex items-center gap-3 text-gray-900 dark:text-gray-100">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                <PiggyBank className="h-5 w-5 text-blue-600" />
-              </div>
-              <span>分类预算</span>
-              <span className="text-sm text-gray-500 font-normal">
-                ({budgetStatuses.filter(b => b.category_key).length} 个类别)
-              </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            {budgetStatuses.filter(b => b.category_key).length === 0 ? (
-              <div className="text-center py-12">
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full mb-4">
-                  <PiggyBank className="h-10 w-10 text-gray-400 dark:text-gray-500" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">还没有设置分类预算</h3>
-                <p className="text-gray-500 mb-6">
-                  为不同的消费类别设置预算上限，帮助您更好地控制支出
-                </p>
-                <Button onClick={() => openSetBudgetDialog(null)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  添加第一个预算
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {budgetStatuses.filter(b => b.category_key).map((budget) => {
-                  const statusLabel = getBudgetStatusLabel(budget);
-                  const progressColor = getProgressBarColor(budget.usage_percentage, budget.is_over_budget);
-                  const prediction = budget.category_key ? predictions.get(budget.category_key) : null;
-
-                  return (
-                    <div
-                      key={budget.id}
-                      className="group rounded-xl border-2 border-gray-200 dark:border-gray-700 p-5 hover:shadow-md transition-all"
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className="flex items-center justify-center w-12 h-12 rounded-lg text-2xl"
-                            style={{ backgroundColor: `${budget.category_color}20` }}
-                          >
-                            {budget.category_icon}
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">{budget.category_label}</h3>
-                            <div className="flex items-center gap-2 mt-1">
-                              <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusLabel.bgColor} ${statusLabel.color}`}>
-                                <span>{statusLabel.icon}</span>
-                                <span>{statusLabel.label}</span>
-                              </div>
-                              {prediction && prediction.will_exceed_budget && !budget.is_over_budget && (
-                                <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300">
-                                  <span>⚠️</span>
-                                  <span>可能超支</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => openSetBudgetDialog(budget)}
-                            className="hover:bg-blue-50 dark:hover:bg-blue-950 dark:bg-blue-950"
-                          >
-                            <Edit2 className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleDeleteBudget(budget.id, budget.category_label)}
-                            className="hover:bg-red-50 dark:bg-red-950 hover:text-red-600"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-4 mb-3">
-                        <div>
-                          <div className="text-xs text-gray-500 mb-1">预算</div>
-                          <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                            ¥{budget.budget_amount.toLocaleString()}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-500 mb-1">已用</div>
-                          <div className="text-lg font-semibold text-red-600">
-                            ¥{budget.spent_amount.toLocaleString()}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-500 mb-1">剩余</div>
-                          <div className="text-lg font-semibold text-green-600">
-                            ¥{budget.remaining_amount.toLocaleString()}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600 dark:text-gray-300">使用率</span>
-                          <span className="font-semibold text-gray-900 dark:text-gray-100">{budget.usage_percentage.toFixed(1)}%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-3">
-                          <div
-                            className={`h-3 rounded-full transition-all ${progressColor}`}
-                            style={{ width: `${Math.min(budget.usage_percentage, 100)}%` }}
-                          />
-                        </div>
-                        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                          <span>{budget.transaction_count} 笔交易</span>
-                          {prediction && prediction.will_exceed_budget && (
-                            <span className="text-orange-600 dark:text-orange-400 font-medium">
-                              预计月底: ¥{prediction.predicted_total.toLocaleString()}
-                              <span className="ml-1">(超支 ¥{(prediction.predicted_overage || 0).toLocaleString()})</span>
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* 设置预算对话框 */}
-        {showSetBudgetDialog && (
-          <SetBudgetDialog
-            budget={selectedBudget}
-            categories={categories}
-            budgetAmount={budgetAmount}
-            onAmountChange={setBudgetAmount}
-            onConfirm={handleSetBudget}
-            onCancel={() => {
-              setShowSetBudgetDialog(false);
-              setBudgetAmount('');
-              setSelectedBudget(null);
-            }}
-          />
-        )}
-
+        
+        
         {/* Toast提示 */}
         {showToast && (
           <ProgressToast
@@ -621,85 +366,3 @@ export default function BudgetPage() {
   );
 }
 
-// 设置预算对话框
-function SetBudgetDialog({
-  budget,
-  categories,
-  budgetAmount,
-  onAmountChange,
-  onConfirm,
-  onCancel,
-}: {
-  budget: BudgetStatus | null;
-  categories: Category[];
-  budgetAmount: string;
-  onAmountChange: (value: string) => void;
-  onConfirm: () => void;
-  onCancel: () => void;
-}) {
-  const [selectedCategoryKey, setSelectedCategoryKey] = useState<string | null>(
-    budget?.category_key || null
-  );
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full">
-        <div className="p-6 border-b dark:border-gray-700">
-          <h3 className="font-semibold text-xl">
-            {budget ? '编辑预算' : '设置预算'}
-          </h3>
-        </div>
-        <div className="p-6 space-y-4">
-          {!budget && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                选择类别
-              </label>
-              <select
-                value={selectedCategoryKey || ''}
-                onChange={(e) => setSelectedCategoryKey(e.target.value || null)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
-              >
-                <option value="">总预算</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.key}>
-                    {cat.icon} {cat.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              预算金额 (¥) <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="number"
-              value={budgetAmount}
-              onChange={(e) => onAmountChange(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              placeholder="例如：5000"
-              min="0"
-              step="0.01"
-            />
-          </div>
-
-          <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
-            <p className="text-sm text-blue-900 dark:text-blue-100">
-              💡 提示：系统会在预算使用达到 80% 时提醒您
-            </p>
-          </div>
-        </div>
-        <div className="p-6 border-t dark:border-gray-700 flex justify-end gap-3">
-          <Button variant="outline" onClick={onCancel}>
-            取消
-          </Button>
-          <Button onClick={onConfirm} disabled={!budgetAmount || parseFloat(budgetAmount) <= 0}>
-            确认
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
