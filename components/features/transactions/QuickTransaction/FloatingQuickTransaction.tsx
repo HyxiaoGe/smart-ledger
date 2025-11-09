@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Zap, Plus, X } from 'lucide-react';
+import { Zap, Plus } from 'lucide-react';
 
 interface FloatingQuickTransactionProps {
   className?: string;
