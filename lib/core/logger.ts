@@ -1,9 +1,10 @@
 /**
  * 统一的日志系统
  *
- * 基于 Pino 构建，提供结构化的日志输出
- * - 开发环境：彩色控制台输出（pino-pretty）
- * - 生产环境：JSON 格式输出（方便日志收集系统处理）
+ * 基于 Pino 构建，提供结构化的 JSON 日志输出
+ * - 所有环境：JSON 格式输出（便于日志收集和分析）
+ * - 如需美化查看，可使用管道：npm run dev | npx pino-pretty
+ * - 生产环境：集成 Datadog, Logflare, CloudWatch 等日志平台
  *
  * 使用示例：
  * ```ts
@@ -30,20 +31,9 @@ export const logger = pino({
   // 可通过环境变量 LOG_LEVEL 覆盖，如：LOG_LEVEL=debug npm run dev
   level: process.env.LOG_LEVEL || (isDev ? 'debug' : 'info'),
 
-  // 开发环境：使用 pino-pretty 美化输出
-  // 生产环境：原始 JSON 输出（利于 Docker/Vercel/K8s 收集）
-  transport: isDev
-    ? {
-        target: 'pino-pretty',
-        options: {
-          colorize: true,
-          translateTime: 'SYS:standard',
-          ignore: 'pid,hostname',
-          messageFormat: '{module} {msg}',
-          singleLine: false,
-        },
-      }
-    : undefined,
+  // 注意：不使用 transport（pino-pretty）以避免 Next.js 环境中的 worker thread 问题
+  // 如需美化输出，可使用管道：npm run dev | npx pino-pretty
+  // 或者使用日志查看工具如 Datadog, Logflare 等
 
   // 基础字段（所有日志都包含）
   base: {
