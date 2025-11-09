@@ -114,7 +114,7 @@ export default function ExpensesSettingsPage() {
                   {section.description}
                 </p>
                 {section.status === 'available' ? (
-                  <Link href={section.href}>
+                  <Link href={section.href as any}>
                     <Button className="w-full">
                       <Settings2 className="h-4 w-4 mr-2" />
                       开始配置

@@ -25,7 +25,15 @@ export default function AddRecurringExpensePage() {
   const [toastMessage, setToastMessage] = useState('');
   const [mounted, setMounted] = useState(false);
   const [activeDateInput, setActiveDateInput] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    amount: string;
+    category: string;
+    frequency: string;
+    frequency_config: { day_of_month?: number; days_of_week?: number[] };
+    start_date: Date | null;
+    end_date: Date | null;
+  }>({
     name: '',
     amount: '',
     category: '',
@@ -281,7 +289,7 @@ export default function AddRecurringExpensePage() {
                     </label>
                     <div className="relative z-[10001] w-full">
                       <DateInput
-                        selected={formData.start_date}
+                        selected={formData.start_date || undefined}
                         onSelect={(date) => handleDateChange('start_date', date)}
                         placeholder="选择开始日期"
                         className="w-full"
@@ -301,7 +309,7 @@ export default function AddRecurringExpensePage() {
                     </label>
                     <div className="relative z-[10000] w-full">
                       <DateInput
-                        selected={formData.end_date}
+                        selected={formData.end_date || undefined}
                         onSelect={(date) => handleDateChange('end_date', date)}
                         placeholder="选择结束日期（可选）"
                         className="w-full"

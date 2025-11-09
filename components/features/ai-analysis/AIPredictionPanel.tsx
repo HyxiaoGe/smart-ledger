@@ -41,8 +41,7 @@ export function AIPredictionPanel({
 
       // 获取通用交易预测
       const transactionPredictions = await aiPredictionService.predictTransaction({
-        timeContext: timeContext.label,
-        includeRecent: true
+        timeContext: timeContext.label
       });
 
       // 根据当前状态获取特定预测
@@ -63,8 +62,7 @@ export function AIPredictionPanel({
       } else if (currentAmount && currentCategory) {
         // 两者都有，预测完整交易
         specificPredictions = await aiPredictionService.predictTransaction({
-          timeContext: timeContext.label,
-          includeRecent: true
+          timeContext: timeContext.label
         });
       }
 
@@ -256,7 +254,7 @@ export function AIPredictionPanel({
                           {getPredictionTypeLabel(prediction)}
                         </Badge>
                         {prediction.predictedCategory && (
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge variant="outline" className="text-xs">
                             {prediction.predictedCategory}
                           </Badge>
                         )}

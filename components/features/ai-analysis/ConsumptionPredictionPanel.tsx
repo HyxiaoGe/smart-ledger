@@ -42,7 +42,7 @@ export function ConsumptionPredictionPanel({
   const [collapsed, setCollapsed] = useState(false);
 
   // 监听数据同步事件
-  useDataSync(() => {
+  useDataSync('transaction_updated', () => {
     fetchPredictionData();
   });
 
@@ -59,7 +59,7 @@ export function ConsumptionPredictionPanel({
       const { data: currentData, error: currentError } = await supabase
         .from('transactions')
         .select('category, amount, date')
-        .eq('date', 'like', `${month}%`)
+        .like('date', `${month}%`)
         .eq('type', 'expense')
         .is('deleted_at', null);
 
@@ -73,13 +73,13 @@ export function ConsumptionPredictionPanel({
         supabase
           .from('transactions')
           .select('category, amount')
-          .eq('date', 'like', `${lastMonth}%`)
+          .like('date', `${lastMonth}%`)
           .eq('type', 'expense')
           .is('deleted_at', null),
         supabase
           .from('transactions')
           .select('category, amount')
-          .eq('date', 'like', `${twoMonthsAgo}%`)
+          .like('date', `${twoMonthsAgo}%`)
           .eq('type', 'expense')
           .is('deleted_at', null)
       ]);

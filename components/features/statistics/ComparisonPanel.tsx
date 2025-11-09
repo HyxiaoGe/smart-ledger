@@ -62,7 +62,7 @@ export function ComparisonPanel({
       const { data: currentData, error } = await supabase
         .from('transactions')
         .select('category, amount, type')
-        .eq('date', 'like', `${month}%`)
+        .like('date', `${month}%`)
         .is('deleted_at', null);
 
       if (error) throw error;

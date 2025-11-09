@@ -2,7 +2,8 @@
  * 统一的日志系统
  *
  * 基于 Pino 构建，提供结构化的 JSON 日志输出
- * - 所有环境：JSON 格式输出（便于日志收集和分析）
+ * - 服务端：使用 Pino 完整功能
+ * - 浏览器端：使用简化的 console 包装器
  * - 如需美化查看，可使用管道：npm run dev | npx pino-pretty
  * - 生产环境：集成 Datadog, Logflare, CloudWatch 等日志平台
  *
@@ -19,54 +20,62 @@
  * ```
  */
 
-import pino from 'pino';
+// 检测是否为浏览器环境
+const isBrowser = typeof window !== 'undefined';
 
-// 确保 stdout 使用 UTF-8 编码，防止中文字符乱码（仅服务端环境）
-if (typeof process !== 'undefined' && process.stdout?.setDefaultEncoding) {
-  process.stdout.setDefaultEncoding('utf8');
+// 服务端日志实现
+let logger: any;
+
+if (!isBrowser) {
+  // 仅在服务端导入和使用 pino
+  const pino = require('pino');
+
+  // 确保 stdout 使用 UTF-8 编码，防止中文字符乱码
+  if (typeof process !== 'undefined' && process.stdout?.setDefaultEncoding) {
+    process.stdout.setDefaultEncoding('utf8');
+  }
+
+  const isDev = process.env?.NODE_ENV === 'development';
+
+  logger = pino(
+    {
+      // 日志级别
+      level: process.env.LOG_LEVEL || (isDev ? 'debug' : 'info'),
+
+      // 基础字段
+      base: {
+        env: process.env.NODE_ENV,
+      },
+
+      // 时间戳格式（ISO 8601）
+      timestamp: pino.stdTimeFunctions.isoTime,
+
+      // 序列化器
+      serializers: {
+        error: pino.stdSerializers.err,
+        req: pino.stdSerializers.req,
+        res: pino.stdSerializers.res,
+      },
+    },
+    pino.destination({ dest: 1, sync: false })
+  );
+} else {
+  // 浏览器端简化实现
+  const noop = () => {};
+  const createBrowserLogger = () => ({
+    fatal: noop,
+    error: noop,
+    warn: noop,
+    info: noop,
+    debug: noop,
+    trace: noop,
+    child: () => createBrowserLogger(),
+  });
+
+  logger = createBrowserLogger();
 }
 
-const isDev = process.env?.NODE_ENV === 'development';
-
-/**
- * 主日志实例
- */
-export const logger = pino(
-  {
-    // 日志级别
-    // 可通过环境变量 LOG_LEVEL 覆盖，如：LOG_LEVEL=debug npm run dev
-    level: process.env.LOG_LEVEL || (isDev ? 'debug' : 'info'),
-
-    // 注意：不使用 transport（pino-pretty）以避免 Next.js 环境中的 worker thread 问题
-    // 如需美化输出，可使用管道：npm run dev | npx pino-pretty
-    // 或者使用日志查看工具如 Datadog, Logflare 等
-
-    // 基础字段（所有日志都包含）
-    base: {
-      env: process.env.NODE_ENV,
-    },
-
-    // 时间戳格式（ISO 8601）
-    timestamp: pino.stdTimeFunctions.isoTime,
-
-    // 序列化器（处理特殊对象）
-    serializers: {
-      // 错误对象序列化
-      error: pino.stdSerializers.err,
-      // 请求对象序列化
-      req: pino.stdSerializers.req,
-      // 响应对象序列化
-      res: pino.stdSerializers.res,
-    },
-
-    // 浏览器环境配置
-    browser: {
-      asObject: false,
-    },
-  },
-  // 显式指定输出流为 stdout
-  pino.destination({ dest: 1, sync: false })
-);
+export { logger };
 
 /**
  * 创建模块专用的 logger
@@ -107,6 +116,10 @@ export function createModuleLogger(module: string) {
  * ```
  */
 export function createRequestLogger(api: string, req?: Request) {
+  if (isBrowser) {
+    return logger;
+  }
+
   const requestId = crypto.randomUUID();
   const method = req?.method;
 
