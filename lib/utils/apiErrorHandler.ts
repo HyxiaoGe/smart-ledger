@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ZodError } from 'zod';
+import { logger } from '@/lib/core/logger';
 
 /**
  * API 路由错误处理包装器
@@ -18,13 +19,14 @@ export function withErrorHandler<T extends (req: NextRequest, context?: any) => 
     try {
       return await handler(req, context);
     } catch (error: any) {
-      // 记录错误到控制台
-      console.error('API Error:', {
+      // 使用 Pino logger 记录错误
+      logger.error({
         url: req.url,
         method: req.method,
         error: error.message,
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
-      });
+        stack: error.stack,
+        name: error.name,
+      }, 'API请求错误');
 
       // Zod 验证错误
       if (error instanceof ZodError) {
