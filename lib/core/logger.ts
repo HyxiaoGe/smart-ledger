@@ -26,33 +26,42 @@ const isDev = process.env.NODE_ENV === 'development';
 /**
  * 主日志实例
  */
-export const logger = pino({
-  // 日志级别
-  // 可通过环境变量 LOG_LEVEL 覆盖，如：LOG_LEVEL=debug npm run dev
-  level: process.env.LOG_LEVEL || (isDev ? 'debug' : 'info'),
+export const logger = pino(
+  {
+    // 日志级别
+    // 可通过环境变量 LOG_LEVEL 覆盖，如：LOG_LEVEL=debug npm run dev
+    level: process.env.LOG_LEVEL || (isDev ? 'debug' : 'info'),
 
-  // 注意：不使用 transport（pino-pretty）以避免 Next.js 环境中的 worker thread 问题
-  // 如需美化输出，可使用管道：npm run dev | npx pino-pretty
-  // 或者使用日志查看工具如 Datadog, Logflare 等
+    // 注意：不使用 transport（pino-pretty）以避免 Next.js 环境中的 worker thread 问题
+    // 如需美化输出，可使用管道：npm run dev | npx pino-pretty
+    // 或者使用日志查看工具如 Datadog, Logflare 等
 
-  // 基础字段（所有日志都包含）
-  base: {
-    env: process.env.NODE_ENV,
+    // 基础字段（所有日志都包含）
+    base: {
+      env: process.env.NODE_ENV,
+    },
+
+    // 时间戳格式（ISO 8601）
+    timestamp: pino.stdTimeFunctions.isoTime,
+
+    // 序列化器（处理特殊对象）
+    serializers: {
+      // 错误对象序列化
+      error: pino.stdSerializers.err,
+      // 请求对象序列化
+      req: pino.stdSerializers.req,
+      // 响应对象序列化
+      res: pino.stdSerializers.res,
+    },
+
+    // 浏览器环境配置（确保服务端正确输出）
+    browser: {
+      asObject: false,
+    },
   },
-
-  // 时间戳格式（ISO 8601）
-  timestamp: pino.stdTimeFunctions.isoTime,
-
-  // 序列化器（处理特殊对象）
-  serializers: {
-    // 错误对象序列化
-    error: pino.stdSerializers.err,
-    // 请求对象序列化
-    req: pino.stdSerializers.req,
-    // 响应对象序列化
-    res: pino.stdSerializers.res,
-  },
-});
+  // 显式指定输出流为 stdout，确保日志能输出到终端
+  pino.destination({ dest: 1, sync: false })
+);
 
 /**
  * 创建模块专用的 logger
