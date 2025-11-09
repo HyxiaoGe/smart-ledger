@@ -6,6 +6,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   compress: false,
+  output: 'standalone',
   eslint: {
     // 在构建时忽略 ESLint 错误，以便部署成功
     // 开发时仍可以运行 npm run lint 来检查代码质量

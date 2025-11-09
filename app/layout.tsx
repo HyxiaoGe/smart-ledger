@@ -8,6 +8,9 @@ import { NavigationProgress } from '@/components/layout/NavigationProgress';
 import { ThemeProvider } from '@/components/layout/ThemeProvider';
 import { GlobalErrorHandler } from '@/components/layout/GlobalErrorHandler';
 
+// 强制动态渲染，避免预渲染错误
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Smart Ledger',
   description: '智能记账'
