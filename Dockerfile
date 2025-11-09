@@ -17,10 +17,13 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 EXPOSE 3000
-COPY --from=deps /app/node_modules ./node_modules
-COPY package.json ./package.json
-COPY next.config.mjs ./next.config.mjs
-COPY .next ./.next
-COPY public ./public
+
+# 从 builder 而不是宿主机复制
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/next.config.mjs ./next.config.mjs
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+
 CMD ["npm", "run", "start"]
 

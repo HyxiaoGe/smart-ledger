@@ -1,14 +1,16 @@
-version: '3.9'
 services:
   app:
-    image: node:20-alpine
-    working_dir: /app
+    build: .
+    container_name: smart-ledger-app
     ports:
       - "3000:3000"
     env_file:
       - .env.local
     volumes:
       - .:/app
-      - /app/node_modules
-    command: sh -c "npm install && npm run dev"
+      - node_modules_cache:/app/node_modules
+    command: npm run dev
+
+volumes:
+  node_modules_cache:
 
