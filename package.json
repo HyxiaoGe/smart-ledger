@@ -5,6 +5,7 @@
   "description": "Smart Ledger MVP - Next.js + Supabase + DeepSeek",
   "scripts": {
     "dev": "next dev",
+    "dev:pretty": "next dev 2>&1 | pino-pretty",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx",
