@@ -5,6 +5,9 @@ import type {
   SmartSuggestion,
   CommonNote
 } from '@/types/transaction';
+import { createModuleLogger } from '@/lib/core/logger';
+
+const log = createModuleLogger('smart-suggestions');
 
 export type { SmartSuggestionParams, SmartSuggestionResponse, SmartSuggestion };
 
@@ -15,10 +18,27 @@ export const smartSuggestionsService = {
    * 获取智能备注建议
    */
   async getSuggestions(params: SmartSuggestionParams): Promise<SmartSuggestionResponse> {
-    return fetchJson<SmartSuggestionResponse>(BASE_URL, {
-      method: 'POST',
-      body: JSON.stringify(params)
-    });
+    log.debug({
+      category: params.category,
+      amount: params.amount,
+      hasPartialInput: !!params.partial_input
+    }, '请求智能建议');
+
+    try {
+      const result = await fetchJson<SmartSuggestionResponse>(BASE_URL, {
+        method: 'POST',
+        body: JSON.stringify(params)
+      });
+
+      log.debug({
+        suggestionCount: result.suggestions?.length || 0
+      }, '智能建议获取成功');
+
+      return result;
+    } catch (error) {
+      log.error({ error }, '获取智能建议失败');
+      throw error;
+    }
   },
 
   /**

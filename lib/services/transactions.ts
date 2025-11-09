@@ -1,6 +1,9 @@
 import { unstable_cache } from 'next/cache';
 import { supabase } from '@/lib/clients/supabase/client';
 import { parseMonthStr, formatMonth, getQuickRange } from '@/lib/utils/date';
+import { createModuleLogger } from '@/lib/core/logger';
+
+const log = createModuleLogger('transaction-service');
 
 type DateRange = { start: string; end: string; label: string };
 
@@ -256,11 +259,11 @@ export async function getAIAnalysisData(targetMonth?: string) {
       ]);
 
       if (currentMonthFullResult.error || lastMonthResult.error || currentMonthTop20Result.error) {
-        console.error('AI数据查询错误:', {
+        log.error({
           currentMonthFull: currentMonthFullResult.error,
           lastMonth: lastMonthResult.error,
           top20: currentMonthTop20Result.error
-        });
+        }, 'AI数据查询错误');
         throw new Error('获取AI分析数据失败');
       }
 
@@ -329,7 +332,9 @@ export async function getPredictionData(monthsToAnalyze: number = 6) {
       // 检查查询结果
       const hasError = monthResults.some(result => result.error);
       if (hasError) {
-        console.error('预测数据查询错误:', monthResults.map(r => r.error));
+        log.error({
+          errors: monthResults.map(r => r.error)
+        }, '预测数据查询错误');
         throw new Error('获取预测数据失败');
       }
 

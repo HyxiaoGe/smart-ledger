@@ -5,6 +5,7 @@ import { formatDateToLocal } from '@/lib/utils/date';
 import { z } from 'zod';
 import { validateRequest, commonSchemas } from '@/lib/utils/validation';
 import { withErrorHandler } from '@/lib/utils/apiErrorHandler';
+import { createRequestLogger, startPerformanceMeasure } from '@/lib/core/logger';
 
 export const runtime = 'nodejs';
 
@@ -22,11 +23,16 @@ const quickTransactionSchema = z.object({
  * 支持一键快速记录常见消费
  */
 export const POST = withErrorHandler(async (req: NextRequest) => {
+  const log = createRequestLogger('/api/quick-transaction', req);
+  const measure = startPerformanceMeasure();
+
+  log.info('快速记账请求开始');
   const body = await req.json();
 
   // 验证输入
   const validation = validateRequest(quickTransactionSchema, body);
   if (!validation.success) {
+    log.warn('请求参数验证失败');
     return validation.response;
   }
 
@@ -34,6 +40,13 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
   const type = 'expense';
   const transactionDate = date || formatDateToLocal(new Date());
+
+  log.info({
+    category,
+    amount,
+    currency,
+    date: transactionDate
+  }, '准备插入快速记账记录');
 
   // 使用原子化的数据库函数来避免竞态条件
   const { data: transactionId, error: upsertError } = await supabase
@@ -70,6 +83,13 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
   revalidateTag('transactions');
   revalidatePath('/');
   revalidatePath('/records');
+
+  log.info({
+    ...measure(),
+    transactionId,
+    category,
+    amount
+  }, '快速记账成功');
 
   return Response.json({
     success: true,

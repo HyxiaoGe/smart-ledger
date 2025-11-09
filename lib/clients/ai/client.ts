@@ -1,6 +1,10 @@
 // AI 客户端（默认 DeepSeek，可通过环境变量切换到 OpenAI 兼容接口）
 // 为降低依赖，此处用 fetch 直连，接口需符合 OpenAI Chat Completions 兼容协议。
 
+import { createModuleLogger } from '@/lib/core/logger';
+
+const log = createModuleLogger('ai-client');
+
 export type Provider = 'deepseek' | 'openai';
 
 interface ChatMessage {
@@ -27,9 +31,18 @@ const DEFAULTS = {
 export async function chat(messages: ChatMessage[]): Promise<string> {
   const conf = DEFAULTS[provider];
   if (!conf.apiKey) {
+    log.warn({ provider }, 'AI API Key未配置，返回占位结果');
     // 无 API Key 时返回占位文本，避免阻塞本地开发
     return '（开发提示）未配置 AI API Key，返回占位分析结果。';
   }
+
+  log.debug({
+    provider,
+    model: conf.model,
+    messageCount: messages.length
+  }, '发送AI请求');
+
+  const startTime = Date.now();
 
   const resp = await fetch(`${conf.baseUrl}/chat/completions`, {
     method: 'POST',
@@ -46,11 +59,25 @@ export async function chat(messages: ChatMessage[]): Promise<string> {
 
   if (!resp.ok) {
     const text = await resp.text();
+    log.error({
+      provider,
+      model: conf.model,
+      status: resp.status,
+      error: text
+    }, 'AI请求失败');
     throw new Error(`AI 请求失败：${resp.status} ${text}`);
   }
 
   const data = await resp.json();
   const content = data?.choices?.[0]?.message?.content || '';
+
+  log.info({
+    provider,
+    model: conf.model,
+    duration: Date.now() - startTime,
+    responseLength: content.length
+  }, 'AI请求成功');
+
   return content.trim();
 }
 

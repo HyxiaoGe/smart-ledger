@@ -4,6 +4,8 @@ import { getPredictionData } from '@/lib/services/transactions';
 import { aiPredictionCache } from '@/lib/services/unifiedCache';
 import { aiCacheServiceServer } from '@/lib/services/aiCacheServiceServer';
 import { aiFeedbackServiceDB } from '@/lib/services/aiFeedbackServiceDB';
+import { withErrorHandler } from '@/lib/utils/apiErrorHandler';
+import { logger, createRequestLogger, startPerformanceMeasure } from '@/lib/core/logger';
 
 export const runtime = 'nodejs';
 
@@ -11,61 +13,77 @@ export const runtime = 'nodejs';
  * 支出预测API
  * 基于历史数据预测未来支出，包括异常检测和预算建议
  */
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    const { type = 'spending-prediction', monthsToAnalyze = 6, predictionMonths = 3 } = body;
+export const POST = withErrorHandler(async (req: NextRequest) => {
+  const log = createRequestLogger('/api/predict', req);
+  const measure = startPerformanceMeasure();
 
-    // 获取历史数据
-    const predictionData = await getPredictionData(monthsToAnalyze);
+  log.info('支出预测请求开始');
+  const body = await req.json();
+  const { type = 'spending-prediction', monthsToAnalyze = 6, predictionMonths = 3 } = body;
 
-    // 检查数据质量
-    if (!predictionData.overallStats.dataQuality.sufficientData) {
-      return Response.json({
-        error: '数据不足',
-        message: `需要至少3个月的历史数据，当前只有${predictionData.overallStats.totalMonths}个月`,
-        data: predictionData
-      }, { status: 400 });
-    }
+  log.info({
+    type,
+    monthsToAnalyze,
+    predictionMonths
+  }, '预测参数');
 
-    let result;
+  // 获取历史数据
+  const predictionData = await getPredictionData(monthsToAnalyze);
 
-    switch (type) {
-      case 'spending-prediction':
-        result = await handleSpendingPrediction(predictionData, predictionMonths, monthsToAnalyze);
-        break;
-      case 'anomaly-detection':
-        result = await handleAnomalyDetection(predictionData);
-        break;
-      case 'budget-recommendation':
-        result = await handleBudgetRecommendation(predictionData, predictionMonths);
-        break;
-      case 'comprehensive-analysis':
-        result = await handleComprehensiveAnalysis(predictionData, predictionMonths, monthsToAnalyze);
-        break;
-      default:
-        return new Response(
-          JSON.stringify({ error: '不支持的预测类型' }),
-          { status: 400 }
-        );
-    }
-
+  // 检查数据质量
+  if (!predictionData.overallStats.dataQuality.sufficientData) {
+    log.warn({
+      totalMonths: predictionData.overallStats.totalMonths,
+      requiredMonths: 3
+    }, '数据不足');
     return Response.json({
-      type,
-      dataQuality: predictionData.overallStats.dataQuality,
-      analysisMonths: predictionData.overallStats.totalMonths,
-      generatedAt: new Date().toISOString(),
-      ...result
-    });
-
-  } catch (err: any) {
-    console.error('支出预测失败:', err);
-    return new Response(
-      JSON.stringify({ error: err.message || '支出预测失败' }),
-      { status: 500 }
-    );
+      error: '数据不足',
+      message: `需要至少3个月的历史数据，当前只有${predictionData.overallStats.totalMonths}个月`,
+      data: predictionData
+    }, { status: 400 });
   }
-}
+
+  let result;
+
+  log.info({
+    totalMonths: predictionData.overallStats.totalMonths,
+    totalTransactions: predictionData.overallStats.totalTransactions
+  }, `开始执行${type}分析`);
+
+  switch (type) {
+    case 'spending-prediction':
+      result = await handleSpendingPrediction(predictionData, predictionMonths, monthsToAnalyze);
+      break;
+    case 'anomaly-detection':
+      result = await handleAnomalyDetection(predictionData);
+      break;
+    case 'budget-recommendation':
+      result = await handleBudgetRecommendation(predictionData, predictionMonths);
+      break;
+    case 'comprehensive-analysis':
+      result = await handleComprehensiveAnalysis(predictionData, predictionMonths, monthsToAnalyze);
+      break;
+    default:
+      log.warn({ type }, '不支持的预测类型');
+      return new Response(
+        JSON.stringify({ error: '不支持的预测类型' }),
+        { status: 400 }
+      );
+  }
+
+  log.info({
+    ...measure(),
+    type
+  }, '支出预测完成');
+
+  return Response.json({
+    type,
+    dataQuality: predictionData.overallStats.dataQuality,
+    analysisMonths: predictionData.overallStats.totalMonths,
+    generatedAt: new Date().toISOString(),
+    ...result
+  });
+});
 
 /**
  * 支出预测处理
@@ -208,8 +226,11 @@ ${JSON.stringify({
 
         return result;
       } catch (parseError) {
-        console.error('AI预测结果解析失败:', parseError);
-  
+        logger.error({
+          error: parseError,
+          module: 'predict-api'
+        }, 'AI预测结果解析失败');
+
         // 记录失败的AI请求
         const responseTime = Date.now() - startTime;
         await aiCacheServiceServer.logAIRequest(
