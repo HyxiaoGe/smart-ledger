@@ -21,12 +21,12 @@
 
 import pino from 'pino';
 
-// 确保 stdout 使用 UTF-8 编码，防止中文字符乱码
-if (process.stdout.setDefaultEncoding) {
+// 确保 stdout 使用 UTF-8 编码，防止中文字符乱码（仅服务端环境）
+if (typeof process !== 'undefined' && process.stdout?.setDefaultEncoding) {
   process.stdout.setDefaultEncoding('utf8');
 }
 
-const isDev = process.env.NODE_ENV === 'development';
+const isDev = process.env?.NODE_ENV === 'development';
 
 /**
  * 主日志实例
