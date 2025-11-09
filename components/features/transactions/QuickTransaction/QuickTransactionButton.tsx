@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Zap, Plus, TrendingUp } from 'lucide-react';
+import { Zap, TrendingUp } from 'lucide-react';
 
 interface QuickTransactionButtonProps {
   onSuccess?: () => void;

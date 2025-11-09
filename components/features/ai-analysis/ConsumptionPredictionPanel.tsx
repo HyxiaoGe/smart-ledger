@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, TrendingDown, BarChart, ChevronDown, RefreshCw, Target } from 'lucide-react';
+import { TrendingUp, BarChart, ChevronDown, RefreshCw, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/clients/supabase/client';
 import { useDataSync } from '@/lib/core/dataSync';
