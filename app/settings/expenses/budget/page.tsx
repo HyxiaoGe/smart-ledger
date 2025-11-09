@@ -35,6 +35,8 @@ import {
   Trash2,
   DollarSign,
   Calendar,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 
 export default function BudgetPage() {
@@ -50,6 +52,7 @@ export default function BudgetPage() {
   const [toastMessage, setToastMessage] = useState('');
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [predictions, setPredictions] = useState<Map<string, BudgetPrediction>>(new Map());
+  const [isSuggestionsExpanded, setIsSuggestionsExpanded] = useState(true);
 
   useEffect(() => {
     fetchData();
@@ -343,16 +346,24 @@ export default function BudgetPage() {
         {/* 智能预算建议 */}
         {suggestions.length > 0 && (
           <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950 dark:to-blue-950 mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-purple-900 dark:text-purple-100">
-                <span>💡</span>
-                <span>智能预算建议</span>
-                <span className="text-xs font-normal text-purple-600 dark:text-purple-300">
-                  基于历史消费数据分析
-                </span>
-              </CardTitle>
+            <CardHeader className="cursor-pointer" onClick={() => setIsSuggestionsExpanded(!isSuggestionsExpanded)}>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-purple-900 dark:text-purple-100">
+                  <span>💡</span>
+                  <span>智能预算建议</span>
+                  <span className="text-xs font-normal text-purple-600 dark:text-purple-300">
+                    基于历史消费数据分析 ({suggestions.length} 个建议)
+                  </span>
+                </CardTitle>
+                {isSuggestionsExpanded ? (
+                  <ChevronUp className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                ) : (
+                  <ChevronDown className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                )}
+              </div>
             </CardHeader>
-            <CardContent className="space-y-3">
+            {isSuggestionsExpanded && (
+              <CardContent className="space-y-3">
               {suggestions.map((suggestion) => {
                 const category = categories.find(c => c.key === suggestion.categoryKey);
                 if (!category) return null;
@@ -399,13 +410,28 @@ export default function BudgetPage() {
                         <span className={`text-xs px-2 py-1 rounded-full ${confidenceColor}`}>
                           可信度: {confidenceLabel}
                         </span>
-                        <Button
-                          size="sm"
-                          onClick={() => handleApplySuggestion(suggestion.categoryKey, suggestion.suggestedAmount)}
-                          className="bg-purple-600 hover:bg-purple-700 text-white"
-                        >
-                          {budgetStatuses.find(b => b.category_key === suggestion.categoryKey) ? '重新应用' : '应用'}
-                        </Button>
+                        {(() => {
+                          const existingBudget = budgetStatuses.find(b => b.category_key === suggestion.categoryKey);
+                          const isApplied = existingBudget && Math.abs(existingBudget.budget_amount - suggestion.suggestedAmount) < 0.01;
+
+                          return isApplied ? (
+                            <Button
+                              size="sm"
+                              disabled
+                              className="bg-gray-400 cursor-not-allowed text-white"
+                            >
+                              已应用
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              onClick={() => handleApplySuggestion(suggestion.categoryKey, suggestion.suggestedAmount)}
+                              className="bg-purple-600 hover:bg-purple-700 text-white"
+                            >
+                              应用
+                            </Button>
+                          );
+                        })()}
                       </div>
                     </div>
                     <div className="text-sm text-gray-700 dark:text-gray-300 mb-2">
@@ -428,32 +454,23 @@ export default function BudgetPage() {
                   </div>
                 );
               })}
-            </CardContent>
+              </CardContent>
+            )}
           </Card>
         )}
 
         {/* 分类预算列表 */}
         <Card className="border-0 shadow-lg bg-white dark:bg-gray-800">
           <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-750 dark:from-gray-800 dark:to-gray-750 border-b dark:border-gray-700 dark:border-gray-700">
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-3 text-gray-900 dark:text-gray-100">
-                <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                  <PiggyBank className="h-5 w-5 text-blue-600" />
-                </div>
-                <span>分类预算</span>
-                <span className="text-sm text-gray-500 font-normal">
-                  ({budgetStatuses.filter(b => b.category_key).length} 个类别)
-                </span>
-              </CardTitle>
-              <Button
-                size="sm"
-                onClick={() => openSetBudgetDialog(null)}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                添加预算
-              </Button>
-            </div>
+            <CardTitle className="flex items-center gap-3 text-gray-900 dark:text-gray-100">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                <PiggyBank className="h-5 w-5 text-blue-600" />
+              </div>
+              <span>分类预算</span>
+              <span className="text-sm text-gray-500 font-normal">
+                ({budgetStatuses.filter(b => b.category_key).length} 个类别)
+              </span>
+            </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             {budgetStatuses.filter(b => b.category_key).length === 0 ? (

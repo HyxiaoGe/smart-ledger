@@ -10,6 +10,7 @@ import { generateTimeContext, categorizeAmount, generateConsumptionScenario } fr
 import { getPatternBasedSuggestions, matchConsumptionPattern } from '@/lib/services/smartPatterns';
 import { z } from 'zod';
 import { validateRequest, commonSchemas } from '@/lib/utils/validation';
+import { withErrorHandler } from '@/lib/utils/apiErrorHandler';
 
 export const runtime = 'nodejs';
 
@@ -27,55 +28,47 @@ const smartSuggestionsSchema = z.object({
  * 智能备注提示 API
  * 支持多种提示策略：频率、上下文、模式、相似性
  */
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
+export const POST = withErrorHandler(async (req: NextRequest) => {
+  const body = await req.json();
 
-    // 验证输入
-    const validation = validateRequest(smartSuggestionsSchema, body);
-    if (!validation.success) {
-      return validation.response;
-    }
-
-    const {
-      category,
-      amount,
-      currency,
-      time_context,
-      partial_input,
-      limit
-    } = validation.data;
-
-    // 生成当前时间上下文
-    const currentTimeContext = time_context || generateTimeContext().label;
-
-    // 获取智能提示
-    const suggestions = await generateSmartSuggestions({
-      category,
-      amount,
-      currency,
-      time_context: currentTimeContext,
-      partial_input,
-      limit
-    });
-
-    // 获取传统备注作为后备
-    const fallbackNotes = await getFallbackNotes(partial_input, limit);
-
-    const response: SmartSuggestionResponse = {
-      suggestions,
-      fallback_notes: fallbackNotes
-    };
-
-    return Response.json(response);
-  } catch (err: any) {
-    console.error('智能提示生成失败:', err);
-    return new Response(
-      JSON.stringify({ error: err.message || '智能提示生成失败' }),
-      { status: 500 }
-    );
+  // 验证输入
+  const validation = validateRequest(smartSuggestionsSchema, body);
+  if (!validation.success) {
+    return validation.response;
   }
-}
+
+  const {
+    category,
+    amount,
+    currency,
+    time_context,
+    partial_input,
+    limit
+  } = validation.data;
+
+  // 生成当前时间上下文
+  const currentTimeContext = time_context || generateTimeContext().label;
+
+  // 获取智能提示
+  const suggestions = await generateSmartSuggestions({
+    category,
+    amount,
+    currency,
+    time_context: currentTimeContext,
+    partial_input,
+    limit
+  });
+
+  // 获取传统备注作为后备
+  const fallbackNotes = await getFallbackNotes(partial_input, limit);
+
+  const response: SmartSuggestionResponse = {
+    suggestions,
+    fallback_notes: fallbackNotes
+  };
+
+  return Response.json(response);
+});
 
 /**
  * 生成智能提示
