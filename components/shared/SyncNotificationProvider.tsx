@@ -77,7 +77,7 @@ export function SyncNotificationProvider() {
   const { notifications, removeNotification } = useSyncNotifications();
 
   return (
-    <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
+    <div className="fixed top-20 right-4 z-[9999] flex flex-col gap-2 pointer-events-none">
       <AnimatePresence mode="popLayout">
         {notifications.map((notification) => (
           <div key={notification.id} className="pointer-events-auto">
