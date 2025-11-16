@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { TransactionGroupedList } from '@/components/features/transactions/TransactionList/GroupedList';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp, List } from 'lucide-react';
-import { dataSync } from '@/lib/core/dataSync';
+import { enhancedDataSync } from '@/lib/core/EnhancedDataSync';
 
 interface Transaction {
   id: string;
@@ -41,9 +41,9 @@ export function CollapsibleTransactionList({
       router.refresh();
     };
 
-    const offAdded = dataSync.onEvent('transaction_added', handleTransactionChange);
-    const offUpdated = dataSync.onEvent('transaction_updated', handleTransactionChange);
-    const offDeleted = dataSync.onEvent('transaction_deleted', handleTransactionChange);
+    const offAdded = enhancedDataSync.onEvent('transaction_added', handleTransactionChange);
+    const offUpdated = enhancedDataSync.onEvent('transaction_updated', handleTransactionChange);
+    const offDeleted = enhancedDataSync.onEvent('transaction_deleted', handleTransactionChange);
 
     return () => {
       offAdded();

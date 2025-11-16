@@ -12,7 +12,7 @@ import { formatCurrency } from '@/lib/utils/format';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2, Store, ChevronDown, ChevronUp } from 'lucide-react';
 import { MerchantInput, SubcategorySelect } from '@/components/features/input/MerchantInput';
-import { dataSync } from '@/lib/core/dataSync';
+import { enhancedDataSync } from '@/lib/core/EnhancedDataSync';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { formatDateToLocal } from '@/lib/utils/date';
 import { getPaymentMethodsWithStats, type PaymentMethod } from '@/lib/services/paymentMethodService';
@@ -118,7 +118,7 @@ export function TransactionGroupedList({
       verifyUpdate().then((verifiedData) => {
         if (verifiedData) {
           // 只有验证成功后才触发同步事件
-          dataSync.notifyTransactionUpdated(verifiedData, true);
+          enhancedDataSync.notifyTransactionUpdated(verifiedData, true);
         }
       });
     }
@@ -189,7 +189,7 @@ export function TransactionGroupedList({
       verifyDelete().then((result) => {
         if (result.deleted) {
           // 只有验证成功后才触发同步事件
-          dataSync.notifyTransactionDeleted(result.transaction, true);
+          enhancedDataSync.notifyTransactionDeleted(result.transaction, true);
 
           // 清除缓存以确保实时更新
           void fetch('/api/revalidate', {
