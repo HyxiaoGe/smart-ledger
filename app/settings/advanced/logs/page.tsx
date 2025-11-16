@@ -191,6 +191,11 @@ export default function LogsPage() {
     });
   };
 
+  // 首次加载时显示骨架屏
+  if (loading && !stats) {
+    return <PageSkeleton stats={4} listItems={0} />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
