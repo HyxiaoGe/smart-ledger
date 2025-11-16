@@ -107,7 +107,17 @@ export class EnhancedDataSyncManager {
 
     try {
       const parsed = JSON.parse(event.newValue) as SyncEvent;
+
+      // 通知本地监听器
       this.notify(parsed);
+
+      // 显示用户通知（这是其他标签页的操作）
+      const operationId = parsed.operationId || 'remote-sync';
+      syncStateManager.syncSuccess(
+        operationId,
+        '数据已同步', // 简短的消息
+        true // 显示通知
+      );
     } catch (error) {
       // 记录错误但不影响其他操作
       console.error('[DataSync] Failed to parse storage event:', error);
