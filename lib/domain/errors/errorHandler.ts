@@ -22,8 +22,37 @@ export function generateTraceId(): string {
  * 将 Zod 错误转换为 ValidationError
  */
 export function zodErrorToValidationError(error: ZodError, traceId?: string): ValidationError {
-  const details: ErrorDetails[] = error.errors.map((err: any) => ({
-    field: err.path.join('.'),
+  let errors = error.errors;
+
+  // 如果 errors 不存在，尝试从 message 中解析
+  if (!errors || !Array.isArray(errors)) {
+    try {
+      // 尝试解析 error.message（可能是序列化的 JSON 数组）
+      const parsed = JSON.parse(error.message);
+      if (Array.isArray(parsed)) {
+        errors = parsed;
+      }
+    } catch {
+      // 解析失败，使用原始 message
+      return new ValidationError(
+        '请求数据验证失败',
+        [{ field: 'unknown', message: error.message || '未知验证错误' }],
+        { traceId }
+      );
+    }
+  }
+
+  // 再次检查 errors 是否有效
+  if (!errors || !Array.isArray(errors)) {
+    return new ValidationError(
+      '请求数据验证失败',
+      [{ field: 'unknown', message: error.message || '未知验证错误' }],
+      { traceId }
+    );
+  }
+
+  const details: ErrorDetails[] = errors.map((err: any) => ({
+    field: err.path?.join('.') || 'unknown',
     message: err.message,
     value: err.code === 'invalid_type' ? undefined : err,
   }));
