@@ -95,8 +95,87 @@ class AIFeedbackService {
    * @deprecated 功能已移除，模板管理已集成到统一服务
    */
   getTemplate(templateId: string): FeedbackTemplate | undefined {
-    console.warn('getTemplate() 已废弃');
-    return undefined;
+    // 提供默认模板以保持向后兼容
+    const defaultTemplates: Record<string, FeedbackTemplate> = {
+      'spending_prediction_rating': {
+        id: 'spending_prediction_rating',
+        name: '支出预测评分',
+        description: '对AI支出预测结果的准确性进行评分',
+        featureType: 'spending_prediction',
+        feedbackType: 'rating',
+        config: {
+          title: '预测结果准确吗？',
+          description: '您的反馈将帮助我们改进预测算法',
+          questions: [
+            {
+              id: 'accuracy',
+              type: 'rating',
+              label: '预测准确性',
+              required: true,
+              min: 1,
+              max: 5
+            }
+          ],
+          required: true
+        },
+        display: {
+          position: 'modal',
+          autoShow: true,
+          persistent: false
+        }
+      },
+      'smart_analysis_thumbs': {
+        id: 'smart_analysis_thumbs',
+        name: '智能分析快速反馈',
+        description: '对AI智能分析的快速反馈',
+        featureType: 'smart_analysis',
+        feedbackType: 'thumbs_up_down',
+        config: {
+          title: 'AI分析有用吗？',
+          questions: [
+            {
+              id: 'helpful',
+              type: 'thumbs',
+              label: 'AI分析是否对您有帮助？',
+              required: true
+            }
+          ],
+          required: false
+        },
+        display: {
+          position: 'toast',
+          autoShow: true,
+          persistent: false
+        }
+      }
+    };
+
+    return defaultTemplates[templateId] || {
+      id: templateId,
+      name: '反馈',
+      description: '提供您的反馈',
+      featureType: 'other',
+      feedbackType: 'rating',
+      config: {
+        title: '您的反馈',
+        questions: [
+          {
+            id: 'rating',
+            type: 'rating',
+            label: '评分',
+            required: true,
+            min: 1,
+            max: 5
+          }
+        ],
+        required: true
+      },
+      display: {
+        position: 'modal',
+        autoShow: false,
+        persistent: false
+      }
+    };
   }
 
   /**
@@ -104,8 +183,13 @@ class AIFeedbackService {
    * @deprecated 功能已移除，模板管理已集成到统一服务
    */
   getTemplatesByFeature(featureType: AIFeatureType): FeedbackTemplate[] {
-    console.warn('getTemplatesByFeature() 已废弃');
-    return [];
+    // 返回默认模板列表以保持向后兼容
+    const allTemplates = [
+      this.getTemplate('spending_prediction_rating'),
+      this.getTemplate('smart_analysis_thumbs')
+    ].filter((t): t is FeedbackTemplate => t !== undefined);
+
+    return allTemplates.filter(t => t.featureType === featureType);
   }
 
   /**
