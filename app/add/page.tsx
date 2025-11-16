@@ -18,6 +18,7 @@ import { ProgressToast } from '@/components/shared/ProgressToast';
 import type { TransactionPrediction, QuickTransactionSuggestion } from '@/lib/services/aiPrediction';
 import { formatDateToLocal } from '@/lib/utils/date';
 import { getPaymentMethodsWithStats, type PaymentMethod } from '@/lib/services/paymentMethodService';
+import { logger } from '@/lib/services/logging';
 
 export default function AddPage() {
   const type: TransactionType = 'expense'; // 固定为支出类型
@@ -94,6 +95,21 @@ export default function AddPage() {
 
       // 处理错误
       if (upsertError) throw upsertError;
+
+      // ✅ 记录用户操作日志（异步，不阻塞响应）
+      void logger.logUserAction({
+        action: 'transaction_created',
+        metadata: {
+          transaction_id: transactionId,
+          category: formData.category,
+          amount: formData.amt,
+          currency: formData.currency,
+          payment_method: formData.paymentMethod,
+          merchant: formData.merchant,
+          subcategory: formData.subcategory,
+          note: formData.note ? formData.note.substring(0, 50) : undefined, // 只记录前50字符
+        },
+      });
 
       // 显示Toast成功提示（带进度条），包含日期信息
       const formattedDate = formData.date.toLocaleDateString('zh-CN', {
