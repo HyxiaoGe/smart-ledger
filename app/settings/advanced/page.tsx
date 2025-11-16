@@ -36,7 +36,7 @@ export default function AdvancedSettingsPage() {
       title: '系统日志',
       description: '查看和分析系统运行日志、API 请求、用户操作、错误记录等',
       icon: FileText,
-      href: '/admin/logs' as const,
+      href: '/settings/advanced/logs' as const,
       status: 'available',
       badge: 'NEW',
       badgeColor: 'blue'
