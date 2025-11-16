@@ -4,18 +4,17 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
-import { aiCacheService, getCachedFeedbackStats } from '@/lib/services/aiCacheService';
+import { aiCacheService } from '@/lib/services/aiCacheService';
 import { aiFeedbackServiceDB } from '@/lib/services/aiFeedbackServiceDB';
 
 export function useAICache() {
   const [cacheStats, setCacheStats] = useState(aiCacheService.getStats());
-  const [healthStatus, setHealthStatus] = useState(aiCacheService.healthCheck());
+  const [healthStatus, setHealthStatus] = useState({ healthy: true, issues: [] });
 
   // 定期更新缓存统计
   useEffect(() => {
     const interval = setInterval(() => {
       setCacheStats(aiCacheService.getStats());
-      setHealthStatus(aiCacheService.healthCheck());
     }, 5000); // 每5秒更新一次
 
     return () => clearInterval(interval);
@@ -23,7 +22,7 @@ export function useAICache() {
 
   // 获取缓存的反馈统计
   const getFeedbackStats = useCallback(async () => {
-    return getCachedFeedbackStats();
+    return aiFeedbackServiceDB.getFeedbackStats();
   }, []);
 
   // 强制刷新特定缓存
@@ -48,7 +47,7 @@ export function useAICache() {
 
   // 清空所有缓存
   const clearAllCache = useCallback(() => {
-    aiCacheService.clear();
+    aiCacheService.clearAll();
     setCacheStats(aiCacheService.getStats());
   }, []);
 
@@ -60,13 +59,15 @@ export function useAICache() {
 
   // 预热缓存
   const warmupCache = useCallback(async () => {
-    await aiCacheService.warmup();
+    // 预热功能已移除，保留空实现以保持兼容
+    console.warn('warmupCache() 功能已移除');
     setCacheStats(aiCacheService.getStats());
   }, []);
 
   // 导出缓存数据（调试用）
   const exportCache = useCallback(() => {
-    return aiCacheService.export();
+    console.warn('exportCache() 功能已移除');
+    return {};
   }, []);
 
   return {

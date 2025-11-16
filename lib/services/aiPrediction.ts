@@ -1,3 +1,19 @@
+/**
+ * AI 预测服务 - 自动分类和金额预测
+ *
+ * @deprecated 此服务将在后续版本中重构，建议关注以下改进：
+ * - 应迁移到统一的 Repository 层 (ITransactionRepository)
+ * - 应使用统一缓存系统 (@/lib/infrastructure/cache)
+ * - 应与 TransactionAnalyticsService 集成
+ * - 内部缓存实现应替换为 CacheDecorator
+ *
+ * 当前版本保持功能完整性，暂不修改核心逻辑。
+ * 未来优化方向：
+ * 1. 数据访问层使用 Repository 抽象
+ * 2. 缓存管理使用统一 ICache 接口
+ * 3. 与分析服务解耦，提供独立的预测能力
+ */
+
 // AI预测服务 - 自动分类和金额预测
 import { supabase } from '@/lib/clients/supabase/client';
 import { generateTimeContext } from '@/lib/domain/noteContext';
@@ -40,6 +56,9 @@ export interface QuickTransactionSuggestion {
  */
 export class AIPredictionService {
   private static instance: AIPredictionService;
+  /**
+   * @deprecated 应使用统一缓存系统 (@/lib/infrastructure/cache) 替代内部缓存实现
+   */
   private cache = new Map<string, { data: any; timestamp: number }>();
   private readonly CACHE_TTL = 5 * 60 * 1000; // 5分钟缓存
 
