@@ -1,51 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { recurringExpenseService } from '@/lib/services/recurringExpenses';
+import { withErrorHandler } from '@/lib/domain/errors/errorHandler';
+import { logger } from '@/lib/services/logging';
 
-export async function GET(
+export const GET = withErrorHandler(async (
   request: NextRequest,
   { params }: { params: { id: string } }
-) {
-  try {
-    const expense = await recurringExpenseService.getRecurringExpenseById(params.id);
-    return NextResponse.json(expense);
-  } catch (error) {
-    console.error('获取固定支出详情失败:', error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : '获取固定支出详情失败' },
-      { status: 500 }
-    );
-  }
-}
+) => {
+  const expense = await recurringExpenseService.getRecurringExpenseById(params.id);
+  return NextResponse.json(expense);
+});
 
-export async function PUT(
+export const PUT = withErrorHandler(async (
   request: NextRequest,
   { params }: { params: { id: string } }
-) {
-  try {
-    const body = await request.json();
-    const expense = await recurringExpenseService.updateRecurringExpense(params.id, body);
-    return NextResponse.json(expense);
-  } catch (error) {
-    console.error('更新固定支出失败:', error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : '更新固定支出失败' },
-      { status: 500 }
-    );
-  }
-}
+) => {
+  const body = await request.json();
+  const expense = await recurringExpenseService.updateRecurringExpense(params.id, body);
 
-export async function DELETE(
+  // ✅ 记录用户操作日志（异步，不阻塞响应）
+  void logger.logUserAction({
+    action: 'recurring_expense_updated',
+    metadata: {
+      expense_id: params.id,
+      updated_fields: Object.keys(body),
+    },
+  });
+
+  return NextResponse.json(expense);
+});
+
+export const DELETE = withErrorHandler(async (
   request: NextRequest,
   { params }: { params: { id: string } }
-) {
-  try {
-    await recurringExpenseService.deleteRecurringExpense(params.id);
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('删除固定支出失败:', error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : '删除固定支出失败' },
-      { status: 500 }
-    );
-  }
-}
+) => {
+  await recurringExpenseService.deleteRecurringExpense(params.id);
+
+  // ✅ 记录用户操作日志（异步，不阻塞响应）
+  void logger.logUserAction({
+    action: 'recurring_expense_deleted',
+    metadata: {
+      expense_id: params.id,
+    },
+  });
+
+  return NextResponse.json({ success: true });
+});

@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { supabase } from '@/lib/clients/supabase/client';
+import { logger } from '@/lib/services/logging';
 
 export const runtime = 'nodejs';
 
@@ -65,6 +66,16 @@ export async function POST(req: NextRequest) {
         void processLearningData(completeData);
       }
 
+      // ✅ 记录用户操作日志（异步，不阻塞响应）
+      void logger.logUserAction({
+        action: 'ai_learning_data_submitted',
+        metadata: {
+          batch_mode: true,
+          count: learning_data.length,
+          session_id,
+        },
+      });
+
       return Response.json({ success: true, processed: learning_data.length });
     } else {
       // 单条数据处理（向后兼容）
@@ -79,6 +90,17 @@ export async function POST(req: NextRequest) {
 
       await storeLearningData(data);
       void processLearningData(data);
+
+      // ✅ 记录用户操作日志（异步，不阻塞响应）
+      void logger.logUserAction({
+        action: 'ai_learning_data_submitted',
+        metadata: {
+          batch_mode: false,
+          event_type: data.event_type,
+          learning_outcome: data.learning_outcome,
+          session_id: data.session_id,
+        },
+      });
 
       return Response.json({ success: true });
     }

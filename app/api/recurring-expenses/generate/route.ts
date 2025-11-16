@@ -1,21 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { recurringExpenseService } from '@/lib/services/recurringExpenses';
+import { withErrorHandler } from '@/lib/domain/errors/errorHandler';
+import { logger } from '@/lib/services/logging';
 
-export async function POST(request: NextRequest) {
-  try {
-    const result = await recurringExpenseService.generatePendingExpenses();
+export const POST = withErrorHandler(async (request: NextRequest) => {
+  const result = await recurringExpenseService.generatePendingExpenses();
 
-    return NextResponse.json({
-      success: result.errors.length === 0,
-      generated: result.generated,
-      errors: result.errors,
-      message: `成功生成 ${result.generated} 笔固定支出记录${result.errors.length > 0 ? `，${result.errors.length} 个错误` : ''}`
-    });
-  } catch (error) {
-    console.error('生成固定支出失败:', error);
-    return NextResponse.json(
-      { error: '生成固定支出失败' },
-      { status: 500 }
-    );
-  }
-}
+  // ✅ 记录用户操作日志（异步，不阻塞响应）
+  void logger.logUserAction({
+    action: 'recurring_expenses_generated',
+    metadata: {
+      generated_count: result.generated,
+      error_count: result.errors.length,
+      has_errors: result.errors.length > 0,
+    },
+  });
+
+  return NextResponse.json({
+    success: result.errors.length === 0,
+    generated: result.generated,
+    errors: result.errors,
+    message: `成功生成 ${result.generated} 笔固定支出记录${result.errors.length > 0 ? `，${result.errors.length} 个错误` : ''}`
+  });
+});
