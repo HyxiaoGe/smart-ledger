@@ -217,7 +217,7 @@ export default function LogsPage() {
         </div>
 
       {/* 统计卡片 */}
-      {loading && !stats ? (
+      {!stats ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {Array.from({ length: 4 }).map((_, i) => (
             <Card key={i}>
@@ -231,7 +231,7 @@ export default function LogsPage() {
             </Card>
           ))}
         </div>
-      ) : stats ? (
+      ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <Card>
             <CardHeader className="pb-3">
@@ -281,7 +281,7 @@ export default function LogsPage() {
             </CardContent>
           </Card>
         </div>
-      ) : null}
+      )}
 
       {/* 过滤器 */}
       <Card>
