@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { chat } from '@/lib/clients/ai/client';
 import { z } from 'zod';
 import { validateRequest, commonSchemas } from '@/lib/utils/validation';
-import { withErrorHandler } from '@/lib/utils/apiErrorHandler';
+import { withErrorHandler } from '@/lib/domain/errors/errorHandler';
 
 export const runtime = 'nodejs';
 

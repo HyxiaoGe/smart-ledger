@@ -4,7 +4,8 @@ import { revalidateTag, revalidatePath } from 'next/cache';
 import { formatDateToLocal } from '@/lib/utils/date';
 import { z } from 'zod';
 import { validateRequest, commonSchemas } from '@/lib/utils/validation';
-import { withErrorHandler } from '@/lib/utils/apiErrorHandler';
+import { withErrorHandler } from '@/lib/domain/errors/errorHandler';
+import { DatabaseError } from '@/lib/domain/errors/AppError';
 
 export const runtime = 'nodejs';
 
@@ -52,7 +53,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
   // 处理错误
   if (upsertError) {
-    throw upsertError;
+    throw new DatabaseError('创建交易失败', undefined, { originalError: upsertError.message });
   }
 
   // 获取创建/更新后的记录
@@ -63,7 +64,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
     .maybeSingle();
 
   if (fetchError) {
-    throw fetchError;
+    throw new DatabaseError('获取交易记录失败', undefined, { originalError: fetchError.message });
   }
 
   // 刷新缓存 - 确保页面显示最新数据

@@ -10,7 +10,7 @@ import { generateTimeContext, categorizeAmount, generateConsumptionScenario } fr
 import { getPatternBasedSuggestions, matchConsumptionPattern } from '@/lib/services/smartPatterns';
 import { z } from 'zod';
 import { validateRequest, commonSchemas } from '@/lib/utils/validation';
-import { withErrorHandler } from '@/lib/utils/apiErrorHandler';
+import { withErrorHandler } from '@/lib/domain/errors/errorHandler';
 
 export const runtime = 'nodejs';
 
