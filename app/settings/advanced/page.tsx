@@ -17,7 +17,7 @@ export default function AdvancedSettingsPage() {
       title: '定时任务管理',
       description: '查看和管理系统自动化任务、执行历史、手动触发任务',
       icon: Clock,
-      href: '/settings/advanced/cron',
+      href: '/settings/advanced/cron' as const,
       status: 'available',
       badge: '核心功能',
       badgeColor: 'purple'
@@ -26,7 +26,7 @@ export default function AdvancedSettingsPage() {
       title: '函数管理',
       description: '了解系统所有业务功能，查看每个函数的作用和使用场景',
       icon: Database,
-      href: '/settings/advanced/functions',
+      href: '/settings/advanced/functions' as const,
       status: 'available',
       badge: 'NEW',
       badgeColor: 'green'
@@ -35,7 +35,7 @@ export default function AdvancedSettingsPage() {
       title: '系统维护',
       description: '数据库清理、缓存管理、日志查看等系统维护功能',
       icon: Server,
-      href: '/settings/advanced/maintenance',
+      href: '/settings/advanced/maintenance' as const,
       status: 'coming-soon',
       badge: '即将推出',
       badgeColor: 'gray'
@@ -44,12 +44,12 @@ export default function AdvancedSettingsPage() {
       title: 'AI 高级设置',
       description: '自定义 AI 模型参数、提示词优化、分析策略调整',
       icon: Sparkles,
-      href: '/settings/advanced/ai',
+      href: '/settings/advanced/ai' as const,
       status: 'coming-soon',
       badge: '即将推出',
       badgeColor: 'gray'
     }
-  ];
+  ] as const;
 
 
   return (

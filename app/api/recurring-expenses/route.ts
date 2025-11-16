@@ -3,6 +3,7 @@ import { recurringExpenseService } from '@/lib/services/recurringExpenses';
 import { z } from 'zod';
 import { validateRequest, commonSchemas } from '@/lib/utils/validation';
 import { withErrorHandler } from '@/lib/domain/errors/errorHandler';
+import { logger } from '@/lib/services/logging';
 
 // POST 验证 schema
 const createRecurringExpenseSchema = z.object({
@@ -35,5 +36,19 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   }
 
   const expense = await recurringExpenseService.createRecurringExpense(validation.data);
+
+  // ✅ 记录用户操作日志（异步，不阻塞响应）
+  void logger.logUserAction({
+    action: 'recurring_expense_created',
+    metadata: {
+      expense_id: expense.id,
+      name: validation.data.name,
+      amount: validation.data.amount,
+      category: validation.data.category,
+      frequency: validation.data.frequency,
+      currency: validation.data.currency,
+    },
+  });
+
   return NextResponse.json(expense, { status: 201 });
 });
