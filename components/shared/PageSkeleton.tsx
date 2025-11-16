@@ -43,7 +43,12 @@ export function PageSkeleton({
 
         {/* 统计卡片骨架 */}
         {stats > 0 && (
-          <div className={`grid ${stats === 1 ? 'grid-cols-1' : stats === 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-3'} gap-6 mb-8`}>
+          <div className={`grid ${
+            stats === 1 ? 'grid-cols-1' :
+            stats === 2 ? 'grid-cols-1 md:grid-cols-2' :
+            stats === 3 ? 'grid-cols-1 md:grid-cols-3' :
+            'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
+          } gap-4 mb-8`}>
             {Array.from({ length: stats }).map((_, i) => (
               <Card key={i} className="border-0 shadow-md">
                 <CardContent className="pt-6">

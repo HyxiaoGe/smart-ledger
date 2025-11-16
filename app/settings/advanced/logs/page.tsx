@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PageSkeleton } from '@/components/shared/PageSkeleton';
 import {
   AlertCircle,
   Info,
@@ -62,7 +63,7 @@ export default function LogsPage() {
   // 状态管理
   const [logs, setLogs] = useState<LogRecord[]>([]);
   const [stats, setStats] = useState<LogStats | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // 分页状态
@@ -189,6 +190,11 @@ export default function LogsPage() {
       second: '2-digit',
     });
   };
+
+  // 首次加载时显示骨架屏
+  if (loading && !stats) {
+    return <PageSkeleton stats={4} listItems={0} />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
