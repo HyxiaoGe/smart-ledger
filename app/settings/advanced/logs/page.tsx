@@ -191,11 +191,6 @@ export default function LogsPage() {
     });
   };
 
-  // 首次加载时显示骨架屏
-  if (loading && !stats) {
-    return <PageSkeleton stats={4} listItems={0} />;
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -222,8 +217,22 @@ export default function LogsPage() {
         </div>
 
       {/* 统计卡片 */}
-      {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {loading && !stats ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="pb-3">
+                <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-2" />
+                <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              </CardHeader>
+              <CardContent>
+                <div className="h-3 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : stats ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <Card>
             <CardHeader className="pb-3">
               <CardDescription>总日志数</CardDescription>
@@ -272,7 +281,7 @@ export default function LogsPage() {
             </CardContent>
           </Card>
         </div>
-      )}
+      ) : null}
 
       {/* 过滤器 */}
       <Card>
