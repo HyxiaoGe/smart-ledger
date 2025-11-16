@@ -4,9 +4,9 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Transaction, TransactionType } from '@/types/transaction';
+import type { Transaction, TransactionType } from '@/types/domain/transaction';
+import type { ITransactionRepository } from '@/lib/domain/repositories/ITransactionRepository';
 import type {
-  ITransactionRepository,
   TransactionQueryFilter,
   TransactionSortOptions,
   PaginationOptions,
@@ -14,8 +14,8 @@ import type {
   CreateTransactionDTO,
   UpdateTransactionDTO,
   TransactionStats,
-  CategoryStats
-} from '@/lib/domain/repositories/ITransactionRepository';
+  CategoryStats,
+} from '@/types/dto/transaction.dto';
 
 /**
  * Supabase 交易仓储实现

@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import type { CommonNote } from '@/types/transaction';
+import type { CommonNote } from '@/types/domain/transaction';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useCommonNotes } from '@/hooks/useCommonNotes';

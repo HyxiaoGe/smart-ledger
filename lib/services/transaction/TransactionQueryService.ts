@@ -4,7 +4,7 @@
  */
 
 import type { ITransactionRepository } from '@/lib/domain/repositories/ITransactionRepository';
-import type { Transaction, TransactionType } from '@/types/transaction';
+import type { Transaction, TransactionType } from '@/types/domain/transaction';
 import { parseMonthStr, formatMonth, getQuickRange } from '@/lib/utils/date';
 import { CacheDecorator } from '@/lib/infrastructure/cache';
 import type { ICache } from '@/lib/infrastructure/cache';

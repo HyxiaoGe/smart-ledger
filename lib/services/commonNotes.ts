@@ -1,4 +1,5 @@
 import { fetchJson } from '@/lib/utils/http';
+import type { CommonNote } from '@/types/domain/transaction';
 
 type ListParams = {
   limit?: number;
@@ -15,13 +16,6 @@ type UpsertParams = {
   content: string;
   amount?: number;
   signal?: AbortSignal;
-};
-
-export type CommonNote = {
-  id: string;
-  content: string;
-  usage_count: number;
-  last_used: string;
 };
 
 type ListResponse = {

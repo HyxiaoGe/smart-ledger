@@ -5,7 +5,7 @@ import {
   type SmartSuggestionResponse,
   type SmartSuggestion,
   type CommonNote
-} from '@/types/transaction';
+} from '@/types/domain/transaction';
 import { generateTimeContext, categorizeAmount, generateConsumptionScenario } from '@/lib/domain/noteContext';
 import { getPatternBasedSuggestions, matchConsumptionPattern } from '@/lib/services/smartPatterns';
 import { z } from 'zod';
