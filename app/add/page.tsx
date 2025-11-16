@@ -13,7 +13,7 @@ import { DateInput } from '@/components/features/input/DateInput';
 import { SmartNoteInput } from '@/components/features/input/SmartNoteInput';
 import { MerchantInput, SubcategorySelect } from '@/components/features/input/MerchantInput';
 import { AIPredictionPanel } from '@/components/features/ai-analysis/AIPredictionPanel';
-import { dataSync, markTransactionsDirty } from '@/lib/core/dataSync';
+import { enhancedDataSync, markTransactionsDirty } from '@/lib/core/EnhancedDataSync';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import type { TransactionPrediction, QuickTransactionSuggestion } from '@/lib/services/aiPrediction';
 import { formatDateToLocal } from '@/lib/utils/date';
@@ -117,8 +117,8 @@ export default function AddPage() {
 
       setShowToast(true);
 
-      // 触发同步事件
-      dataSync.notifyTransactionAdded({
+      // 触发增强版同步事件（会自动显示 Toast 通知）
+      enhancedDataSync.notifyTransactionAdded({
         type,
         category: formData.category,
         amount: formData.amt,
