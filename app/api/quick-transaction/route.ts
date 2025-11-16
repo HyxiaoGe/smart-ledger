@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/clients/supabase/client';
 import { revalidateTag, revalidatePath } from 'next/cache';
 import { formatDateToLocal } from '@/lib/utils/date';
@@ -85,7 +85,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
   revalidatePath('/');
   revalidatePath('/records');
 
-  return Response.json({
+  return NextResponse.json({
     success: true,
     transaction: result,
     message: '快速记账成功'
