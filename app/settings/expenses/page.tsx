@@ -10,7 +10,8 @@ import {
   PiggyBank,
   CreditCard,
   Tag,
-  ChevronLeft
+  ChevronLeft,
+  BarChart3
 } from 'lucide-react';
 
 export default function ExpensesSettingsPage() {
@@ -50,6 +51,15 @@ export default function ExpensesSettingsPage() {
       status: 'available',
       badge: 'NEW',
       badgeColor: 'green'
+    },
+    {
+      title: '每周消费报告',
+      description: '查看每周自动生成的消费分析报告，洞察消费趋势和习惯',
+      icon: BarChart3,
+      href: '/settings/expenses/weekly-reports',
+      status: 'available',
+      badge: 'NEW',
+      badgeColor: 'purple'
     }
   ];
 
@@ -85,12 +95,16 @@ export default function ExpensesSettingsPage() {
                   <div className="flex items-center gap-3">
                     <div className={`p-3 rounded-lg ${
                       section.status === 'available'
-                        ? 'bg-blue-100 dark:bg-blue-900'
+                        ? section.badgeColor === 'purple'
+                          ? 'bg-purple-100 dark:bg-purple-900'
+                          : 'bg-blue-100 dark:bg-blue-900'
                         : 'bg-gray-100'
                     }`}>
                       <section.icon className={`h-6 w-6 ${
                         section.status === 'available'
-                          ? 'text-blue-600'
+                          ? section.badgeColor === 'purple'
+                            ? 'text-purple-600'
+                            : 'text-blue-600'
                           : 'text-gray-400 dark:text-gray-400'
                       }`} />
                     </div>
@@ -101,6 +115,8 @@ export default function ExpensesSettingsPage() {
                           ? 'bg-green-100 text-green-700'
                           : section.badgeColor === 'blue'
                           ? 'bg-blue-100 text-blue-600'
+                          : section.badgeColor === 'purple'
+                          ? 'bg-purple-100 text-purple-700'
                           : 'bg-gray-100 text-gray-600 dark:text-gray-300'
                       }`}>
                         {section.badge}
