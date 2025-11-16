@@ -56,3 +56,103 @@ export function removeItem(key: string, storage: StorageLike | null = safeStorag
     // ignore
   }
 }
+
+/**
+ * 检查是否有足够的存储空间
+ * 通过尝试写入测试数据来检测 quota
+ */
+export function hasStorageQuota(storage: StorageLike | null = safeStorage): boolean {
+  if (!storage) return false;
+
+  const testKey = '__storage_quota_test__';
+  const testValue = 'x'.repeat(1024); // 1KB test data
+
+  try {
+    storage.setItem(testKey, testValue);
+    storage.removeItem(testKey);
+    return true;
+  } catch (error) {
+    // QuotaExceededError 或其他存储错误
+    return false;
+  }
+}
+
+/**
+ * 获取 localStorage 使用情况（估算）
+ */
+export function getStorageUsage(storage: StorageLike | null = safeStorage): {
+  used: number;
+  available: number;
+  percentage: number;
+} | null {
+  if (!storage || typeof window === 'undefined') return null;
+
+  try {
+    let used = 0;
+    // 估算已使用空间
+    for (let i = 0; i < storage.length; i++) {
+      const key = storage.key(i);
+      if (key) {
+        const value = storage.getItem(key);
+        used += key.length + (value?.length || 0);
+      }
+    }
+
+    // localStorage 通常限制为 5-10MB，这里保守估计 5MB
+    const available = 5 * 1024 * 1024;
+    const percentage = (used / available) * 100;
+
+    return {
+      used,
+      available,
+      percentage: Math.min(percentage, 100),
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 清理过期的数据
+ */
+export function cleanupExpiredData(
+  prefix: string,
+  maxAge: number,
+  storage: StorageLike | null = safeStorage
+): number {
+  if (!storage) return 0;
+
+  let cleaned = 0;
+  const now = Date.now();
+  const keysToRemove: string[] = [];
+
+  try {
+    for (let i = 0; i < storage.length; i++) {
+      const key = storage.key(i);
+      if (!key || !key.startsWith(prefix)) continue;
+
+      try {
+        const value = storage.getItem(key);
+        if (!value) continue;
+
+        const data = JSON.parse(value);
+        if (data.timestamp && now - data.timestamp > maxAge) {
+          keysToRemove.push(key);
+        }
+      } catch {
+        // 如果解析失败，也清理掉
+        keysToRemove.push(key);
+      }
+    }
+
+    // 批量移除
+    keysToRemove.forEach(key => {
+      storage.removeItem(key);
+      cleaned++;
+    });
+
+    return cleaned;
+  } catch {
+    return cleaned;
+  }
+}
