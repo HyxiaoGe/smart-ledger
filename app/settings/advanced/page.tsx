@@ -8,7 +8,8 @@ import {
   ChevronLeft,
   Sparkles,
   Server,
-  Database
+  Database,
+  FileText
 } from 'lucide-react';
 
 export default function AdvancedSettingsPage() {
@@ -32,8 +33,17 @@ export default function AdvancedSettingsPage() {
       badgeColor: 'green'
     },
     {
+      title: '系统日志',
+      description: '查看和分析系统运行日志、API 请求、用户操作、错误记录等',
+      icon: FileText,
+      href: '/admin/logs' as const,
+      status: 'available',
+      badge: 'NEW',
+      badgeColor: 'blue'
+    },
+    {
       title: '系统维护',
-      description: '数据库清理、缓存管理、日志查看等系统维护功能',
+      description: '数据库清理、缓存管理等系统维护功能',
       icon: Server,
       href: '/settings/advanced/maintenance' as const,
       status: 'coming-soon',
@@ -104,6 +114,8 @@ export default function AdvancedSettingsPage() {
                           ? 'bg-purple-100 text-purple-700'
                           : section.badgeColor === 'green'
                           ? 'bg-green-100 text-green-700'
+                          : section.badgeColor === 'blue'
+                          ? 'bg-blue-100 text-blue-700'
                           : 'bg-gray-100 text-gray-600 dark:text-gray-300'
                       }`}>
                         {section.badge}
