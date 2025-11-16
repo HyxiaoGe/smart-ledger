@@ -24,6 +24,27 @@ class AICacheService {
   }
 
   /**
+   * 获取缓存数据
+   * @deprecated 使用 memoryCache.get() 替代
+   */
+  async get<T>(type: string, key: string): Promise<T | null> {
+    const cacheKey = `${type}_${key}`;
+    return memoryCache.get(cacheKey) as T | null;
+  }
+
+  /**
+   * 设置缓存数据
+   * @deprecated 使用 memoryCache.set() 替代
+   */
+  async set<T>(type: string, data: T, key: string, ttl?: number): Promise<void> {
+    const cacheKey = `${type}_${key}`;
+    memoryCache.set(cacheKey, data, {
+      ttl: ttl || 30 * 60 * 1000,
+      tags: ['ai-cache']
+    });
+  }
+
+  /**
    * 智能获取数据
    * @deprecated 使用 memoryCache.get() 或 CacheDecorator.wrap() 替代
    */
