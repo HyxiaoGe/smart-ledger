@@ -7,6 +7,7 @@ import { ErrorBoundary } from '@/components/layout/ErrorBoundary';
 import { NavigationProgress } from '@/components/layout/NavigationProgress';
 import { ThemeProvider } from '@/components/layout/ThemeProvider';
 import { GlobalErrorHandler } from '@/components/layout/GlobalErrorHandler';
+import { SyncNotificationProvider } from '@/components/shared/SyncNotificationProvider';
 
 export const metadata: Metadata = {
   title: 'Smart Ledger',
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <GlobalErrorHandler />
           <NavigationProgress />
+          <SyncNotificationProvider />
           <header className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 shadow-sm transition-colors duration-300">
             <div className="container flex h-16 items-center justify-between">
               <div className="flex items-center gap-4">
