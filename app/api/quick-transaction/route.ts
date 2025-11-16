@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { validateRequest, commonSchemas } from '@/lib/utils/validation';
 import { withErrorHandler } from '@/lib/domain/errors/errorHandler';
 import { DatabaseError } from '@/lib/domain/errors/AppError';
+import { logger } from '@/lib/services/logging';
 
 export const runtime = 'nodejs';
 
@@ -66,6 +67,18 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
   if (fetchError) {
     throw new DatabaseError('获取交易记录失败', undefined, { originalError: fetchError.message });
   }
+
+  // ✅ 记录用户操作日志（异步，不阻塞响应）
+  void logger.logUserAction({
+    action: 'quick_transaction_created',
+    metadata: {
+      transaction_id: transactionId,
+      category,
+      amount,
+      currency,
+      note: note.substring(0, 50), // 只记录前50字符
+    },
+  });
 
   // 刷新缓存 - 确保页面显示最新数据
   revalidateTag('transactions');

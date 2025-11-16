@@ -4,11 +4,12 @@
  * 提供错误处理中间件和响应格式化功能
  */
 
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { ZodError } from 'zod';
 import { AppError, ValidationError, InternalError, isAppError } from './AppError';
 import { ErrorCode } from './ErrorCode';
 import type { ErrorDetails } from './AppError';
+import { logger } from '@/lib/services/logging';
 
 /**
  * 生成唯一的追踪 ID
@@ -126,13 +127,45 @@ export function withErrorHandler<T extends (...args: any[]) => Promise<NextRespo
 ): T {
   return (async (...args: Parameters<T>): Promise<NextResponse> => {
     const traceId = generateTraceId();
+    const startTime = Date.now();
+
+    // 提取请求对象（第一个参数通常是 NextRequest）
+    const req = args[0] as NextRequest | undefined;
+    const method = req?.method || 'UNKNOWN';
+    const path = req ? new URL(req.url).pathname : 'UNKNOWN';
+    const ip_address = req?.headers.get('x-forwarded-for') || req?.headers.get('x-real-ip') || undefined;
+    const user_agent = req?.headers.get('user-agent') || undefined;
 
     try {
-      return await handler(...args);
+      const response = await handler(...args);
+      const durationMs = Date.now() - startTime;
+
+      // ✅ 自动记录成功的 API 请求日志（异步，不阻塞响应）
+      void logger.logApiRequest({
+        trace_id: traceId,
+        method,
+        path,
+        status_code: response.status,
+        duration_ms: durationMs,
+        ip_address,
+        user_agent,
+      });
+
+      return response;
     } catch (error) {
       const appError = normalizeError(error, traceId);
+      const durationMs = Date.now() - startTime;
 
-      // 记录错误日志
+      // ✅ 自动记录错误日志（异步，不阻塞响应）
+      void logger.logError({
+        trace_id: traceId,
+        method,
+        path,
+        error: appError as any,
+        duration_ms: durationMs,
+      });
+
+      // 保留控制台输出（用于本地调试）
       logError(appError);
 
       return errorToResponse(appError, { traceId });
