@@ -12,7 +12,7 @@ import { TopExpenses } from '@/components/TopExpenses';
 import { HomeStats } from '@/components/features/statistics/HomeStats';
 import { HomeQuickTransaction } from '@/components/features/transactions/QuickTransaction/HomeQuickTransaction';
 import type { PageData } from './home-page-data';
-import { dataSync, consumeTransactionsDirty, peekTransactionsDirty } from '@/lib/core/dataSync';
+import { enhancedDataSync, consumeTransactionsDirty, peekTransactionsDirty } from '@/lib/core/EnhancedDataSync';
 import { useRefreshQueue } from '@/hooks/useTransactionsSync';
 import { useAutoGenerateRecurring } from '@/hooks/useAutoGenerateRecurring';
 
@@ -126,9 +126,9 @@ export default function HomePageClient({
       triggerQueue('event');
     };
 
-    const offAdded = dataSync.onEvent('transaction_added', handler);
-    const offUpdated = dataSync.onEvent('transaction_updated', handler);
-    const offDeleted = dataSync.onEvent('transaction_deleted', handler);
+    const offAdded = enhancedDataSync.onEvent('transaction_added', handler);
+    const offUpdated = enhancedDataSync.onEvent('transaction_updated', handler);
+    const offDeleted = enhancedDataSync.onEvent('transaction_deleted', handler);
 
     if (peekTransactionsDirty()) {
       triggerQueue('mount');
