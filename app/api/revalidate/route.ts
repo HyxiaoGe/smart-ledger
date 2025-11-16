@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { revalidateTag, revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { validateRequest } from '@/lib/utils/validation';
-import { withErrorHandler } from '@/lib/utils/apiErrorHandler';
+import { withErrorHandler } from '@/lib/domain/errors/errorHandler';
 
 // 验证 schema
 const revalidateSchema = z.object({

@@ -5,7 +5,8 @@ import { supabaseServerClient } from '@/lib/clients/supabase/server';
 import { unstable_cache, revalidateTag } from 'next/cache';
 import { z } from 'zod';
 import { validateRequest, commonSchemas } from '@/lib/utils/validation';
-import { withErrorHandler } from '@/lib/utils/apiErrorHandler';
+import { withErrorHandler, safeAsync } from '@/lib/domain/errors/errorHandler';
+import { DatabaseError } from '@/lib/domain/errors/AppError';
 
 export const runtime = 'nodejs';
 
@@ -34,7 +35,7 @@ const fetchCommonNotesCached = unstable_cache(
 
     const { data, error } = await query;
     if (error) {
-      throw error;
+      throw new DatabaseError('获取常用备注失败', undefined, { originalError: error.message });
     }
     return data ?? [];
   },
@@ -77,7 +78,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     .maybeSingle();
 
   if (fetchError) {
-    throw fetchError;
+    throw new DatabaseError('查询现有备注失败', undefined, { originalError: fetchError.message });
   }
 
   if (existingNote) {
@@ -116,12 +117,12 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       .single();
 
     if (updateError) {
-      throw updateError;
+      throw new DatabaseError('更新备注失败', undefined, { originalError: updateError.message });
     }
 
     // 异步更新AI分析数据（不阻塞响应）
     if (amount) {
-      void updateAnalytics(existingNote.id, amount);
+      void safeAsync(() => updateAnalytics(existingNote.id, amount), '更新分析数据失败');
     }
 
     revalidateTag('common-notes');
@@ -154,12 +155,12 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       .single();
 
     if (insertError) {
-      throw insertError;
+      throw new DatabaseError('创建备注失败', undefined, { originalError: insertError.message });
     }
 
     // 异步创建AI分析数据（不阻塞响应）
     if (amount) {
-      void createAnalytics(newNote.id, amount);
+      void safeAsync(() => createAnalytics(newNote.id, amount), '创建分析数据失败');
     }
 
     revalidateTag('common-notes');
