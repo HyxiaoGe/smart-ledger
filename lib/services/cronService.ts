@@ -303,6 +303,16 @@ export function getJobDescription(jobName: string): { title: string; description
       description: '每日刷新AI生成的预算建议和消费洞察',
       category: 'ai'
     },
+    'generate-weekly-report': {
+      title: '每周消费报告',
+      description: '基于用户消费记录自动生成每周消费分析报告',
+      category: 'ai'
+    },
+    'cleanup-old-logs': {
+      title: '清理旧日志',
+      description: '清理超过30天的日志记录',
+      category: 'ai'
+    },
   };
 
   return descriptions[jobName] || {
