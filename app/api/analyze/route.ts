@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { chat } from '@/lib/clients/ai/client';
 import { z } from 'zod';
 import { validateRequest, commonSchemas } from '@/lib/utils/validation';
@@ -33,5 +33,5 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
     { role: 'user', content: user }
   ]);
 
-  return Response.json({ summary });
+  return NextResponse.json({ summary });
 });

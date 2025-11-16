@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { revalidateTag, revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { validateRequest } from '@/lib/utils/validation';
@@ -23,8 +23,5 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
   revalidateTag(tag);
   revalidatePath(path);
-  return new Response(JSON.stringify({ revalidated: true, tag, path }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' }
-  });
+  return NextResponse.json({ revalidated: true, tag, path });
 });

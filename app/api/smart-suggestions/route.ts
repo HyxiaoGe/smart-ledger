@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/clients/supabase/client';
 import {
   type SmartSuggestionParams,
@@ -67,7 +67,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
     fallback_notes: fallbackNotes
   };
 
-  return Response.json(response);
+  return NextResponse.json(response);
 });
 
 /**
