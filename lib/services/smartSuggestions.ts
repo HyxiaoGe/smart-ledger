@@ -4,7 +4,7 @@ import type {
   SmartSuggestionResponse,
   SmartSuggestion,
   CommonNote
-} from '@/types/transaction';
+} from '@/types/domain/transaction';
 
 export type { SmartSuggestionParams, SmartSuggestionResponse, SmartSuggestion };
 

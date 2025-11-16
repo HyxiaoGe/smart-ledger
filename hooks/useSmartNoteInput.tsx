@@ -6,7 +6,7 @@ import {
   type SmartSuggestion
 } from '@/lib/services/smartSuggestions';
 import { generateTimeContext } from '@/lib/domain/noteContext';
-import type { CommonNote, SmartSuggestionParams } from '@/types/transaction';
+import type { CommonNote, SmartSuggestionParams } from '@/types/domain/transaction';
 
 interface UseSmartNoteInputOptions {
   category?: string;

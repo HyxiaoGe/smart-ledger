@@ -4,14 +4,14 @@
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { CommonNote } from '@/types/transaction';
+import type { CommonNote } from '@/types/domain/transaction';
+import type { ICommonNoteRepository } from '@/lib/domain/repositories/ICommonNoteRepository';
 import type {
-  ICommonNoteRepository,
   CreateCommonNoteDTO,
   UpdateCommonNoteDTO,
   CommonNoteQueryFilter,
-  CommonNoteSortOptions
-} from '@/lib/domain/repositories/ICommonNoteRepository';
+  CommonNoteSortOptions,
+} from '@/types/dto/common-note.dto';
 
 /**
  * Supabase 常用备注仓储实现

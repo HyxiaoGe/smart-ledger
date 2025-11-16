@@ -14,7 +14,7 @@ import {
 } from '@/lib/services/smartSuggestions';
 import { recordSuggestionLearning } from '@/lib/services/suggestionLearning';
 import { generateTimeContext } from '@/lib/domain/noteContext';
-import type { CommonNote, SmartSuggestionParams } from '@/types/transaction';
+import type { CommonNote, SmartSuggestionParams } from '@/types/domain/transaction';
 import { AlertCircle, Lightbulb, TrendingUp, Clock, Target } from 'lucide-react';
 
 /**

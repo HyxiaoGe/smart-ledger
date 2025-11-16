@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { supabase } from '@/lib/clients/supabase/client';
-import type { TransactionType, Currency } from '@/types/transaction';
+import type { TransactionType, Currency } from '@/types/domain/transaction';
 import { PRESET_CATEGORIES, SUPPORTED_CURRENCIES, DEFAULT_CURRENCY } from '@/lib/config/config';
 import { CategoryChip } from '@/components/CategoryChip';
 import { Input } from '@/components/ui/input';

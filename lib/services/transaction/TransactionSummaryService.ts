@@ -4,7 +4,7 @@
  */
 
 import type { ITransactionRepository } from '@/lib/domain/repositories/ITransactionRepository';
-import type { Transaction } from '@/types/transaction';
+import type { Transaction } from '@/types/domain/transaction';
 import { CacheDecorator } from '@/lib/infrastructure/cache';
 import type { ICache } from '@/lib/infrastructure/cache';
 

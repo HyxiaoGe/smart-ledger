@@ -5,12 +5,12 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Budget } from '@/lib/services/budgetService';
+import type { IBudgetRepository } from '@/lib/domain/repositories/IBudgetRepository';
 import type {
-  IBudgetRepository,
   CreateBudgetDTO,
   UpdateBudgetDTO,
-  BudgetQueryFilter
-} from '@/lib/domain/repositories/IBudgetRepository';
+  BudgetQueryFilter,
+} from '@/types/dto/budget.dto';
 
 /**
  * Supabase 预算仓储实现
