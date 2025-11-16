@@ -67,7 +67,7 @@ export default function LogsPage() {
 
   // 分页状态
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
   const [total, setTotal] = useState(0);
 

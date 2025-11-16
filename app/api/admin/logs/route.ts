@@ -44,16 +44,16 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 
   // 验证查询参数
   const params = querySchema.parse({
-    page: searchParams.get('page'),
-    page_size: searchParams.get('page_size'),
-    level: searchParams.get('level'),
-    category: searchParams.get('category'),
-    start_date: searchParams.get('start_date'),
-    end_date: searchParams.get('end_date'),
-    search: searchParams.get('search'),
-    trace_id: searchParams.get('trace_id'),
-    sort_by: searchParams.get('sort_by'),
-    sort_order: searchParams.get('sort_order'),
+    page: searchParams.get('page') || undefined,
+    page_size: searchParams.get('page_size') || undefined,
+    level: searchParams.get('level') || undefined,
+    category: searchParams.get('category') || undefined,
+    start_date: searchParams.get('start_date') || undefined,
+    end_date: searchParams.get('end_date') || undefined,
+    search: searchParams.get('search') || undefined,
+    trace_id: searchParams.get('trace_id') || undefined,
+    sort_by: searchParams.get('sort_by') || undefined,
+    sort_order: searchParams.get('sort_order') || undefined,
   });
 
   const supabase = supabaseServerClient;
