@@ -167,11 +167,19 @@ export default function WeeklyReportDetailPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className={`${
+            report.week_over_week_percentage > 0
+              ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900'
+              : 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900'
+          }`}>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                  周环比
+                <CardTitle className={`text-sm font-medium ${
+                  report.week_over_week_percentage > 0
+                    ? 'text-red-700 dark:text-red-300'
+                    : 'text-green-700 dark:text-green-300'
+                }`}>
+                  较上周
                 </CardTitle>
                 {report.week_over_week_percentage > 0 ? (
                   <TrendingUp className="h-4 w-4 text-red-500" />
@@ -181,24 +189,36 @@ export default function WeeklyReportDetailPage() {
               </div>
               <div className={`text-2xl font-bold ${
                 report.week_over_week_percentage > 0
-                  ? 'text-red-500'
-                  : 'text-green-500'
+                  ? 'text-red-600 dark:text-red-400'
+                  : 'text-green-600 dark:text-green-400'
               }`}>
                 {formatPercentage(report.week_over_week_percentage)}
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                较上周变化趋势
+              <p className={`text-xs ${
+                report.week_over_week_percentage > 0
+                  ? 'text-red-600 dark:text-red-400'
+                  : 'text-green-600 dark:text-green-400'
+              }`}>
+                消费增减百分比
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className={`${
+            report.week_over_week_percentage > 0
+              ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900'
+              : 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900'
+          }`}>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                  变化金额
+                <CardTitle className={`text-sm font-medium ${
+                  report.week_over_week_percentage > 0
+                    ? 'text-red-700 dark:text-red-300'
+                    : 'text-green-700 dark:text-green-300'
+                }`}>
+                  增减金额
                 </CardTitle>
                 {report.week_over_week_percentage > 0 ? (
                   <ArrowUpCircle className="h-4 w-4 text-red-500" />
@@ -208,16 +228,20 @@ export default function WeeklyReportDetailPage() {
               </div>
               <div className={`text-2xl font-bold ${
                 report.week_over_week_percentage > 0
-                  ? 'text-red-500'
-                  : 'text-green-500'
+                  ? 'text-red-600 dark:text-red-400'
+                  : 'text-green-600 dark:text-green-400'
               }`}>
                 {report.week_over_week_percentage > 0 ? '+' : '-'}
                 ¥{formatCurrency(changeAmount)}
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                与上周差额
+              <p className={`text-xs ${
+                report.week_over_week_percentage > 0
+                  ? 'text-red-600 dark:text-red-400'
+                  : 'text-green-600 dark:text-green-400'
+              }`}>
+                省下 / 多花了多少钱
               </p>
             </CardContent>
           </Card>
