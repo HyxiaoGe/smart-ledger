@@ -63,7 +63,7 @@ export async function getWeeklyReportById(id: string): Promise<WeeklyReport | nu
     .from('weekly_reports')
     .select('*')
     .eq('id', id)
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error('Error fetching weekly report:', error);
@@ -82,7 +82,7 @@ export async function getLatestWeeklyReport(): Promise<WeeklyReport | null> {
     .select('*')
     .order('week_start_date', { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error('Error fetching latest weekly report:', error);
@@ -143,65 +143,4 @@ export function getWeekDescription(date: string): string {
   const weekNumber = Math.ceil((daysDiff + firstDayOfYear.getDay() + 1) / 7);
 
   return `${year}年第${weekNumber}周`;
-}
-
-/**
- * 分类映射表（英文 → 中文）
- */
-const CATEGORY_MAP: Record<string, string> = {
-  food: '餐饮',
-  drink: '饮品',
-  transport: '交通',
-  shopping: '购物',
-  entertainment: '娱乐',
-  daily: '日用',
-  housing: '住房',
-  medical: '医疗',
-  education: '教育',
-  subscription: '订阅',
-  other: '其他',
-};
-
-/**
- * 支付方式映射表（英文 → 中文）
- */
-const PAYMENT_METHOD_MAP: Record<string, string> = {
-  alipay: '支付宝',
-  wechat: '微信支付',
-  cash: '现金',
-  card: '银行卡',
-  creditcard: '信用卡',
-  debitcard: '借记卡',
-  '未指定': '其他',
-};
-
-/**
- * 转换分类为中文
- */
-export function getCategoryName(category: string): string {
-  return CATEGORY_MAP[category.toLowerCase()] || category;
-}
-
-/**
- * 转换支付方式为中文
- */
-export function getPaymentMethodName(method: string): string {
-  return PAYMENT_METHOD_MAP[method.toLowerCase()] || method;
-}
-
-/**
- * 格式化金额（千分位 + 2位小数）
- */
-export function formatCurrency(amount: number): string {
-  return amount.toLocaleString('zh-CN', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-}
-
-/**
- * 格式化百分比（1位小数）
- */
-export function formatPercentage(value: number): string {
-  return `${value > 0 ? '+' : ''}${value.toFixed(1)}%`;
 }
