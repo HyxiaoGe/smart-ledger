@@ -121,18 +121,19 @@ BEGIN
   INTO v_payment_stats
   FROM (
     SELECT jsonb_build_object(
-      'method', COALESCE(payment_method, '未指定'),
-      'amount', SUM(amount),
+      'method', COALESCE(pm.name, '未指定'),
+      'amount', SUM(t.amount),
       'count', COUNT(*),
-      'percentage', ROUND((SUM(amount) / NULLIF(v_total_expenses, 0) * 100)::numeric, 2)
+      'percentage', ROUND((SUM(t.amount) / NULLIF(v_total_expenses, 0) * 100)::numeric, 2)
     ) AS payment_stats
-    FROM transactions
-    WHERE type = 'expense'
-      AND deleted_at IS NULL
-      AND date >= v_week_start
-      AND date <= v_week_end
-    GROUP BY payment_method
-    ORDER BY SUM(amount) DESC
+    FROM transactions t
+    LEFT JOIN payment_methods pm ON t.payment_method = pm.id
+    WHERE t.type = 'expense'
+      AND t.deleted_at IS NULL
+      AND t.date >= v_week_start
+      AND t.date <= v_week_end
+    GROUP BY pm.name
+    ORDER BY SUM(t.amount) DESC
   ) sub;
 
   -- 计算环比增长
