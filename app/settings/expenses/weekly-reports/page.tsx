@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/toast';
 import {
   ChevronLeft,
   TrendingDown,
@@ -12,7 +13,8 @@ import {
   DollarSign,
   FileText,
   Plus,
-  ArrowRight
+  ArrowRight,
+  Loader2
 } from 'lucide-react';
 import {
   getAllWeeklyReports,
@@ -20,6 +22,8 @@ import {
   generateWeeklyReport,
   formatWeekRange,
   getWeekDescription,
+  formatCurrency,
+  formatPercentage,
   type WeeklyReport
 } from '@/lib/services/weeklyReportService';
 
@@ -28,6 +32,7 @@ export default function WeeklyReportsPage() {
   const [latestReport, setLatestReport] = useState<WeeklyReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const { showToast } = useToast();
 
   useEffect(() => {
     loadReports();
@@ -44,6 +49,7 @@ export default function WeeklyReportsPage() {
       setLatestReport(latest);
     } catch (error) {
       console.error('Error loading reports:', error);
+      showToast('加载报告失败，请刷新重试', 'error');
     } finally {
       setLoading(false);
     }
@@ -54,9 +60,10 @@ export default function WeeklyReportsPage() {
       setGenerating(true);
       await generateWeeklyReport();
       await loadReports();
+      showToast('报告生成成功！', 'success');
     } catch (error) {
       console.error('Error generating report:', error);
-      alert('生成报告失败，请稍后重试');
+      showToast('生成报告失败，请稍后重试', 'error');
     } finally {
       setGenerating(false);
     }
@@ -88,7 +95,11 @@ export default function WeeklyReportsPage() {
             disabled={generating}
             className="bg-purple-600 hover:bg-purple-700"
           >
-            <Plus className="h-4 w-4 mr-2" />
+            {generating ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Plus className="h-4 w-4 mr-2" />
+            )}
             {generating ? '生成中...' : '手动生成报告'}
           </Button>
         </div>
@@ -119,7 +130,7 @@ export default function WeeklyReportsPage() {
                   <DollarSign className="h-4 w-4 text-red-500" />
                 </div>
                 <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  ¥{latestReport.total_expenses.toFixed(2)}
+                  ¥{formatCurrency(latestReport.total_expenses)}
                 </div>
               </CardHeader>
               <CardContent>
@@ -143,35 +154,46 @@ export default function WeeklyReportsPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  平均 ¥{latestReport.average_transaction.toFixed(2)}/笔
+                  平均 ¥{formatCurrency(latestReport.average_transaction)}/笔
                 </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className={`${
+              latestReport.week_over_week_percentage > 0
+                ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900'
+                : 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900'
+            }`}>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                    周环比
+                  <CardTitle className={`text-sm font-medium ${
+                    latestReport.week_over_week_percentage > 0
+                      ? 'text-red-700 dark:text-red-300'
+                      : 'text-green-700 dark:text-green-300'
+                  }`}>
+                    较上周
                   </CardTitle>
-                  {latestReport.week_over_week_change > 0 ? (
+                  {latestReport.week_over_week_percentage > 0 ? (
                     <TrendingUp className="h-4 w-4 text-red-500" />
                   ) : (
                     <TrendingDown className="h-4 w-4 text-green-500" />
                   )}
                 </div>
                 <div className={`text-2xl font-bold ${
-                  latestReport.week_over_week_change > 0
-                    ? 'text-red-500'
-                    : 'text-green-500'
+                  latestReport.week_over_week_percentage > 0
+                    ? 'text-red-600 dark:text-red-400'
+                    : 'text-green-600 dark:text-green-400'
                 }`}>
-                  {latestReport.week_over_week_change > 0 ? '+' : ''}
-                  {latestReport.week_over_week_change.toFixed(1)}%
+                  {formatPercentage(latestReport.week_over_week_percentage)}
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  较上周变化
+                <p className={`text-xs ${
+                  latestReport.week_over_week_percentage > 0
+                    ? 'text-red-600 dark:text-red-400'
+                    : 'text-green-600 dark:text-green-400'
+                }`}>
+                  与上周对比
                 </p>
               </CardContent>
             </Card>
@@ -221,8 +243,12 @@ export default function WeeklyReportsPage() {
                   暂无周报告数据
                 </p>
                 <Button onClick={handleGenerateReport} disabled={generating}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  生成第一份报告
+                  {generating ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Plus className="h-4 w-4 mr-2" />
+                  )}
+                  {generating ? '生成中...' : '生成第一份报告'}
                 </Button>
               </CardContent>
             </Card>
@@ -251,7 +277,7 @@ export default function WeeklyReportsPage() {
                           <div>
                             <p className="text-sm text-gray-500 dark:text-gray-400">总支出</p>
                             <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                              ¥{report.total_expenses.toFixed(2)}
+                              ¥{formatCurrency(report.total_expenses)}
                             </p>
                           </div>
                           <div>
@@ -261,14 +287,13 @@ export default function WeeklyReportsPage() {
                             </p>
                           </div>
                           <div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">周环比</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">较上周</p>
                             <p className={`text-lg font-semibold ${
-                              report.week_over_week_change > 0
+                              report.week_over_week_percentage > 0
                                 ? 'text-red-500'
                                 : 'text-green-500'
                             }`}>
-                              {report.week_over_week_change > 0 ? '+' : ''}
-                              {report.week_over_week_change.toFixed(1)}%
+                              {formatPercentage(report.week_over_week_percentage)}
                             </p>
                           </div>
                         </div>
