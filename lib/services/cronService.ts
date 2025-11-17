@@ -108,6 +108,7 @@ export async function manualTriggerCronJob(jobName: string): Promise<any> {
     'export-training-snapshot': 'snapshot_training_data',
     'check-data-quality': 'check_data_quality',
     'refresh-budget-suggestions-daily': 'refresh_budget_suggestions',
+    'generate-weekly-report': 'generate_weekly_report',
   };
 
   const functionName = functionMap[jobName];
