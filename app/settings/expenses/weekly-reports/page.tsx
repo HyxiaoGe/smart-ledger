@@ -14,7 +14,8 @@ import {
   FileText,
   Plus,
   ArrowRight,
-  Loader2
+  Loader2,
+  BarChart3
 } from 'lucide-react';
 import {
   getAllWeeklyReports,
@@ -26,17 +27,64 @@ import {
   formatPercentage,
   type WeeklyReport
 } from '@/lib/services/weeklyReportService';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer
+} from 'recharts';
+
+type FilterType = 'all' | 'thisWeek' | 'thisMonth' | 'lastMonth';
 
 export default function WeeklyReportsPage() {
   const [reports, setReports] = useState<WeeklyReport[]>([]);
+  const [filteredReports, setFilteredReports] = useState<WeeklyReport[]>([]);
   const [latestReport, setLatestReport] = useState<WeeklyReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [filter, setFilter] = useState<FilterType>('all');
   const { showToast } = useToast();
 
   useEffect(() => {
     loadReports();
   }, []);
+
+  useEffect(() => {
+    // 根据筛选条件过滤报告
+    if (filter === 'all') {
+      setFilteredReports(reports);
+      return;
+    }
+
+    const now = new Date();
+    const filtered = reports.filter(report => {
+      const reportDate = new Date(report.week_start_date);
+
+      switch (filter) {
+        case 'thisWeek': {
+          const weekStart = new Date(now);
+          weekStart.setDate(now.getDate() - now.getDay() + 1); // 本周一
+          return reportDate >= weekStart;
+        }
+        case 'thisMonth': {
+          const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+          return reportDate >= monthStart && reportDate < now;
+        }
+        case 'lastMonth': {
+          const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+          const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 1);
+          return reportDate >= lastMonthStart && reportDate < lastMonthEnd;
+        }
+        default:
+          return true;
+      }
+    });
+
+    setFilteredReports(filtered);
+  }, [filter, reports]);
 
   async function loadReports() {
     try {
@@ -102,6 +150,36 @@ export default function WeeklyReportsPage() {
             )}
             {generating ? '生成中...' : '手动生成报告'}
           </Button>
+        </div>
+
+        {/* 快速筛选 */}
+        <div className="flex items-center gap-2 mb-8">
+          <span className="text-sm text-gray-600 dark:text-gray-300">筛选：</span>
+          <div className="flex gap-2">
+            {[
+              { value: 'all' as FilterType, label: '全部' },
+              { value: 'thisWeek' as FilterType, label: '本周' },
+              { value: 'thisMonth' as FilterType, label: '本月' },
+              { value: 'lastMonth' as FilterType, label: '上月' }
+            ].map(item => (
+              <button
+                key={item.value}
+                onClick={() => setFilter(item.value)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  filter === item.value
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+          {filter !== 'all' && (
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              ({filteredReports.length} 条记录)
+            </span>
+          )}
         </div>
 
         {/* 最新报告统计卡片 */}
@@ -219,6 +297,64 @@ export default function WeeklyReportsPage() {
           </div>
         )}
 
+        {/* 消费趋势图 */}
+        {reports.length > 0 && (
+          <Card className="mb-8">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-purple-500" />
+                <CardTitle>消费趋势</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart
+                  data={reports.slice(0, 8).reverse().map(report => ({
+                    name: getWeekDescription(report.week_start_date).replace('第', ''),
+                    amount: Number(report.total_expenses),
+                    count: report.transaction_count
+                  }))}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
+                  <XAxis
+                    dataKey="name"
+                    className="text-xs"
+                    tick={{ fill: 'currentColor' }}
+                  />
+                  <YAxis
+                    className="text-xs"
+                    tick={{ fill: 'currentColor' }}
+                    tickFormatter={(value) => `¥${(value / 1000).toFixed(1)}k`}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}
+                    formatter={(value: number, name: string) => {
+                      if (name === 'amount') {
+                        return [`¥${formatCurrency(value)}`, '总支出'];
+                      }
+                      return [value, '交易笔数'];
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="amount"
+                    stroke="#9333ea"
+                    strokeWidth={2}
+                    dot={{ fill: '#9333ea', r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
+
         {/* 报告列表 */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">历史报告</h3>
@@ -235,25 +371,27 @@ export default function WeeklyReportsPage() {
                 </Card>
               ))}
             </div>
-          ) : reports.length === 0 ? (
+          ) : filteredReports.length === 0 ? (
             <Card>
               <CardContent className="p-12 text-center">
                 <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-500 dark:text-gray-400 mb-4">
-                  暂无周报告数据
+                  {filter === 'all' ? '暂无周报告数据' : '该时间段暂无报告'}
                 </p>
-                <Button onClick={handleGenerateReport} disabled={generating}>
-                  {generating ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Plus className="h-4 w-4 mr-2" />
-                  )}
-                  {generating ? '生成中...' : '生成第一份报告'}
-                </Button>
+                {filter === 'all' && (
+                  <Button onClick={handleGenerateReport} disabled={generating}>
+                    {generating ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Plus className="h-4 w-4 mr-2" />
+                    )}
+                    {generating ? '生成中...' : '生成第一份报告'}
+                  </Button>
+                )}
               </CardContent>
             </Card>
           ) : (
-            reports.map((report) => (
+            filteredReports.map((report) => (
               <Link key={report.id} href={`/settings/expenses/weekly-reports/${report.id}`}>
                 <Card className="hover:shadow-lg transition-shadow duration-200 cursor-pointer">
                   <CardContent className="p-6">
