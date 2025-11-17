@@ -20,6 +20,10 @@ import {
   getWeeklyReportById,
   formatWeekRange,
   getWeekDescription,
+  getCategoryName,
+  getPaymentMethodName,
+  formatCurrency,
+  formatPercentage,
   type WeeklyReport
 } from '@/lib/services/weeklyReportService';
 
@@ -88,7 +92,7 @@ export default function WeeklyReportDetailPage() {
     );
   }
 
-  const changeAmount = (report.total_expenses * Math.abs(report.week_over_week_change)) / 100;
+  const changeAmount = Math.abs(report.week_over_week_change);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -134,12 +138,12 @@ export default function WeeklyReportDetailPage() {
                 <DollarSign className="h-4 w-4 text-red-500" />
               </div>
               <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                ¥{report.total_expenses.toFixed(2)}
+                ¥{formatCurrency(report.total_expenses)}
               </div>
             </CardHeader>
             <CardContent>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                平均每笔 ¥{report.average_transaction.toFixed(2)}
+                平均每笔 ¥{formatCurrency(report.average_transaction)}
               </p>
             </CardContent>
           </Card>
@@ -169,19 +173,18 @@ export default function WeeklyReportDetailPage() {
                 <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-300">
                   周环比
                 </CardTitle>
-                {report.week_over_week_change > 0 ? (
+                {report.week_over_week_percentage > 0 ? (
                   <TrendingUp className="h-4 w-4 text-red-500" />
                 ) : (
                   <TrendingDown className="h-4 w-4 text-green-500" />
                 )}
               </div>
               <div className={`text-2xl font-bold ${
-                report.week_over_week_change > 0
+                report.week_over_week_percentage > 0
                   ? 'text-red-500'
                   : 'text-green-500'
               }`}>
-                {report.week_over_week_change > 0 ? '+' : ''}
-                {report.week_over_week_change.toFixed(1)}%
+                {formatPercentage(report.week_over_week_percentage)}
               </div>
             </CardHeader>
             <CardContent>
@@ -197,19 +200,19 @@ export default function WeeklyReportDetailPage() {
                 <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-300">
                   变化金额
                 </CardTitle>
-                {report.week_over_week_change > 0 ? (
+                {report.week_over_week_percentage > 0 ? (
                   <ArrowUpCircle className="h-4 w-4 text-red-500" />
                 ) : (
                   <ArrowDownCircle className="h-4 w-4 text-green-500" />
                 )}
               </div>
               <div className={`text-2xl font-bold ${
-                report.week_over_week_change > 0
+                report.week_over_week_percentage > 0
                   ? 'text-red-500'
                   : 'text-green-500'
               }`}>
-                {report.week_over_week_change > 0 ? '+' : '-'}
-                ¥{changeAmount.toFixed(2)}
+                {report.week_over_week_percentage > 0 ? '+' : '-'}
+                ¥{formatCurrency(changeAmount)}
               </div>
             </CardHeader>
             <CardContent>
@@ -243,19 +246,25 @@ export default function WeeklyReportDetailPage() {
             <CardTitle>消费类别分布</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {report.category_breakdown.map((cat, index) => (
+            {report.category_breakdown.length === 0 ? (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                <p>暂无分类数据</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {report.category_breakdown.map((cat, index) => (
                 <div key={index}>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                      {cat.category}
+                      {getCategoryName(cat.category)}
                     </span>
                     <div className="flex items-center gap-4">
                       <span className="text-sm text-gray-500 dark:text-gray-400">
                         {cat.count} 笔
                       </span>
                       <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                        ¥{cat.amount.toFixed(2)}
+                        ¥{formatCurrency(cat.amount)}
                       </span>
                       <span className="text-sm text-purple-600 dark:text-purple-400 w-12 text-right">
                         {cat.percentage.toFixed(1)}%
@@ -270,7 +279,8 @@ export default function WeeklyReportDetailPage() {
                   </div>
                 </div>
               ))}
-            </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -282,8 +292,14 @@ export default function WeeklyReportDetailPage() {
               <CardTitle>TOP 5 消费商户</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {report.top_merchants.slice(0, 5).map((merchant, index) => (
+              {report.top_merchants.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <p>暂无商户数据</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {report.top_merchants.slice(0, 5).map((merchant, index) => (
                   <div key={index} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
@@ -307,11 +323,12 @@ export default function WeeklyReportDetailPage() {
                       </div>
                     </div>
                     <span className="font-semibold text-gray-900 dark:text-gray-100">
-                      ¥{merchant.amount.toFixed(2)}
+                      ¥{formatCurrency(merchant.amount)}
                     </span>
                   </div>
                 ))}
-              </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -321,19 +338,25 @@ export default function WeeklyReportDetailPage() {
               <CardTitle>支付方式统计</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {report.payment_method_stats.map((method, index) => (
+              {report.payment_method_stats.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <p>暂无支付方式数据</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {report.payment_method_stats.map((method, index) => (
                   <div key={index}>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                        {method.method}
+                        {getPaymentMethodName(method.method)}
                       </span>
                       <div className="flex items-center gap-4">
                         <span className="text-sm text-gray-500 dark:text-gray-400">
                           {method.count} 笔
                         </span>
                         <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                          ¥{method.amount.toFixed(2)}
+                          ¥{formatCurrency(method.amount)}
                         </span>
                         <span className="text-sm text-blue-600 dark:text-blue-400 w-12 text-right">
                           {method.percentage.toFixed(1)}%
@@ -348,7 +371,8 @@ export default function WeeklyReportDetailPage() {
                     </div>
                   </div>
                 ))}
-              </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

@@ -20,6 +20,8 @@ import {
   generateWeeklyReport,
   formatWeekRange,
   getWeekDescription,
+  formatCurrency,
+  formatPercentage,
   type WeeklyReport
 } from '@/lib/services/weeklyReportService';
 
@@ -119,7 +121,7 @@ export default function WeeklyReportsPage() {
                   <DollarSign className="h-4 w-4 text-red-500" />
                 </div>
                 <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  ¥{latestReport.total_expenses.toFixed(2)}
+                  ¥{formatCurrency(latestReport.total_expenses)}
                 </div>
               </CardHeader>
               <CardContent>
@@ -143,7 +145,7 @@ export default function WeeklyReportsPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  平均 ¥{latestReport.average_transaction.toFixed(2)}/笔
+                  平均 ¥{formatCurrency(latestReport.average_transaction)}/笔
                 </p>
               </CardContent>
             </Card>
@@ -154,19 +156,18 @@ export default function WeeklyReportsPage() {
                   <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-300">
                     周环比
                   </CardTitle>
-                  {latestReport.week_over_week_change > 0 ? (
+                  {latestReport.week_over_week_percentage > 0 ? (
                     <TrendingUp className="h-4 w-4 text-red-500" />
                   ) : (
                     <TrendingDown className="h-4 w-4 text-green-500" />
                   )}
                 </div>
                 <div className={`text-2xl font-bold ${
-                  latestReport.week_over_week_change > 0
+                  latestReport.week_over_week_percentage > 0
                     ? 'text-red-500'
                     : 'text-green-500'
                 }`}>
-                  {latestReport.week_over_week_change > 0 ? '+' : ''}
-                  {latestReport.week_over_week_change.toFixed(1)}%
+                  {formatPercentage(latestReport.week_over_week_percentage)}
                 </div>
               </CardHeader>
               <CardContent>
@@ -251,7 +252,7 @@ export default function WeeklyReportsPage() {
                           <div>
                             <p className="text-sm text-gray-500 dark:text-gray-400">总支出</p>
                             <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                              ¥{report.total_expenses.toFixed(2)}
+                              ¥{formatCurrency(report.total_expenses)}
                             </p>
                           </div>
                           <div>
@@ -263,12 +264,11 @@ export default function WeeklyReportsPage() {
                           <div>
                             <p className="text-sm text-gray-500 dark:text-gray-400">周环比</p>
                             <p className={`text-lg font-semibold ${
-                              report.week_over_week_change > 0
+                              report.week_over_week_percentage > 0
                                 ? 'text-red-500'
                                 : 'text-green-500'
                             }`}>
-                              {report.week_over_week_change > 0 ? '+' : ''}
-                              {report.week_over_week_change.toFixed(1)}%
+                              {formatPercentage(report.week_over_week_percentage)}
                             </p>
                           </div>
                         </div>
