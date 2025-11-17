@@ -63,7 +63,7 @@ export async function getWeeklyReportById(id: string): Promise<WeeklyReport | nu
     .from('weekly_reports')
     .select('*')
     .eq('id', id)
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error('Error fetching weekly report:', error);
@@ -82,7 +82,7 @@ export async function getLatestWeeklyReport(): Promise<WeeklyReport | null> {
     .select('*')
     .order('week_start_date', { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error('Error fetching latest weekly report:', error);
