@@ -95,7 +95,7 @@ export async function getLatestWeeklyReport(): Promise<WeeklyReport | null> {
 /**
  * 手动生成周报告
  */
-export async function generateWeeklyReport(): Promise<WeeklyReport | null> {
+export async function generateWeeklyReport(): Promise<{ success: boolean; message: string; report?: WeeklyReport }> {
   try {
     const { data, error } = await supabase.rpc('generate_weekly_report');
 
@@ -104,7 +104,26 @@ export async function generateWeeklyReport(): Promise<WeeklyReport | null> {
       throw new Error('生成周报告失败');
     }
 
-    return data;
+    // 数据库函数返回的是数组，取第一个元素
+    const result = data?.[0];
+
+    if (!result) {
+      throw new Error('生成周报告失败：无返回数据');
+    }
+
+    // 检查是否是"报告已存在"的情况
+    if (result.message && result.message.includes('已存在')) {
+      return {
+        success: false,
+        message: result.message,
+      };
+    }
+
+    // 成功生成新报告
+    return {
+      success: true,
+      message: result.message || '报告生成成功',
+    };
   } catch (err) {
     console.error('Error in generateWeeklyReport:', err);
     throw err;

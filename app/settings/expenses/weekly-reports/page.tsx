@@ -106,9 +106,14 @@ export default function WeeklyReportsPage() {
   async function handleGenerateReport() {
     try {
       setGenerating(true);
-      await generateWeeklyReport();
+      const result = await generateWeeklyReport();
       await loadReports();
-      showToast('报告生成成功！', 'success');
+
+      if (result.success) {
+        showToast('报告生成成功！', 'success');
+      } else {
+        showToast(result.message, 'info');
+      }
     } catch (error) {
       console.error('Error generating report:', error);
       showToast('生成报告失败，请稍后重试', 'error');
