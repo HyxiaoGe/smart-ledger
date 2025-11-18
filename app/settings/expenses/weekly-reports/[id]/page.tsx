@@ -18,7 +18,11 @@ import {
   ArrowDownCircle,
   BarChart3,
   Store,
-  Lightbulb
+  Lightbulb,
+  TrendingDownIcon,
+  ShoppingBag,
+  CreditCard,
+  AlertCircle
 } from 'lucide-react';
 import {
   getWeeklyReportById,
@@ -30,6 +34,19 @@ import {
   formatPercentage,
   type WeeklyReport
 } from '@/lib/services/weeklyReportService';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from 'recharts';
 
 export default function WeeklyReportDetailPage() {
   const params = useParams();
@@ -453,16 +470,173 @@ export default function WeeklyReportDetailPage() {
 
           {/* 图表 Tab */}
           <TabsContent value="charts">
-            <Card>
-              <CardHeader>
-                <CardTitle>数据可视化</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-500 dark:text-gray-400 text-center py-12">
-                  图表功能开发中...
-                </p>
-              </CardContent>
-            </Card>
+            <div className="space-y-8">
+              {/* 上半部分：饼图 */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* 类别分布饼图 */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="h-5 w-5 text-purple-500" />
+                      消费类别分布
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {report.category_breakdown.length === 0 ? (
+                      <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                        <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                        <p>暂无分类数据</p>
+                      </div>
+                    ) : (
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={report.category_breakdown.map(cat => ({
+                              name: getCategoryName(cat.category),
+                              value: Number(cat.amount),
+                              percentage: cat.percentage
+                            }))}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={({ name, percentage }) => `${name} ${percentage.toFixed(1)}%`}
+                            outerRadius={100}
+                            fill="#8884d8"
+                            dataKey="value"
+                          >
+                            {report.category_breakdown.map((_, index) => (
+                              <Cell key={`cell-${index}`} fill={[
+                                '#9333ea', '#ec4899', '#f59e0b', '#10b981',
+                                '#3b82f6', '#8b5cf6', '#f43f5e', '#14b8a6'
+                              ][index % 8]} />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            formatter={(value: number) => `¥${formatCurrency(value)}`}
+                            contentStyle={{
+                              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                              border: '1px solid #e5e7eb',
+                              borderRadius: '8px'
+                            }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* 支付方式环形图 */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <CreditCard className="h-5 w-5 text-blue-500" />
+                      支付方式分布
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {report.payment_method_stats.length === 0 ? (
+                      <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                        <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                        <p>暂无支付方式数据</p>
+                      </div>
+                    ) : (
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={report.payment_method_stats.map(method => ({
+                              name: getPaymentMethodName(method.method),
+                              value: Number(method.amount),
+                              percentage: method.percentage
+                            }))}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={({ name, percentage }) => `${name} ${percentage.toFixed(1)}%`}
+                            innerRadius={60}
+                            outerRadius={100}
+                            fill="#8884d8"
+                            dataKey="value"
+                          >
+                            {report.payment_method_stats.map((_, index) => (
+                              <Cell key={`cell-${index}`} fill={[
+                                '#3b82f6', '#06b6d4', '#0ea5e9', '#60a5fa',
+                                '#38bdf8', '#7dd3fc'
+                              ][index % 6]} />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            formatter={(value: number) => `¥${formatCurrency(value)}`}
+                            contentStyle={{
+                              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                              border: '1px solid #e5e7eb',
+                              borderRadius: '8px'
+                            }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* 下半部分：商家横向柱状图 */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Store className="h-5 w-5 text-purple-500" />
+                    TOP 5 消费商户
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {report.top_merchants.length === 0 ? (
+                    <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                      <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                      <p>暂无商户数据</p>
+                    </div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart
+                        data={report.top_merchants.slice(0, 5).map((merchant, index) => ({
+                          name: merchant.merchant,
+                          amount: Number(merchant.amount),
+                          count: merchant.count,
+                          rank: index + 1
+                        }))}
+                        layout="vertical"
+                        margin={{ top: 5, right: 30, left: 100, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
+                        <XAxis
+                          type="number"
+                          tickFormatter={(value) => `¥${(value / 1000).toFixed(1)}k`}
+                          tick={{ fill: 'currentColor' }}
+                        />
+                        <YAxis
+                          type="category"
+                          dataKey="name"
+                          width={90}
+                          tick={{ fill: 'currentColor' }}
+                        />
+                        <Tooltip
+                          formatter={(value: number, name: string) => {
+                            if (name === 'amount') {
+                              return [`¥${formatCurrency(value)}`, '消费金额'];
+                            }
+                            return [value, '消费笔数'];
+                          }}
+                          contentStyle={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '8px'
+                          }}
+                        />
+                        <Bar dataKey="amount" fill="#9333ea" radius={[0, 8, 8, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* 商家 Tab */}
@@ -562,30 +736,294 @@ export default function WeeklyReportDetailPage() {
 
           {/* 洞察 Tab */}
           <TabsContent value="insights">
-            {report.ai_insights ? (
-              <Card className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950 dark:to-blue-950 border-purple-200 dark:border-purple-800">
+            <div className="space-y-8">
+              {/* AI 智能洞察 */}
+              {report.ai_insights && (
+                <Card className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950 dark:to-blue-950 border-purple-200 dark:border-purple-800">
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                      <CardTitle className="text-purple-900 dark:text-purple-100">AI 智能洞察</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-line">
+                      {report.ai_insights}
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* 关键发现 */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* 最大单笔消费 */}
+                {(() => {
+                  const maxTransaction = report.category_breakdown.reduce((max, cat) =>
+                    cat.amount > (max?.amount || 0) ? cat : max, report.category_breakdown[0]
+                  );
+                  return maxTransaction && (
+                    <Card className="bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-950 dark:to-orange-950 border-red-200 dark:border-red-800">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center gap-2">
+                          <ShoppingBag className="h-5 w-5 text-red-600 dark:text-red-400" />
+                          <CardTitle className="text-sm">最大支出类别</CardTitle>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+                            ¥{formatCurrency(maxTransaction.amount)}
+                          </div>
+                          <div className="text-sm text-gray-600 dark:text-gray-300">
+                            {getCategoryName(maxTransaction.category)}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            占比 {maxTransaction.percentage.toFixed(1)}%
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })()}
+
+                {/* 消费集中度 */}
+                {(() => {
+                  const maxCategoryPercent = report.category_breakdown.length > 0
+                    ? Math.max(...report.category_breakdown.map(c => c.percentage))
+                    : 0;
+                  const isConcentrated = maxCategoryPercent > 50;
+                  return (
+                    <Card className={`bg-gradient-to-br ${
+                      isConcentrated
+                        ? 'from-yellow-50 to-amber-50 dark:from-yellow-950 dark:to-amber-950 border-yellow-200 dark:border-yellow-800'
+                        : 'from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border-green-200 dark:border-green-800'
+                    }`}>
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center gap-2">
+                          <BarChart3 className={`h-5 w-5 ${
+                            isConcentrated
+                              ? 'text-yellow-600 dark:text-yellow-400'
+                              : 'text-green-600 dark:text-green-400'
+                          }`} />
+                          <CardTitle className="text-sm">消费集中度</CardTitle>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className={`text-2xl font-bold ${
+                            isConcentrated
+                              ? 'text-yellow-600 dark:text-yellow-400'
+                              : 'text-green-600 dark:text-green-400'
+                          }`}>
+                            {maxCategoryPercent.toFixed(1)}%
+                          </div>
+                          <div className="text-sm text-gray-600 dark:text-gray-300">
+                            {isConcentrated ? '较为集中' : '分布均衡'}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            {isConcentrated ? '建议分散消费' : '消费结构健康'}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })()}
+
+                {/* 支付习惯 */}
+                {(() => {
+                  const mostUsedMethod = report.payment_method_stats.length > 0
+                    ? report.payment_method_stats.reduce((max, method) =>
+                        method.count > (max?.count || 0) ? method : max, report.payment_method_stats[0]
+                      )
+                    : null;
+                  return mostUsedMethod && (
+                    <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950 border-blue-200 dark:border-blue-800">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center gap-2">
+                          <CreditCard className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                          <CardTitle className="text-sm">常用支付方式</CardTitle>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                            {mostUsedMethod.count} 笔
+                          </div>
+                          <div className="text-sm text-gray-600 dark:text-gray-300">
+                            {getPaymentMethodName(mostUsedMethod.method)}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            占比 {mostUsedMethod.percentage.toFixed(1)}%
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })()}
+              </div>
+
+              {/* 消费行为分析 */}
+              <Card>
                 <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                    <CardTitle className="text-purple-900 dark:text-purple-100">AI 智能洞察</CardTitle>
-                  </div>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-purple-500" />
+                    消费行为分析
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-line">
-                    {report.ai_insights}
-                  </p>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700">
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-gray-100">交易频次</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">平均每天</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xl font-bold text-purple-600 dark:text-purple-400">
+                          {(report.transaction_count / 7).toFixed(1)} 笔
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {report.transaction_count < 5 ? '偏少' : report.transaction_count > 20 ? '较多' : '正常'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700">
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-gray-100">单笔均额</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">平均每笔消费</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xl font-bold text-purple-600 dark:text-purple-400">
+                          ¥{formatCurrency(report.average_transaction)}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {report.average_transaction < 20 ? '小额为主' : report.average_transaction > 100 ? '大额为主' : '中等金额'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between py-3">
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-gray-100">高频商家</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">消费超过 2 次</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xl font-bold text-purple-600 dark:text-purple-400">
+                          {report.top_merchants.filter(m => m.count >= 2).length} 家
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {report.top_merchants.filter(m => m.count >= 2).length > 0
+                            ? report.top_merchants.filter(m => m.count >= 2).slice(0, 2).map(m => m.merchant).join('、')
+                            : '无'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
-            ) : (
+
+              {/* 环比对比分析 */}
               <Card>
-                <CardContent className="p-12 text-center">
-                  <Sparkles className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500 dark:text-gray-400">
-                    AI 洞察生成中...
-                  </p>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingDownIcon className="h-5 w-5 text-blue-500" />
+                    环比对比分析
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700">
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-gray-100">总体趋势</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">较上周</p>
+                      </div>
+                      <div className="text-right">
+                        <p className={`text-xl font-bold ${
+                          report.week_over_week_percentage > 0
+                            ? 'text-red-600 dark:text-red-400'
+                            : 'text-green-600 dark:text-green-400'
+                        }`}>
+                          {formatPercentage(report.week_over_week_percentage)}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {Math.abs(report.week_over_week_percentage) < 10 ? '变化平稳' :
+                           Math.abs(report.week_over_week_percentage) < 30 ? '有所波动' : '波动较大'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="py-3">
+                      <p className="font-medium text-gray-900 dark:text-gray-100 mb-2">健康度评价</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        {report.week_over_week_percentage > 30 && '本周消费增长较快，建议关注支出是否合理。'}
+                        {report.week_over_week_percentage > 0 && report.week_over_week_percentage <= 30 && '本周消费略有增长，整体在可控范围内。'}
+                        {report.week_over_week_percentage < 0 && report.week_over_week_percentage >= -30 && '本周消费有所下降，保持良好消费习惯。'}
+                        {report.week_over_week_percentage < -30 && '本周消费大幅下降，支出控制效果显著。'}
+                      </p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
-            )}
+
+              {/* 智能建议 */}
+              <Card className="bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-950 dark:to-teal-950 border-green-200 dark:border-green-800">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-green-900 dark:text-green-100">
+                    <Lightbulb className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    智能建议
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3">
+                    {(() => {
+                      const suggestions: string[] = [];
+
+                      // 基于类别分布
+                      const maxCategoryPercent = report.category_breakdown.length > 0
+                        ? Math.max(...report.category_breakdown.map(c => c.percentage))
+                        : 0;
+                      if (maxCategoryPercent > 50) {
+                        suggestions.push('您的消费过于集中在单一类别，建议适当分散消费，保持支出均衡。');
+                      }
+
+                      // 基于环比变化
+                      if (report.week_over_week_percentage > 30) {
+                        suggestions.push('本周支出环比增长超过 30%，建议检查是否有大额非必要支出。');
+                      }
+
+                      // 基于交易频次
+                      if (report.transaction_count < 5) {
+                        suggestions.push('记账频次较低，建议提高记账积极性，完整记录每日消费。');
+                      }
+
+                      // 基于单笔均额
+                      if (report.average_transaction < 10) {
+                        suggestions.push('单笔消费金额偏低，可考虑合并小额支出记录，提升记账效率。');
+                      }
+
+                      // 基于高频商家
+                      const frequentMerchants = report.top_merchants.filter(m => m.count >= 3);
+                      if (frequentMerchants.length > 0) {
+                        suggestions.push(`您经常在 ${frequentMerchants[0].merchant} 消费，可以考虑办理会员卡获得优惠。`);
+                      }
+
+                      // 如果没有任何建议
+                      if (suggestions.length === 0) {
+                        suggestions.push('您的消费习惯良好，保持当前的消费模式即可。');
+                        suggestions.push('建议继续保持记账习惯，定期回顾消费情况。');
+                      }
+
+                      return suggestions.map((suggestion, index) => (
+                        <li key={index} className="flex items-start gap-3 text-gray-700 dark:text-gray-200">
+                          <AlertCircle className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                          <span>{suggestion}</span>
+                        </li>
+                      ));
+                    })()}
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
 
