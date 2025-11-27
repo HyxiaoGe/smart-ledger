@@ -18,82 +18,6 @@ import type {
 } from '@/types/dto/category.dto';
 
 /**
- * 子分类硬编码定义（后续可迁移到数据库）
- */
-const SUBCATEGORY_DEFINITIONS: Record<string, Subcategory[]> = {
-  food: [
-    { key: 'breakfast', label: '早餐', category_key: 'food' },
-    { key: 'lunch', label: '午餐', category_key: 'food' },
-    { key: 'dinner', label: '晚餐', category_key: 'food' },
-    { key: 'takeout', label: '外卖', category_key: 'food' },
-    { key: 'dine_in', label: '堂食', category_key: 'food' },
-    { key: 'gathering', label: '聚餐', category_key: 'food' },
-    { key: 'snack', label: '零食小吃', category_key: 'food' },
-  ],
-  drink: [
-    { key: 'coffee', label: '咖啡', category_key: 'drink' },
-    { key: 'milk_tea', label: '奶茶', category_key: 'drink' },
-    { key: 'tea', label: '茶饮', category_key: 'drink' },
-    { key: 'juice', label: '果汁', category_key: 'drink' },
-    { key: 'water', label: '饮用水', category_key: 'drink' },
-    { key: 'milk', label: '奶制品', category_key: 'drink' },
-  ],
-  transport: [
-    { key: 'subway', label: '地铁', category_key: 'transport' },
-    { key: 'taxi', label: '出租车/网约车', category_key: 'transport' },
-    { key: 'bus', label: '公交', category_key: 'transport' },
-    { key: 'bike', label: '共享单车', category_key: 'transport' },
-    { key: 'train', label: '火车/高铁', category_key: 'transport' },
-    { key: 'flight', label: '飞机', category_key: 'transport' },
-  ],
-  entertainment: [
-    { key: 'movie', label: '电影', category_key: 'entertainment' },
-    { key: 'game', label: '游戏', category_key: 'entertainment' },
-    { key: 'sport', label: '运动', category_key: 'entertainment' },
-    { key: 'music', label: '音乐', category_key: 'entertainment' },
-    { key: 'book', label: '图书', category_key: 'entertainment' },
-    { key: 'concert', label: '演出展览', category_key: 'entertainment' },
-  ],
-  daily: [
-    { key: 'groceries', label: '生鲜食材', category_key: 'daily' },
-    { key: 'household', label: '日用品', category_key: 'daily' },
-    { key: 'personal', label: '个人护理', category_key: 'daily' },
-    { key: 'snack', label: '零食', category_key: 'daily' },
-    { key: 'supermarket', label: '超市', category_key: 'daily' },
-    { key: 'convenience', label: '便利店', category_key: 'daily' },
-  ],
-  subscription: [
-    { key: 'software', label: '软件订阅', category_key: 'subscription' },
-    { key: 'service', label: '会员服务', category_key: 'subscription' },
-    { key: 'network', label: '网络服务', category_key: 'subscription' },
-    { key: 'telecom', label: '话费', category_key: 'subscription' },
-    { key: 'media', label: '流媒体', category_key: 'subscription' },
-    { key: 'storage', label: '云存储', category_key: 'subscription' },
-  ],
-  shopping: [
-    { key: 'online', label: '网购', category_key: 'shopping' },
-    { key: 'clothes', label: '服装', category_key: 'shopping' },
-    { key: 'electronics', label: '电子产品', category_key: 'shopping' },
-    { key: 'books', label: '图书', category_key: 'shopping' },
-    { key: 'beauty', label: '美妆', category_key: 'shopping' },
-    { key: 'home', label: '家居', category_key: 'shopping' },
-  ],
-  medical: [
-    { key: 'hospital', label: '医院', category_key: 'medical' },
-    { key: 'pharmacy', label: '线上买药', category_key: 'medical' },
-    { key: 'pharmacy_store', label: '线下药店', category_key: 'medical' },
-    { key: 'checkup', label: '体检', category_key: 'medical' },
-    { key: 'dental', label: '牙科', category_key: 'medical' },
-  ],
-  utilities: [
-    { key: 'utility', label: '水电费', category_key: 'utilities' },
-    { key: 'gas', label: '燃气费', category_key: 'utilities' },
-    { key: 'property', label: '物业费', category_key: 'utilities' },
-    { key: 'internet', label: '宽带', category_key: 'utilities' },
-  ],
-};
-
-/**
  * Supabase 分类仓储实现
  */
 export class SupabaseCategoryRepository implements ICategoryRepository {
@@ -330,10 +254,25 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
 
   /**
    * 获取分类下的子分类列表
-   * 目前使用硬编码，后续可迁移到数据库
+   * 从数据库 subcategories 表读取
    */
   async getSubcategories(categoryKey: string): Promise<Subcategory[]> {
-    return SUBCATEGORY_DEFINITIONS[categoryKey] || [];
+    const { data, error } = await this.supabase
+      .from('subcategories')
+      .select('key, label, category_key')
+      .eq('category_key', categoryKey)
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true });
+
+    if (error) {
+      throw new Error(`Failed to get subcategories: ${error.message}`);
+    }
+
+    return (data || []).map((row) => ({
+      key: row.key,
+      label: row.label,
+      category_key: row.category_key,
+    }));
   }
 
   /**
