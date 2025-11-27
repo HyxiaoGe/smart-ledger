@@ -1,17 +1,18 @@
-import { PRESET_CATEGORIES } from '@/lib/config/config';
+'use client';
+
+import { useCategories } from '@/contexts/CategoryContext';
 import { Badge } from '@/components/ui/badge';
 
 export function CategoryChip({ category }: { category: string }) {
-  const meta = PRESET_CATEGORIES.find((c) => c.key === category);
-  const label = meta?.label || category;
-  const icon = meta?.icon || '';
-  const color = meta?.color || '#6B7280';
+  const { getCategoryMeta } = useCategories();
+  const meta = getCategoryMeta(category);
+
   return (
-    <Badge variant="outline" style={{ borderColor: color, color }}>
+    <Badge variant="outline" style={{ borderColor: meta.color, color: meta.color }}>
       <span className="mr-1" aria-hidden>
-        {icon}
+        {meta.icon}
       </span>
-      {label}
+      {meta.label}
     </Badge>
   );
 }

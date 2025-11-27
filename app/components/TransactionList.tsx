@@ -4,7 +4,7 @@ import { supabase } from '@/lib/clients/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CategoryChip } from '@/components/CategoryChip';
-import { PRESET_CATEGORIES } from '@/lib/config/config';
+import { useCategories } from '@/contexts/CategoryContext';
 import { formatCurrency } from '@/lib/utils/format';
 import { EmptyState } from '@/components/EmptyState';
 
@@ -21,9 +21,10 @@ type Row = {
 export function TransactionList({ initialRows = [] as Row[], start, end }: { initialRows?: Row[]; start?: string; end?: string }) {
   const [rows, setRows] = useState<Row[]>(initialRows);
   const [loading, setLoading] = useState(false);
-    const [query, setQuery] = useState('');
+  const [query, setQuery] = useState('');
   const [view, setView] = useState<'card' | 'table'>('card');
   const [hasMore, setHasMore] = useState(true);
+  const { getCategoryLabel } = useCategories();
   
       
   useEffect(() => {
@@ -86,7 +87,7 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
   const filtered = rows.filter((r) => {
     const q = query.trim().toLowerCase();
     if (!q) return true;
-    const catLabel = PRESET_CATEGORIES.find((c) => c.key === r.category)?.label || r.category;
+    const catLabel = getCategoryLabel(r.category);
     const typeLabel = r.type === 'income' ? '收入' : '支出';
     return (
       r.category.toLowerCase().includes(q) ||
