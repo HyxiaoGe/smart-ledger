@@ -52,12 +52,15 @@ const SUBCATEGORY_DEFINITIONS: Record<string, Subcategory[]> = {
     { key: 'sport', label: '运动', category_key: 'entertainment' },
     { key: 'music', label: '音乐', category_key: 'entertainment' },
     { key: 'book', label: '图书', category_key: 'entertainment' },
+    { key: 'concert', label: '演出展览', category_key: 'entertainment' },
   ],
   daily: [
     { key: 'groceries', label: '生鲜食材', category_key: 'daily' },
     { key: 'household', label: '日用品', category_key: 'daily' },
     { key: 'personal', label: '个人护理', category_key: 'daily' },
     { key: 'snack', label: '零食', category_key: 'daily' },
+    { key: 'supermarket', label: '超市', category_key: 'daily' },
+    { key: 'convenience', label: '便利店', category_key: 'daily' },
   ],
   subscription: [
     { key: 'software', label: '软件订阅', category_key: 'subscription' },
@@ -65,6 +68,7 @@ const SUBCATEGORY_DEFINITIONS: Record<string, Subcategory[]> = {
     { key: 'network', label: '网络服务', category_key: 'subscription' },
     { key: 'telecom', label: '话费', category_key: 'subscription' },
     { key: 'media', label: '流媒体', category_key: 'subscription' },
+    { key: 'storage', label: '云存储', category_key: 'subscription' },
   ],
   shopping: [
     { key: 'online', label: '网购', category_key: 'shopping' },
@@ -72,16 +76,20 @@ const SUBCATEGORY_DEFINITIONS: Record<string, Subcategory[]> = {
     { key: 'electronics', label: '电子产品', category_key: 'shopping' },
     { key: 'books', label: '图书', category_key: 'shopping' },
     { key: 'beauty', label: '美妆', category_key: 'shopping' },
+    { key: 'home', label: '家居', category_key: 'shopping' },
   ],
   medical: [
     { key: 'hospital', label: '医院', category_key: 'medical' },
-    { key: 'pharmacy', label: '药品', category_key: 'medical' },
+    { key: 'pharmacy', label: '线上买药', category_key: 'medical' },
+    { key: 'pharmacy_store', label: '线下药店', category_key: 'medical' },
     { key: 'checkup', label: '体检', category_key: 'medical' },
+    { key: 'dental', label: '牙科', category_key: 'medical' },
   ],
   utilities: [
     { key: 'utility', label: '水电费', category_key: 'utilities' },
     { key: 'gas', label: '燃气费', category_key: 'utilities' },
     { key: 'property', label: '物业费', category_key: 'utilities' },
+    { key: 'internet', label: '宽带', category_key: 'utilities' },
   ],
 };
 
