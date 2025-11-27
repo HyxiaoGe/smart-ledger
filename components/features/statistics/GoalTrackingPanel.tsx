@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Target, TrendingUp, TrendingDown, ChevronDown, RefreshCw, Trophy, Flag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/clients/supabase/client';
-import { useDataSync } from '@/lib/core/dataSync';
+import { useAllDataSyncEvents } from '@/hooks/useEnhancedDataSync';
 
 interface Goal {
   id: string;
@@ -47,7 +47,7 @@ export function GoalTrackingPanel({
   const [collapsed, setCollapsed] = useState(false);
 
   // 监听数据同步事件
-  useDataSync(() => {
+  useAllDataSyncEvents(() => {
     fetchGoalData();
   });
 

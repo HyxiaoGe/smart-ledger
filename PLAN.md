@@ -27,8 +27,11 @@
 
 ```
 Phase 1: 合并数据同步（1-2天）
-├── 删除 dataSync.ts，统一使用 EnhancedDataSync.ts
-├── 移除 3 个 @deprecated 文件（~527 行）
+├── ✅ 删除 dataSync.ts，统一使用 EnhancedDataSync.ts
+├── ⏳ 移除 3 个 @deprecated 文件（需要迁移引用）
+│   ├── aiCacheService.ts → 被 useAICache.ts, AIAnalysisPanel.tsx 引用
+│   ├── aiCacheServiceServer.ts → 被 predict/route.ts 引用
+│   └── aiFeedbackService.ts → 被 AIFeedbackModal.tsx, ai-feedback/page.tsx 引用
 └── 集中管理 localStorage keys
 
 Phase 2: 统一缓存层（3-5天）
@@ -41,12 +44,16 @@ Phase 3: 生命周期管理（2-3天）
 └── 修复 unifiedCache 60s interval 内存泄漏
 ```
 
+**已完成：**
+- ✅ 删除 `dataSync.ts`（189 行）
+- ✅ 迁移 4 个组件到 `useEnhancedDataSync`
+
 **预期收益：**
 - 删除 ~1,000 行冗余代码
 - 单一缓存失效模式
 - 消除内存泄漏
 
-**状态：** `待开始`
+**状态：** `进行中`
 
 ---
 
@@ -341,4 +348,5 @@ CREATE POLICY "prevent_bulk_delete" ON transactions
 | 日期 | 完成项 | 问题/经验 |
 |------|--------|----------|
 | 2025-11-27 | 创建计划文档 | 调研发现缓存系统过于复杂 |
+| 2025-11-27 | 删除 dataSync.ts，迁移 4 个组件 | @deprecated 文件有外部引用，需要额外迁移工作 |
 
