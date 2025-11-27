@@ -277,23 +277,44 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
 
   /**
    * 获取分类下的常用商家
-   * 从 transactions 表中提取
+   * 合并 common_notes 预设商家和 transactions 历史商家
    */
   async getFrequentMerchants(categoryKey: string, limit: number = 10): Promise<MerchantSuggestion[]> {
-    const { data, error } = await this.supabase
-      .from('transactions')
-      .select('merchant')
-      .eq('category', categoryKey)
-      .not('merchant', 'is', null)
-      .is('deleted_at', null);
+    // 并行获取预设商家和历史商家
+    const [commonNotesResult, transactionsResult] = await Promise.all([
+      this.supabase
+        .from('common_notes')
+        .select('note, usage_count')
+        .eq('category_affinity', categoryKey)
+        .eq('is_active', true)
+        .order('usage_count', { ascending: false }),
+      this.supabase
+        .from('transactions')
+        .select('merchant')
+        .eq('category', categoryKey)
+        .not('merchant', 'is', null)
+        .is('deleted_at', null)
+    ]);
 
-    if (error) {
-      throw new Error(`Failed to get frequent merchants: ${error.message}`);
+    if (commonNotesResult.error) {
+      throw new Error(`Failed to get common notes: ${commonNotesResult.error.message}`);
+    }
+    if (transactionsResult.error) {
+      throw new Error(`Failed to get frequent merchants: ${transactionsResult.error.message}`);
     }
 
-    // 统计商家出现次数
+    // 合并商家数据，common_notes 优先
     const merchantCounts = new Map<string, number>();
-    for (const row of data || []) {
+
+    // 先添加预设商家
+    for (const row of commonNotesResult.data || []) {
+      if (row.note) {
+        merchantCounts.set(row.note, row.usage_count || 0);
+      }
+    }
+
+    // 再添加历史商家（累加使用次数）
+    for (const row of transactionsResult.data || []) {
       if (row.merchant) {
         const count = merchantCounts.get(row.merchant) || 0;
         merchantCounts.set(row.merchant, count + 1);
@@ -313,22 +334,46 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
 
   /**
    * 获取所有分类的常用商家
+   * 合并 common_notes 预设商家和 transactions 历史商家
    */
   async getAllFrequentMerchants(limit: number = 10): Promise<Record<string, MerchantSuggestion[]>> {
-    const { data, error } = await this.supabase
-      .from('transactions')
-      .select('category, merchant')
-      .not('merchant', 'is', null)
-      .is('deleted_at', null);
+    // 并行获取预设商家和历史商家
+    const [commonNotesResult, transactionsResult] = await Promise.all([
+      this.supabase
+        .from('common_notes')
+        .select('note, category_affinity, usage_count')
+        .eq('is_active', true)
+        .not('category_affinity', 'is', null),
+      this.supabase
+        .from('transactions')
+        .select('category, merchant')
+        .not('merchant', 'is', null)
+        .is('deleted_at', null)
+    ]);
 
-    if (error) {
-      throw new Error(`Failed to get all frequent merchants: ${error.message}`);
+    if (commonNotesResult.error) {
+      throw new Error(`Failed to get common notes: ${commonNotesResult.error.message}`);
+    }
+    if (transactionsResult.error) {
+      throw new Error(`Failed to get all frequent merchants: ${transactionsResult.error.message}`);
     }
 
     // 按分类统计商家
     const merchantsByCategory = new Map<string, Map<string, number>>();
 
-    for (const row of data || []) {
+    // 先添加预设商家
+    for (const row of commonNotesResult.data || []) {
+      if (row.note && row.category_affinity) {
+        if (!merchantsByCategory.has(row.category_affinity)) {
+          merchantsByCategory.set(row.category_affinity, new Map());
+        }
+        const categoryMerchants = merchantsByCategory.get(row.category_affinity)!;
+        categoryMerchants.set(row.note, row.usage_count || 0);
+      }
+    }
+
+    // 再添加历史商家（累加使用次数）
+    for (const row of transactionsResult.data || []) {
       if (row.merchant && row.category) {
         if (!merchantsByCategory.has(row.category)) {
           merchantsByCategory.set(row.category, new Map());
