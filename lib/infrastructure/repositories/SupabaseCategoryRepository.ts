@@ -25,8 +25,10 @@ const SUBCATEGORY_DEFINITIONS: Record<string, Subcategory[]> = {
     { key: 'breakfast', label: '早餐', category_key: 'food' },
     { key: 'lunch', label: '午餐', category_key: 'food' },
     { key: 'dinner', label: '晚餐', category_key: 'food' },
-    { key: 'snack', label: '零食', category_key: 'food' },
     { key: 'takeout', label: '外卖', category_key: 'food' },
+    { key: 'dine_in', label: '堂食', category_key: 'food' },
+    { key: 'gathering', label: '聚餐', category_key: 'food' },
+    { key: 'snack', label: '零食小吃', category_key: 'food' },
   ],
   drink: [
     { key: 'coffee', label: '咖啡', category_key: 'drink' },
