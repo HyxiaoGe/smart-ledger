@@ -284,7 +284,7 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
     const [commonNotesResult, transactionsResult] = await Promise.all([
       this.supabase
         .from('common_notes')
-        .select('note, usage_count')
+        .select('content, usage_count')
         .eq('category_affinity', categoryKey)
         .eq('is_active', true)
         .order('usage_count', { ascending: false }),
@@ -308,8 +308,8 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
 
     // 先添加预设商家
     for (const row of commonNotesResult.data || []) {
-      if (row.note) {
-        merchantCounts.set(row.note, row.usage_count || 0);
+      if (row.content) {
+        merchantCounts.set(row.content, row.usage_count || 0);
       }
     }
 
@@ -341,7 +341,7 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
     const [commonNotesResult, transactionsResult] = await Promise.all([
       this.supabase
         .from('common_notes')
-        .select('note, category_affinity, usage_count')
+        .select('content, category_affinity, usage_count')
         .eq('is_active', true)
         .not('category_affinity', 'is', null),
       this.supabase
@@ -363,12 +363,12 @@ export class SupabaseCategoryRepository implements ICategoryRepository {
 
     // 先添加预设商家
     for (const row of commonNotesResult.data || []) {
-      if (row.note && row.category_affinity) {
+      if (row.content && row.category_affinity) {
         if (!merchantsByCategory.has(row.category_affinity)) {
           merchantsByCategory.set(row.category_affinity, new Map());
         }
         const categoryMerchants = merchantsByCategory.get(row.category_affinity)!;
-        categoryMerchants.set(row.note, row.usage_count || 0);
+        categoryMerchants.set(row.content, row.usage_count || 0);
       }
     }
 
