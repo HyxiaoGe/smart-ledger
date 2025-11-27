@@ -16,7 +16,7 @@ import {
   type TrendAnalysisData,
   type PersonalizedAdviceData
 } from './AIAnalysisPanel/utils';
-import { aiCacheService } from '@/lib/services/aiCacheService';
+import { memoryCache } from '@/lib/infrastructure/cache';
 
 interface AIAnalysisPanelProps {
   className?: string;
@@ -82,13 +82,12 @@ export function AIAnalysisPanel({
       processData();
 
       // 尝试从缓存加载 AI 分析结果
-      const loadCachedAnalysis = async () => {
-        const cacheKey = {
-          month: currentMonth || new Date().toISOString().slice(0, 7),
-          dataHash: JSON.stringify(aiData.currentMonthTop20).substring(0, 50) // 使用数据摘要作为key
-        };
+      const loadCachedAnalysis = () => {
+        const month = currentMonth || new Date().toISOString().slice(0, 7);
+        const dataHash = JSON.stringify(aiData.currentMonthTop20).substring(0, 50);
+        const cacheKey = `ai_analysis_${month}_${dataHash}`;
 
-        const cached = await aiCacheService.get<string>('ai_analysis', cacheKey);
+        const cached = memoryCache.get<string>(cacheKey);
         if (cached) {
           console.log('✅ 从缓存加载AI分析结果');
           setAiSummary(cached);
@@ -152,11 +151,13 @@ export function AIAnalysisPanel({
             console.log('🤖 获得AI分析:', aiSummaryResult);
 
             // 3. 保存到缓存（30分钟有效期）
-            const cacheKey = {
-              month: currentMonth || new Date().toISOString().slice(0, 7),
-              dataHash: JSON.stringify(aiData.currentMonthTop20).substring(0, 50)
-            };
-            await aiCacheService.set('ai_analysis', aiSummaryResult, cacheKey);
+            const month = currentMonth || new Date().toISOString().slice(0, 7);
+            const dataHash = JSON.stringify(aiData.currentMonthTop20).substring(0, 50);
+            const cacheKey = `ai_analysis_${month}_${dataHash}`;
+            memoryCache.set(cacheKey, aiSummaryResult, {
+              ttl: 30 * 60 * 1000, // 30分钟
+              tags: ['ai-cache']
+            });
             console.log('💾 AI分析结果已缓存');
           }
         }

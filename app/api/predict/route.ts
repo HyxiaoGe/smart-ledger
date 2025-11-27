@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { chat } from '@/lib/clients/ai/client';
 import { getPredictionData } from '@/lib/services/transactions';
 import { aiPredictionCache } from '@/lib/services/unifiedCache';
-import { aiCacheServiceServer } from '@/lib/services/aiCacheServiceServer';
+import { aiFeedbackService } from '@/lib/services/ai';
 import { aiFeedbackServiceDB } from '@/lib/services/aiFeedbackServiceDB';
 
 export const runtime = 'nodejs';
@@ -193,7 +193,7 @@ ${JSON.stringify({
 
         // 记录AI请求日志到数据库
         const responseTime = Date.now() - startTime;
-        await aiCacheServiceServer.logAIRequest(
+        await aiFeedbackService.logAIRequest(
           'deepseek',
           'deepseek-chat',
           'spending-prediction',
@@ -212,7 +212,7 @@ ${JSON.stringify({
   
         // 记录失败的AI请求
         const responseTime = Date.now() - startTime;
-        await aiCacheServiceServer.logAIRequest(
+        await aiFeedbackService.logAIRequest(
           'deepseek',
           'deepseek-chat',
           'spending-prediction',
