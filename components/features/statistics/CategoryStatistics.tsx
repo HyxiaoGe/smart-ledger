@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { PRESET_CATEGORIES } from '@/lib/config/config';
+import { useCategories } from '@/contexts/CategoryContext';
 import { TrendingUp, BarChart3, ChevronDown, ChevronUp, Store } from 'lucide-react';
 
 interface CategoryStatisticsProps {
@@ -16,6 +16,7 @@ interface CategoryStatisticsProps {
 export function CategoryStatistics({ transactions }: CategoryStatisticsProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const { getCategoryMeta } = useCategories();
 
   // 计算分类统计数据（按主分类聚合）
   const categoryStats = useMemo(() => {
@@ -120,14 +121,14 @@ export function CategoryStatistics({ transactions }: CategoryStatisticsProps) {
   };
 
   // 获取分类信息
-  const getCategoryInfo = (categoryKey: string) => {
-    const category = PRESET_CATEGORIES.find(c => c.key === categoryKey);
+  const getCategoryInfo = useCallback((categoryKey: string) => {
+    const meta = getCategoryMeta(categoryKey);
     return {
-      label: category?.label || categoryKey,
-      color: category?.color || '#6B7280',
-      icon: category?.icon || '📁'
+      label: meta.label,
+      color: meta.color,
+      icon: meta.icon
     };
-  };
+  }, [getCategoryMeta]);
 
   // 格式化金额
   const formatCurrency = (amount: number) => {

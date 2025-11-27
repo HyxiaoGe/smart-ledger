@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
-import { MERCHANT_SUGGESTIONS, SUBCATEGORY_DEFINITIONS } from '@/lib/config/config';
+import { useCategories } from '@/contexts/CategoryContext';
 import { Store, ChevronDown, X } from 'lucide-react';
 
 type MerchantInputProps = {
@@ -32,38 +32,49 @@ export function MerchantInput({
   const [activeIndex, setActiveIndex] = useState(-1);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const { merchants, getMerchantsForCategory } = useCategories();
+
+  // 获取当前分类的商家列表
+  const categoryMerchants = useMemo(() => {
+    return category ? getMerchantsForCategory(category) : [];
+  }, [category, getMerchantsForCategory]);
+
+  // 获取所有商家列表
+  const allMerchants = useMemo(() => {
+    const allMerchantNames = new Set<string>();
+    Object.values(merchants).forEach(merchantList => {
+      merchantList.forEach(m => allMerchantNames.add(m.name));
+    });
+    return Array.from(allMerchantNames);
+  }, [merchants]);
 
   // 获取当前分类的商家建议
   const getMerchantSuggestions = useCallback((inputValue: string, currentCategory?: string) => {
     // 获取当前分类的商家列表
-    const categoryMerchants = currentCategory && currentCategory in MERCHANT_SUGGESTIONS
-      ? MERCHANT_SUGGESTIONS[currentCategory]
-      : [];
+    const currentCategoryMerchants = currentCategory ? getMerchantsForCategory(currentCategory) : [];
 
     // 获取其他分类的商家（作为补充）
-    const otherMerchants = Object.entries(MERCHANT_SUGGESTIONS)
-      .filter(([key]) => key !== currentCategory && key !== 'other')
-      .flatMap(([, merchants]) => merchants);
+    const otherMerchants = allMerchants.filter(m => !currentCategoryMerchants.includes(m));
 
     // 合并所有商家（当前分类优先）
-    const allMerchants = [...new Set([...categoryMerchants, ...otherMerchants, ...(MERCHANT_SUGGESTIONS.other || [])])];
+    const combinedMerchants = [...new Set([...currentCategoryMerchants, ...otherMerchants])];
 
     // 如果输入为空，返回当前分类的建议
     if (!inputValue.trim()) {
-      return categoryMerchants.slice(0, 6);
+      return currentCategoryMerchants.slice(0, 6);
     }
 
     // 根据输入过滤
-    const filtered = allMerchants.filter(merchant =>
+    const filtered = combinedMerchants.filter(merchant =>
       merchant.toLowerCase().includes(inputValue.toLowerCase())
     );
 
     // 优先显示当前分类的匹配项
-    const categoryMatches = filtered.filter(m => categoryMerchants.includes(m));
-    const otherMatches = filtered.filter(m => !categoryMerchants.includes(m));
+    const categoryMatches = filtered.filter(m => currentCategoryMerchants.includes(m));
+    const otherMatches = filtered.filter(m => !currentCategoryMerchants.includes(m));
 
     return [...categoryMatches, ...otherMatches].slice(0, 8);
-  }, []);
+  }, [getMerchantsForCategory, allMerchants]);
 
   // 处理输入变化
   const handleInputChange = useCallback(
@@ -183,7 +194,7 @@ export function MerchantInput({
           <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
             <div className="max-h-64 overflow-y-auto">
               {/* 分类提示 */}
-              {category && category in MERCHANT_SUGGESTIONS && (
+              {category && categoryMerchants.length > 0 && (
                 <div className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700 flex items-center gap-1">
                   <Store className="h-3 w-3" />
                   常用商家建议
@@ -209,7 +220,7 @@ export function MerchantInput({
                   <div className="flex items-center gap-2">
                     <Store className="h-4 w-4 text-gray-400 flex-shrink-0" />
                     <span className="font-medium text-gray-900 dark:text-gray-100">{merchant}</span>
-                    {category && category in MERCHANT_SUGGESTIONS && MERCHANT_SUGGESTIONS[category].includes(merchant) && (
+                    {category && categoryMerchants.includes(merchant) && (
                       <span className="ml-auto text-xs text-blue-600">推荐</span>
                     )}
                   </div>
@@ -241,9 +252,8 @@ export function SubcategorySelect({
   disabled = false,
   className = ''
 }: SubcategorySelectProps) {
-  const subcategories = category && category in SUBCATEGORY_DEFINITIONS
-    ? SUBCATEGORY_DEFINITIONS[category]
-    : [];
+  const { getSubcategoriesForCategory } = useCategories();
+  const subcategories = category ? getSubcategoriesForCategory(category) : [];
 
   if (subcategories.length === 0) {
     return null;

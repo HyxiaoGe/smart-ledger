@@ -1,151 +1,204 @@
-import { supabase } from '@/lib/clients/supabase/client';
+/**
+ * 分类服务
+ * 提供分类相关的业务逻辑，使用 Repository 模式访问数据
+ */
+
+import { categoryRepository } from '@/lib/infrastructure/repositories';
+import type { ICategoryRepository } from '@/lib/domain/repositories/ICategoryRepository';
+import type {
+  Category,
+  CategoryWithStats,
+  CreateCategoryDTO,
+  UpdateCategoryDTO,
+  CategoryQueryFilter,
+  DeleteCategoryResult,
+  CategoryUsageDetail,
+  Subcategory,
+  MerchantSuggestion,
+} from '@/types/dto/category.dto';
+
+// 重新导出类型，保持向后兼容
+export type {
+  Category,
+  CategoryWithStats,
+  CreateCategoryDTO,
+  UpdateCategoryDTO,
+  CategoryQueryFilter,
+  DeleteCategoryResult,
+  CategoryUsageDetail,
+  Subcategory,
+  MerchantSuggestion,
+};
 
 /**
- * 类别定义
+ * 分类服务类
+ * 封装所有分类相关的业务逻辑
  */
-export interface Category {
-  id: string;
-  key: string;
-  label: string;
-  icon: string | null;
-  color: string | null;
-  type: 'income' | 'expense' | 'both';
-  is_system: boolean;
-  is_active: boolean;
-  sort_order: number;
-  usage_count?: number;
-  last_used?: string | null;
-  created_at: string;
-  updated_at: string;
-}
+class CategoryService {
+  constructor(private readonly repository: ICategoryRepository) {}
 
-/**
- * 类别使用详情
- */
-export interface CategoryUsageDetail {
-  total_transactions: number;
-  total_amount: number;
-  avg_amount: number;
-  first_used: string | null;
-  last_used: string | null;
-  this_month_count: number;
-  this_month_amount: number;
-}
-
-/**
- * 删除类别结果
- */
-export interface DeleteCategoryResult {
-  success: boolean;
-  message: string;
-  affected_transactions: number;
-}
-
-/**
- * 获取所有类别（包含使用统计）
- */
-export async function getCategoriesWithStats(): Promise<Category[]> {
-  const { data, error } = await supabase.rpc('get_categories_with_stats');
-
-  if (error) {
-    console.error('获取类别列表失败:', error);
-    throw error;
+  /**
+   * 获取所有分类（含使用统计）
+   */
+  async getCategoriesWithStats(filter?: CategoryQueryFilter): Promise<CategoryWithStats[]> {
+    return this.repository.findAllWithStats(filter);
   }
 
-  return data || [];
-}
-
-/**
- * 添加自定义类别
- */
-export async function addCustomCategory(params: {
-  key: string;
-  label: string;
-  icon?: string;
-  color?: string;
-  type?: 'income' | 'expense' | 'both';
-}): Promise<string> {
-  const { data, error } = await supabase.rpc('add_custom_category', {
-    p_key: params.key,
-    p_label: params.label,
-    p_icon: params.icon || '📁',
-    p_color: params.color || '#6B7280',
-    p_type: params.type || 'expense',
-  });
-
-  if (error) {
-    console.error('添加类别失败:', error);
-    throw error;
+  /**
+   * 获取所有活跃分类
+   */
+  async getActiveCategories(): Promise<Category[]> {
+    return this.repository.findAll({ is_active: true });
   }
 
-  return data;
-}
-
-/**
- * 更新类别
- */
-export async function updateCategory(params: {
-  id: string;
-  label?: string;
-  icon?: string;
-  color?: string;
-  is_active?: boolean;
-  sort_order?: number;
-}): Promise<boolean> {
-  const { data, error } = await supabase.rpc('update_category', {
-    p_id: params.id,
-    p_label: params.label || null,
-    p_icon: params.icon || null,
-    p_color: params.color || null,
-    p_is_active: params.is_active !== undefined ? params.is_active : null,
-    p_sort_order: params.sort_order !== undefined ? params.sort_order : null,
-  });
-
-  if (error) {
-    console.error('更新类别失败:', error);
-    throw error;
+  /**
+   * 获取支出类型的分类
+   */
+  async getExpenseCategories(): Promise<Category[]> {
+    return this.repository.findAll({ type: 'expense', is_active: true });
   }
 
-  return data;
-}
-
-/**
- * 删除类别
- */
-export async function deleteCategory(params: {
-  id: string;
-  migrateToKey?: string;
-}): Promise<DeleteCategoryResult> {
-  const { data, error } = await supabase.rpc('delete_category', {
-    p_id: params.id,
-    p_migrate_to_key: params.migrateToKey || null,
-  });
-
-  if (error) {
-    console.error('删除类别失败:', error);
-    throw error;
+  /**
+   * 根据 key 获取分类
+   */
+  async getCategoryByKey(key: string): Promise<Category | null> {
+    return this.repository.findByKey(key);
   }
 
-  return data[0];
-}
+  /**
+   * 添加自定义分类
+   */
+  async addCustomCategory(params: CreateCategoryDTO): Promise<Category> {
+    // 检查 key 是否已存在
+    const exists = await this.repository.existsByKey(params.key);
+    if (exists) {
+      throw new Error(`分类 key "${params.key}" 已存在`);
+    }
 
-/**
- * 获取类别使用详情
- */
-export async function getCategoryUsageDetail(
-  key: string
-): Promise<CategoryUsageDetail> {
-  const { data, error } = await supabase.rpc('get_category_usage_detail', {
-    p_key: key,
-  });
-
-  if (error) {
-    console.error('获取类别使用详情失败:', error);
-    throw error;
+    return this.repository.create(params);
   }
 
-  return data[0];
+  /**
+   * 更新分类
+   */
+  async updateCategory(id: string, params: UpdateCategoryDTO): Promise<Category> {
+    return this.repository.update(id, params);
+  }
+
+  /**
+   * 删除分类
+   */
+  async deleteCategory(id: string, migrateToKey?: string): Promise<DeleteCategoryResult> {
+    return this.repository.delete(id, migrateToKey);
+  }
+
+  /**
+   * 获取分类使用详情
+   */
+  async getCategoryUsageDetail(key: string): Promise<CategoryUsageDetail> {
+    return this.repository.getUsageDetail(key);
+  }
+
+  /**
+   * 获取分类下的子分类
+   */
+  async getSubcategories(categoryKey: string): Promise<Subcategory[]> {
+    return this.repository.getSubcategories(categoryKey);
+  }
+
+  /**
+   * 获取所有分类的子分类映射
+   */
+  async getAllSubcategories(): Promise<Record<string, Subcategory[]>> {
+    const categories = await this.repository.findAll({ is_active: true });
+    const result: Record<string, Subcategory[]> = {};
+
+    for (const category of categories) {
+      result[category.key] = await this.repository.getSubcategories(category.key);
+    }
+
+    return result;
+  }
+
+  /**
+   * 获取分类下的常用商家
+   */
+  async getFrequentMerchants(categoryKey: string, limit?: number): Promise<MerchantSuggestion[]> {
+    return this.repository.getFrequentMerchants(categoryKey, limit);
+  }
+
+  /**
+   * 获取所有分类的常用商家
+   */
+  async getAllFrequentMerchants(limit?: number): Promise<Record<string, MerchantSuggestion[]>> {
+    return this.repository.getAllFrequentMerchants(limit);
+  }
+
+  /**
+   * 批量更新分类排序
+   */
+  async updateSortOrder(items: { id: string; sort_order: number }[]): Promise<void> {
+    return this.repository.updateSortOrder(items);
+  }
+
+  /**
+   * 获取分类的显示信息（label、icon、color）
+   */
+  async getCategoryMeta(key: string): Promise<{ label: string; icon: string; color: string } | null> {
+    const category = await this.repository.findByKey(key);
+    if (!category) return null;
+
+    return {
+      label: category.label,
+      icon: category.icon || '📁',
+      color: category.color || '#6B7280',
+    };
+  }
 }
+
+// 创建单例服务实例
+const categoryService = new CategoryService(categoryRepository);
+
+// 导出服务方法（保持向后兼容的函数式 API）
+export const getCategoriesWithStats = (filter?: CategoryQueryFilter) =>
+  categoryService.getCategoriesWithStats(filter);
+
+export const getActiveCategories = () => categoryService.getActiveCategories();
+
+export const getExpenseCategories = () => categoryService.getExpenseCategories();
+
+export const getCategoryByKey = (key: string) => categoryService.getCategoryByKey(key);
+
+export const addCustomCategory = (params: CreateCategoryDTO) =>
+  categoryService.addCustomCategory(params);
+
+export const updateCategory = (id: string, params: UpdateCategoryDTO) =>
+  categoryService.updateCategory(id, params);
+
+export const deleteCategory = (id: string, migrateToKey?: string) =>
+  categoryService.deleteCategory(id, migrateToKey);
+
+export const getCategoryUsageDetail = (key: string) =>
+  categoryService.getCategoryUsageDetail(key);
+
+export const getSubcategories = (categoryKey: string) =>
+  categoryService.getSubcategories(categoryKey);
+
+export const getAllSubcategories = () => categoryService.getAllSubcategories();
+
+export const getFrequentMerchants = (categoryKey: string, limit?: number) =>
+  categoryService.getFrequentMerchants(categoryKey, limit);
+
+export const getAllFrequentMerchants = (limit?: number) =>
+  categoryService.getAllFrequentMerchants(limit);
+
+export const updateCategorySortOrder = (items: { id: string; sort_order: number }[]) =>
+  categoryService.updateSortOrder(items);
+
+export const getCategoryMeta = (key: string) => categoryService.getCategoryMeta(key);
+
+// 导出服务实例（供需要完整服务对象的场景使用）
+export { categoryService };
 
 /**
  * 常用 Emoji 图标列表
@@ -200,11 +253,9 @@ export const PRESET_COLORS = [
 ];
 
 /**
- * 生成类别键（从 label 转换）
+ * 生成分类键（从 label 转换）
  */
 export function generateCategoryKey(label: string): string {
-  // 移除特殊字符，转为拼音或英文
-  // 简化版本：使用时间戳 + 随机数
   const timestamp = Date.now().toString(36);
   const random = Math.random().toString(36).substring(2, 5);
   return `custom_${timestamp}_${random}`;

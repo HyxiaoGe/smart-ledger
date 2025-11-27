@@ -5,7 +5,11 @@ export const SUPPORTED_CURRENCIES = [
 
 export const DEFAULT_CURRENCY = 'CNY' as const;
 
-// 预设类别
+/**
+ * @deprecated 此配置已废弃，分类数据现在从数据库动态加载
+ * 请使用 useCategories() hook 或 CategoryContext 获取分类数据
+ * @see contexts/CategoryContext.tsx
+ */
 export const PRESET_CATEGORIES: { key: string; label: string; color?: string; icon?: string }[] = [
   { key: 'food', label: '吃饭', color: '#F97316', icon: '🍜' },
   { key: 'drink', label: '饮料', color: '#22C55E', icon: '🥤' },
@@ -15,10 +19,16 @@ export const PRESET_CATEGORIES: { key: string; label: string; color?: string; ic
   { key: 'utilities', label: '水电', color: '#0EA5E9', icon: '💡' },
   { key: 'daily', label: '日常开销', color: '#F59E0B', icon: '🧺' },
   { key: 'subscription', label: '订阅', color: '#EF4444', icon: '📦' },
+  { key: 'shopping', label: '购物', color: '#EC4899', icon: '🛒' },
+  { key: 'medical', label: '医疗健康', color: '#14B8A6', icon: '🏥' },
   { key: 'other', label: '其他', color: '#6B7280', icon: '📁' }
 ];
 
-// 子分类定义（对应merchant/subcategory/product三层结构）
+/**
+ * @deprecated 此配置已废弃，子分类数据现在从 CategoryContext 动态加载
+ * 请使用 useSubcategories() hook 获取子分类数据
+ * @see contexts/CategoryContext.tsx
+ */
 export const SUBCATEGORY_DEFINITIONS: Record<string, { key: string; label: string }[]> = {
   food: [
     { key: 'breakfast', label: '早餐' },
@@ -79,7 +89,11 @@ export const SUBCATEGORY_DEFINITIONS: Record<string, { key: string; label: strin
   ]
 };
 
-// 常见商家建议（用于添加账单时的自动补全）
+/**
+ * @deprecated 此配置已废弃，商家数据现在从 CategoryContext 动态加载
+ * 请使用 useMerchantSuggestions() hook 获取商家数据
+ * @see contexts/CategoryContext.tsx
+ */
 export const MERCHANT_SUGGESTIONS: Record<string, string[]> = {
   food: ['肯德基', '麦当劳', '必胜客', '和府捞面', '老乡鸡', '面包新语'],
   drink: ['瑞幸咖啡', 'Manner咖啡', '星巴克', '茶百道', '霸王茶姬'],

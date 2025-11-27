@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CategoryChip } from '@/components/CategoryChip';
 import { DateInput } from '@/components/features/input/DateInput';
-import { PRESET_CATEGORIES } from '@/lib/config/config';
+import { useCategories } from '@/contexts/CategoryContext';
 import { formatCurrency } from '@/lib/utils/format';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2, Store, ChevronDown, ChevronUp } from 'lucide-react';
@@ -41,6 +41,7 @@ export function TransactionGroupedList({
   className
 }: TransactionGroupedListProps) {
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
+  const { categories } = useCategories();
 
   // 当 initialTransactions 发生变化时更新本地状态
   useEffect(() => {
@@ -262,7 +263,7 @@ export function TransactionGroupedList({
               value={(form.category as string) || transaction.category}
               onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
             >
-              {PRESET_CATEGORIES.map((c) => (
+              {categories.map((c) => (
                 <option key={c.key} value={c.key}>
                   {c.icon ? `${c.icon} ` : ''}{c.label}
                 </option>
@@ -573,7 +574,6 @@ export function TransactionGroupedList({
                     .map(categoryData => {
                       const categoryKey = `${date}-${categoryData.category}`;
                       const isCategoryExpanded = expandedCategories.has(categoryKey);
-                      const categoryInfo = PRESET_CATEGORIES.find(c => c.key === categoryData.category);
 
                       return (
                         <div key={categoryKey} className="border-t border-gray-100 dark:border-gray-700">

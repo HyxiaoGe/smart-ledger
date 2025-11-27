@@ -2,7 +2,8 @@
 import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { supabase } from '@/lib/clients/supabase/client';
 import type { TransactionType, Currency } from '@/types/domain/transaction';
-import { PRESET_CATEGORIES, SUPPORTED_CURRENCIES, DEFAULT_CURRENCY } from '@/lib/config/config';
+import { SUPPORTED_CURRENCIES, DEFAULT_CURRENCY } from '@/lib/config/config';
+import { useCategories } from '@/contexts/CategoryContext';
 import { CategoryChip } from '@/components/CategoryChip';
 import { Input } from '@/components/ui/input';
 import { ClearableInput } from '@/components/ui/clearable-input';
@@ -22,6 +23,7 @@ import { logger } from '@/lib/services/logging';
 
 export default function AddPage() {
   const type: TransactionType = 'expense'; // 固定为支出类型
+  const { categories, isLoading: categoriesLoading } = useCategories();
   const [category, setCategory] = useState<string>('food');
     const [amountText, setAmountText] = useState<string>('0');
   const [note, setNote] = useState<string>('');
@@ -406,9 +408,9 @@ export default function AddPage() {
                 className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                disabled={loading}
+                disabled={loading || categoriesLoading}
               >
-                {PRESET_CATEGORIES.map((c) => (
+                {categories.map((c) => (
                   <option className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700" key={c.key} value={c.key}>
                     {c.icon ? `${c.icon} ` : ''}{c.label}
                   </option>

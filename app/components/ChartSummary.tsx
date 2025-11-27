@@ -4,10 +4,10 @@ import { AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, Responsive
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/EmptyState';
 import { formatCurrency } from '@/lib/utils/format';
-import { PRESET_CATEGORIES } from '@/lib/config/config';
+import { useCategories } from '@/contexts/CategoryContext';
+import { useMemo } from 'react';
 
 const COLORS = ['#F97316', '#A855F7', '#06B6D4', '#22C55E', '#EF4444', '#3B82F6', '#F59E0B', '#0EA5E9', '#94A3B8'];
-const catMeta = new Map(PRESET_CATEGORIES.map(c => [c.key, { label: c.label, color: c.color || '#94A3B8' }]));
 
 function currencyTick(value: any, currency: string) {
   return formatCurrency(Number(value || 0), currency);
@@ -17,7 +17,7 @@ function Title({ text }: { text: string }) {
   return <CardTitle className="text-base text-muted-foreground">{text}</CardTitle>;
 }
 
-function CustomTooltip({ active, payload, label, currency, kind }: any) {
+function CustomTooltip({ active, payload, label, currency, kind, catMeta }: any) {
   if (!active) return null;
   const box = (title: string, rows: Array<[string, string]>) => (
     <div className="rounded-md border bg-background px-3 py-2 text-xs shadow-sm">
@@ -44,7 +44,7 @@ function CustomTooltip({ active, payload, label, currency, kind }: any) {
     const p = payload?.[0];
     if (!p) return null;
     const key = p?.name as string;
-    const meta = catMeta.get(key);
+    const meta = catMeta?.get(key);
     const name = meta?.label || key;
     const val = p?.value ?? 0;
     const pct = p?.percent ? (p.percent * 100).toFixed(1) + '%' : '';
@@ -66,6 +66,13 @@ export function ChartSummary({
 }) {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { categories } = useCategories();
+
+  // 动态构建分类元数据映射
+  const catMeta = useMemo(() => {
+    return new Map(categories.map(c => [c.key, { label: c.label, color: c.color || '#94A3B8' }]));
+  }, [categories]);
+
   const rangeParam = searchParams.get('range') || 'today';
   const monthParam = searchParams.get('month') || '';
   const currencyParam = searchParams.get('currency') || '';
@@ -149,7 +156,7 @@ export function ChartSummary({
                       return <Cell key={`cell-${index}`} fill={color} />;
                     })}
                   </Pie>
-                  <Tooltip content={<CustomTooltip currency={currency} kind="pie" />} />
+                  <Tooltip content={<CustomTooltip currency={currency} kind="pie" catMeta={catMeta} />} />
                   <Legend verticalAlign="bottom" height={24} formatter={(value: any) => (catMeta.get(value)?.label || value)} />
                 </PieChart>
               </ResponsiveContainer>
