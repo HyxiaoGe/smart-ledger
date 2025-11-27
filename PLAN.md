@@ -28,11 +28,11 @@
 ```
 Phase 1: 合并数据同步（1-2天）
 ├── ✅ 删除 dataSync.ts，统一使用 EnhancedDataSync.ts
-├── ⏳ 移除 3 个 @deprecated 文件（需要迁移引用）
-│   ├── aiCacheService.ts → 被 useAICache.ts, AIAnalysisPanel.tsx 引用
-│   ├── aiCacheServiceServer.ts → 被 predict/route.ts 引用
-│   └── aiFeedbackService.ts → 被 AIFeedbackModal.tsx, ai-feedback/page.tsx 引用
-└── 集中管理 localStorage keys
+├── ✅ 移除 3 个 @deprecated 文件（已完成迁移）
+│   ├── ✅ aiCacheService.ts → 迁移到 memoryCache
+│   ├── ✅ aiCacheServiceServer.ts → 迁移到 aiFeedbackService
+│   └── ✅ aiFeedbackService.ts → 迁移到 @/lib/services/ai
+└── ⏳ 集中管理 localStorage keys
 
 Phase 2: 统一缓存层（3-5天）
 ├── 合并 predictionCache + cacheManager + unifiedCache
@@ -47,6 +47,9 @@ Phase 3: 生命周期管理（2-3天）
 **已完成：**
 - ✅ 删除 `dataSync.ts`（189 行）
 - ✅ 迁移 4 个组件到 `useEnhancedDataSync`
+- ✅ 删除 `aiCacheService.ts`（157 行）- 迁移引用到 `memoryCache`
+- ✅ 删除 `aiCacheServiceServer.ts`（117 行）- 迁移引用到 `aiFeedbackService`
+- ✅ 删除 `aiFeedbackService.ts`（265 行）- 迁移引用到 `@/lib/services/ai`
 
 **预期收益：**
 - 删除 ~1,000 行冗余代码
@@ -349,4 +352,5 @@ CREATE POLICY "prevent_bulk_delete" ON transactions
 |------|--------|----------|
 | 2025-11-27 | 创建计划文档 | 调研发现缓存系统过于复杂 |
 | 2025-11-27 | 删除 dataSync.ts，迁移 4 个组件 | @deprecated 文件有外部引用，需要额外迁移工作 |
+| 2025-11-27 | 删除 3 个 @deprecated 文件（728 行） | 迁移引用到统一服务，需要处理同步/异步 API 差异 |
 

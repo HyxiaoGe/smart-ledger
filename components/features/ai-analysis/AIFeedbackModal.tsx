@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { X, ThumbsUp, ThumbsDown, Star, MessageSquare, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { aiFeedbackService } from '@/lib/services/aiFeedbackService';
+import { aiFeedbackService } from '@/lib/services/ai';
 import type { FeedbackTemplate, FeedbackQuestion } from '@/types/ai-feedback';
 
 interface AIFeedbackModalProps {

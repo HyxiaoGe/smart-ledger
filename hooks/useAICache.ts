@@ -4,17 +4,17 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
-import { aiCacheService } from '@/lib/services/aiCacheService';
+import { memoryCache } from '@/lib/infrastructure/cache';
 import { aiFeedbackServiceDB } from '@/lib/services/aiFeedbackServiceDB';
 
 export function useAICache() {
-  const [cacheStats, setCacheStats] = useState(aiCacheService.getStats());
-  const [healthStatus, setHealthStatus] = useState({ healthy: true, issues: [] });
+  const [cacheStats, setCacheStats] = useState(memoryCache.getStats());
+  const [healthStatus, setHealthStatus] = useState({ healthy: true, issues: [] as string[] });
 
   // 定期更新缓存统计
   useEffect(() => {
     const interval = setInterval(() => {
-      setCacheStats(aiCacheService.getStats());
+      setCacheStats(memoryCache.getStats());
     }, 5000); // 每5秒更新一次
 
     return () => clearInterval(interval);
@@ -26,42 +26,48 @@ export function useAICache() {
   }, []);
 
   // 强制刷新特定缓存
-  const refreshCache = useCallback(async (type: string, params: Record<string, any> = {}) => {
-    return aiCacheService.smartGet(
-      type,
-      params,
-      async () => {
-        // 根据类型调用相应的数据库获取函数
-        switch (type) {
-          case 'feedback_stats':
-            return aiFeedbackServiceDB.getFeedbackStats();
-          case 'ai_feedbacks':
-            return aiFeedbackServiceDB.getAllFeedbacks(params.limit || 100, params.offset || 0);
-          default:
-            throw new Error(`Unknown cache type: ${type}`);
-        }
-      },
-      { forceRefresh: true }
-    );
+  const refreshCache = useCallback(async <T>(type: string, params: Record<string, any> = {}): Promise<T> => {
+    const cacheKey = `ai_cache_${type}_${JSON.stringify(params)}`;
+
+    // 根据类型调用相应的数据库获取函数
+    let data: T;
+    switch (type) {
+      case 'feedback_stats':
+        data = await aiFeedbackServiceDB.getFeedbackStats() as T;
+        break;
+      case 'ai_feedbacks':
+        data = await aiFeedbackServiceDB.getAllFeedbacks(params.limit || 100, params.offset || 0) as T;
+        break;
+      default:
+        throw new Error(`Unknown cache type: ${type}`);
+    }
+
+    // 存入缓存
+    memoryCache.set(cacheKey, data, {
+      ttl: 30 * 60 * 1000,
+      tags: ['ai-cache']
+    });
+
+    return data;
   }, []);
 
   // 清空所有缓存
   const clearAllCache = useCallback(() => {
-    aiCacheService.clearAll();
-    setCacheStats(aiCacheService.getStats());
+    memoryCache.invalidateByTag('ai-cache');
+    setCacheStats(memoryCache.getStats());
   }, []);
 
   // 失效特定模式的缓存
   const invalidateCache = useCallback((pattern: string) => {
-    aiCacheService.invalidatePattern(pattern);
-    setCacheStats(aiCacheService.getStats());
+    memoryCache.invalidateByPrefix(`ai_cache_${pattern}`);
+    setCacheStats(memoryCache.getStats());
   }, []);
 
   // 预热缓存
   const warmupCache = useCallback(async () => {
     // 预热功能已移除，保留空实现以保持兼容
     console.warn('warmupCache() 功能已移除');
-    setCacheStats(aiCacheService.getStats());
+    setCacheStats(memoryCache.getStats());
   }, []);
 
   // 导出缓存数据（调试用）

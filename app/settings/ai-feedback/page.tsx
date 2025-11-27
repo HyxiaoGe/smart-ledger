@@ -30,7 +30,7 @@ import {
   Filter,
   RefreshCw
 } from 'lucide-react';
-import { aiFeedbackService } from '@/lib/services/aiFeedbackService';
+import { aiFeedbackService, getAIFeedbackStats } from '@/lib/services/ai';
 import type { AIFeedback, AIFeedbackStats } from '@/types/ai-feedback';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
@@ -49,8 +49,11 @@ export default function AIFeedbackManagementPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const allFeedbacks = aiFeedbackService.getAllFeedbacks();
-      const feedbackStats = aiFeedbackService.getFeedbackStats();
+      // 使用新的异步 API
+      const [allFeedbacks, feedbackStats] = await Promise.all([
+        aiFeedbackService.getAllFeedbacks(),
+        getAIFeedbackStats()
+      ]);
 
       // 应用过滤
       const filteredFeedbacks = filterFeedbacks(allFeedbacks);
@@ -103,9 +106,9 @@ export default function AIFeedbackManagementPage() {
   }, [filter]);
 
   // 导出数据
-  const exportData = (format: 'json' | 'csv' = 'json') => {
+  const exportData = async (format: 'json' | 'csv' = 'json') => {
     try {
-      const data = aiFeedbackService.exportFeedbacks(format);
+      const data = await aiFeedbackService.exportFeedbacks(format);
       const blob = new Blob([data], {
         type: format === 'json' ? 'application/json' : 'text/csv'
       });
