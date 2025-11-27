@@ -32,9 +32,10 @@ const SUBCATEGORY_DEFINITIONS: Record<string, Subcategory[]> = {
   ],
   drink: [
     { key: 'coffee', label: '咖啡', category_key: 'drink' },
+    { key: 'milk_tea', label: '奶茶', category_key: 'drink' },
     { key: 'tea', label: '茶饮', category_key: 'drink' },
     { key: 'juice', label: '果汁', category_key: 'drink' },
-    { key: 'water', label: '水', category_key: 'drink' },
+    { key: 'water', label: '饮用水', category_key: 'drink' },
     { key: 'milk', label: '奶制品', category_key: 'drink' },
   ],
   transport: [
