@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { TrendingUp, TrendingDown, BarChart, ChevronDown, RefreshCw, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/clients/supabase/client';
-import { useDataSync } from '@/lib/core/dataSync';
+import { useAllDataSyncEvents } from '@/hooks/useEnhancedDataSync';
 
 interface CategoryPrediction {
   category: string;
@@ -42,7 +42,7 @@ export function ConsumptionPredictionPanel({
   const [collapsed, setCollapsed] = useState(false);
 
   // 监听数据同步事件
-  useDataSync(() => {
+  useAllDataSyncEvents(() => {
     fetchPredictionData();
   });
 

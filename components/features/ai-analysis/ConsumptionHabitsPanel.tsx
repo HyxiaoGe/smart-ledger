@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar, Clock, ChevronDown, RefreshCw, Activity, Coffee, ShoppingCart, Gamepad2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/clients/supabase/client';
-import { useDataSync } from '@/lib/core/dataSync';
+import { useAllDataSyncEvents } from '@/hooks/useEnhancedDataSync';
 
 interface HabitPattern {
   period: string;
@@ -76,7 +76,7 @@ export function ConsumptionHabitsPanel({
   const [collapsed, setCollapsed] = useState(false);
 
   // 监听数据同步事件
-  useDataSync(() => {
+  useAllDataSyncEvents(() => {
     analyzeConsumptionHabits();
   });
 

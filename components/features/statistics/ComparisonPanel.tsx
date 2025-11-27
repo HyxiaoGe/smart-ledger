@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Trophy, Users, ChevronDown, RefreshCw, Award, ArrowUp, ArrowDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/clients/supabase/client';
-import { useDataSync } from '@/lib/core/dataSync';
+import { useAllDataSyncEvents } from '@/hooks/useEnhancedDataSync';
 
 interface ComparisonData {
   userStats: {
@@ -49,7 +49,7 @@ export function ComparisonPanel({
   const [collapsed, setCollapsed] = useState(false);
 
   // 监听数据同步事件
-  useDataSync(() => {
+  useAllDataSyncEvents(() => {
     generateComparisonData();
   });
 
