@@ -90,26 +90,42 @@
 
 ---
 
-## 四、待迁移组件
+## 四、待迁移组件 (阶段4)
+
+> **注意**: 客户端组件使用 `'use client'` 指令，不能直接使用 Prisma（服务端运行）。
+> 需要创建对应的 API 路由，组件通过 API 调用来访问数据。
+
+### 迁移策略
+
+1. **创建 API 路由**: 为组件使用的 RPC 函数创建对应的 API 端点
+2. **更新组件**: 将 Supabase RPC 调用替换为 API 调用
+3. **保持兼容**: API 路由使用 Repository 模式，支持 Prisma/Supabase 切换
+
+### 需要创建的 API 路由
+
+| RPC 函数 | API 路由 | 状态 |
+|---------|---------|------|
+| `upsert_transaction` | `/api/transactions` (POST) | ⏳ |
+| 直接 `transactions` 查询 | `/api/transactions` (GET) | ⏳ |
 
 ### P0 - 核心组件
 
-| # | 组件文件 | 用途 | 状态 |
-|---|---------|------|------|
-| 1 | `app/add/page.tsx` | 添加账单页 | ⏳ |
-| 2 | `app/components/TransactionList.tsx` | 交易列表 | ⏳ |
-| 3 | `components/features/transactions/QuickTransaction/QuickTransaction.tsx` | 快速记账 | ⏳ |
-| 4 | `components/features/transactions/QuickTransaction/QuickTransactionCard.tsx` | 快速记账卡片 | ⏳ |
-| 5 | `components/features/transactions/TransactionList/GroupedList.tsx` | 交易列表分组 | ⏳ |
+| # | 组件文件 | 用途 | 使用的 RPC/表 | 状态 |
+|---|---------|------|-------------|------|
+| 1 | `app/add/page.tsx` | 添加账单页 | `upsert_transaction` | ⏳ |
+| 2 | `app/components/TransactionList.tsx` | 交易列表 | `transactions` 查询 | ⏳ |
+| 3 | `QuickTransaction.tsx` | 快速记账 | `upsert_transaction` | ⏳ |
+| 4 | `QuickTransactionCard.tsx` | 快速记账卡片 | `upsert_transaction` | ⏳ |
+| 5 | `GroupedList.tsx` | 交易列表分组 | `transactions` 查询 | ⏳ |
 
 ### P1 - 统计/分析组件
 
-| # | 组件文件 | 用途 | 状态 |
-|---|---------|------|------|
-| 6 | `components/features/statistics/ComparisonPanel.tsx` | 对比面板 | ⏳ |
-| 7 | `components/features/statistics/GoalTrackingPanel.tsx` | 目标追踪 | ⏳ |
-| 8 | `components/features/ai-analysis/ConsumptionHabitsPanel.tsx` | 消费习惯 | ⏳ |
-| 9 | `components/features/ai-analysis/ConsumptionPredictionPanel.tsx` | 消费预测 | ⏳ |
+| # | 组件文件 | 用途 | 使用的 RPC/表 | 状态 |
+|---|---------|------|-------------|------|
+| 6 | `ComparisonPanel.tsx` | 对比面板 | `transactions` 聚合 | ⏳ |
+| 7 | `GoalTrackingPanel.tsx` | 目标追踪 | `budgets`, `transactions` | ⏳ |
+| 8 | `ConsumptionHabitsPanel.tsx` | 消费习惯 | `transactions` 分析 | ⏳ |
+| 9 | `ConsumptionPredictionPanel.tsx` | 消费预测 | `transactions` 预测 | ⏳ |
 
 ---
 
