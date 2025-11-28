@@ -5,7 +5,7 @@ import {
   listTransactionsByRange,
   listYesterdayTransactions,
   getAIAnalysisData
-} from '@/lib/services/transactions';
+} from '@/lib/services/transactions.server';
 import { getMonthlyBudgetStatus, getCurrentYearMonth } from '@/lib/services/budgetService';
 import { RangePicker } from '@/components/shared/RangePicker';
 import { CollapsibleTransactionList } from '@/components/features/transactions/TransactionList/CollapsibleList';
