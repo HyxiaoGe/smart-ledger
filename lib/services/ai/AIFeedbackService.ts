@@ -10,6 +10,7 @@
 
 import { supabase } from '@/lib/clients/supabase/client';
 import { memoryCache } from '@/lib/infrastructure/cache';
+import { STORAGE_KEYS } from '@/lib/config/storageKeys';
 import type {
   AIFeedback,
   AIFeedbackStats,
@@ -30,9 +31,10 @@ import type {
  */
 export class AIFeedbackService {
   private static instance: AIFeedbackService;
-  private readonly STORAGE_KEY = 'ai_feedbacks_v2';
-  private readonly SESSION_KEY = 'ai_feedback_session_v1';
-  private readonly SYNCED_IDS_KEY = 'ai_synced_ids_v1';
+  // 使用统一的 storage keys
+  private readonly STORAGE_KEY = STORAGE_KEYS.AI_FEEDBACKS;
+  private readonly SESSION_KEY = STORAGE_KEYS.AI_FEEDBACK_SESSION;
+  private readonly SYNCED_IDS_KEY = STORAGE_KEYS.AI_SYNCED_IDS;
 
   // 配置
   private config: FeedbackConfig = {

@@ -2,8 +2,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { readJSON, writeJSON, removeItem } from '@/lib/utils/storage';
 import { commonNotesService, type CommonNote } from '@/lib/services/commonNotes';
+import { STORAGE_KEYS } from '@/lib/config/storageKeys';
 
-export const COMMON_NOTES_CACHE_KEY = 'common-notes-cache';
+export const COMMON_NOTES_CACHE_KEY = STORAGE_KEYS.COMMON_NOTES_CACHE;
 const CACHE_TTL = 24 * 60 * 60 * 1000;
 
 type UseCommonNotesResult = {

@@ -4,6 +4,7 @@
  */
 
 import { predictionCache } from './predictionCache';
+import { STORAGE_KEYS } from '@/lib/config/storageKeys';
 
 interface CacheInvalidationRule {
   id: string;
@@ -71,12 +72,12 @@ class CacheManager {
       id: 'cross_month',
       name: '跨月时失效缓存',
       condition: (context) => {
-        const cachedMonth = localStorage.getItem('prediction_cache_month');
+        const cachedMonth = localStorage.getItem(STORAGE_KEYS.PREDICTION_CACHE_MONTH);
         return cachedMonth !== context.currentMonth;
       },
       action: () => {
         predictionCache.invalidateCache();
-        localStorage.setItem('prediction_cache_month', context.currentMonth);
+        localStorage.setItem(STORAGE_KEYS.PREDICTION_CACHE_MONTH, context.currentMonth);
         console.log('📅 跨月更新，预测缓存已失效');
       },
       priority: 3
@@ -170,7 +171,7 @@ class CacheManager {
    */
   private getCachedTransactionCount(): number | null {
     try {
-      const cached = localStorage.getItem('prediction_cache_transaction_count');
+      const cached = localStorage.getItem(STORAGE_KEYS.PREDICTION_CACHE_TX_COUNT);
       return cached ? parseInt(cached) : null;
     } catch (error) {
       return null;
@@ -184,7 +185,7 @@ class CacheManager {
     try {
       // 这里应该从实际的数据源获取，现在先保存一个占位符
       const count = Math.floor(Math.random() * 100) + 20; // 模拟数据
-      localStorage.setItem('prediction_cache_transaction_count', count.toString());
+      localStorage.setItem(STORAGE_KEYS.PREDICTION_CACHE_TX_COUNT, count.toString());
     } catch (error) {
       console.error('更新缓存交易数量失败:', error);
     }
@@ -212,8 +213,8 @@ class CacheManager {
    */
   clearAllCaches(): void {
     predictionCache.clearCache();
-    localStorage.removeItem('prediction_cache_transaction_count');
-    localStorage.removeItem('prediction_cache_month');
+    localStorage.removeItem(STORAGE_KEYS.PREDICTION_CACHE_TX_COUNT);
+    localStorage.removeItem(STORAGE_KEYS.PREDICTION_CACHE_MONTH);
     this.lastInvalidationTime = Date.now();
     console.log('🗑️ 所有预测缓存已清理');
   }
