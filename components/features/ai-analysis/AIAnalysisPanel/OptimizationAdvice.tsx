@@ -5,19 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Lightbulb, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PRIORITY_CONFIG } from './constants';
-
-interface Suggestion {
-  category: string;
-  suggestion: string;
-  potential: number;
-  priority: 'high' | 'medium' | 'low';
-}
-
-interface PersonalizedAdviceData {
-  recommendedBudget: number;
-  suggestedSavings: number;
-  suggestions: Suggestion[];
-}
+import type { PersonalizedAdviceData, Suggestion } from './utils';
 
 interface OptimizationAdviceProps {
   data: PersonalizedAdviceData | null;

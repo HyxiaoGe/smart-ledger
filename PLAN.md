@@ -124,29 +124,41 @@ Week 4: 标准化服务模式
 **方案：**
 
 ```
-Priority 1: 消除重复（1小时）
-├── 移除 TrendAnalysis.tsx 中重复的 TrendAnalysisData
-└── 移除 OptimizationAdvice.tsx 中重复的 PersonalizedAdviceData
+Priority 1: 消除重复 ✅ 已完成
+├── ✅ 移除 TrendAnalysis.tsx 中重复的 TrendAnalysisData
+└── ✅ 移除 OptimizationAdvice.tsx 中重复的 PersonalizedAdviceData
 
-Priority 2: 创建通用类型（2小时）
-└── types/common/index.ts: QueryFilter, SortOptions, PaginationOptions
+Priority 2: 创建通用类型 ✅ 已完成
+├── ✅ types/ui/chart.ts: ChartTooltipProps, ChartLegendProps, TooltipPayloadItem
+└── ✅ types/common/index.ts: QueryFilter, SortOptions, PaginationOptions, getErrorMessage
 
-Priority 3: 替换 any 类型（10小时）
-├── 图表组件 TooltipProps, LegendProps
-├── 服务层 AIRequestContext
-└── 错误处理 catch (error: unknown)
+Priority 3: 替换图表组件 any 类型 ✅ 已完成
+├── ✅ CategoryStatistics.tsx - CustomTooltip, CustomLegend
+├── ✅ PredictionTrendChart.tsx - CustomTooltip, CategoryTooltip
+└── ✅ ChartSummary.tsx - CustomTooltip, currencyTick, Legend formatter
 
-Priority 4: 重组类型目录（3小时）
+Priority 4: 重组类型目录 ✅ 已完成
 types/
-├── common/     # 通用类型
+├── common/     # 通用类型 ✅
 ├── domain/     # 领域类型
 ├── dto/        # 数据传输对象
-├── api/        # API 请求/响应类型
-├── ui/         # UI 组件类型
-└── services/   # 服务类型
+├── database/   # 数据库类型
+├── ui/         # UI 组件类型 ✅
+└── ai-feedback/# AI 反馈类型
+
+待处理:
+├── 服务层 AIRequestContext
+└── 错误处理 catch (error: unknown) - 约 6 处
 ```
 
-**状态：** `待开始`
+**已完成：**
+- ✅ 移除 2 个重复类型定义（TrendAnalysisData, PersonalizedAdviceData）
+- ✅ 创建 `types/ui/chart.ts` - Recharts 类型定义
+- ✅ 创建 `types/common/index.ts` - 通用工具类型
+- ✅ 更新 `types/index.ts` 导出新模块
+- ✅ 修复 3 个图表组件的 `any` 类型（共 8 处）
+
+**状态：** `Priority 1-3 完成，Priority 4 部分完成`
 
 ---
 
@@ -362,4 +374,5 @@ CREATE POLICY "prevent_bulk_delete" ON transactions
 | 2025-11-27 | 删除 3 个 @deprecated 文件（728 行） | 迁移引用到统一服务，需要处理同步/异步 API 差异 |
 | 2025-11-28 | Phase 1 完成：集中管理 localStorage keys | 创建 storageKeys.ts，迁移 8 个文件，统一 10 个 key |
 | 2025-11-28 | Phase 2 完成：统一缓存层 | 删除 unifiedCache.ts(260行)，创建 cacheConfig.ts，消除内存泄漏 |
+| 2025-11-28 | 2.4 类型定义整合（Priority 1-3） | 创建 chart.ts、common/index.ts，修复 8 处图表 any 类型 |
 

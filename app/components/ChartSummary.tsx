@@ -6,10 +6,25 @@ import { EmptyState } from '@/components/EmptyState';
 import { formatCurrency } from '@/lib/utils/format';
 import { useCategories } from '@/contexts/CategoryContext';
 import { useMemo } from 'react';
+import type { TooltipPayloadItem } from '@/types/ui/chart';
+
+interface CategoryMeta {
+  label: string;
+  color: string;
+}
+
+interface ChartSummaryTooltipProps {
+  active?: boolean;
+  payload?: TooltipPayloadItem[];
+  label?: string | number;
+  currency: string;
+  kind: 'trend' | 'compare' | 'pie';
+  catMeta?: Map<string, CategoryMeta>;
+}
 
 const COLORS = ['#F97316', '#A855F7', '#06B6D4', '#22C55E', '#EF4444', '#3B82F6', '#F59E0B', '#0EA5E9', '#94A3B8'];
 
-function currencyTick(value: any, currency: string) {
+function currencyTick(value: number | string, currency: string) {
   return formatCurrency(Number(value || 0), currency);
 }
 
@@ -17,7 +32,7 @@ function Title({ text }: { text: string }) {
   return <CardTitle className="text-base text-muted-foreground">{text}</CardTitle>;
 }
 
-function CustomTooltip({ active, payload, label, currency, kind, catMeta }: any) {
+function CustomTooltip({ active, payload, label, currency, kind, catMeta }: ChartSummaryTooltipProps) {
   if (!active) return null;
   const box = (title: string, rows: Array<[string, string]>) => (
     <div className="rounded-md border bg-background px-3 py-2 text-xs shadow-sm">
@@ -36,8 +51,8 @@ function CustomTooltip({ active, payload, label, currency, kind, catMeta }: any)
   }
   if (kind === 'compare') {
     const p = payload || [];
-    const inc = p.find((x: any) => x.dataKey === 'income')?.value ?? 0;
-    const exp = p.find((x: any) => x.dataKey === 'expense')?.value ?? 0;
+    const inc = p.find((x: TooltipPayloadItem) => x.dataKey === 'income')?.value ?? 0;
+    const exp = p.find((x: TooltipPayloadItem) => x.dataKey === 'expense')?.value ?? 0;
     return box(String(label), [["收入", formatCurrency(inc, currency)], ["支出", formatCurrency(exp, currency)]]);
   }
   if (kind === 'pie') {
@@ -47,7 +62,9 @@ function CustomTooltip({ active, payload, label, currency, kind, catMeta }: any)
     const meta = catMeta?.get(key);
     const name = meta?.label || key;
     const val = p?.value ?? 0;
-    const pct = p?.percent ? (p.percent * 100).toFixed(1) + '%' : '';
+    const pct = (p as TooltipPayloadItem & { percent?: number })?.percent
+      ? ((p as TooltipPayloadItem & { percent?: number }).percent! * 100).toFixed(1) + '%'
+      : '';
     return box(name, [["金额", formatCurrency(val, currency)], ["占比", pct]]);
   }
   return null;
@@ -157,7 +174,7 @@ export function ChartSummary({
                     })}
                   </Pie>
                   <Tooltip content={<CustomTooltip currency={currency} kind="pie" catMeta={catMeta} />} />
-                  <Legend verticalAlign="bottom" height={24} formatter={(value: any) => (catMeta.get(value)?.label || value)} />
+                  <Legend verticalAlign="bottom" height={24} formatter={(value: string) => (catMeta.get(value)?.label || value)} />
                 </PieChart>
               </ResponsiveContainer>
             </div>

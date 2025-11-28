@@ -18,17 +18,22 @@ export interface TrendAnalysisData {
 }
 
 /**
+ * 优化建议项类型
+ */
+export interface Suggestion {
+  category: string;
+  suggestion: string;
+  potential: number;
+  priority: 'high' | 'medium' | 'low';
+}
+
+/**
  * 个性化建议数据类型
  */
 export interface PersonalizedAdviceData {
   recommendedBudget: number;
   suggestedSavings: number;
-  suggestions: Array<{
-    category: string;
-    suggestion: string;
-    potential: number;
-    priority: 'high' | 'medium' | 'low';
-  }>;
+  suggestions: Suggestion[];
 }
 
 /**
