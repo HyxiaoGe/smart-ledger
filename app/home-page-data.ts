@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/clients/supabase/client';
+import { executeQuery, getPrismaClient, getSupabaseClient } from '@/lib/clients/db';
 import { parseMonthStr, formatMonth, getQuickRange } from '@/lib/utils/date';
 
 type MonthData = {
@@ -94,25 +94,52 @@ async function loadMonthData(currency: string, date: Date): Promise<MonthData> {
 
   const { start, end, prevStart, prevEnd } = monthRange(date);
 
-  const [cur, prev] = await Promise.all([
-    supabase
-      .from('transactions')
-      .select('type, category, amount, date, currency')
-      .is('deleted_at', null)
-      .gte('date', start)
-      .lt('date', end)
-      .eq('currency', currency),
-    supabase
-      .from('transactions')
-      .select('type, amount, date, currency')
-      .is('deleted_at', null)
-      .gte('date', prevStart)
-      .lt('date', prevEnd)
-      .eq('currency', currency)
-  ]);
-
-  const rows = cur.data || [];
-  const prevRows = prev.data || [];
+  const [rows, prevRows] = await executeQuery(
+    // Supabase 查询
+    async () => {
+      const supabase = getSupabaseClient();
+      const [cur, prev] = await Promise.all([
+        supabase
+          .from('transactions')
+          .select('type, category, amount, date, currency')
+          .is('deleted_at', null)
+          .gte('date', start)
+          .lt('date', end)
+          .eq('currency', currency),
+        supabase
+          .from('transactions')
+          .select('type, amount, date, currency')
+          .is('deleted_at', null)
+          .gte('date', prevStart)
+          .lt('date', prevEnd)
+          .eq('currency', currency)
+      ]);
+      return [cur.data || [], prev.data || []] as [any[], any[]];
+    },
+    // Prisma 查询
+    async () => {
+      const prisma = getPrismaClient();
+      const [cur, prev] = await Promise.all([
+        prisma.transactions.findMany({
+          where: {
+            deleted_at: null,
+            date: { gte: start, lt: end },
+            currency,
+          },
+          select: { type: true, category: true, amount: true, date: true, currency: true },
+        }),
+        prisma.transactions.findMany({
+          where: {
+            deleted_at: null,
+            date: { gte: prevStart, lt: prevEnd },
+            currency,
+          },
+          select: { type: true, amount: true, date: true, currency: true },
+        }),
+      ]);
+      return [cur, prev] as [any[], any[]];
+    }
+  );
 
   const sum = (arr: any[], pred: (item: any) => boolean) =>
     arr.filter(pred).reduce((a, b) => a + Number(b.amount || 0), 0);
@@ -170,27 +197,55 @@ async function loadRangeData(
     rLabel = quickRange.label;
   }
 
-  let query = supabase
-    .from('transactions')
-    .select('type, category, amount, date, currency')
-    .is('deleted_at', null)
-    .eq('currency', currency);
-
   const isSingleDay = rangeParam === 'today' || rangeParam === 'yesterday' || rStart === rEnd;
 
-  if (isSingleDay) {
-    query = query.eq('date', rStart);
-  } else if (rangeParam === 'custom') {
+  // 计算结束日期
+  let queryEnd = rEnd;
+  if (rangeParam === 'custom') {
     const endDate = new Date(rEnd);
     endDate.setDate(endDate.getDate() + 1);
-    const endDateStr = endDate.toISOString().slice(0, 10);
-    query = query.gte('date', rStart).lt('date', endDateStr);
-  } else {
-    query = query.gte('date', rStart).lt('date', rEnd);
+    queryEnd = endDate.toISOString().slice(0, 10);
   }
 
-  const { data: rRows } = await query;
-  const rows = rRows || [];
+  const rows = await executeQuery(
+    // Supabase 查询
+    async () => {
+      const supabase = getSupabaseClient();
+      let query = supabase
+        .from('transactions')
+        .select('type, category, amount, date, currency')
+        .is('deleted_at', null)
+        .eq('currency', currency);
+
+      if (isSingleDay) {
+        query = query.eq('date', rStart);
+      } else {
+        query = query.gte('date', rStart).lt('date', queryEnd);
+      }
+
+      const { data } = await query;
+      return data || [];
+    },
+    // Prisma 查询
+    async () => {
+      const prisma = getPrismaClient();
+      const where: any = {
+        deleted_at: null,
+        currency,
+      };
+
+      if (isSingleDay) {
+        where.date = rStart;
+      } else {
+        where.date = { gte: rStart, lt: queryEnd };
+      }
+
+      return await prisma.transactions.findMany({
+        where,
+        select: { type: true, category: true, amount: true, date: true, currency: true },
+      });
+    }
+  );
   const expense = rows.filter((r) => r.type === 'expense').reduce((a, b) => a + Number(b.amount || 0), 0);
 
   return { expense, label: rLabel, rows };
@@ -218,27 +273,66 @@ async function loadTopData(
   // 判断是否为单日查询（和 loadRangeData 逻辑一致）
   const isSingleDay = rangeParam === 'today' || rangeParam === 'yesterday' || rStart === rEnd;
 
-  let query = supabase
-    .from('transactions')
-    .select('id, type, category, amount, date, note, currency, merchant, subcategory, product')
-    .is('deleted_at', null)
-    .eq('currency', currency)
-    .eq('type', 'expense');
-
-  // 根据是否为单日选择不同的查询方式
-  if (isSingleDay) {
-    query = query.eq('date', rStart);
-  } else if (rangeParam === 'custom') {
+  // 计算结束日期
+  let queryEnd = rEnd;
+  if (rangeParam === 'custom') {
     const endDate = new Date(rEnd);
     endDate.setDate(endDate.getDate() + 1);
-    const endDateStr = endDate.toISOString().slice(0, 10);
-    query = query.gte('date', rStart).lt('date', endDateStr);
-  } else {
-    query = query.gte('date', rStart).lt('date', rEnd);
+    queryEnd = endDate.toISOString().slice(0, 10);
   }
 
-  const { data: allData } = await query;
-  const transactions = allData || [];
+  const transactions = await executeQuery(
+    // Supabase 查询
+    async () => {
+      const supabase = getSupabaseClient();
+      let query = supabase
+        .from('transactions')
+        .select('id, type, category, amount, date, note, currency, merchant, subcategory, product')
+        .is('deleted_at', null)
+        .eq('currency', currency)
+        .eq('type', 'expense');
+
+      if (isSingleDay) {
+        query = query.eq('date', rStart);
+      } else {
+        query = query.gte('date', rStart).lt('date', queryEnd);
+      }
+
+      const { data } = await query;
+      return data || [];
+    },
+    // Prisma 查询
+    async () => {
+      const prisma = getPrismaClient();
+      const where: any = {
+        deleted_at: null,
+        currency,
+        type: 'expense',
+      };
+
+      if (isSingleDay) {
+        where.date = rStart;
+      } else {
+        where.date = { gte: rStart, lt: queryEnd };
+      }
+
+      return await prisma.transactions.findMany({
+        where,
+        select: {
+          id: true,
+          type: true,
+          category: true,
+          amount: true,
+          date: true,
+          note: true,
+          currency: true,
+          merchant: true,
+          subcategory: true,
+          product: true,
+        },
+      });
+    }
+  );
 
   // 按分类聚合数据
   const categoryMap = new Map<string, {
@@ -295,15 +389,30 @@ async function loadTopData(
 }
 
 async function loadRecurringExpenses(): Promise<RecurringExpense[]> {
-  const { data, error } = await supabase
-    .from('recurring_expenses')
-    .select('*')
-    .order('created_at', { ascending: false });
+  try {
+    return await executeQuery(
+      // Supabase 查询
+      async () => {
+        const supabase = getSupabaseClient();
+        const { data, error } = await supabase
+          .from('recurring_expenses')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-  if (error) {
+        if (error) throw error;
+        return (data || []) as RecurringExpense[];
+      },
+      // Prisma 查询
+      async () => {
+        const prisma = getPrismaClient();
+        const data = await prisma.recurring_expenses.findMany({
+          orderBy: { created_at: 'desc' },
+        });
+        return data as unknown as RecurringExpense[];
+      }
+    );
+  } catch (error) {
     console.error('获取固定支出列表失败:', error);
     return [];
   }
-
-  return (data || []) as RecurringExpense[];
 }

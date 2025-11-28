@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { supabase } from '@/lib/clients/supabase/client';
+import { executeQuery, getPrismaClient, getSupabaseClient } from '@/lib/clients/db';
 import { aiPredictionService, type TransactionPrediction, type QuickTransactionSuggestion } from '@/lib/services/aiPrediction';
 import { generateTimeContext } from '@/lib/domain/noteContext';
 import { withErrorHandler, ApiError } from '@/lib/utils/apiErrorHandler';
@@ -96,18 +96,36 @@ async function handlePredictTransaction(params: {
       // 获取最近7天的交易记录
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const startDate = sevenDaysAgo.toISOString().slice(0, 10);
 
-      const { data, error } = await supabase
-        .from('transactions')
-        .select('*')
-        .gte('date', sevenDaysAgo.toISOString().slice(0, 10))
-        .is('deleted_at', null)
-        .order('date', { ascending: false })
-        .limit(20);
+      recentTransactions = await executeQuery(
+        // Supabase 查询
+        async () => {
+          const supabase = getSupabaseClient();
+          const { data, error } = await supabase
+            .from('transactions')
+            .select('*')
+            .gte('date', startDate)
+            .is('deleted_at', null)
+            .order('date', { ascending: false })
+            .limit(20);
 
-      if (!error && data) {
-        recentTransactions = data;
-      }
+          if (error) throw error;
+          return data || [];
+        },
+        // Prisma 查询
+        async () => {
+          const prisma = getPrismaClient();
+          return await prisma.transactions.findMany({
+            where: {
+              date: { gte: startDate },
+              deleted_at: null,
+            },
+            orderBy: { date: 'desc' },
+            take: 20,
+          });
+        }
+      );
     } catch (error) {
       console.error('获取最近交易失败:', error);
     }

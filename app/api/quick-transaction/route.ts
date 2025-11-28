@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/clients/supabase/client';
+import { executeQuery, getPrismaClient, getSupabaseClient } from '@/lib/clients/db';
 import { revalidateTag, revalidatePath } from 'next/cache';
 import { formatDateToLocal } from '@/lib/utils/date';
 import { z } from 'zod';
@@ -37,42 +37,65 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
   const type = 'expense';
   const transactionDate = date || formatDateToLocal(new Date());
 
-  // 使用原子化的数据库函数来避免竞态条件
-  const { data: transactionId, error: upsertError } = await supabase
-    .rpc('upsert_transaction', {
-      p_type: type,
-      p_category: category,
-      p_amount: amount,
-      p_note: note,
-      p_date: transactionDate,
-      p_currency: currency,
-      p_payment_method: null,
-      p_merchant: null,
-      p_subcategory: null,
-      p_product: null
-    });
+  // 创建交易记录
+  const result = await executeQuery(
+    // Supabase: 使用 RPC 函数
+    async () => {
+      const supabase = getSupabaseClient();
+      const { data: transactionId, error: upsertError } = await supabase
+        .rpc('upsert_transaction', {
+          p_type: type,
+          p_category: category,
+          p_amount: amount,
+          p_note: note,
+          p_date: transactionDate,
+          p_currency: currency,
+          p_payment_method: null,
+          p_merchant: null,
+          p_subcategory: null,
+          p_product: null
+        });
 
-  // 处理错误
-  if (upsertError) {
-    throw new DatabaseError('创建交易失败', undefined, { originalError: upsertError.message });
-  }
+      if (upsertError) {
+        throw new DatabaseError('创建交易失败', undefined, { originalError: upsertError.message });
+      }
 
-  // 获取创建/更新后的记录
-  const { data: result, error: fetchError } = await supabase
-    .from('transactions')
-    .select('*')
-    .eq('id', transactionId)
-    .maybeSingle();
+      const { data: result, error: fetchError } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('id', transactionId)
+        .maybeSingle();
 
-  if (fetchError) {
-    throw new DatabaseError('获取交易记录失败', undefined, { originalError: fetchError.message });
-  }
+      if (fetchError) {
+        throw new DatabaseError('获取交易记录失败', undefined, { originalError: fetchError.message });
+      }
+      return result;
+    },
+    // Prisma: 直接创建记录
+    async () => {
+      const prisma = getPrismaClient();
+      return await prisma.transactions.create({
+        data: {
+          type,
+          category,
+          amount,
+          note,
+          date: transactionDate,
+          currency,
+          payment_method: null,
+          merchant: null,
+          subcategory: null,
+          product: null,
+        },
+      });
+    }
+  );
 
   // ✅ 记录用户操作日志（异步，不阻塞响应）
   void logger.logUserAction({
     action: 'quick_transaction_created',
     metadata: {
-      transaction_id: transactionId,
+      transaction_id: result?.id,
       category,
       amount,
       currency,
