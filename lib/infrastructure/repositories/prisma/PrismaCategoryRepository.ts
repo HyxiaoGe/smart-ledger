@@ -3,7 +3,7 @@
  * 实现 ICategoryRepository 接口，提供基于 Prisma 的分类数据访问
  */
 
-import type { PrismaClient, Prisma } from '@prisma/client';
+import type { PrismaClient, Prisma } from '@/generated/prisma';
 import type { ICategoryRepository } from '@/lib/domain/repositories/ICategoryRepository';
 import type {
   Category,
@@ -36,9 +36,10 @@ export class PrismaCategoryRepository implements ICategoryRepository {
 
   /**
    * 根据 key 查找分类
+   * 注意：categories.key 在数据库中没有唯一约束，使用 findFirst
    */
   async findByKey(key: string): Promise<Category | null> {
-    const data = await this.prisma.categories.findUnique({
+    const data = await this.prisma.categories.findFirst({
       where: { key },
     });
 

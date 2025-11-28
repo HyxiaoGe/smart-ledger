@@ -3,7 +3,7 @@
  * 用于替换 Supabase 客户端，提供本地 PostgreSQL 数据库访问
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@/generated/prisma';
 
 // 声明全局变量用于开发环境热重载时保持单例
 declare global {
