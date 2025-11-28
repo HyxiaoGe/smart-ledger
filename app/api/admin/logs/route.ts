@@ -1,13 +1,14 @@
 /**
  * 日志查询 API
  * 提供日志的查询、过滤和分页功能
+ * 使用 Repository 模式，支持 Prisma/Supabase 切换
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseServerClient } from '@/lib/clients/supabase/server';
+import { getSystemLogRepository } from '@/lib/infrastructure/repositories/index.server';
 import { withErrorHandler } from '@/lib/domain/errors/errorHandler';
 import { z } from 'zod';
-import { LogLevel, LogCategory } from '@/lib/services/logging/types';
+import type { LogLevel, LogCategory } from '@/lib/services/logging/types';
 
 export const runtime = 'nodejs';
 
@@ -56,67 +57,36 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     sort_order: searchParams.get('sort_order') || undefined,
   });
 
-  const supabase = supabaseServerClient;
+  const repository = getSystemLogRepository();
 
-  // 构建查询
-  let query = supabase
-    .from('system_logs')
-    .select('*', { count: 'exact' });
-
-  // 应用过滤条件
-  if (params.level) {
-    query = query.eq('level', params.level);
-  }
-
-  if (params.category) {
-    query = query.eq('category', params.category);
-  }
-
-  if (params.trace_id) {
-    query = query.eq('trace_id', params.trace_id);
-  }
-
-  if (params.start_date) {
-    query = query.gte('created_at', params.start_date);
-  }
-
-  if (params.end_date) {
-    query = query.lte('created_at', params.end_date);
-  }
-
-  if (params.search) {
-    query = query.or(`message.ilike.%${params.search}%,path.ilike.%${params.search}%`);
-  }
-
-  // 应用排序
-  query = query.order(params.sort_by, { ascending: params.sort_order === 'asc' });
-
-  // 应用分页
-  const from = (params.page - 1) * params.page_size;
-  const to = from + params.page_size - 1;
-  query = query.range(from, to);
-
-  // 执行查询
-  const { data: logs, error, count } = await query;
-
-  if (error) {
-    throw error;
-  }
-
-  // 计算分页信息
-  const total = count || 0;
-  const total_pages = Math.ceil(total / params.page_size);
+  // 使用 Repository 查询
+  const result = await repository.findMany(
+    {
+      level: params.level as LogLevel | undefined,
+      category: params.category as LogCategory | undefined,
+      trace_id: params.trace_id,
+      startDate: params.start_date,
+      endDate: params.end_date,
+      search: params.search,
+    },
+    {
+      page: params.page,
+      pageSize: params.page_size,
+      sortBy: params.sort_by as 'created_at' | 'level' | 'category',
+      sortOrder: params.sort_order,
+    }
+  );
 
   return NextResponse.json({
     success: true,
-    data: logs,
+    data: result.data,
     pagination: {
-      page: params.page,
-      page_size: params.page_size,
-      total,
-      total_pages,
-      has_next: params.page < total_pages,
-      has_prev: params.page > 1,
+      page: result.pagination.page,
+      page_size: result.pagination.pageSize,
+      total: result.pagination.total,
+      total_pages: result.pagination.totalPages,
+      has_next: result.pagination.hasNext,
+      has_prev: result.pagination.hasPrev,
     },
   });
 });

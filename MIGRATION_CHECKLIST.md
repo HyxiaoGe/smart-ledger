@@ -78,15 +78,15 @@
 
 ---
 
-## 三、待迁移 API 路由
+## 三、API 路由迁移 ✅ (已完成)
 
-| # | API 路由 | 直接使用 Supabase | 状态 | 优先级 |
-|---|---------|------------------|------|--------|
-| 1 | `app/api/common-notes/route.ts` | 是 | ⏳ | P1 |
-| 2 | `app/api/smart-suggestions/route.ts` | 是 | ⏳ | P1 |
-| 3 | `app/api/smart-suggestions/learning/route.ts` | 是 | ⏳ | P1 |
-| 4 | `app/api/admin/logs/route.ts` | 是 | ⏳ | P2 |
-| 5 | `app/api/admin/logs/stats/route.ts` | 是 | ⏳ | P2 |
+| # | API 路由 | 使用 Repository | 状态 | 备注 |
+|---|---------|-----------------|------|------|
+| 1 | `app/api/common-notes/route.ts` | ✅ | ✅ | 使用 `ICommonNoteRepository` |
+| 2 | `app/api/smart-suggestions/route.ts` | 部分 | ✅ | 简单查询用 Repository，复杂查询保留 Supabase |
+| 3 | `app/api/smart-suggestions/learning/route.ts` | 部分 | ✅ | `common_notes` 用 Repository，学习日志用 Supabase |
+| 4 | `app/api/admin/logs/route.ts` | ✅ | ✅ | 使用 `ISystemLogRepository` |
+| 5 | `app/api/admin/logs/stats/route.ts` | ✅ | ✅ | 使用 `ISystemLogRepository` |
 
 ---
 
@@ -170,13 +170,14 @@
 2.4 AIFeedbackService.server.ts ✅
 ```
 
-### 阶段 3: API 路由迁移 ⏳
+### 阶段 3: API 路由迁移 ✅ (已完成)
 
 ```
-3.1 更新 API 路由导入服务端版本
-3.2 common-notes API
-3.3 smart-suggestions API
-3.4 admin/logs API
+3.1 admin/logs API ✅ (使用 ISystemLogRepository)
+3.2 admin/logs/stats API ✅ (使用 ISystemLogRepository)
+3.3 common-notes API ✅ (使用 ICommonNoteRepository)
+3.4 smart-suggestions API ✅ (部分使用 Repository)
+3.5 smart-suggestions/learning API ✅ (部分使用 Repository)
 ```
 
 ### 阶段 4: 组件改造 ⏳
@@ -336,3 +337,4 @@ update: { deleted_at: new Date() }
 | 2025-11-28 | 完成所有 Repository 接口和实现 (Prisma + Supabase) |
 | 2025-11-28 | 完成服务端版本服务文件 |
 | 2025-11-28 | 更新 ServerRepositoryFactory |
+| 2025-11-28 | 完成 API 路由迁移 (阶段3) |
