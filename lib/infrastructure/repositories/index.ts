@@ -18,14 +18,6 @@ export { SupabaseBudgetRepository } from './SupabaseBudgetRepository';
 export { SupabaseCommonNoteRepository } from './SupabaseCommonNoteRepository';
 export { SupabaseCategoryRepository } from './SupabaseCategoryRepository';
 
-// 导出 Prisma Repository 类
-export {
-  PrismaTransactionRepository,
-  PrismaCommonNoteRepository,
-  PrismaBudgetRepository,
-  PrismaCategoryRepository,
-} from './prisma';
-
 /**
  * Repository 工厂
  * 提供单例的 Repository 实例
@@ -133,9 +125,3 @@ export const getBudgetRepository = () => RepositoryFactory.getBudgetRepository()
 export const getCommonNoteRepository = () => RepositoryFactory.getCommonNoteRepository();
 export const getCategoryRepository = () => RepositoryFactory.getCategoryRepository();
 export const resetRepositories = () => RepositoryFactory.reset();
-
-// 导出默认实例（便于直接使用）
-export const transactionRepository = getTransactionRepository();
-export const budgetRepository = getBudgetRepository();
-export const commonNoteRepository = getCommonNoteRepository();
-export const categoryRepository = getCategoryRepository();
