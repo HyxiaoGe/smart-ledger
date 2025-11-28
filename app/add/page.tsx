@@ -21,6 +21,7 @@ import { formatDateToLocal } from '@/lib/utils/date';
 import { getPaymentMethodsWithStats, type PaymentMethod } from '@/lib/services/paymentMethodService';
 import { logger } from '@/lib/services/logging';
 import { STORAGE_KEYS } from '@/lib/config/storageKeys';
+import { getErrorMessage } from '@/types/common';
 
 export default function AddPage() {
   const type: TransactionType = 'expense'; // 固定为支出类型
@@ -172,8 +173,8 @@ export default function AddPage() {
         resetForm();
       }, 500);
 
-    } catch (err: any) {
-      setError(err.message || '提交失败');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err) || '提交失败');
     } finally {
       setLoading(false);
       lastSubmitTimeRef.current = 0; // 重置时间戳，允许下次提交

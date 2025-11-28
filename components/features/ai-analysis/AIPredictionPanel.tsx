@@ -11,6 +11,7 @@ import {
   type TransactionPrediction,
   type QuickTransactionSuggestion
 } from '@/lib/services/aiPrediction';
+import { getErrorMessage } from '@/types/common';
 
 type AIPredictionPanelProps = {
   onPredictionSelect?: (prediction: TransactionPrediction | QuickTransactionSuggestion) => void;
@@ -79,9 +80,9 @@ export function AIPredictionPanel({
       const quickSuggestions = await aiPredictionService.generateQuickSuggestions(timeContext.label);
       setQuickSuggestions(quickSuggestions);
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('获取AI预测失败:', err);
-      setError(err.message || 'AI预测加载失败');
+      setError(getErrorMessage(err) || 'AI预测加载失败');
     } finally {
       setIsLoading(false);
     }

@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { supabase } from '@/lib/clients/supabase/client';
 import { aiPredictionService, type TransactionPrediction, type QuickTransactionSuggestion } from '@/lib/services/aiPrediction';
 import { generateTimeContext } from '@/lib/domain/noteContext';
+import { getErrorMessage } from '@/types/common';
 
 export const runtime = 'nodejs';
 
@@ -29,10 +30,10 @@ export async function POST(req: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('AI预测失败:', err);
     return new Response(
-      JSON.stringify({ error: err.message || 'AI预测失败' }),
+      JSON.stringify({ error: getErrorMessage(err) || 'AI预测失败' }),
       { status: 500 }
     );
   }

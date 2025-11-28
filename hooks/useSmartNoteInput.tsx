@@ -84,7 +84,7 @@ export function useSmartNoteInput({
         ...response.suggestions,
         ...response.fallback_notes
       ]);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('获取智能建议失败:', err);
       setError('智能建议加载失败');
       setSuggestions([]);

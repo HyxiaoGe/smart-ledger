@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { getAiConfig } from '@/lib/clients/ai/client';
 import { supabase } from '@/lib/clients/supabase/client';
+import { getErrorMessage } from '@/types/common';
 
 export const runtime = 'edge';
 
@@ -107,8 +108,8 @@ export async function POST(req: NextRequest) {
     })();
 
     return new Response(readable, { headers: SSE_HEADERS });
-  } catch (err: any) {
-    return new Response(err?.message || '分析失败', {
+  } catch (err: unknown) {
+    return new Response(getErrorMessage(err) || '分析失败', {
       status: 500,
       headers: { 'Content-Type': 'text/plain; charset=utf-8' }
     });
@@ -230,8 +231,8 @@ export async function GET(req: NextRequest) {
     })();
 
     return new Response(readable, { headers: SSE_HEADERS });
-  } catch (err: any) {
-    return new Response(err?.message || '分析失败', {
+  } catch (err: unknown) {
+    return new Response(getErrorMessage(err) || '分析失败', {
       status: 500,
       headers: { 'Content-Type': 'text/plain; charset=utf-8' }
     });

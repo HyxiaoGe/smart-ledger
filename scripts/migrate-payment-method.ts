@@ -119,8 +119,9 @@ async function runMigration() {
 
     console.log('\n🎉 迁移脚本执行完毕！');
 
-  } catch (error: any) {
-    console.error('\n❌ 迁移失败:', error.message);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : '未知错误';
+    console.error('\n❌ 迁移失败:', message);
     console.error('\n请尝试手动执行迁移：');
     console.error('1. 访问 Supabase Dashboard');
     console.error('2. 进入 SQL Editor');

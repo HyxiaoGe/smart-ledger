@@ -133,7 +133,7 @@ const SmartNoteInputComponent = function SmartNoteInput({
       const merged = mergeSuggestions(response.suggestions, response.fallback_notes, 6);
       setSuggestions(merged);
       setShowSuggestions(true); // 自动显示建议
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('获取智能建议失败:', err);
       setError('智能建议加载失败');
       setSuggestions([]);
