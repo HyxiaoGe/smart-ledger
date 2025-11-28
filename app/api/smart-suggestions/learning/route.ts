@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { supabase } from '@/lib/clients/supabase/client';
 import { logger } from '@/lib/services/logging';
-import { getErrorMessage } from '@/types/common';
+import { withErrorHandler, ApiError } from '@/lib/utils/apiErrorHandler';
 
 export const runtime = 'nodejs';
 
@@ -39,80 +39,66 @@ type LearningData = {
   learning_outcome: 'positive' | 'negative' | 'neutral';
 };
 
-export async function POST(req: NextRequest) {
-  try {
-    const requestBody = await req.json();
+export const POST = withErrorHandler(async (req: NextRequest) => {
+  const requestBody = await req.json();
 
-    // 支持单条数据或批量数据
-    if (requestBody.learning_data && Array.isArray(requestBody.learning_data)) {
-      // 批量处理学习数据
-      const { session_id, learning_data } = requestBody;
+  // 支持单条数据或批量数据
+  if (requestBody.learning_data && Array.isArray(requestBody.learning_data)) {
+    // 批量处理学习数据
+    const { session_id, learning_data } = requestBody;
 
-      if (!session_id || !learning_data || learning_data.length === 0) {
-        return new Response(
-          JSON.stringify({ error: '缺少必要的学习数据字段' }),
-          { status: 400 }
-        );
-      }
-
-      // 批量存储和处理
-      for (const data of learning_data) {
-        const completeData: LearningData = {
-          ...data,
-          session_id,
-          timestamp: data.timestamp || new Date().toISOString()
-        };
-
-        await storeLearningData(completeData);
-        void processLearningData(completeData);
-      }
-
-      // ✅ 记录用户操作日志（异步，不阻塞响应）
-      void logger.logUserAction({
-        action: 'ai_learning_data_submitted',
-        metadata: {
-          batch_mode: true,
-          count: learning_data.length,
-          session_id,
-        },
-      });
-
-      return Response.json({ success: true, processed: learning_data.length });
-    } else {
-      // 单条数据处理（向后兼容）
-      const data: LearningData = requestBody;
-
-      if (!data.session_id || !data.final_input) {
-        return new Response(
-          JSON.stringify({ error: '缺少必要的学习数据字段' }),
-          { status: 400 }
-        );
-      }
-
-      await storeLearningData(data);
-      void processLearningData(data);
-
-      // ✅ 记录用户操作日志（异步，不阻塞响应）
-      void logger.logUserAction({
-        action: 'ai_learning_data_submitted',
-        metadata: {
-          batch_mode: false,
-          event_type: data.event_type,
-          learning_outcome: data.learning_outcome,
-          session_id: data.session_id,
-        },
-      });
-
-      return Response.json({ success: true });
+    if (!session_id || !learning_data || learning_data.length === 0) {
+      throw new ApiError('缺少必要的学习数据字段', 400);
     }
-  } catch (err: unknown) {
-    console.error('学习数据收集失败:', err);
-    return new Response(
-      JSON.stringify({ error: getErrorMessage(err) || '学习数据收集失败' }),
-      { status: 500 }
-    );
+
+    // 批量存储和处理
+    for (const data of learning_data) {
+      const completeData: LearningData = {
+        ...data,
+        session_id,
+        timestamp: data.timestamp || new Date().toISOString()
+      };
+
+      await storeLearningData(completeData);
+      void processLearningData(completeData);
+    }
+
+    // ✅ 记录用户操作日志（异步，不阻塞响应）
+    void logger.logUserAction({
+      action: 'ai_learning_data_submitted',
+      metadata: {
+        batch_mode: true,
+        count: learning_data.length,
+        session_id,
+      },
+    });
+
+    return Response.json({ success: true, processed: learning_data.length });
+  } else {
+    // 单条数据处理（向后兼容）
+    const data: LearningData = requestBody;
+
+    if (!data.session_id || !data.final_input) {
+      throw new ApiError('缺少必要的学习数据字段', 400);
+    }
+
+    await storeLearningData(data);
+    void processLearningData(data);
+
+    // ✅ 记录用户操作日志（异步，不阻塞响应）
+    void logger.logUserAction({
+      action: 'ai_learning_data_submitted',
+      metadata: {
+        batch_mode: false,
+        event_type: data.event_type,
+        learning_outcome: data.learning_outcome,
+        session_id: data.session_id,
+      },
+    });
+
+    return Response.json({ success: true });
   }
-}
+});
 
 /**
  * 存储学习数据

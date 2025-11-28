@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { supabase } from '@/lib/clients/supabase/client';
 import { aiPredictionService, type TransactionPrediction, type QuickTransactionSuggestion } from '@/lib/services/aiPrediction';
 import { generateTimeContext } from '@/lib/domain/noteContext';
-import { getErrorMessage } from '@/types/common';
+import { withErrorHandler, ApiError } from '@/lib/utils/apiErrorHandler';
 
 export const runtime = 'nodejs';
 
@@ -10,34 +10,23 @@ export const runtime = 'nodejs';
  * AI预测API
  * 支持多种预测类型：分类预测、金额预测、完整交易预测、快速记账建议
  */
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    const { type, ...params } = body;
+export const POST = withErrorHandler(async (req: NextRequest) => {
+  const body = await req.json();
+  const { type, ...params } = body;
 
-    switch (type) {
-      case 'predict-category':
-        return await handlePredictCategory(params);
-      case 'predict-amount':
-        return await handlePredictAmount(params);
-      case 'predict-transaction':
-        return await handlePredictTransaction(params);
-      case 'quick-suggestions':
-        return await handleQuickSuggestions(params);
-      default:
-        return new Response(
-          JSON.stringify({ error: '不支持的预测类型' }),
-          { status: 400 }
-        );
-    }
-  } catch (err: unknown) {
-    console.error('AI预测失败:', err);
-    return new Response(
-      JSON.stringify({ error: getErrorMessage(err) || 'AI预测失败' }),
-      { status: 500 }
-    );
+  switch (type) {
+    case 'predict-category':
+      return await handlePredictCategory(params);
+    case 'predict-amount':
+      return await handlePredictAmount(params);
+    case 'predict-transaction':
+      return await handlePredictTransaction(params);
+    case 'quick-suggestions':
+      return await handleQuickSuggestions(params);
+    default:
+      throw new ApiError('不支持的预测类型', 400);
   }
-}
+});
 
 /**
  * 预测分类
