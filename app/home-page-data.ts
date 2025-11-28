@@ -16,6 +16,23 @@ type RangeData = {
   rows: any[];
 };
 
+type RecurringExpense = {
+  id: string;
+  name: string;
+  amount: number;
+  category: string;
+  frequency: string;
+  frequency_config: Record<string, any>;
+  start_date: string;
+  note?: string;
+  currency: string;
+  payment_method?: string;
+  is_active: boolean;
+  last_generated_date?: string;
+  created_at: string;
+  updated_at: string;
+};
+
 export type PageData = {
   income: number;
   expense: number;
@@ -27,6 +44,7 @@ export type PageData = {
   rangeLabel: string;
   rangeRows: any[];
   top10: any[];
+  recurringExpenses: RecurringExpense[];
 };
 
 export function resolveMonthLabel(monthParam?: string) {
@@ -42,10 +60,11 @@ export async function loadPageData(
   endParam?: string
 ): Promise<PageData> {
   const baseDate = parseMonthStr(monthLabel) || new Date();
-  const [monthData, rangeData, topData] = await Promise.all([
+  const [monthData, rangeData, topData, recurringData] = await Promise.all([
     loadMonthData(currency, baseDate),
     loadRangeData(currency, rangeParam, monthLabel, startParam, endParam),
-    loadTopData(currency, rangeParam, monthLabel, startParam, endParam)
+    loadTopData(currency, rangeParam, monthLabel, startParam, endParam),
+    loadRecurringExpenses()
   ]);
 
   return {
@@ -58,7 +77,8 @@ export async function loadPageData(
     rangeExpense: rangeData.expense,
     rangeLabel: rangeData.label,
     rangeRows: rangeData.rows,
-    top10: topData
+    top10: topData,
+    recurringExpenses: recurringData
   };
 }
 
@@ -272,4 +292,18 @@ async function loadTopData(
     }));
 
   return aggregatedData;
+}
+
+async function loadRecurringExpenses(): Promise<RecurringExpense[]> {
+  const { data, error } = await supabase
+    .from('recurring_expenses')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('获取固定支出列表失败:', error);
+    return [];
+  }
+
+  return (data || []) as RecurringExpense[];
 }

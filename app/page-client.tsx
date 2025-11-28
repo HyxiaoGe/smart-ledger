@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useMemo } from 'react';
 import type { Route } from 'next';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { ChartSummary } from './components/ChartSummary';
@@ -62,8 +62,8 @@ export default function HomePageClient({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // 固定支出相关状态
-  const [recurringExpenses, setRecurringExpenses] = useState([]);
+  // 固定支出（从服务端数据获取，无需客户端请求）
+  const recurringExpenses = data.recurringExpenses || [];
 
   // 使用全局自动生成Hook
   const {
@@ -71,23 +71,6 @@ export default function HomePageClient({
     lastResult,
     checkAndGenerate
   } = useAutoGenerateRecurring(recurringExpenses);
-
-  // 获取固定支出列表
-  useEffect(() => {
-    fetchRecurringExpenses();
-  }, []);
-
-  const fetchRecurringExpenses = async () => {
-    try {
-      const response = await fetch('/api/recurring-expenses');
-      if (response.ok) {
-        const data = await response.json();
-        setRecurringExpenses(data);
-      }
-    } catch (error) {
-      console.error('获取固定支出列表失败:', error);
-    }
-  };
 
   // 监听自动生成结果，静默刷新数据（完全无感知）
   // 注意：自动生成已迁移到 Supabase Cron，此效果不再触发

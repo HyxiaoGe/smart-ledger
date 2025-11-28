@@ -326,37 +326,24 @@ const cascaderOptions = categories.map(cat => ({
 
 ### 4.1 首页数据加载优化
 
-**两种方案对比：**
+**原有问题：**
+- 首页 SSR 加载后，客户端额外请求 `/api/recurring-expenses`
+- 造成不必要的网络请求
 
-| 方案 | 可行度 | 复杂度 | 收益 |
-|------|--------|--------|------|
-| **数据聚合 API** | ⭐⭐⭐⭐⭐ | 低 | 减少请求数 |
-| 流式加载 | ⭐⭐⭐ | 高 | 渐进式渲染 |
+**实施方案：** 将 recurring-expenses 整合到 SSR 数据加载
 
-**推荐方案：数据聚合 API**
+**已完成：**
+- `home-page-data.ts`: 添加 `loadRecurringExpenses()` 到 `Promise.all`
+- `PageData` 类型新增 `recurringExpenses` 字段
+- `page-client.tsx`: 移除客户端 fetch，直接使用 `data.recurringExpenses`
+- 移除未使用的 `useState` 导入
 
-```typescript
-// 创建 /api/home-data 聚合接口
-// 合并: 趋势数据 + 饼图 + Top10 + 周期支出
-export async function GET(request: NextRequest) {
-  const [trend, pie, top10, recurring] = await Promise.all([
-    getTrendData(),
-    getPieData(),
-    getTop10(),
-    getRecurringExpenses()
-  ]);
+**收益：**
+- 消除 1 次客户端 API 请求
+- 首页数据完全由 SSR 提供
+- 首屏加载更快，无额外网络延迟
 
-  return NextResponse.json({ trend, pie, top10, recurring });
-}
-```
-
-**理由：**
-- 实现简单，改动小
-- 减少 HTTP 请求数（4→1）
-- 服务端 Promise.all 已优化
-- 不需要修改前端渲染逻辑
-
-**状态：** `待开始`
+**状态：** `已完成`
 
 ---
 
