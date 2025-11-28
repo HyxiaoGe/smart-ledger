@@ -7,6 +7,8 @@ import { CategoryChip } from '@/components/CategoryChip';
 import { useCategories } from '@/contexts/CategoryContext';
 import { formatCurrency } from '@/lib/utils/format';
 import { EmptyState } from '@/components/EmptyState';
+import { FileText } from 'lucide-react';
+import Link from 'next/link';
 
 type Row = {
   id: string;
@@ -146,7 +148,19 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
 
       
       {rows.length === 0 && !loading ? (
-        <EmptyState description="当前没有支出记录" />
+        <EmptyState
+          icon={FileText}
+          title="暂无记录"
+          description="当前没有支出记录"
+          action={
+            <Link
+              href="/add"
+              className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              添加第一笔记录
+            </Link>
+          }
+        />
       ) : (
         <div className="overflow-x-auto">
           {view === 'table' ? (
