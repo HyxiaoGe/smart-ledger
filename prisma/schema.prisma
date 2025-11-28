@@ -1,0 +1,437 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ai_analyses {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  feedback_id        String?   @db.Uuid
+  request_id         String?   @db.Uuid
+  sentiment          String?   @db.VarChar
+  confidence         Decimal?  @db.Decimal
+  keywords           String[]
+  categories         String[]
+  severity           String?   @db.VarChar
+  suggestions        String[]
+  analyzed_at        DateTime? @default(now()) @db.Timestamptz(6)
+  analysis_model     String?   @default("basic_rule_based") @db.VarChar
+  processing_time_ms Int?
+  version            String?   @default("1.0") @db.VarChar
+  created_at         DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model ai_feedback_templates {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String    @db.VarChar
+  description   String?
+  feature_type  String    @db.VarChar
+  feedback_type String    @db.VarChar
+  config        Json
+  display       Json
+  is_active     Boolean?  @default(true)
+  version       Int?      @default(1)
+  created_by    String?   @db.Uuid
+  created_at    DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model ai_feedbacks {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  feature_type   String    @db.VarChar
+  feedback_type  String    @db.VarChar
+  session_id     String?   @db.VarChar
+  user_id        String?   @db.Uuid
+  rating         Int?
+  is_positive    Boolean?
+  comment        String?
+  choices        String[]
+  custom_data    Json?
+  context        Json?
+  ai_request_id  String?   @db.Uuid
+  timestamp      DateTime? @default(now()) @db.Timestamptz(6)
+  user_agent     String?
+  client_version String?   @db.VarChar
+  ip_address     String?   @db.Inet
+  tags           String[]
+  priority       String?   @default("medium") @db.VarChar
+  status         String?   @default("pending") @db.VarChar
+  admin_notes    String?
+  resolved_at    DateTime? @db.Timestamptz(6)
+  resolved_by    String?   @db.Uuid
+  created_at     DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model ai_performance_stats {
+  id                   String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  stat_date            DateTime  @db.Date
+  ai_provider          String    @default("deepseek") @db.VarChar
+  feature_type         String    @db.VarChar
+  model_name           String?   @db.VarChar
+  total_requests       Int?      @default(0)
+  successful_requests  Int?      @default(0)
+  failed_requests      Int?      @default(0)
+  avg_response_time_ms Decimal?  @db.Decimal
+  min_response_time_ms Int?
+  max_response_time_ms Int?
+  p95_response_time_ms Int?
+  total_tokens         Int?      @default(0)
+  input_tokens         Int?      @default(0)
+  output_tokens        Int?      @default(0)
+  estimated_cost       Decimal?  @default(0) @db.Decimal
+  error_rates          Json?
+  created_at           DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model ai_requests {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ai_provider      String    @default("deepseek") @db.VarChar
+  model_name       String?   @db.VarChar
+  request_type     String    @db.VarChar
+  feature_type     String    @db.VarChar
+  session_id       String?   @db.VarChar
+  user_id          String?   @db.Uuid
+  input_data       Json
+  parameters       Json?
+  prompt           String?
+  response_data    Json?
+  response_text    String?
+  tokens_used      Json?
+  response_time_ms Int?
+  status           String?   @default("success") @db.VarChar
+  error_code       String?   @db.VarChar
+  error_message    String?
+  timestamp        DateTime? @default(now()) @db.Timestamptz(6)
+  user_agent       String?
+  ip_address       String?   @db.Inet
+  request_id       String?   @db.VarChar
+  created_at       DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model ai_sessions {
+  id                   String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  session_id           String    @db.VarChar
+  user_id              String?   @db.Uuid
+  start_time           DateTime? @default(now()) @db.Timestamptz(6)
+  end_time             DateTime? @db.Timestamptz(6)
+  total_requests       Int?      @default(0)
+  total_tokens         Int?      @default(0)
+  total_cost           Decimal?  @default(0) @db.Decimal
+  avg_response_time_ms Decimal?  @db.Decimal
+  context              Json?
+  created_at           DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model budget_suggestions {
+  id                     String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  category_key           String?   @db.VarChar
+  year                   Int
+  month                  Int
+  currency               String?   @default("CNY") @db.VarChar
+  suggested_amount       Decimal   @db.Decimal
+  confidence_level       String    @db.VarChar
+  reason                 String
+  historical_avg         Decimal?  @db.Decimal
+  historical_months      Int?
+  current_month_spending Decimal?  @db.Decimal
+  current_daily_rate     Decimal?  @db.Decimal
+  predicted_month_total  Decimal?  @db.Decimal
+  trend_direction        String?   @db.VarChar
+  calculated_at          DateTime? @default(now()) @db.Timestamp(6)
+  days_into_month        Int?
+  is_active              Boolean?  @default(true)
+  created_at             DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model budgets {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id         String?  @db.Uuid
+  year            Int
+  month           Int
+  category_key    String?
+  amount          Decimal  @db.Decimal
+  alert_threshold Decimal? @default(0.80) @db.Decimal
+  is_active       Boolean  @default(true)
+  created_at      DateTime @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model categories {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key        String
+  label      String
+  icon       String?
+  color      String?
+  type       String   @default("expense")
+  is_system  Boolean  @default(false)
+  is_active  Boolean  @default(true)
+  sort_order Int?     @default(0)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model common_notes {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  content           String
+  usage_count       Int      @default(1)
+  last_used         DateTime @default(now()) @db.Timestamptz(6)
+  created_at        DateTime @default(now()) @db.Timestamptz(6)
+  is_active         Boolean  @default(true)
+  context_tags      String[]
+  avg_amount        Decimal? @db.Decimal
+  time_patterns     String[]
+  category_affinity String?
+  merchant          String?  @db.VarChar
+  subcategory       String?  @db.VarChar
+}
+
+model data_quality_reports {
+  id                            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  report_date                   DateTime  @db.Date
+  total_transactions            Int?
+  transactions_with_merchant    Int?
+  transactions_with_note        Int?
+  transactions_missing_category Int?
+  negative_amounts              Int?
+  zero_amounts                  Int?
+  extreme_amounts               Int?
+  duplicate_records             Int?
+  inconsistent_dates            Int?
+  quality_score                 Decimal?  @db.Decimal
+  created_at                    DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model ml_training_data {
+  target_amount            Decimal?  @db.Decimal
+  target_category          String?
+  day_of_week              Decimal?  @db.Decimal
+  hour_of_day              Decimal?  @db.Decimal
+  day_of_month             Decimal?  @db.Decimal
+  is_weekend               Int?
+  same_category_last_7days BigInt?
+  avg_amount_last_7days    Decimal?  @db.Decimal
+  merchant                 String?   @db.VarChar
+  merchant_frequency       BigInt?
+  note                     String?
+  note_length              Int?
+  id                       String?   @db.Uuid
+  date                     DateTime? @db.Date
+  created_at               DateTime? @db.Timestamptz(6)
+
+  @@ignore
+}
+
+model ml_training_snapshots {
+  snapshot_date DateTime  @id @db.Date
+  data          Json
+  record_count  Int?
+  created_at    DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model note_analytics {
+  note_id          String   @id @db.Uuid
+  typical_amount   Decimal? @db.Decimal
+  preferred_time   String?
+  confidence_score Decimal? @default(0.0) @db.Decimal
+  updated_at       DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model payment_methods {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id       String?  @db.Uuid
+  name          String
+  type          String   @default("other")
+  icon          String?
+  color         String?
+  last_4_digits String?
+  is_default    Boolean  @default(false)
+  is_active     Boolean  @default(true)
+  sort_order    Int?     @default(0)
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model recent_errors {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  created_at DateTime? @db.Timestamptz(6)
+  level      String?   @db.VarChar
+  category   String?   @db.VarChar
+  trace_id   String?   @db.VarChar
+  message    String?
+  error_code String?   @db.VarChar
+  path       String?   @db.VarChar
+  metadata   Json?
+}
+
+model recurring_expenses {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name             String
+  amount           Decimal   @db.Decimal
+  category         String
+  frequency        String
+  frequency_config Json
+  start_date       DateTime  @db.Date
+  end_date         DateTime? @db.Date
+  is_active        Boolean?  @default(true)
+  last_generated   DateTime? @db.Date
+  next_generate    DateTime? @db.Date
+  created_at       DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model recurring_generation_logs {
+  id                       String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  recurring_expense_id     String?   @db.Uuid
+  generation_date          DateTime  @db.Date
+  generated_transaction_id String?   @db.Uuid
+  status                   String?
+  reason                   String?
+  created_at               DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model spending_patterns {
+  id                         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  transaction_id             String?   @db.Uuid
+  pattern_type               String?
+  confidence                 Decimal?  @db.Decimal
+  reason                     String?
+  is_routine                 Boolean?
+  similar_transactions_count Int?
+  is_anomaly                 Boolean?
+  anomaly_score              Decimal?  @db.Decimal
+  created_at                 DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model subcategories {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key          String    @db.VarChar
+  label        String    @db.VarChar
+  category_key String    @db.VarChar
+  sort_order   Int?      @default(0)
+  is_active    Boolean?  @default(true)
+  created_at   DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model suggestion_learning_logs {
+  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  session_id          String
+  event_type          String
+  timestamp           DateTime @default(now()) @db.Timestamptz(6)
+  context             Json
+  suggestion_data     Json?
+  ignored_suggestions Json[]
+  final_input         String
+  learning_outcome    String
+  created_at          DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model suggestion_type_stats {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  suggestion_type String
+  total_usage     Int      @default(0)
+  success_count   Int      @default(0)
+  confidence_sum  Decimal  @default(0.0) @db.Decimal
+  last_updated    DateTime @default(now()) @db.Timestamptz(6)
+  created_at      DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model system_logs {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  created_at   DateTime @default(now()) @db.Timestamptz(6)
+  level        String   @db.VarChar
+  category     String   @db.VarChar
+  trace_id     String?  @db.VarChar
+  session_id   String?  @db.VarChar
+  operation_id String?  @db.VarChar
+  method       String?  @db.VarChar
+  path         String?  @db.VarChar
+  status_code  Int?
+  ip_address   String?  @db.VarChar
+  user_agent   String?
+  message      String
+  error_code   String?  @db.VarChar
+  error_stack  String?
+  metadata     Json?    @default("{}")
+  duration_ms  Int?
+}
+
+model transaction_features {
+  id                        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  date                      DateTime  @db.Date
+  day_of_week               Int?
+  is_weekend                Boolean?
+  is_month_start            Boolean?
+  is_month_end              Boolean?
+  daily_total               Decimal?  @db.Decimal
+  daily_avg                 Decimal?  @db.Decimal
+  daily_max                 Decimal?  @db.Decimal
+  daily_min                 Decimal?  @db.Decimal
+  daily_std                 Decimal?  @db.Decimal
+  category_distribution     Json?
+  most_common_category      String?
+  category_diversity        Decimal?  @db.Decimal
+  merchant_count            Int?
+  repeated_merchants        String[]
+  transaction_count         Int?
+  avg_transaction_gap_hours Decimal?  @db.Decimal
+  created_at                DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model transactions {
+  id                   String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type                 String
+  category             String
+  amount               Decimal   @db.Decimal
+  note                 String?
+  date                 DateTime  @db.Date
+  currency             String    @default("CNY")
+  created_at           DateTime  @default(now()) @db.Timestamptz(6)
+  deleted_at           DateTime? @db.Timestamptz(6)
+  recurring_expense_id String?   @db.Uuid
+  is_auto_generated    Boolean?  @default(false)
+  merchant             String?   @db.VarChar
+  subcategory          String?   @db.VarChar
+  product              String?   @db.VarChar
+  payment_method       String?
+}
+
+model user_behavior_patterns {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  session_id    String?
+  pattern_type  String
+  pattern_data  Json
+  strength      Decimal  @default(0.0) @db.Decimal
+  last_observed DateTime @default(now()) @db.Timestamptz(6)
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model weekly_reports {
+  id                        BigInt    @id @default(autoincrement())
+  user_id                   String?   @db.Uuid
+  week_start_date           DateTime  @db.Date
+  week_end_date             DateTime  @db.Date
+  total_expenses            Decimal   @default(0) @db.Decimal
+  transaction_count         Int       @default(0)
+  average_transaction       Decimal?  @db.Decimal
+  category_breakdown        Json?     @default("[]")
+  top_merchants             Json?     @default("[]")
+  payment_method_stats      Json?     @default("[]")
+  week_over_week_change     Decimal?  @default(0) @db.Decimal
+  week_over_week_percentage Decimal?  @default(0) @db.Decimal
+  ai_insights               String?
+  generated_at              DateTime? @default(now()) @db.Timestamptz(6)
+  generation_type           String?   @default("auto") @db.VarChar
+  created_at                DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at                DateTime? @default(now()) @db.Timestamptz(6)
+}
