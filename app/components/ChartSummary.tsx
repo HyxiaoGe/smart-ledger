@@ -6,6 +6,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { formatCurrency } from '@/lib/utils/format';
 import { useCategories } from '@/contexts/CategoryContext';
 import { useMemo } from 'react';
+import { BarChart3, PieChart as PieChartIcon } from 'lucide-react';
 import type { TooltipPayloadItem } from '@/types/ui/chart';
 
 interface CategoryMeta {
@@ -114,7 +115,11 @@ export function ChartSummary({
         </CardHeader>
         <CardContent>
           {trend.length === 0 ? (
-            <EmptyState description="当月暂无支出记录" />
+            <EmptyState
+              icon={BarChart3}
+              title="暂无趋势数据"
+              description="当月暂无支出记录，开始记账后将显示趋势图"
+            />
           ) : (
             <div className="w-full h-[260px]">
               <ResponsiveContainer>
@@ -161,7 +166,11 @@ export function ChartSummary({
         </CardHeader>
         <CardContent>
           {pie.length === 0 ? (
-            <EmptyState description="暂无可用于占比的支出记录" />
+            <EmptyState
+              icon={PieChartIcon}
+              title="暂无分类数据"
+              description="暂无可用于占比的支出记录"
+            />
           ) : (
             <div className="w-full h-[260px]">
               <ResponsiveContainer>

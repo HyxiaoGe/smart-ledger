@@ -1,7 +1,9 @@
 'use client';
 import { CategoryChip } from '@/components/CategoryChip';
+import { EmptyState } from '@/components/EmptyState';
 import { formatCurrency } from '@/lib/utils/format';
-import { Store } from 'lucide-react';
+import { Store, TrendingUp } from 'lucide-react';
+import Link from 'next/link';
 
 type Item = {
   id: string;
@@ -17,7 +19,22 @@ type Item = {
 
 export function TopExpenses({ items, currency }: { items: Item[]; currency: string }) {
   if (!items || items.length === 0) {
-    return <div className="text-sm text-muted-foreground">暂无数据</div>;
+    return (
+      <EmptyState
+        icon={TrendingUp}
+        title="暂无支出记录"
+        description="开始记账后，这里将显示您的 Top 10 支出"
+        action={
+          <Link
+            href="/add"
+            className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+          >
+            立即记一笔
+          </Link>
+        }
+        className="border-dashed"
+      />
+    );
   }
   return (
     <ul className="divide-y">

@@ -10,7 +10,9 @@ import { DateInput } from '@/components/features/input/DateInput';
 import { useCategories } from '@/contexts/CategoryContext';
 import { formatCurrency } from '@/lib/utils/format';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, Store, ChevronDown, ChevronUp } from 'lucide-react';
+import { Edit, Trash2, Store, ChevronDown, ChevronUp, FileText } from 'lucide-react';
+import { EmptyState } from '@/components/EmptyState';
+import Link from 'next/link';
 import { MerchantInput, SubcategorySelect } from '@/components/features/input/MerchantInput';
 import { enhancedDataSync } from '@/lib/core/EnhancedDataSync';
 import { ProgressToast } from '@/components/shared/ProgressToast';
@@ -742,10 +744,19 @@ export function TransactionGroupedList({
         })}
 
         {transactions.length === 0 && (
-          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-            <div className="text-lg">暂无账单记录</div>
-            <div className="text-sm mt-2">点击"添加账单"开始记录您的支出</div>
-          </div>
+          <EmptyState
+            icon={FileText}
+            title="暂无账单记录"
+            description="点击下方按钮开始记录您的第一笔支出"
+            action={
+              <Link
+                href="/add"
+                className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+              >
+                添加账单
+              </Link>
+            }
+          />
         )}
       </div>
     </div>

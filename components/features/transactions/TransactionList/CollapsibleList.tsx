@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { TransactionGroupedList } from '@/components/features/transactions/TransactionList/GroupedList';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronUp, List } from 'lucide-react';
+import { ChevronDown, ChevronUp, List, FileText } from 'lucide-react';
+import { EmptyState } from '@/components/EmptyState';
+import Link from 'next/link';
 import { enhancedDataSync } from '@/lib/core/EnhancedDataSync';
 
 interface Transaction {
@@ -106,10 +108,19 @@ export function CollapsibleTransactionList({
 
       {/* 无数据状态 */}
       {!isExpanded && totalCount === 0 && (
-        <div className="text-center py-12 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-          <div className="text-lg">暂无账单记录</div>
-          <div className="text-sm mt-2">点击"添加账单"开始记录您的支出</div>
-        </div>
+        <EmptyState
+          icon={FileText}
+          title="暂无账单记录"
+          description="点击下方按钮开始记录您的第一笔支出"
+          action={
+            <Link
+              href="/add"
+              className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              添加账单
+            </Link>
+          }
+        />
       )}
     </div>
   );

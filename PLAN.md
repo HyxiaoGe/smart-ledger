@@ -245,11 +245,18 @@ types/
 
 ### 3.4 空状态引导
 
-- [ ] Top 10 支出空状态插图和引导
-- [ ] 图表空状态展示
-- [ ] 首次使用引导流程
+- [x] Top 10 支出空状态插图和引导
+- [x] 图表空状态展示
+- [ ] 首次使用引导流程（待设计，需完整 onboarding 方案）
 
-**状态：** `待开始`
+**已完成：**
+- 增强 EmptyState 组件：支持 icon（LucideIcon）属性
+- TopExpenses.tsx: 添加 TrendingUp 图标和"立即记一笔"引导
+- ChartSummary.tsx: 趋势图和饼图添加对应图标
+- TransactionList.tsx: 添加 FileText 图标和"添加第一笔记录"引导
+- GroupedList.tsx / CollapsibleList.tsx: 统一使用 EmptyState 组件
+
+**状态：** `部分完成`
 
 ---
 
