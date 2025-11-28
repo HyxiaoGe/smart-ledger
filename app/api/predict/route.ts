@@ -1,9 +1,9 @@
 import { NextRequest } from 'next/server';
 import { chat } from '@/lib/clients/ai/client';
 import { getPredictionData } from '@/lib/services/transactions';
-import { aiPredictionCache } from '@/lib/services/unifiedCache';
+import { memoryCache } from '@/lib/infrastructure/cache';
+import { CACHE_TTL, CACHE_PREFIXES } from '@/lib/config/cacheConfig';
 import { aiFeedbackService } from '@/lib/services/ai';
-import { aiFeedbackServiceDB } from '@/lib/services/aiFeedbackServiceDB';
 
 export const runtime = 'nodejs';
 
@@ -72,15 +72,21 @@ export async function POST(req: NextRequest) {
  */
 async function handleSpendingPrediction(predictionData: any, predictionMonths: number, monthsToAnalyze: number = 6) {
   // 构建缓存键
-  const cacheKey = JSON.stringify({
+  const cacheKey = `${CACHE_PREFIXES.PREDICTION}:${JSON.stringify({
     monthsToAnalyze,
     predictionMonths,
     lastTransactionDate: predictionData.monthlyData[0]?.month,
     transactionCount: predictionData.overallStats.totalTransactions
-  });
+  })}`;
 
-  // 使用统一缓存服务
-  return await aiPredictionCache.getOrSet(cacheKey, async () => {
+  // 检查缓存
+  const cached = memoryCache.get<any>(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  // 缓存不存在，执行预测
+  const result = await (async () => {
   
       // 记录AI请求到数据库
       const startTime = Date.now();
@@ -229,7 +235,11 @@ ${JSON.stringify({
         // 降级到规则引擎预测
         return generateRuleBasedPrediction(predictionData, predictionMonths);
       }
-  });
+  })();
+
+  // 缓存结果
+  memoryCache.set(cacheKey, result, { ttl: CACHE_TTL.PREDICTION });
+  return result;
 }
 
 /**

@@ -5,6 +5,7 @@
  */
 
 import { STORAGE_KEYS } from '@/lib/config/storageKeys';
+import { CACHE_TTL } from '@/lib/config/cacheConfig';
 
 // 检测是否在服务端环境
 const isServer = typeof window === 'undefined';
@@ -37,11 +38,11 @@ interface UserFeedbackRecord {
 
 class PredictionCacheService {
   private static instance: PredictionCacheService;
-  // 使用统一的 storage keys
+  // 使用统一的 storage keys 和 TTL 配置
   private readonly CACHE_KEY = STORAGE_KEYS.PREDICTION_CACHE;
   private readonly FEEDBACK_KEY = STORAGE_KEYS.PREDICTION_FEEDBACKS;
   private readonly CACHE_VERSION = '1.0.0';
-  private readonly CACHE_TTL = 30 * 60 * 1000; // 30分钟
+  private readonly CACHE_TTL = CACHE_TTL.PREDICTION;
 
   static getInstance(): PredictionCacheService {
     if (!PredictionCacheService.instance) {

@@ -5,6 +5,7 @@
 
 import { predictionCache } from './predictionCache';
 import { STORAGE_KEYS } from '@/lib/config/storageKeys';
+import { CACHE_CLEANUP } from '@/lib/config/cacheConfig';
 
 interface CacheInvalidationRule {
   id: string;
@@ -97,13 +98,13 @@ class CacheManager {
       priority: 4
     });
 
-    // 规则5：定期清理（超过24小时强制清理）
+    // 规则5：定期清理（超过配置时间强制清理）
     this.addRule({
       id: 'periodic_cleanup',
       name: '定期清理缓存',
       condition: (context) => {
         const now = Date.now();
-        return (now - this.lastInvalidationTime) > 24 * 60 * 60 * 1000; // 24小时
+        return (now - this.lastInvalidationTime) > CACHE_CLEANUP.FORCE_CLEANUP_AGE;
       },
       action: () => {
         predictionCache.invalidateCache();

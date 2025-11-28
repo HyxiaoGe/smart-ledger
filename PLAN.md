@@ -34,14 +34,15 @@ Phase 1: 合并数据同步 ✅ 已完成
 │   └── ✅ aiFeedbackService.ts → 迁移到 @/lib/services/ai
 └── ✅ 集中管理 localStorage keys（lib/config/storageKeys.ts）
 
-Phase 2: 统一缓存层（3-5天）
-├── 合并 predictionCache + cacheManager + unifiedCache
-├── 统一 TTL 策略（写入 constants/cacheConfig.ts）
-└── 使用 infrastructure/cache 作为唯一缓存层
+Phase 2: 统一缓存层 ✅ 已完成
+├── ✅ 创建 lib/config/cacheConfig.ts - 统一 TTL 策略
+├── ✅ 删除 unifiedCache.ts（260 行）- 未使用
+├── ✅ 迁移 predict/route.ts 使用 memoryCache
+└── ✅ predictionCache/cacheManager 使用统一 TTL 配置
 
-Phase 3: 生命周期管理（2-3天）
+Phase 3: 生命周期管理（可选）
 ├── 创建 CacheLifecycleManager 统一清理
-└── 修复 unifiedCache 60s interval 内存泄漏
+└── ✅ 已消除 unifiedCache 60s interval 内存泄漏（删除文件）
 ```
 
 **已完成：**
@@ -52,13 +53,17 @@ Phase 3: 生命周期管理（2-3天）
 - ✅ 删除 `aiFeedbackService.ts`（265 行）- 迁移引用到 `@/lib/services/ai`
 - ✅ 创建 `lib/config/storageKeys.ts` - 集中管理 10 个 localStorage keys
 - ✅ 迁移 8 个文件的 localStorage 访问使用统一常量
+- ✅ 创建 `lib/config/cacheConfig.ts` - 统一 TTL 策略配置
+- ✅ 删除 `unifiedCache.ts`（260 行）- 完全未使用，内含内存泄漏
+- ✅ 迁移 `predict/route.ts` 使用 `memoryCache`
+- ✅ `predictionCache` 和 `cacheManager` 使用统一 TTL 配置
 
 **预期收益：**
 - 删除 ~1,000 行冗余代码
 - 单一缓存失效模式
 - 消除内存泄漏
 
-**状态：** `Phase 1 完成，Phase 2 待开始`
+**状态：** `Phase 1 & 2 完成，Phase 3 可选`
 
 ---
 
@@ -356,4 +361,5 @@ CREATE POLICY "prevent_bulk_delete" ON transactions
 | 2025-11-27 | 删除 dataSync.ts，迁移 4 个组件 | @deprecated 文件有外部引用，需要额外迁移工作 |
 | 2025-11-27 | 删除 3 个 @deprecated 文件（728 行） | 迁移引用到统一服务，需要处理同步/异步 API 差异 |
 | 2025-11-28 | Phase 1 完成：集中管理 localStorage keys | 创建 storageKeys.ts，迁移 8 个文件，统一 10 个 key |
+| 2025-11-28 | Phase 2 完成：统一缓存层 | 删除 unifiedCache.ts(260行)，创建 cacheConfig.ts，消除内存泄漏 |
 
