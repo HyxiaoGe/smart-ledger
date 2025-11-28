@@ -5,20 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, TrendingDown, Brain, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CATEGORY_NAMES, CATEGORY_ICONS } from './constants';
-
-interface TrendAnalysisData {
-  currentMonth: number;
-  lastMonth: number;
-  changePercent: number;
-  changeAmount: number;
-  categories: Array<{
-    category: string;
-    current: number;
-    last: number;
-    changePercent: number;
-    icon: string;
-  }>;
-}
+import type { TrendAnalysisData } from './utils';
 
 interface TrendAnalysisProps {
   data: TrendAnalysisData | null;

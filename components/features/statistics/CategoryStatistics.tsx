@@ -7,9 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCategories } from '@/contexts/CategoryContext';
 import { TrendingUp, BarChart3, ChevronDown, ChevronUp, Store } from 'lucide-react';
+import type { ChartTooltipProps, ChartLegendProps, LegendPayloadItem } from '@/types/ui/chart';
+import type { TransactionRow } from '@/types/database';
 
 interface CategoryStatisticsProps {
-  transactions: any[];
+  transactions: TransactionRow[];
   currency: string;
 }
 
@@ -148,7 +150,7 @@ export function CategoryStatistics({ transactions }: CategoryStatisticsProps) {
   });
 
   // 自定义饼图tooltip
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: ChartTooltipProps) => {
     if (!active || !payload?.length) return null;
 
     const data = payload[0].payload;
@@ -179,11 +181,12 @@ export function CategoryStatistics({ transactions }: CategoryStatisticsProps) {
   };
 
   // 自定义legend
-  const CustomLegend = ({ payload }: any) => {
+  const CustomLegend = ({ payload }: ChartLegendProps) => {
     return (
       <div className="flex flex-wrap gap-2 justify-center mt-2">
-        {payload.map((entry: any, index: number) => {
-          const info = getCategoryInfo(entry.payload.category);
+        {payload?.map((entry: LegendPayloadItem, index: number) => {
+          const entryPayload = entry.payload as { category?: string } | undefined;
+          const info = getCategoryInfo(entryPayload?.category || '');
           return (
             <div key={index} className="flex items-center gap-1 text-xs">
               <div

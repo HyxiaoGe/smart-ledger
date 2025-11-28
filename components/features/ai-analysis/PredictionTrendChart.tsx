@@ -15,6 +15,7 @@ import {
   BarChart,
   Bar
 } from 'recharts';
+import type { ChartTooltipProps, TooltipPayloadItem } from '@/types/ui/chart';
 
 interface PredictionData {
   predictions: Array<{
@@ -107,7 +108,7 @@ export function PredictionTrendChart({
     if (!predictionData.predictions.length) return [];
 
     return predictionData.predictions.map(prediction => {
-      const data: any = {
+      const data: Record<string, string | number> = {
         month: prediction.month.slice(5),
         total: prediction.totalAmount
       };
@@ -123,7 +124,7 @@ export function PredictionTrendChart({
   }, [predictionData]);
 
   // 自定义Tooltip
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: ChartTooltipProps) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       const isPrediction = data.type === 'prediction';
@@ -156,13 +157,13 @@ export function PredictionTrendChart({
   };
 
   // 分类数据Tooltip
-  const CategoryTooltip = ({ active, payload, label }: any) => {
+  const CategoryTooltip = ({ active, payload, label }: ChartTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 dark:border-gray-700">
           <p className="font-medium text-gray-900 mb-2">{label}</p>
           <div className="space-y-1">
-            {payload.map((entry: any, index: number) => (
+            {payload.map((entry: TooltipPayloadItem, index: number) => (
               <div key={index} className="flex items-center gap-2 text-sm">
                 <div
                   className="w-3 h-3 rounded"
