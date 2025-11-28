@@ -84,32 +84,36 @@ Phase 3: 生命周期管理（可选）
 
 ### 2.3 服务层依赖统一
 
-**现状问题：**
-- 32 个服务中仅 3 个（9%）使用 Repository 模式
-- 50% 服务直接调用 Supabase
-- 已有的 Repository 接口利用率约 50%
+**现状分析（2025-11-28 重新评估）：**
 
-**方案：**
+项目采用 **Service → PostgreSQL RPC** 架构模式，这是合理的设计：
+- budgetService.ts: 6 个 RPC 调用 (`set_budget`, `get_monthly_budget_status`, `delete_budget` 等)
+- paymentMethodService.ts: 6 个 RPC 调用 (`add_payment_method`, `get_payment_methods_with_stats` 等)
+- recurringExpenses.ts: RPC 调用 (`generate_recurring_transactions`)
 
+**RPC vs Repository 模式评估：**
 ```
-Week 1: 补充缺失的 Repository 接口
-├── IPaymentMethodRepository
-├── IRecurringExpenseRepository
-└── ISmartPatternRepository
+✅ 当前 RPC 模式的优势:
+├── 复杂业务逻辑在数据库层保证数据完整性
+├── 事务处理在存储过程中原子执行
+├── 减少网络往返，性能更好
+└── Service 层保持简洁
 
-Week 2: 迁移高优先级服务
-├── budgetService.ts → 使用 IBudgetRepository
-├── paymentMethodService.ts → 使用新 Repository
-└── recurringExpenses.ts → 使用新 Repository
+⚠️ Repository 模式更适用于:
+├── 简单 CRUD 操作
+├── 需要换数据源的场景
+└── 复杂查询组合
 
-Week 3: 迁移 API 路由
-└── 所有 15+ 路由改用 Service/Repository
-
-Week 4: 标准化服务模式
-└── 统一 Service 类 + Factory 模式
+📊 结论: 保持现有 RPC 架构，Repository 仅用于简单 CRUD
 ```
 
-**状态：** `待开始`
+**已有 Repository 使用情况（维持现状）：**
+- ITransactionRepository ✅ 用于 TransactionQueryService/SummaryService/AnalyticsService
+- ICategoryRepository ✅ 用于 categoryService
+- IBudgetRepository ⚠️ 已有接口，但 budgetService 使用 RPC 更合适
+- ICommonNoteRepository ✅ 用于 commonNotesService
+
+**状态：** `评估完成 - 保持现有架构`
 
 ---
 
@@ -376,4 +380,5 @@ CREATE POLICY "prevent_bulk_delete" ON transactions
 | 2025-11-28 | Phase 2 完成：统一缓存层 | 删除 unifiedCache.ts(260行)，创建 cacheConfig.ts，消除内存泄漏 |
 | 2025-11-28 | 2.4 类型定义整合（Priority 1-3） | 创建 chart.ts、common/index.ts，修复 8 处图表 any 类型 |
 | 2025-11-28 | 2.4 错误处理类型安全 | 修复 19 处 catch (error: any)，添加 isAbortError 工具函数 |
+| 2025-11-28 | 2.3 服务层评估完成 | RPC 架构合理，保持现状；Repository 用于简单 CRUD |
 
