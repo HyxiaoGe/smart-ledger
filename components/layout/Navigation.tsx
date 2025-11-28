@@ -2,15 +2,22 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Home, PlusCircle, FileText, Settings, LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils/helpers';
 import NProgress from 'nprogress';
 import { ThemeToggle } from './ThemeToggle';
 
-const navItems = [
-  { href: '/', label: '首页', icon: '🏠' },
-  { href: '/add', label: '添加账单', icon: '➕' },
-  { href: '/records', label: '账单列表', icon: '📋' },
-  { href: '/settings', label: '设置', icon: '⚙️' }
+type NavItem = {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+};
+
+const navItems: NavItem[] = [
+  { href: '/', label: '首页', icon: Home },
+  { href: '/add', label: '添加账单', icon: PlusCircle },
+  { href: '/records', label: '账单列表', icon: FileText },
+  { href: '/settings', label: '设置', icon: Settings }
 ];
 
 export default function Navigation() {
@@ -42,7 +49,7 @@ export default function Navigation() {
             )}
           >
             <span className="flex items-center gap-2">
-              <span className="text-base">{item.icon}</span>
+              <item.icon className="w-4 h-4" />
               <span>{item.label}</span>
             </span>
 
