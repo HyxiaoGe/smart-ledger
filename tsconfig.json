@@ -20,7 +20,8 @@
       "@/types/*": ["types/*"],
       "@/components/*": ["components/*", "app/components/*"],
       "@/hooks/*": ["hooks/*"],
-      "@/contexts/*": ["contexts/*"]
+      "@/contexts/*": ["contexts/*"],
+      "@/generated/*": ["generated/*"]
     },
     "plugins": [
       {
