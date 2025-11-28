@@ -147,18 +147,18 @@ types/
 └── ai-feedback/# AI 反馈类型
 
 待处理:
-├── 服务层 AIRequestContext
-└── 错误处理 catch (error: unknown) - 约 6 处
+└── 服务层 AIRequestContext
 ```
 
 **已完成：**
 - ✅ 移除 2 个重复类型定义（TrendAnalysisData, PersonalizedAdviceData）
 - ✅ 创建 `types/ui/chart.ts` - Recharts 类型定义
-- ✅ 创建 `types/common/index.ts` - 通用工具类型
+- ✅ 创建 `types/common/index.ts` - 通用工具类型（含 getErrorMessage, isAbortError）
 - ✅ 更新 `types/index.ts` 导出新模块
 - ✅ 修复 3 个图表组件的 `any` 类型（共 8 处）
+- ✅ 修复 19 处 `catch (error: any)` → `catch (error: unknown)`
 
-**状态：** `Priority 1-3 完成，Priority 4 部分完成`
+**状态：** `Priority 1-3 完成，错误处理完成，Priority 4 部分完成`
 
 ---
 
@@ -375,4 +375,5 @@ CREATE POLICY "prevent_bulk_delete" ON transactions
 | 2025-11-28 | Phase 1 完成：集中管理 localStorage keys | 创建 storageKeys.ts，迁移 8 个文件，统一 10 个 key |
 | 2025-11-28 | Phase 2 完成：统一缓存层 | 删除 unifiedCache.ts(260行)，创建 cacheConfig.ts，消除内存泄漏 |
 | 2025-11-28 | 2.4 类型定义整合（Priority 1-3） | 创建 chart.ts、common/index.ts，修复 8 处图表 any 类型 |
+| 2025-11-28 | 2.4 错误处理类型安全 | 修复 19 处 catch (error: any)，添加 isAbortError 工具函数 |
 
