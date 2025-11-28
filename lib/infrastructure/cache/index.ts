@@ -16,6 +16,7 @@ export type { CacheDecoratorConfig } from './CacheDecorator';
 // 导出默认缓存实例
 import { MemoryCache } from './MemoryCache';
 import { LocalStorageCache } from './LocalStorageCache';
+import { CACHE_PREFIX } from '@/lib/config/storageKeys';
 
 /**
  * 默认内存缓存实例
@@ -25,7 +26,7 @@ export const memoryCache = new MemoryCache();
 /**
  * 默认 LocalStorage 缓存实例
  */
-export const localStorageCache = new LocalStorageCache('smart-ledger:cache:');
+export const localStorageCache = new LocalStorageCache(`${CACHE_PREFIX}:`);
 
 /**
  * 缓存工厂
@@ -36,7 +37,7 @@ export function createCache<T = any>(type: 'memory' | 'localStorage' = 'memory')
     case 'memory':
       return new MemoryCache<T>();
     case 'localStorage':
-      return new LocalStorageCache<T>('smart-ledger:cache:');
+      return new LocalStorageCache<T>(`${CACHE_PREFIX}:`);
     default:
       return new MemoryCache<T>();
   }

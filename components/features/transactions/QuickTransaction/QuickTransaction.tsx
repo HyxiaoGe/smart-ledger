@@ -10,6 +10,7 @@ import { ProgressToast } from '@/components/shared/ProgressToast';
 import { enhancedDataSync, markTransactionsDirty } from '@/lib/core/EnhancedDataSync';
 import { generateTimeContext } from '@/lib/domain/noteContext';
 import { aiPredictionService, type QuickTransactionSuggestion } from '@/lib/services/aiPrediction';
+import { STORAGE_KEYS } from '@/lib/config/storageKeys';
 import { Zap, Clock, TrendingUp, CheckCircle } from 'lucide-react';
 
 interface QuickTransactionProps {
@@ -86,7 +87,7 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
       markTransactionsDirty();
 
       // 清除缓存
-      localStorage.removeItem('common-notes-cache');
+      localStorage.removeItem(STORAGE_KEYS.COMMON_NOTES_CACHE);
 
       // 显示成功提示
       setLastSuccessTransaction(suggestion);

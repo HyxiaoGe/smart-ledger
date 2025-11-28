@@ -4,6 +4,8 @@
  * 支持浏览器和服务端环境
  */
 
+import { STORAGE_KEYS } from '@/lib/config/storageKeys';
+
 // 检测是否在服务端环境
 const isServer = typeof window === 'undefined';
 
@@ -35,8 +37,9 @@ interface UserFeedbackRecord {
 
 class PredictionCacheService {
   private static instance: PredictionCacheService;
-  private readonly CACHE_KEY = 'prediction_cache_v1';
-  private readonly FEEDBACK_KEY = 'prediction_feedbacks_v1';
+  // 使用统一的 storage keys
+  private readonly CACHE_KEY = STORAGE_KEYS.PREDICTION_CACHE;
+  private readonly FEEDBACK_KEY = STORAGE_KEYS.PREDICTION_FEEDBACKS;
   private readonly CACHE_VERSION = '1.0.0';
   private readonly CACHE_TTL = 30 * 60 * 1000; // 30分钟
 

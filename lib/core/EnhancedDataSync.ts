@@ -8,6 +8,7 @@
 import { syncStateManager } from './SyncStateManager';
 import { removeItem, writeJSON, readString, writeString, hasStorageQuota } from '@/lib/utils/storage';
 import { AppError, ErrorCode } from '@/lib/domain/errors';
+import { STORAGE_KEYS } from '@/lib/config/storageKeys';
 
 export type SyncType = 'transaction_added' | 'transaction_deleted' | 'transaction_updated';
 
@@ -37,10 +38,11 @@ const DEFAULT_CONFIG: Required<SyncConfig> = {
   enableConflictDetection: true,
 };
 
-const STORAGE_KEY = 'smart-ledger-sync-event';
-const DIRTY_KEY = 'smart-ledger-transactions-dirty';
-const VERSION_KEY = 'smart-ledger-data-version';
-const LOCK_KEY = 'smart-ledger-sync-lock';
+// 使用统一的 storage keys
+const STORAGE_KEY = STORAGE_KEYS.SYNC_EVENT;
+const DIRTY_KEY = STORAGE_KEYS.TRANSACTIONS_DIRTY;
+const VERSION_KEY = STORAGE_KEYS.DATA_VERSION;
+const LOCK_KEY = STORAGE_KEYS.SYNC_LOCK;
 const LOCK_TIMEOUT = 5000; // 5秒锁超时
 
 /**

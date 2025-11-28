@@ -20,6 +20,7 @@ import type { TransactionPrediction, QuickTransactionSuggestion } from '@/lib/se
 import { formatDateToLocal } from '@/lib/utils/date';
 import { getPaymentMethodsWithStats, type PaymentMethod } from '@/lib/services/paymentMethodService';
 import { logger } from '@/lib/services/logging';
+import { STORAGE_KEYS } from '@/lib/config/storageKeys';
 
 export default function AddPage() {
   const type: TransactionType = 'expense'; // 固定为支出类型
@@ -348,7 +349,7 @@ export default function AddPage() {
 
       if (response.ok) {
         // 清除本地缓存，强制下次重新获取最新数据
-        localStorage.removeItem('common-notes-cache');
+        localStorage.removeItem(STORAGE_KEYS.COMMON_NOTES_CACHE);
       }
     } catch {
       // ignore note update failures
