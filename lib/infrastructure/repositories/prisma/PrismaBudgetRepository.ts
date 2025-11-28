@@ -3,7 +3,7 @@
  * 实现 IBudgetRepository 接口，提供基于 Prisma 的预算数据访问
  */
 
-import type { PrismaClient, Prisma } from '@prisma/client';
+import type { PrismaClient, Prisma } from '@/generated/prisma';
 import type { Budget } from '@/lib/services/budgetService';
 import type { IBudgetRepository } from '@/lib/domain/repositories/IBudgetRepository';
 import type {
