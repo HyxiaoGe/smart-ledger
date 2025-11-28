@@ -42,7 +42,7 @@ export class PrismaCategoryRepository implements ICategoryRepository {
     const data = await this.prisma.categories.findFirst({
    */
   async findByKey(key: string): Promise<Category | null> {
-    const data = await this.prisma.categories.findUnique({
+    const data = await this.prisma.categories.findFirst({
       where: { key },
     });
 
