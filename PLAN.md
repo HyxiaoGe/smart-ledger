@@ -78,7 +78,20 @@ Phase 3: 生命周期管理（可选）
 - API 路由调用 Service 层，Service 调用 Repository
 - 创建统一的请求验证工具
 
-**状态：** `待开始`
+**已完成 (2025-11-28)：**
+```
+✅ 迁移到 withErrorHandler 的路由 (14/15):
+├── transactions/today-auto-generated/route.ts
+├── smart-suggestions/learning/route.ts
+├── predict/route.ts
+├── ai-prediction/route.ts
+└── (已有10个路由使用 withErrorHandler)
+
+⏸️ 保持特殊处理的路由 (1):
+└── analyze/stream/route.ts (流式响应，需要特殊错误处理)
+```
+
+**状态：** `withErrorHandler 统一完成`
 
 ---
 
@@ -381,4 +394,5 @@ CREATE POLICY "prevent_bulk_delete" ON transactions
 | 2025-11-28 | 2.4 类型定义整合（Priority 1-3） | 创建 chart.ts、common/index.ts，修复 8 处图表 any 类型 |
 | 2025-11-28 | 2.4 错误处理类型安全 | 修复 19 处 catch (error: any)，添加 isAbortError 工具函数 |
 | 2025-11-28 | 2.3 服务层评估完成 | RPC 架构合理，保持现状；Repository 用于简单 CRUD |
+| 2025-11-28 | 2.2 API 路由统一 | 14/15 路由使用 withErrorHandler，流式响应保持特殊处理 |
 

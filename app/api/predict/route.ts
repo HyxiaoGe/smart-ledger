@@ -4,7 +4,7 @@ import { getPredictionData } from '@/lib/services/transactions';
 import { memoryCache } from '@/lib/infrastructure/cache';
 import { CACHE_TTL, CACHE_PREFIXES } from '@/lib/config/cacheConfig';
 import { aiFeedbackService } from '@/lib/services/ai';
-import { getErrorMessage } from '@/types/common';
+import { withErrorHandler, ApiError } from '@/lib/utils/apiErrorHandler';
 
 export const runtime = 'nodejs';
 
@@ -12,61 +12,49 @@ export const runtime = 'nodejs';
  * 支出预测API
  * 基于历史数据预测未来支出，包括异常检测和预算建议
  */
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    const { type = 'spending-prediction', monthsToAnalyze = 6, predictionMonths = 3 } = body;
+export const POST = withErrorHandler(async (req: NextRequest) => {
+  const body = await req.json();
+  const { type = 'spending-prediction', monthsToAnalyze = 6, predictionMonths = 3 } = body;
 
-    // 获取历史数据
-    const predictionData = await getPredictionData(monthsToAnalyze);
+  // 获取历史数据
+  const predictionData = await getPredictionData(monthsToAnalyze);
 
-    // 检查数据质量
-    if (!predictionData.overallStats.dataQuality.sufficientData) {
-      return Response.json({
-        error: '数据不足',
-        message: `需要至少3个月的历史数据，当前只有${predictionData.overallStats.totalMonths}个月`,
-        data: predictionData
-      }, { status: 400 });
-    }
-
-    let result;
-
-    switch (type) {
-      case 'spending-prediction':
-        result = await handleSpendingPrediction(predictionData, predictionMonths, monthsToAnalyze);
-        break;
-      case 'anomaly-detection':
-        result = await handleAnomalyDetection(predictionData);
-        break;
-      case 'budget-recommendation':
-        result = await handleBudgetRecommendation(predictionData, predictionMonths);
-        break;
-      case 'comprehensive-analysis':
-        result = await handleComprehensiveAnalysis(predictionData, predictionMonths, monthsToAnalyze);
-        break;
-      default:
-        return new Response(
-          JSON.stringify({ error: '不支持的预测类型' }),
-          { status: 400 }
-        );
-    }
-
+  // 检查数据质量
+  if (!predictionData.overallStats.dataQuality.sufficientData) {
     return Response.json({
-      type,
-      dataQuality: predictionData.overallStats.dataQuality,
-      analysisMonths: predictionData.overallStats.totalMonths,
-      generatedAt: new Date().toISOString(),
-      ...result
-    });
-
-  } catch (err: unknown) {
-    console.error('支出预测失败:', err);
-    return new Response(
-      JSON.stringify({ error: getErrorMessage(err) || '支出预测失败' }),
-      { status: 500 }
-    );
+      error: '数据不足',
+      message: `需要至少3个月的历史数据，当前只有${predictionData.overallStats.totalMonths}个月`,
+      data: predictionData
+    }, { status: 400 });
   }
-}
+
+  let result;
+
+  switch (type) {
+    case 'spending-prediction':
+      result = await handleSpendingPrediction(predictionData, predictionMonths, monthsToAnalyze);
+      break;
+    case 'anomaly-detection':
+      result = await handleAnomalyDetection(predictionData);
+      break;
+    case 'budget-recommendation':
+      result = await handleBudgetRecommendation(predictionData, predictionMonths);
+      break;
+    case 'comprehensive-analysis':
+      result = await handleComprehensiveAnalysis(predictionData, predictionMonths, monthsToAnalyze);
+      break;
+    default:
+      throw new ApiError('不支持的预测类型', 400);
+  }
+
+  return Response.json({
+    type,
+    dataQuality: predictionData.overallStats.dataQuality,
+    analysisMonths: predictionData.overallStats.totalMonths,
+    generatedAt: new Date().toISOString(),
+    ...result
+  });
+});
 
 /**
  * 支出预测处理
