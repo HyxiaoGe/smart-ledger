@@ -9,6 +9,7 @@ import { ProgressToast } from '@/components/shared/ProgressToast';
 import { PageSkeleton } from '@/components/shared/PageSkeleton';
 import { useAutoGenerateRecurring } from '@/hooks/useAutoGenerateRecurring';
 import { manualGenerateRecurring } from '@/lib/services/recurringService';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import {
   Calendar,
   Plus,
@@ -16,7 +17,6 @@ import {
   Clock,
   DollarSign,
   Settings2,
-  ChevronLeft,
   Pause,
   Play,
   Edit,
@@ -219,14 +219,14 @@ export default function RecurringExpensesPage() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-6">
-            <Link href="/settings/expenses">
-              <Button variant="ghost" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 hover:bg-gray-50 rounded-lg px-3 py-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200">
-                <ChevronLeft className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1" />
-                返回消费配置
-              </Button>
-            </Link>
-          </div>
+          <Breadcrumb
+            items={[
+              { label: '设置', href: '/settings' },
+              { label: '消费配置', href: '/settings/expenses' },
+              { label: '固定支出' }
+            ]}
+            className="mb-6"
+          />
           <div className="text-center py-12">
             <div className="text-red-500 mb-4">{error}</div>
             <Button onClick={fetchRecurringExpenses}>重试</Button>
@@ -240,15 +240,15 @@ export default function RecurringExpensesPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* 主内容区域 */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 返回导航 */}
-        <div className="mb-6">
-          <Link href="/settings/expenses">
-            <Button variant="ghost" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 hover:bg-gray-50 rounded-lg px-3 py-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200">
-              <ChevronLeft className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1" />
-              返回消费配置
-            </Button>
-          </Link>
-        </div>
+        {/* 面包屑导航 */}
+        <Breadcrumb
+          items={[
+            { label: '设置', href: '/settings' },
+            { label: '消费配置', href: '/settings/expenses' },
+            { label: '固定支出' }
+          ]}
+          className="mb-6"
+        />
 
         {/* 页面标题和操作按钮 */}
         <div className="flex items-center justify-between mb-8">

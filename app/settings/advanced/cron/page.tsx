@@ -19,8 +19,8 @@ import {
   type CronJobRun,
   type CronJobStats,
 } from '@/lib/services/cronService';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import {
-  ChevronLeft,
   Clock,
   PlayCircle,
   CheckCircle2,
@@ -218,14 +218,14 @@ export default function CronManagementPage() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-6">
-            <Link href="/settings/advanced">
-              <Button variant="ghost" className="text-gray-600 dark:text-gray-300 hover:text-gray-900">
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                返回高级配置
-              </Button>
-            </Link>
-          </div>
+          <Breadcrumb
+            items={[
+              { label: '设置', href: '/settings' },
+              { label: '高级配置', href: '/settings/advanced' },
+              { label: '定时任务' }
+            ]}
+            className="mb-6"
+          />
           <div className="text-center py-12">
             <div className="text-red-500 mb-4">{error}</div>
             <Button onClick={fetchData}>重试</Button>
@@ -238,15 +238,15 @@ export default function CronManagementPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 返回导航 */}
-        <div className="mb-6">
-          <Link href="/settings/advanced">
-            <Button variant="ghost" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 hover:bg-gray-50 rounded-lg px-3 py-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200">
-              <ChevronLeft className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1" />
-              返回高级配置
-            </Button>
-          </Link>
-        </div>
+        {/* 面包屑导航 */}
+        <Breadcrumb
+          items={[
+            { label: '设置', href: '/settings' },
+            { label: '高级配置', href: '/settings/advanced' },
+            { label: '定时任务' }
+          ]}
+          className="mb-6"
+        />
 
         {/* 页面标题 */}
         <div className="mb-8">
