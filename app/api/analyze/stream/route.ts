@@ -1,9 +1,10 @@
 import { NextRequest } from 'next/server';
 import { getAiConfig } from '@/lib/clients/ai/client';
-import { supabase } from '@/lib/clients/supabase/client';
+import { executeQuery, getPrismaClient, getSupabaseClient, getDbType } from '@/lib/clients/db';
 import { getErrorMessage } from '@/types/common';
 
-export const runtime = 'edge';
+// 改为 nodejs runtime 以支持 Prisma
+export const runtime = 'nodejs';
 
 const TEMPLATE = `你是一名中文财务助理。请严格按以下 Markdown 模板输出（每段之间空一行，不要使用代码块或表格）。仅关注“支出”，不要输出收入与结余：\n\n---\n### 📊 本期支出概览\n- 本期总支出：{千分位金额} {币种}\n\n---\n### 🔝 三大支出类别\n1. 类别：金额 {币种}（占比x%）\n2. 类别：金额 {币种}（占比x%）\n3. 类别：金额 {币种}（占比x%）\n\n---\n### 📈 与上期变化（支出）\n- 简述支出较上期的变化（若无上期数据则说明原因）\n\n---\n### 💡 简短建议\n- 两条以内可执行建议`;
 
@@ -127,17 +128,46 @@ export async function GET(req: NextRequest) {
       const start = `${month}-01`;
       const endDate = new Date(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 1);
       const end = endDate.toISOString().slice(0, 10);
-      const { data, error } = await supabase
-        .from('transactions')
-        .select('type, category, amount, date, currency, is_auto_generated, recurring_expense_id')
-        .is('deleted_at', null)
-        .is('is_auto_generated', false) // 过滤掉自动生成的交易记录
-        .is('recurring_expense_id', null) // 过滤掉固定支出关联的交易记录
-        .gte('date', start)
-        .lt('date', end)
-        .eq('currency', currency);
-      if (error) throw error;
-      rows = data || [];
+
+      rows = await executeQuery(
+        // Supabase 查询
+        async () => {
+          const supabase = getSupabaseClient();
+          const { data, error } = await supabase
+            .from('transactions')
+            .select('type, category, amount, date, currency, is_auto_generated, recurring_expense_id')
+            .is('deleted_at', null)
+            .is('is_auto_generated', false)
+            .is('recurring_expense_id', null)
+            .gte('date', start)
+            .lt('date', end)
+            .eq('currency', currency);
+          if (error) throw error;
+          return data || [];
+        },
+        // Prisma 查询
+        async () => {
+          const prisma = getPrismaClient();
+          return await prisma.transactions.findMany({
+            where: {
+              deleted_at: null,
+              is_auto_generated: false,
+              recurring_expense_id: null,
+              date: { gte: start, lt: end },
+              currency: currency,
+            },
+            select: {
+              type: true,
+              category: true,
+              amount: true,
+              date: true,
+              currency: true,
+              is_auto_generated: true,
+              recurring_expense_id: true,
+            },
+          });
+        }
+      );
     }
 
     const { conf } = getAiConfig();
