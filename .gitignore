@@ -40,3 +40,4 @@ docker-compose.override.yml
 .claude/*
 
 docs/*
+/generated/prisma
