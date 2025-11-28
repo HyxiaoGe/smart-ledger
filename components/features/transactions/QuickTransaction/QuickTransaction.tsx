@@ -101,7 +101,7 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
         fetchQuickSuggestions();
       }, 1000);
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('快速记账失败:', error);
       // 这里可以显示错误提示
     } finally {

@@ -94,3 +94,10 @@ export function getErrorMessage(error: unknown): string {
 export function isError(error: unknown): error is Error {
   return error instanceof Error;
 }
+
+/**
+ * 类型守卫：检查是否为 AbortError（请求取消）
+ */
+export function isAbortError(error: unknown): boolean {
+  return error instanceof Error && error.name === 'AbortError';
+}

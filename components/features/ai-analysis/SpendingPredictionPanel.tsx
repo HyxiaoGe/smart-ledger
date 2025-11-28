@@ -7,6 +7,7 @@ import { TrendingUp, TrendingDown, AlertTriangle, Target, RefreshCw, ChevronDown
 import { motion, AnimatePresence } from 'framer-motion';
 import { PredictionTrendChart } from '@/components/features/ai-analysis/PredictionTrendChart';
 import { AIFeedbackTrigger, QuickFeedback } from '@/components/features/ai-analysis/AIFeedbackModal';
+import { getErrorMessage } from '@/types/common';
 
 interface PredictionData {
   predictions: Array<{
@@ -164,9 +165,9 @@ export function SpendingPredictionPanel({
       }
 
   
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ 预测数据获取失败:', error);
-      setError(error.message || '获取预测数据失败');
+      setError(getErrorMessage(error) || '获取预测数据失败');
     } finally {
       setLoading(false);
       onLoadingChange?.(false);

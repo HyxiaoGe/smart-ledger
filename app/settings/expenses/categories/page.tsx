@@ -17,6 +17,7 @@ import {
   PRESET_COLORS,
   type Category,
 } from '@/lib/services/categoryService';
+import { getErrorMessage } from '@/types/common';
 import {
   ChevronLeft,
   Plus,
@@ -84,9 +85,9 @@ export default function CategoriesPage() {
       setShowAddDialog(false);
       resetForm();
       await fetchCategories();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('添加类别失败:', error);
-      setToastMessage(`❌ ${error.message || '添加失败'}`);
+      setToastMessage(`❌ ${getErrorMessage(error) || '添加失败'}`);
       setShowToast(true);
     }
   };
@@ -111,9 +112,9 @@ export default function CategoriesPage() {
       setShowEditDialog(false);
       resetForm();
       await fetchCategories();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('更新类别失败:', error);
-      setToastMessage(`❌ ${error.message || '更新失败'}`);
+      setToastMessage(`❌ ${getErrorMessage(error) || '更新失败'}`);
       setShowToast(true);
     }
   };
@@ -137,9 +138,9 @@ export default function CategoriesPage() {
         setToastMessage(`❌ ${result.message}`);
         setShowToast(true);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('删除类别失败:', error);
-      setToastMessage(`❌ ${error.message || '删除失败'}`);
+      setToastMessage(`❌ ${getErrorMessage(error) || '删除失败'}`);
       setShowToast(true);
     }
   };

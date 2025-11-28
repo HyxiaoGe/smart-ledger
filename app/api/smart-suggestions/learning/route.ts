@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { supabase } from '@/lib/clients/supabase/client';
 import { logger } from '@/lib/services/logging';
+import { getErrorMessage } from '@/types/common';
 
 export const runtime = 'nodejs';
 
@@ -104,10 +105,10 @@ export async function POST(req: NextRequest) {
 
       return Response.json({ success: true });
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('学习数据收集失败:', err);
     return new Response(
-      JSON.stringify({ error: err.message || '学习数据收集失败' }),
+      JSON.stringify({ error: getErrorMessage(err) || '学习数据收集失败' }),
       { status: 500 }
     );
   }

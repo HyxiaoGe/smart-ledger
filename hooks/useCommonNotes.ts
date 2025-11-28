@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { readJSON, writeJSON, removeItem } from '@/lib/utils/storage';
 import { commonNotesService, type CommonNote } from '@/lib/services/commonNotes';
 import { STORAGE_KEYS } from '@/lib/config/storageKeys';
+import { isAbortError } from '@/types/common';
 
 export const COMMON_NOTES_CACHE_KEY = STORAGE_KEYS.COMMON_NOTES_CACHE;
 const CACHE_TTL = 24 * 60 * 60 * 1000;
@@ -59,8 +60,8 @@ export function useCommonNotes(): UseCommonNotesResult {
       setLocalCache(data);
       writeJSON<CachePayload>(COMMON_NOTES_CACHE_KEY, { data, timestamp: Date.now() });
       needsRemoteFetchRef.current = false;
-    } catch (error: any) {
-      if (error?.name !== 'AbortError') {
+    } catch (error: unknown) {
+      if (!isAbortError(error)) {
         needsRemoteFetchRef.current = true;
       }
     } finally {
@@ -87,8 +88,8 @@ export function useCommonNotes(): UseCommonNotesResult {
         signal: controller.signal
       });
       return data;
-    } catch (error: any) {
-      if (error?.name === 'AbortError') {
+    } catch (error: unknown) {
+      if (isAbortError(error)) {
         return [];
       }
       return [];

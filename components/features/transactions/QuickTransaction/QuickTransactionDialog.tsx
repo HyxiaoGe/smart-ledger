@@ -7,6 +7,7 @@ import { ProgressToast } from '@/components/shared/ProgressToast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { aiPredictionService, type QuickTransactionSuggestion } from '@/lib/services/aiPrediction';
 import { Zap, Clock, CheckCircle, RefreshCw, X } from 'lucide-react';
+import { getErrorMessage } from '@/types/common';
 
 interface QuickTransactionDialogProps {
   open: boolean;
@@ -28,9 +29,9 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
     try {
       const quickSuggestions = await aiPredictionService.generateQuickSuggestions();
       setSuggestions(quickSuggestions);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('获取快速记账建议失败:', err);
-      setError(err.message || '获取建议失败');
+      setError(getErrorMessage(err) || '获取建议失败');
     } finally {
       setLoading(false);
     }

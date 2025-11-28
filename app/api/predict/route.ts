@@ -4,6 +4,7 @@ import { getPredictionData } from '@/lib/services/transactions';
 import { memoryCache } from '@/lib/infrastructure/cache';
 import { CACHE_TTL, CACHE_PREFIXES } from '@/lib/config/cacheConfig';
 import { aiFeedbackService } from '@/lib/services/ai';
+import { getErrorMessage } from '@/types/common';
 
 export const runtime = 'nodejs';
 
@@ -58,10 +59,10 @@ export async function POST(req: NextRequest) {
       ...result
     });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('支出预测失败:', err);
     return new Response(
-      JSON.stringify({ error: err.message || '支出预测失败' }),
+      JSON.stringify({ error: getErrorMessage(err) || '支出预测失败' }),
       { status: 500 }
     );
   }
