@@ -23,7 +23,8 @@ export function getPrismaClient() {
     throw new Error('Prisma is not enabled. Set USE_PRISMA=true to use Prisma.');
   }
   try {
-    const { prisma } = require('@/lib/clients/db/prisma');
+    // 使用相对路径避免路径别名在运行时的问题
+    const { prisma } = require('./prisma');
     if (!prisma) {
       throw new Error('Prisma client is undefined. Run `npx prisma generate` first.');
     }
@@ -38,7 +39,7 @@ export function getPrismaClient() {
  * 获取 Supabase 客户端
  */
 export function getSupabaseClient() {
-  const { supabase } = require('@/lib/clients/supabase/client');
+  const { supabase } = require('../supabase/client');
   return supabase;
 }
 
