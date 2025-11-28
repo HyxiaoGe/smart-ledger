@@ -5,7 +5,6 @@
 
 import { PrismaClient } from '@/generated/prisma/client';
 
-
 // 声明全局变量用于开发环境热重载时保持单例
 declare global {
   // eslint-disable-next-line no-var

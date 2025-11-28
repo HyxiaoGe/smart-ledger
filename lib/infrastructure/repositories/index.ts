@@ -18,6 +18,14 @@ export { SupabaseBudgetRepository } from './SupabaseBudgetRepository';
 export { SupabaseCommonNoteRepository } from './SupabaseCommonNoteRepository';
 export { SupabaseCategoryRepository } from './SupabaseCategoryRepository';
 
+// 导出 Prisma Repository 类
+export {
+  PrismaTransactionRepository,
+  PrismaCommonNoteRepository,
+  PrismaBudgetRepository,
+  PrismaCategoryRepository,
+} from './prisma';
+
 /**
  * Repository 工厂
  * 提供单例的 Repository 实例
