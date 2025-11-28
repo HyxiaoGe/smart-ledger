@@ -1,12 +1,16 @@
-// 常用备注API路由
+/**
+ * 常用备注 API 路由
+ * 使用 Repository 模式，支持 Prisma/Supabase 切换
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
 import type { CommonNote } from '@/types/domain/transaction';
+import { getCommonNoteRepository } from '@/lib/infrastructure/repositories/index.server';
 import { supabaseServerClient } from '@/lib/clients/supabase/server';
 import { unstable_cache, revalidateTag } from 'next/cache';
 import { z } from 'zod';
 import { validateRequest, commonSchemas } from '@/lib/utils/validation';
 import { withErrorHandler, safeAsync } from '@/lib/domain/errors/errorHandler';
-import { DatabaseError } from '@/lib/domain/errors/AppError';
 
 export const runtime = 'nodejs';
 
@@ -18,26 +22,16 @@ const createNoteSchema = z.object({
   time_context: z.string().optional()
 });
 
-const supabase = supabaseServerClient;
-
+// 获取常用备注（带缓存）
 const fetchCommonNotesCached = unstable_cache(
   async (searchValue: string | null, limitValue: number): Promise<CommonNote[]> => {
-    let query = supabase
-      .from('common_notes')
-      .select('*')
-      .eq('is_active', true)
-      .order('usage_count', { ascending: false })
-      .limit(limitValue);
+    const repository = getCommonNoteRepository();
 
     if (searchValue) {
-      query = query.ilike('content', `%${searchValue}%`);
+      return repository.search(searchValue, limitValue);
+    } else {
+      return repository.findMostUsed(limitValue);
     }
-
-    const { data, error } = await query;
-    if (error) {
-      throw new DatabaseError('获取常用备注失败', undefined, { originalError: error.message });
-    }
-    return data ?? [];
   },
   ['common-notes'],
   { revalidate: 60, tags: ['common-notes'] }
@@ -68,18 +62,10 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
   const { content, amount, category, time_context } = validation.data;
   const trimmedContent = content.trim();
+  const repository = getCommonNoteRepository();
 
   // 检查是否已存在相同内容的备注
-  const { data: existingNote, error: fetchError } = await supabase
-    .from('common_notes')
-    .select('*')
-    .eq('content', trimmedContent)
-    .eq('is_active', true)
-    .maybeSingle();
-
-  if (fetchError) {
-    throw new DatabaseError('查询现有备注失败', undefined, { originalError: fetchError.message });
-  }
+  const existingNote = await repository.findByContent(trimmedContent);
 
   if (existingNote) {
     // 更新现有备注的使用次数和最后使用时间，同时更新智能字段
@@ -109,16 +95,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       }
     }
 
-    const { data: updatedNote, error: updateError } = await supabase
-      .from('common_notes')
-      .update(updateData)
-      .eq('id', existingNote.id)
-      .select()
-      .single();
-
-    if (updateError) {
-      throw new DatabaseError('更新备注失败', undefined, { originalError: updateError.message });
-    }
+    const updatedNote = await repository.update(existingNote.id, updateData);
 
     // 异步更新AI分析数据（不阻塞响应）
     if (amount) {
@@ -129,34 +106,24 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     return NextResponse.json({ data: updatedNote });
   } else {
     // 创建新备注，包含智能字段
-    const newNoteData: any = {
+    const createData: any = {
       content: trimmedContent,
-      usage_count: 1,
-      last_used: new Date().toISOString()
     };
 
     // 添加智能字段
     if (amount) {
-      newNoteData.avg_amount = amount;
+      createData.avg_amount = amount;
     }
 
     if (category) {
-      newNoteData.category_affinity = category;
+      createData.category_affinity = category;
     }
 
     if (time_context) {
-      newNoteData.context_tags = [time_context];
+      createData.context_tags = [time_context];
     }
 
-    const { data: newNote, error: insertError } = await supabase
-      .from('common_notes')
-      .insert(newNoteData)
-      .select()
-      .single();
-
-    if (insertError) {
-      throw new DatabaseError('创建备注失败', undefined, { originalError: insertError.message });
-    }
+    const newNote = await repository.create(createData);
 
     // 异步创建AI分析数据（不阻塞响应）
     if (amount) {
@@ -168,9 +135,10 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   }
 });
 
-// 异步函数：更新AI分析数据
+// 异步函数：更新AI分析数据（仍使用 Supabase，因为 note_analytics 表不在核心业务流程中）
 async function updateAnalytics(noteId: string, amount: number) {
   try {
+    const supabase = supabaseServerClient;
     const { data: existingAnalytics } = await supabase
       .from('note_analytics')
       .select('*')
@@ -206,6 +174,7 @@ async function updateAnalytics(noteId: string, amount: number) {
 // 异步函数：创建AI分析数据
 async function createAnalytics(noteId: string, amount: number) {
   try {
+    const supabase = supabaseServerClient;
     await supabase.from('note_analytics').insert({
       note_id: noteId,
       typical_amount: amount,

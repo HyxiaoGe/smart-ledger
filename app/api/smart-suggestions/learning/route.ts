@@ -1,14 +1,16 @@
+/**
+ * 智能建议学习数据收集 API
+ * 用于收集用户对建议的选择和忽略行为，优化推荐算法
+ * 部分使用 Repository 模式，学习日志仍使用 Supabase
+ */
+
 import { NextRequest } from 'next/server';
-import { supabase } from '@/lib/clients/supabase/client';
+import { supabaseServerClient } from '@/lib/clients/supabase/server';
+import { getCommonNoteRepository } from '@/lib/infrastructure/repositories/index.server';
 import { logger } from '@/lib/services/logging';
 import { withErrorHandler, ApiError } from '@/lib/utils/apiErrorHandler';
 
 export const runtime = 'nodejs';
-
-/**
- * 智能建议学习数据收集 API
- * 用于收集用户对建议的选择和忽略行为，优化推荐算法
- */
 
 type LearningData = {
   user_id?: string; // 未来扩展用户系统时使用
@@ -101,10 +103,12 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 });
 
 /**
- * 存储学习数据
+ * 存储学习数据（学习日志使用 Supabase）
  */
 async function storeLearningData(data: LearningData) {
   try {
+    const supabase = supabaseServerClient;
+
     // 存储主要学习记录
     const { error: learningError } = await supabase
       .from('suggestion_learning_logs')
@@ -134,33 +138,25 @@ async function storeLearningData(data: LearningData) {
 }
 
 /**
- * 更新备注的上下文数据
+ * 更新备注的上下文数据（使用 Repository）
  */
 async function updateNoteContextData(data: LearningData) {
   try {
     const { context, final_input, learning_outcome } = data;
+    const repository = getCommonNoteRepository();
 
-    // 查找或创建对应的备注记录
-    const { data: existingNote, error: findError } = await supabase
-      .from('common_notes')
-      .select('*')
-      .ilike('content', `%${final_input.trim()}%`)
-      .limit(1);
-
-    if (findError) {
-      console.error('查找备注失败:', findError);
-      return;
-    }
+    // 查找对应的备注记录
+    const notes = await repository.search(final_input.trim(), 1);
 
     // 如果备注不存在且是正向学习结果，创建新备注
-    if (!existingNote || existingNote.length === 0) {
+    if (!notes || notes.length === 0) {
       if (learning_outcome === 'positive') {
-        await createNewNote(final_input, context, data.timestamp);
+        await createNewNote(final_input, context);
       }
       return;
     }
 
-    const note = existingNote[0];
+    const note = notes[0];
 
     // 更新使用次数和最后使用时间
     const updateData: any = {
@@ -205,14 +201,7 @@ async function updateNoteContextData(data: LearningData) {
     }
 
     // 执行更新
-    const { error: updateError } = await supabase
-      .from('common_notes')
-      .update(updateData)
-      .eq('id', note.id);
-
-    if (updateError) {
-      console.error('更新备注数据失败:', updateError);
-    }
+    await repository.update(note.id, updateData);
 
   } catch (error) {
     console.error('更新备注上下文数据时发生错误:', error);
@@ -220,44 +209,36 @@ async function updateNoteContextData(data: LearningData) {
 }
 
 /**
- * 创建新备注
+ * 创建新备注（使用 Repository）
  */
-async function createNewNote(content: string, context: any, timestamp: string) {
+async function createNewNote(content: string, context: any) {
   try {
-    const newNote: any = {
+    const repository = getCommonNoteRepository();
+
+    const createData: any = {
       content: content.trim(),
-      usage_count: 1,
-      last_used: timestamp,
-      created_at: timestamp,
-      is_active: true
     };
 
     // 添加上下文信息
     if (context.amount) {
-      newNote.avg_amount = context.amount;
+      createData.avg_amount = context.amount;
     }
 
     if (context.category) {
-      newNote.category_affinity = context.category;
+      createData.category_affinity = context.category;
     }
 
     if (context.time_context) {
       const timePattern = extractTimePattern(context.time_context);
       if (timePattern) {
-        newNote.time_patterns = [timePattern];
+        createData.time_patterns = [timePattern];
       }
 
       const contextTag = context.time_context;
-      newNote.context_tags = [contextTag];
+      createData.context_tags = [contextTag];
     }
 
-    const { error } = await supabase
-      .from('common_notes')
-      .insert(newNote);
-
-    if (error) {
-      console.error('创建新备注失败:', error);
-    }
+    await repository.create(createData);
 
   } catch (error) {
     console.error('创建新备注时发生错误:', error);
@@ -311,12 +292,13 @@ async function processLearningData(data: LearningData) {
 }
 
 /**
- * 更新建议权重统计
+ * 更新建议权重统计（使用 Supabase）
  */
 async function updateSuggestionWeights(data: LearningData) {
   try {
     if (data.event_type === 'suggestion_selected' && data.suggestion_data) {
       const { suggestion_type } = data.suggestion_data;
+      const supabase = supabaseServerClient;
 
       // 更新该类型建议的成功统计
       const { error } = await supabase

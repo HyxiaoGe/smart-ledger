@@ -1,13 +1,20 @@
+/**
+ * 智能备注提示 API
+ * 支持多种提示策略：频率、上下文、模式、相似性
+ * 部分使用 Repository 模式，复杂查询仍使用 Supabase
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/clients/supabase/client';
+import { supabaseServerClient } from '@/lib/clients/supabase/server';
+import { getCommonNoteRepository, getTransactionRepository } from '@/lib/infrastructure/repositories/index.server';
 import {
   type SmartSuggestionParams,
   type SmartSuggestionResponse,
   type SmartSuggestion,
   type CommonNote
 } from '@/types/domain/transaction';
-import { generateTimeContext, categorizeAmount, generateConsumptionScenario } from '@/lib/domain/noteContext';
-import { getPatternBasedSuggestions, matchConsumptionPattern } from '@/lib/services/smartPatterns';
+import { generateTimeContext } from '@/lib/domain/noteContext';
+import { getPatternBasedSuggestions } from '@/lib/services/smartPatterns';
 import { z } from 'zod';
 import { validateRequest, commonSchemas } from '@/lib/utils/validation';
 import { withErrorHandler } from '@/lib/domain/errors/errorHandler';
@@ -74,7 +81,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
  * 生成智能提示
  */
 async function generateSmartSuggestions(params: SmartSuggestionParams): Promise<SmartSuggestion[]> {
-  const { category, amount, currency, time_context, partial_input, limit = 5 } = params;
+  const { category, amount, time_context, partial_input, limit = 5 } = params;
   const suggestions: SmartSuggestion[] = [];
 
   // 🎯 优先使用基于真实历史数据的模式匹配
@@ -132,13 +139,15 @@ async function generateSmartSuggestions(params: SmartSuggestionParams): Promise<
 }
 
 /**
- * 上下文感知提示
+ * 上下文感知提示（复杂查询，使用 Supabase）
  */
 async function generateContextSuggestions(params: SmartSuggestionParams): Promise<SmartSuggestion[]> {
-  const { category, amount, currency, time_context, partial_input } = params;
+  const { category, amount, time_context, partial_input } = params;
   const suggestions: SmartSuggestion[] = [];
 
   try {
+    const supabase = supabaseServerClient;
+
     // 查询匹配当前上下文的备注
     let query = supabase
       .from('common_notes')
@@ -197,13 +206,15 @@ async function generateContextSuggestions(params: SmartSuggestionParams): Promis
 }
 
 /**
- * 模式匹配提示
+ * 模式匹配提示（复杂查询，使用 Supabase）
  */
 async function generatePatternSuggestions(params: SmartSuggestionParams): Promise<SmartSuggestion[]> {
-  const { category, time_context, partial_input } = params;
+  const { category, partial_input } = params;
   const suggestions: SmartSuggestion[] = [];
 
   try {
+    const supabase = supabaseServerClient;
+
     // 基于时间模式匹配
     const timeContext = generateTimeContext();
     const timeTags = timeContext.tags;
@@ -257,31 +268,27 @@ async function generatePatternSuggestions(params: SmartSuggestionParams): Promis
 }
 
 /**
- * 频率提示（增强版）
+ * 频率提示（使用 Repository）
  */
 async function generateFrequencySuggestions(params: SmartSuggestionParams): Promise<SmartSuggestion[]> {
   const { category, partial_input } = params;
   const suggestions: SmartSuggestion[] = [];
 
   try {
-    let query = supabase
-      .from('common_notes')
-      .select('*')
-      .eq('is_active', true);
+    const repository = getCommonNoteRepository();
 
-    if (category) {
-      query = query.eq('category_affinity', category);
-    }
+    // 使用 Repository 查询
+    const notes = await repository.findMany(
+      {
+        is_active: true,
+        category_affinity: category,
+        search: partial_input || undefined,
+      },
+      { field: 'usage_count', order: 'desc' },
+      6
+    );
 
-    if (partial_input) {
-      query = query.ilike('content', `%${partial_input}%`);
-    }
-
-    const { data: notes, error } = await query
-      .order('usage_count', { ascending: false })
-      .limit(6);
-
-    if (error || !notes || notes.length === 0) {
+    if (!notes || notes.length === 0) {
       return suggestions;
     }
 
@@ -310,31 +317,38 @@ async function generateFrequencySuggestions(params: SmartSuggestionParams): Prom
 }
 
 /**
- * 相似性提示
+ * 相似性提示（使用 Repository）
  */
 async function generateSimilaritySuggestions(params: SmartSuggestionParams): Promise<SmartSuggestion[]> {
   const { category, amount } = params;
   const suggestions: SmartSuggestion[] = [];
 
-  try {
-    // 查询相似的交易记录来推断可能的备注
-    const { data: similarTransactions, error } = await supabase
-      .from('transactions')
-      .select('note')
-      .eq('category', category)
-      .gte('amount', amount! * 0.8)
-      .lte('amount', amount! * 1.2)
-      .is('deleted_at', null)
-      .not('note', 'is', null)
-      .limit(20);
+  if (!amount || !category) {
+    return suggestions;
+  }
 
-    if (error || !similarTransactions || similarTransactions.length === 0) {
+  try {
+    const repository = getTransactionRepository();
+
+    // 查询相似的交易记录来推断可能的备注
+    const result = await repository.findMany(
+      {
+        category,
+        minAmount: amount * 0.8,
+        maxAmount: amount * 1.2,
+        includeDeleted: false,
+      },
+      undefined,
+      { page: 1, limit: 20 }
+    );
+
+    if (!result.data || result.data.length === 0) {
       return suggestions;
     }
 
     // 统计备注出现频率
     const noteFrequency: Record<string, number> = {};
-    similarTransactions.forEach(transaction => {
+    result.data.forEach(transaction => {
       if (transaction.note) {
         noteFrequency[transaction.note] = (noteFrequency[transaction.note] || 0) + 1;
       }
@@ -366,28 +380,17 @@ async function generateSimilaritySuggestions(params: SmartSuggestionParams): Pro
 }
 
 /**
- * 获取传统备注作为后备
+ * 获取传统备注作为后备（使用 Repository）
  */
 async function getFallbackNotes(partial_input: string, limit: number): Promise<CommonNote[]> {
   try {
-    let query = supabase
-      .from('common_notes')
-      .select('*')
-      .eq('is_active', true);
+    const repository = getCommonNoteRepository();
 
     if (partial_input) {
-      query = query.ilike('content', `%${partial_input}%`);
+      return repository.search(partial_input, limit);
+    } else {
+      return repository.findMostUsed(limit);
     }
-
-    const { data, error } = await query
-      .order('usage_count', { ascending: false })
-      .limit(limit);
-
-    if (error || !data) {
-      return [];
-    }
-
-    return data;
   } catch (error) {
     console.error('获取传统备注失败:', error);
     return [];
