@@ -2,10 +2,10 @@ import React from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import {
   Clock,
   Settings2,
-  ChevronLeft,
   Sparkles,
   Server,
   Database,
@@ -66,15 +66,14 @@ export default function AdvancedSettingsPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* 主内容区域 */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 返回导航 */}
-        <div className="mb-6">
-          <Link href="/settings">
-            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 dark:text-gray-100 hover:bg-gray-50 rounded-lg px-3 py-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200">
-              <ChevronLeft className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1" />
-              返回设置中心
-            </Button>
-          </Link>
-        </div>
+        {/* 面包屑导航 */}
+        <Breadcrumb
+          items={[
+            { label: '设置', href: '/settings' },
+            { label: '高级配置' }
+          ]}
+          className="mb-6"
+        />
 
         {/* 页面标题和描述 */}
         <div className="mb-8">
