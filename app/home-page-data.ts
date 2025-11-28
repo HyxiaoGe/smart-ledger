@@ -123,7 +123,7 @@ async function loadMonthData(currency: string, date: Date): Promise<MonthData> {
         prisma.transactions.findMany({
           where: {
             deleted_at: null,
-            date: { gte: start, lt: end },
+            date: { gte: new Date(start), lt: new Date(end) },
             currency,
           },
           select: { type: true, category: true, amount: true, date: true, currency: true },
@@ -131,7 +131,7 @@ async function loadMonthData(currency: string, date: Date): Promise<MonthData> {
         prisma.transactions.findMany({
           where: {
             deleted_at: null,
-            date: { gte: prevStart, lt: prevEnd },
+            date: { gte: new Date(prevStart), lt: new Date(prevEnd) },
             currency,
           },
           select: { type: true, amount: true, date: true, currency: true },
@@ -235,9 +235,9 @@ async function loadRangeData(
       };
 
       if (isSingleDay) {
-        where.date = rStart;
+        where.date = new Date(rStart);
       } else {
-        where.date = { gte: rStart, lt: queryEnd };
+        where.date = { gte: new Date(rStart), lt: new Date(queryEnd) };
       }
 
       return await prisma.transactions.findMany({
@@ -311,9 +311,9 @@ async function loadTopData(
       };
 
       if (isSingleDay) {
-        where.date = rStart;
+        where.date = new Date(rStart);
       } else {
-        where.date = { gte: rStart, lt: queryEnd };
+        where.date = { gte: new Date(rStart), lt: new Date(queryEnd) };
       }
 
       return await prisma.transactions.findMany({
