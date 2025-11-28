@@ -408,7 +408,11 @@ async function loadRecurringExpenses(): Promise<RecurringExpense[]> {
         const data = await prisma.recurring_expenses.findMany({
           orderBy: { created_at: 'desc' },
         });
-        return data as unknown as RecurringExpense[];
+        // 转换 Decimal 为 number
+        return data.map((item: any) => ({
+          ...item,
+          amount: Number(item.amount),
+        })) as RecurringExpense[];
       }
     );
   } catch (error) {
