@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { chat } from '@/lib/clients/ai/client';
-import { getPredictionData } from '@/lib/services/transactions';
+import { getPredictionData } from '@/lib/services/transactions.server';
 import { memoryCache } from '@/lib/infrastructure/cache';
 import { CACHE_TTL, CACHE_PREFIXES } from '@/lib/config/cacheConfig';
 import { aiFeedbackService } from '@/lib/services/ai';
