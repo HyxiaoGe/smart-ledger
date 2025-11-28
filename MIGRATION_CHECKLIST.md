@@ -26,6 +26,11 @@
 | Budget | `IBudgetRepository` | `SupabaseBudgetRepository` | `PrismaBudgetRepository` | ✅ |
 | CommonNote | `ICommonNoteRepository` | `SupabaseCommonNoteRepository` | `PrismaCommonNoteRepository` | ✅ |
 | Category | `ICategoryRepository` | `SupabaseCategoryRepository` | `PrismaCategoryRepository` | ✅ |
+| PaymentMethod | `IPaymentMethodRepository` | `SupabasePaymentMethodRepository` | `PrismaPaymentMethodRepository` | ✅ |
+| RecurringExpense | `IRecurringExpenseRepository` | `SupabaseRecurringExpenseRepository` | `PrismaRecurringExpenseRepository` | ✅ |
+| WeeklyReport | `IWeeklyReportRepository` | `SupabaseWeeklyReportRepository` | `PrismaWeeklyReportRepository` | ✅ |
+| AIFeedback | `IAIFeedbackRepository` | `SupabaseAIFeedbackRepository` | `PrismaAIFeedbackRepository` | ✅ |
+| SystemLog | `ISystemLogRepository` | `SupabaseSystemLogRepository` | `PrismaSystemLogRepository` | ✅ |
 
 ### 基础设施
 
@@ -36,23 +41,32 @@
 | Repository 工厂 | `lib/infrastructure/repositories/index.server.ts` | ✅ |
 | 环境变量切换 | `USE_PRISMA=true` | ✅ |
 
+### 服务层 (服务端版本)
+
+| 服务 | 服务端文件 | 状态 |
+|-----|-----------|------|
+| PaymentMethod | `lib/services/paymentMethodService.server.ts` | ✅ |
+| RecurringExpense | `lib/services/recurringExpenses.server.ts` | ✅ |
+| WeeklyReport | `lib/services/weeklyReportService.server.ts` | ✅ |
+| AIFeedback | `lib/services/ai/AIFeedbackService.server.ts` | ✅ |
+
 ---
 
 ## 二、待迁移服务
 
-### P0 - 核心业务 (优先迁移)
+### P0 - 核心业务
 
 | # | 服务文件 | 涉及表 | 复杂度 | 状态 | 备注 |
 |---|---------|-------|--------|------|------|
-| 1 | `lib/services/paymentMethodService.ts` | `payment_methods` | 中 | ⏳ | 使用 5 个 RPC 函数 |
-| 2 | `lib/services/recurringExpenses.ts` | `recurring_expenses`, `transactions` | 中 | ⏳ | 固定支出 CRUD + 自动生成 |
-| 3 | `lib/services/weeklyReportService.ts` | `weekly_reports` | 低 | ⏳ | 查询 + 1 个 RPC 生成函数 |
+| 1 | `lib/services/paymentMethodService.ts` | `payment_methods` | 中 | ✅ | 已创建 `.server.ts` 版本 |
+| 2 | `lib/services/recurringExpenses.ts` | `recurring_expenses`, `transactions` | 中 | ✅ | 已创建 `.server.ts` 版本 |
+| 3 | `lib/services/weeklyReportService.ts` | `weekly_reports` | 低 | ✅ | 已创建 `.server.ts` 版本 |
 
 ### P1 - AI/分析功能
 
 | # | 服务文件 | 涉及表 | 复杂度 | 状态 | 备注 |
 |---|---------|-------|--------|------|------|
-| 4 | `lib/services/ai/AIFeedbackService.ts` | `ai_feedbacks`, `ai_requests`, `ai_feedback_templates`, `ai_performance_stats` | 高 | ⏳ | 反馈收集、统计、导出 |
+| 4 | `lib/services/ai/AIFeedbackService.ts` | `ai_feedbacks`, `ai_requests`, `ai_feedback_templates`, `ai_performance_stats` | 高 | ✅ | 已创建 `.server.ts` 版本 |
 | 5 | `lib/services/aiPrediction.ts` | `transactions` | 低 | ⏳ | 检查是否有遗漏 |
 
 ### P2 - 管理/运维功能
@@ -99,31 +113,31 @@
 
 ---
 
-## 五、需要新建的 Repository
+## 五、新建的 Repository (已完成)
 
-| Repository 接口 | Prisma 实现 | 对应表 | 状态 |
-|----------------|------------|--------|------|
-| `IPaymentMethodRepository` | `PrismaPaymentMethodRepository` | `payment_methods` | ⏳ |
-| `IRecurringExpenseRepository` | `PrismaRecurringExpenseRepository` | `recurring_expenses` | ⏳ |
-| `IWeeklyReportRepository` | `PrismaWeeklyReportRepository` | `weekly_reports` | ⏳ |
-| `IAIFeedbackRepository` | `PrismaAIFeedbackRepository` | `ai_feedbacks`, `ai_requests` | ⏳ |
-| `ISystemLogRepository` | `PrismaSystemLogRepository` | `system_logs` | ⏳ |
+| Repository 接口 | Prisma 实现 | Supabase 实现 | 对应表 | 状态 |
+|----------------|------------|---------------|--------|------|
+| `IPaymentMethodRepository` | `PrismaPaymentMethodRepository` | `SupabasePaymentMethodRepository` | `payment_methods` | ✅ |
+| `IRecurringExpenseRepository` | `PrismaRecurringExpenseRepository` | `SupabaseRecurringExpenseRepository` | `recurring_expenses` | ✅ |
+| `IWeeklyReportRepository` | `PrismaWeeklyReportRepository` | `SupabaseWeeklyReportRepository` | `weekly_reports` | ✅ |
+| `IAIFeedbackRepository` | `PrismaAIFeedbackRepository` | `SupabaseAIFeedbackRepository` | `ai_feedbacks`, `ai_requests` | ✅ |
+| `ISystemLogRepository` | `PrismaSystemLogRepository` | `SupabaseSystemLogRepository` | `system_logs` | ✅ |
 
 ---
 
 ## 六、RPC 函数迁移方案
 
-### 需要改写为 Prisma 查询
+### 已改写为 Prisma 查询
 
 | RPC 函数名 | 所在服务 | 迁移方案 | 状态 |
 |-----------|---------|---------|------|
-| `get_payment_methods_with_stats` | paymentMethodService | Prisma 聚合查询 | ⏳ |
-| `add_payment_method` | paymentMethodService | Prisma create | ⏳ |
-| `update_payment_method` | paymentMethodService | Prisma update | ⏳ |
-| `delete_payment_method` | paymentMethodService | Prisma delete + 迁移逻辑 | ⏳ |
-| `set_default_payment_method` | paymentMethodService | Prisma 事务 | ⏳ |
-| `get_payment_method_usage_detail` | paymentMethodService | Prisma 聚合 | ⏳ |
-| `generate_weekly_report` | weeklyReportService | Prisma 事务 + JS 逻辑 | ⏳ |
+| `get_payment_methods_with_stats` | paymentMethodService | Prisma 聚合查询 | ✅ |
+| `add_payment_method` | paymentMethodService | Prisma create | ✅ |
+| `update_payment_method` | paymentMethodService | Prisma update | ✅ |
+| `delete_payment_method` | paymentMethodService | Prisma delete + 迁移逻辑 | ✅ |
+| `set_default_payment_method` | paymentMethodService | Prisma 事务 | ✅ |
+| `get_payment_method_usage_detail` | paymentMethodService | Prisma 聚合 | ✅ |
+| `generate_weekly_report` | weeklyReportService | Prisma 事务 + JS 逻辑 | ✅ |
 
 ### 保留 Supabase (pg_cron 特有)
 
@@ -137,66 +151,91 @@
 
 ## 七、迁移计划
 
-### 阶段 1: 核心业务 (P0)
+### 阶段 1: Repository 层 ✅ (已完成)
 
 ```
-1.1 PaymentMethod
-    ├── 创建 IPaymentMethodRepository 接口
-    ├── 实现 PrismaPaymentMethodRepository
-    ├── 更新 paymentMethodService.ts
-    └── 更新 ServerRepositoryFactory
-
-1.2 RecurringExpense
-    ├── 创建 IRecurringExpenseRepository 接口
-    ├── 实现 PrismaRecurringExpenseRepository
-    └── 更新 recurringExpenses.ts
-
-1.3 WeeklyReport
-    ├── 创建 IWeeklyReportRepository 接口
-    ├── 实现 PrismaWeeklyReportRepository
-    └── 更新 weeklyReportService.ts
+1.1 PaymentMethod ✅
+1.2 RecurringExpense ✅
+1.3 WeeklyReport ✅
+1.4 AIFeedback ✅
+1.5 SystemLog ✅
 ```
 
-### 阶段 2: 组件改造
+### 阶段 2: 服务端服务 ✅ (已完成)
 
 ```
-2.1 改造组件使用 Service 层而非直接调用 Supabase
+2.1 paymentMethodService.server.ts ✅
+2.2 recurringExpenses.server.ts ✅
+2.3 weeklyReportService.server.ts ✅
+2.4 AIFeedbackService.server.ts ✅
+```
+
+### 阶段 3: API 路由迁移 ⏳
+
+```
+3.1 更新 API 路由导入服务端版本
+3.2 common-notes API
+3.3 smart-suggestions API
+3.4 admin/logs API
+```
+
+### 阶段 4: 组件改造 ⏳
+
+```
+4.1 改造组件使用 Service 层而非直接调用 Supabase
     ├── QuickTransaction 组件
     ├── TransactionList 组件
     └── AddPage 页面
 ```
 
-### 阶段 3: AI/分析模块
+### 阶段 5: 管理功能
 
 ```
-3.1 AIFeedback
-    ├── 创建 IAIFeedbackRepository 接口
-    ├── 实现 PrismaAIFeedbackRepository
-    └── 更新 AIFeedbackService.ts
-
-3.2 SmartSuggestions API
-    └── 改用 Repository
-
-3.3 统计面板组件
-    ├── ComparisonPanel
-    ├── GoalTrackingPanel
-    └── ConsumptionHabitsPanel
-```
-
-### 阶段 4: 管理功能
-
-```
-4.1 Logs
-    ├── 创建 ISystemLogRepository 接口
-    ├── 实现 PrismaSystemLogRepository
-    └── 更新 logs API
-
-4.2 保留 CronService (依赖 pg_cron)
+5.1 保留 CronService (依赖 pg_cron)
+5.2 考虑使用 Node.js 定时任务替代
 ```
 
 ---
 
-## 八、迁移注意事项
+## 八、使用说明
+
+### 切换到 Prisma
+
+在 `.env.local` 中设置:
+
+```env
+USE_PRISMA=true
+DATABASE_URL=postgresql://user:password@localhost:5432/smart_ledger
+```
+
+### 切换回 Supabase
+
+```env
+# 不设置 USE_PRISMA 或设置为 false
+USE_PRISMA=false
+
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+### 服务端版本使用
+
+API 路由和 Server Components 应使用 `.server.ts` 版本:
+
+```typescript
+// 在 API 路由中
+import {
+  getPaymentMethodsWithStats,
+  addPaymentMethod,
+} from '@/lib/services/paymentMethodService.server';
+
+// 或使用 Repository
+import { getPaymentMethodRepository } from '@/lib/infrastructure/repositories/index.server';
+```
+
+---
+
+## 九、迁移注意事项
 
 ### 1. 数据类型转换
 
@@ -237,16 +276,51 @@ update: { deleted_at: new Date() }
 
 ---
 
-## 九、已知问题
+## 十、已知问题
 
 | 问题 | 描述 | 解决方案 |
 |-----|------|---------|
 | pg_cron | 本地 PostgreSQL 默认不支持 pg_cron | 保留 cronService 使用 Supabase，或改用 Node.js 定时任务 |
-| RPC 函数 | 部分复杂逻辑在数据库函数中 | 迁移到 Service 层用 Prisma + JS 实现 |
+| RPC 函数 | 部分复杂逻辑在数据库函数中 | 已迁移到 Service 层用 Prisma + JS 实现 |
 
 ---
 
-## 十、参考文档
+## 十一、新增文件清单
+
+### Repository 接口 (`lib/domain/repositories/`)
+
+- `IPaymentMethodRepository.ts`
+- `IRecurringExpenseRepository.ts`
+- `IWeeklyReportRepository.ts`
+- `IAIFeedbackRepository.ts`
+- `ISystemLogRepository.ts`
+
+### Prisma 实现 (`lib/infrastructure/repositories/prisma/`)
+
+- `PrismaPaymentMethodRepository.ts`
+- `PrismaRecurringExpenseRepository.ts`
+- `PrismaWeeklyReportRepository.ts`
+- `PrismaAIFeedbackRepository.ts`
+- `PrismaSystemLogRepository.ts`
+
+### Supabase 实现 (`lib/infrastructure/repositories/`)
+
+- `SupabasePaymentMethodRepository.ts`
+- `SupabaseRecurringExpenseRepository.ts`
+- `SupabaseWeeklyReportRepository.ts`
+- `SupabaseAIFeedbackRepository.ts`
+- `SupabaseSystemLogRepository.ts`
+
+### 服务端服务 (`lib/services/`)
+
+- `paymentMethodService.server.ts`
+- `recurringExpenses.server.ts`
+- `weeklyReportService.server.ts`
+- `ai/AIFeedbackService.server.ts`
+
+---
+
+## 十二、参考文档
 
 - [Prisma 官方文档](https://www.prisma.io/docs)
 - [项目 Repository 模式说明](./lib/infrastructure/repositories/README.md)
@@ -259,3 +333,6 @@ update: { deleted_at: new Date() }
 | 日期 | 更新内容 |
 |-----|---------|
 | 2025-11-28 | 创建迁移清单文档 |
+| 2025-11-28 | 完成所有 Repository 接口和实现 (Prisma + Supabase) |
+| 2025-11-28 | 完成服务端版本服务文件 |
+| 2025-11-28 | 更新 ServerRepositoryFactory |

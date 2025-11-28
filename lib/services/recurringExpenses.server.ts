@@ -1,0 +1,220 @@
+/**
+ * 固定支出服务 - 服务端版本
+ * 使用 Repository 模式，支持 Prisma/Supabase 切换
+ */
+
+import {
+  getRecurringExpenseRepository,
+  getTransactionRepository,
+} from '@/lib/infrastructure/repositories/index.server';
+import type {
+  RecurringExpense,
+  CreateRecurringExpenseDTO,
+  UpdateRecurringExpenseDTO,
+  FrequencyConfig,
+} from '@/lib/domain/repositories/IRecurringExpenseRepository';
+
+// 重新导出类型
+export type { RecurringExpense, FrequencyConfig };
+
+export class RecurringExpenseService {
+  /**
+   * 创建固定支出
+   */
+  async createRecurringExpense(
+    data: Omit<RecurringExpense, 'id' | 'last_generated' | 'next_generate' | 'created_at' | 'updated_at'>
+  ): Promise<RecurringExpense> {
+    const repository = getRecurringExpenseRepository();
+    const dto: CreateRecurringExpenseDTO = {
+      name: data.name,
+      amount: data.amount,
+      category: data.category,
+      frequency: data.frequency,
+      frequency_config: data.frequency_config,
+      start_date: data.start_date,
+      end_date: data.end_date || undefined,
+      is_active: data.is_active,
+    };
+    return repository.create(dto);
+  }
+
+  /**
+   * 获取所有固定支出
+   */
+  async getRecurringExpenses(): Promise<RecurringExpense[]> {
+    const repository = getRecurringExpenseRepository();
+    return repository.findAll();
+  }
+
+  /**
+   * 更新固定支出
+   */
+  async updateRecurringExpense(
+    id: string,
+    data: Partial<RecurringExpense>
+  ): Promise<RecurringExpense> {
+    const repository = getRecurringExpenseRepository();
+    const dto: UpdateRecurringExpenseDTO = {};
+
+    if (data.name !== undefined) dto.name = data.name;
+    if (data.amount !== undefined) dto.amount = data.amount;
+    if (data.category !== undefined) dto.category = data.category;
+    if (data.frequency !== undefined) dto.frequency = data.frequency;
+    if (data.frequency_config !== undefined) dto.frequency_config = data.frequency_config;
+    if (data.start_date !== undefined) dto.start_date = data.start_date;
+    if (data.end_date !== undefined) dto.end_date = data.end_date;
+    if (data.is_active !== undefined) dto.is_active = data.is_active;
+
+    return repository.update(id, dto);
+  }
+
+  /**
+   * 删除固定支出
+   */
+  async deleteRecurringExpense(id: string): Promise<void> {
+    const repository = getRecurringExpenseRepository();
+    await repository.delete(id);
+  }
+
+  /**
+   * 根据ID获取固定支出
+   */
+  async getRecurringExpenseById(id: string): Promise<RecurringExpense | null> {
+    const repository = getRecurringExpenseRepository();
+    return repository.findById(id);
+  }
+
+  /**
+   * 手动触发生成固定支出
+   */
+  async generatePendingExpenses(): Promise<{ generated: number; errors: string[] }> {
+    const today = new Date().toISOString().split('T')[0];
+    const errors: string[] = [];
+    let generated = 0;
+
+    try {
+      const repository = getRecurringExpenseRepository();
+      const pendingExpenses = await repository.findPendingGeneration(today);
+
+      if (!pendingExpenses || pendingExpenses.length === 0) {
+        return { generated, errors };
+      }
+
+      for (const expense of pendingExpenses) {
+        try {
+          await this.generateTransactionForExpense(expense, today);
+          generated++;
+        } catch (error) {
+          errors.push(`生成固定支出 "${expense.name}" 失败: ${error}`);
+        }
+      }
+    } catch (error) {
+      errors.push('生成过程中发生错误: ' + error);
+    }
+
+    return { generated, errors };
+  }
+
+  /**
+   * 为单个固定支出生成交易记录
+   */
+  private async generateTransactionForExpense(
+    expense: RecurringExpense,
+    today: string
+  ): Promise<void> {
+    const recurringRepo = getRecurringExpenseRepository();
+    const transactionRepo = getTransactionRepository();
+
+    // 检查今天是否已经生成过（避免重复）
+    const hasGenerated = await recurringRepo.hasGeneratedToday(expense.id, today);
+    if (hasGenerated) {
+      console.log(`固定支出 "${expense.name}" 今天已生成，跳过`);
+      return;
+    }
+
+    // 生成交易记录
+    const transaction = await transactionRepo.create({
+      type: 'expense',
+      category: expense.category,
+      amount: expense.amount,
+      note: `[自动生成] ${expense.name}`,
+      date: today,
+      currency: 'CNY',
+    });
+
+    // 计算下次生成时间
+    const nextGenerate = this.calculateNextDateAfterGeneration(
+      expense.frequency,
+      expense.frequency_config,
+      today
+    );
+
+    // 更新固定支出的生成时间和下次生成时间
+    await recurringRepo.update(expense.id, {
+      last_generated: today,
+      next_generate: nextGenerate,
+    });
+
+    // 记录生成日志
+    await recurringRepo.logGeneration(
+      expense.id,
+      today,
+      transaction.id,
+      'success'
+    );
+  }
+
+  /**
+   * 生成后计算下次生成时间
+   */
+  private calculateNextDateAfterGeneration(
+    frequency: string,
+    config: FrequencyConfig,
+    currentDate: string
+  ): string {
+    const current = new Date(currentDate);
+    const nextDate = new Date(current);
+
+    switch (frequency) {
+      case 'daily':
+        nextDate.setDate(nextDate.getDate() + 1);
+        break;
+
+      case 'weekly':
+        if (config.days_of_week && config.days_of_week.length > 0) {
+          let attempts = 0;
+          while (attempts < 7) {
+            nextDate.setDate(nextDate.getDate() + 1);
+            if (config.days_of_week.includes(nextDate.getDay())) {
+              break;
+            }
+            attempts++;
+          }
+        } else {
+          nextDate.setDate(nextDate.getDate() + 7);
+        }
+        break;
+
+      case 'monthly':
+        const targetDay = config.day_of_month || current.getDate();
+        nextDate.setMonth(nextDate.getMonth() + 1);
+
+        const lastDayOfMonth = new Date(
+          nextDate.getFullYear(),
+          nextDate.getMonth() + 1,
+          0
+        ).getDate();
+        if (targetDay > lastDayOfMonth) {
+          nextDate.setDate(lastDayOfMonth);
+        } else {
+          nextDate.setDate(targetDay);
+        }
+        break;
+    }
+
+    return nextDate.toISOString().split('T')[0];
+  }
+}
+
+// 导出单例实例
+export const recurringExpenseService = new RecurringExpenseService();
