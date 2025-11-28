@@ -4,23 +4,34 @@
  * 仅在服务端使用（API 路由、Server Components）
  */
 
-const USE_PRISMA = process.env.USE_PRISMA === 'true';
+// 在运行时检查环境变量，避免构建时缓存
+function isUsePrisma(): boolean {
+  return process.env.USE_PRISMA === 'true';
+}
 
 export type DbClient = 'prisma' | 'supabase';
 
 export function getDbType(): DbClient {
-  return USE_PRISMA ? 'prisma' : 'supabase';
+  return isUsePrisma() ? 'prisma' : 'supabase';
 }
 
 /**
  * 获取 Prisma 客户端（仅当 USE_PRISMA=true 时可用）
  */
 export function getPrismaClient() {
-  if (!USE_PRISMA) {
+  if (!isUsePrisma()) {
     throw new Error('Prisma is not enabled. Set USE_PRISMA=true to use Prisma.');
   }
-  const { prisma } = require('@/lib/clients/db/prisma');
-  return prisma;
+  try {
+    const { prisma } = require('@/lib/clients/db/prisma');
+    if (!prisma) {
+      throw new Error('Prisma client is undefined. Run `npx prisma generate` first.');
+    }
+    return prisma;
+  } catch (error) {
+    console.error('Failed to load Prisma client:', error);
+    throw new Error('Failed to load Prisma client. Ensure Prisma is properly configured.');
+  }
 }
 
 /**
@@ -39,7 +50,7 @@ export async function executeQuery<T>(
   supabaseQuery: () => Promise<T>,
   prismaQuery: () => Promise<T>
 ): Promise<T> {
-  if (USE_PRISMA) {
+  if (isUsePrisma()) {
     return prismaQuery();
   }
   return supabaseQuery();
