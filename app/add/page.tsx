@@ -27,7 +27,7 @@ export default function AddPage() {
   const type: TransactionType = 'expense'; // 固定为支出类型
   const { categories, isLoading: categoriesLoading } = useCategories();
   const [category, setCategory] = useState<string>('food');
-    const [amountText, setAmountText] = useState<string>('0');
+    const [amountText, setAmountText] = useState<string>('');
   const [note, setNote] = useState<string>('');
   const [date, setDate] = useState<Date>(new Date());
   const [currency, setCurrency] = useState<Currency>(DEFAULT_CURRENCY as Currency);
@@ -282,7 +282,7 @@ export default function AddPage() {
     isSubmittingRef.current = false;
 
     setCategory('food');
-      setAmountText('0');
+    setAmountText('');
     setNote('');
     setDate(new Date());
     setCurrency(DEFAULT_CURRENCY as Currency);
@@ -425,19 +425,24 @@ export default function AddPage() {
             <div>
               <Label>金额 <span className="text-destructive">*</span></Label>
               <ClearableInput
-                placeholder="例如：1,234.56"
+                placeholder="请输入金额"
                 value={amountText}
                 onChange={(e) => {
                   const raw = e.target.value;
                   // 允许输入数字、小数点与逗号
                   if (/^[0-9.,]*$/.test(raw)) setAmountText(raw);
                 }}
-                onClear={() => setAmountText('0')}
-                onBlur={() => setAmountText(formatThousand(parsedAmount))}
-                className={invalidAmount ? 'border-destructive' : undefined}
+                onClear={() => setAmountText('')}
+                onBlur={() => {
+                  // 只在有有效金额时格式化，空白保持空白
+                  if (amountText.trim() && parsedAmount > 0) {
+                    setAmountText(formatThousand(parsedAmount));
+                  }
+                }}
+                className={amountText.trim() && invalidAmount ? 'border-destructive' : undefined}
                 disabled={loading}
               />
-              {invalidAmount && <p className="mt-1 text-sm text-destructive">金额必须大于 0</p>}
+              {amountText.trim() && invalidAmount && <p className="mt-1 text-sm text-destructive">金额必须大于 0</p>}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
