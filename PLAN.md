@@ -258,11 +258,24 @@ types/
 { href: '/', label: '首页', icon: '🏠' }
 
 // After
-import { Home, Plus, List, Settings } from 'lucide-react';
-{ href: '/', label: '首页', icon: Home }
+import { Home, PlusCircle, FileText, Settings, LucideIcon } from 'lucide-react';
+
+type NavItem = { href: string; label: string; icon: LucideIcon };
+
+const navItems: NavItem[] = [
+  { href: '/', label: '首页', icon: Home },
+  { href: '/add', label: '添加账单', icon: PlusCircle },
+  { href: '/records', label: '账单列表', icon: FileText },
+  { href: '/settings', label: '设置', icon: Settings }
+];
 ```
 
-**状态：** `待开始`
+**已完成：**
+- Navigation.tsx 导航栏图标从 emoji 替换为 Lucide React
+- 添加 NavItem 类型定义，使用 LucideIcon 类型
+- 分类/消费类型 emoji（🍽️🚇💪等）保留，因为它们是表意性内容图标
+
+**状态：** `已完成`
 
 ---
 
