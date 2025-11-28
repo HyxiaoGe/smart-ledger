@@ -3,7 +3,7 @@
  * 实现 ITransactionRepository 接口，提供基于 Prisma 的数据访问
  */
 
-import type { PrismaClient, Prisma } from '@/generated/prisma';
+import type { PrismaClient, Prisma } from '@/generated/prisma/client';
 import type { Transaction, TransactionType } from '@/types/domain/transaction';
 import type { ITransactionRepository } from '@/lib/domain/repositories/ITransactionRepository';
 import type {
