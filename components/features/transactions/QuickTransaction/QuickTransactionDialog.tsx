@@ -5,9 +5,33 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { aiPredictionService, type QuickTransactionSuggestion } from '@/lib/services/aiPrediction';
 import { Zap, Clock, CheckCircle, RefreshCw, X } from 'lucide-react';
 import { getErrorMessage } from '@/types/common';
+
+// 类型定义
+interface QuickTransactionSuggestion {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  amount: number;
+  note: string;
+  confidence: number;
+  icon?: string;
+  reason: string;
+}
+
+// API 调用函数
+async function fetchQuickSuggestionsApi(): Promise<QuickTransactionSuggestion[]> {
+  const response = await fetch('/api/ai-prediction', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'quick-suggestions' }),
+  });
+  if (!response.ok) throw new Error('获取快速建议失败');
+  const data = await response.json();
+  return data.suggestions || [];
+}
 
 interface QuickTransactionDialogProps {
   open: boolean;
@@ -27,7 +51,7 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
     setError('');
 
     try {
-      const quickSuggestions = await aiPredictionService.generateQuickSuggestions();
+      const quickSuggestions = await fetchQuickSuggestionsApi();
       setSuggestions(quickSuggestions);
     } catch (err: unknown) {
       console.error('获取快速记账建议失败:', err);

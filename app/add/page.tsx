@@ -15,12 +15,52 @@ import { MerchantInput, SubcategorySelect } from '@/components/features/input/Me
 import { AIPredictionPanel } from '@/components/features/ai-analysis/AIPredictionPanel';
 import { enhancedDataSync, markTransactionsDirty } from '@/lib/core/EnhancedDataSync';
 import { ProgressToast } from '@/components/shared/ProgressToast';
-import type { TransactionPrediction, QuickTransactionSuggestion } from '@/lib/services/aiPrediction';
+// AI 预测类型定义
+interface TransactionPrediction {
+  id: string;
+  type: 'category' | 'amount' | 'full';
+  confidence: number;
+  reason: string;
+  predictedCategory?: string;
+  predictedAmount?: number;
+  suggestedNote?: string;
+  metadata?: any;
+}
+
+interface QuickTransactionSuggestion {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  amount: number;
+  note: string;
+  confidence: number;
+  icon?: string;
+  reason: string;
+}
 import { formatDateToLocal } from '@/lib/utils/date';
-import { getPaymentMethodsWithStats, type PaymentMethod } from '@/lib/services/paymentMethodService';
 import { logger } from '@/lib/services/logging';
 import { STORAGE_KEYS } from '@/lib/config/storageKeys';
 import { getErrorMessage } from '@/types/common';
+
+// 支付方式类型定义
+interface PaymentMethod {
+  id: string;
+  name: string;
+  type: string;
+  icon: string | null;
+  color: string | null;
+  is_default: boolean;
+  is_active: boolean;
+}
+
+// API 调用函数
+async function fetchPaymentMethods(): Promise<PaymentMethod[]> {
+  const response = await fetch('/api/payment-methods');
+  if (!response.ok) throw new Error('获取支付方式失败');
+  const { data } = await response.json();
+  return data;
+}
 
 export default function AddPage() {
   const type: TransactionType = 'expense'; // 固定为支出类型
@@ -314,7 +354,7 @@ export default function AddPage() {
   useEffect(() => {
     async function loadPaymentMethods() {
       try {
-        const methods = await getPaymentMethodsWithStats();
+        const methods = await fetchPaymentMethods();
         setPaymentMethods(methods);
         // 设置默认支付方式
         const defaultMethod = methods.find(m => m.is_default);

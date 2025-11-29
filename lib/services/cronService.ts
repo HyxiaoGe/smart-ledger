@@ -1,4 +1,8 @@
-import { supabase } from '@/lib/clients/supabase/client';
+/**
+ * Cron 服务 - 客户端版本
+ * 仅包含类型定义和工具函数
+ * 数据库操作请使用 cronService.server.ts
+ */
 
 /**
  * Cron 任务定义
@@ -44,87 +48,6 @@ export interface CronJobStats {
   failed_count: number;
   last_run_time: string | null;
   next_run_time?: string;
-}
-
-/**
- * 获取所有 Cron 任务列表
- */
-export async function getAllCronJobs(): Promise<CronJob[]> {
-  const { data, error } = await supabase
-    .rpc('get_cron_jobs');
-
-  if (error) {
-    console.error('获取 Cron 任务列表失败:', error);
-    throw error;
-  }
-
-  return data || [];
-}
-
-/**
- * 获取任务执行历史
- */
-export async function getCronJobHistory(jobId?: number, limit = 50): Promise<CronJobRun[]> {
-  const { data, error } = await supabase
-    .rpc('get_cron_job_history', {
-      p_job_id: jobId || null,
-      p_limit: limit
-    });
-
-  if (error) {
-    console.error('获取执行历史失败:', error);
-    throw error;
-  }
-
-  return data || [];
-}
-
-/**
- * 获取任务统计信息
- */
-export async function getCronJobStats(): Promise<CronJobStats[]> {
-  const { data, error } = await supabase
-    .rpc('get_cron_job_stats');
-
-  if (error) {
-    console.error('获取任务统计失败:', error);
-    throw error;
-  }
-
-  return data || [];
-}
-
-/**
- * 手动触发任务（根据任务名称调用对应函数）
- */
-export async function manualTriggerCronJob(jobName: string): Promise<any> {
-  // 根据任务名称映射到对应的 RPC 函数
-  const functionMap: Record<string, string> = {
-    'generate-recurring-transactions': 'generate_recurring_transactions',
-    'aggregate-ai-performance-stats': 'aggregate_ai_performance_stats',
-    'cleanup-old-sessions': 'cleanup_old_sessions',
-    'extract-daily-features': 'extract_ai_features_daily',
-    'annotate-patterns': 'annotate_consumption_patterns',
-    'export-training-snapshot': 'snapshot_training_data',
-    'check-data-quality': 'check_data_quality',
-    'refresh-budget-suggestions-daily': 'refresh_budget_suggestions',
-    'generate-weekly-report': 'generate_weekly_report',
-  };
-
-  const functionName = functionMap[jobName];
-
-  if (!functionName) {
-    throw new Error(`未知的任务: ${jobName}`);
-  }
-
-  const { data, error } = await supabase.rpc(functionName);
-
-  if (error) {
-    console.error(`手动触发任务 ${jobName} 失败:`, error);
-    throw error;
-  }
-
-  return data;
 }
 
 /**

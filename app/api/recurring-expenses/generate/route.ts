@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { recurringExpenseService } from '@/lib/services/recurringExpenses';
+import { recurringExpenseService } from '@/lib/services/recurringExpenses.server';
 import { withErrorHandler } from '@/lib/domain/errors/errorHandler';
 import { logger } from '@/lib/services/logging';
 

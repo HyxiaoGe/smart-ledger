@@ -16,7 +16,25 @@ import { MerchantInput, SubcategorySelect } from '@/components/features/input/Me
 import { enhancedDataSync } from '@/lib/core/EnhancedDataSync';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { formatDateToLocal } from '@/lib/utils/date';
-import { getPaymentMethodsWithStats, type PaymentMethod } from '@/lib/services/paymentMethodService';
+
+// 支付方式类型定义
+interface PaymentMethod {
+  id: string;
+  name: string;
+  type: string;
+  icon: string | null;
+  color: string | null;
+  is_default: boolean;
+  is_active: boolean;
+}
+
+// API 调用函数
+async function fetchPaymentMethods(): Promise<PaymentMethod[]> {
+  const response = await fetch('/api/payment-methods');
+  if (!response.ok) throw new Error('获取支付方式失败');
+  const { data } = await response.json();
+  return data;
+}
 
 type Transaction = {
   id: string;
@@ -63,7 +81,7 @@ export function TransactionGroupedList({
   useEffect(() => {
     async function loadPaymentMethods() {
       try {
-        const methods = await getPaymentMethodsWithStats();
+        const methods = await fetchPaymentMethods();
         setPaymentMethods(methods);
       } catch (err) {
         console.error('加载支付方式失败:', err);

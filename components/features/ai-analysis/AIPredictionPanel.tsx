@@ -6,12 +6,79 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle, TrendingUp, Clock, Target, Zap } from 'lucide-react';
 import { generateTimeContext } from '@/lib/domain/noteContext';
-import {
-  aiPredictionService,
-  type TransactionPrediction,
-  type QuickTransactionSuggestion
-} from '@/lib/services/aiPrediction';
 import { getErrorMessage } from '@/types/common';
+
+// 类型定义
+interface TransactionPrediction {
+  id: string;
+  type: 'category' | 'amount' | 'full';
+  confidence: number;
+  reason: string;
+  predictedCategory?: string;
+  predictedAmount?: number;
+  suggestedNote?: string;
+  metadata?: any;
+}
+
+interface QuickTransactionSuggestion {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  amount: number;
+  note: string;
+  confidence: number;
+  icon?: string;
+  reason: string;
+}
+
+// API 调用函数
+async function fetchPredictTransaction(params: {
+  timeContext?: string;
+  includeRecent?: boolean;
+}): Promise<TransactionPrediction[]> {
+  const response = await fetch('/api/ai-prediction', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'predict-transaction', ...params }),
+  });
+  if (!response.ok) throw new Error('预测交易失败');
+  const data = await response.json();
+  return data.predictions || [];
+}
+
+async function fetchPredictCategory(amount: number, timeContext?: string): Promise<TransactionPrediction[]> {
+  const response = await fetch('/api/ai-prediction', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'predict-category', amount, timeContext }),
+  });
+  if (!response.ok) throw new Error('预测分类失败');
+  const data = await response.json();
+  return data.predictions || [];
+}
+
+async function fetchPredictAmount(category: string, timeContext?: string): Promise<TransactionPrediction[]> {
+  const response = await fetch('/api/ai-prediction', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'predict-amount', category, timeContext }),
+  });
+  if (!response.ok) throw new Error('预测金额失败');
+  const data = await response.json();
+  return data.predictions || [];
+}
+
+async function fetchQuickSuggestions(timeContext?: string): Promise<QuickTransactionSuggestion[]> {
+  const response = await fetch('/api/ai-prediction', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'quick-suggestions', timeContext }),
+  });
+  if (!response.ok) throw new Error('获取快速建议失败');
+  const data = await response.json();
+  return data.suggestions || [];
+}
 
 type AIPredictionPanelProps = {
   onPredictionSelect?: (prediction: TransactionPrediction | QuickTransactionSuggestion) => void;
@@ -33,7 +100,7 @@ export function AIPredictionPanel({
   const [activeTab, setActiveTab] = useState<'predictions' | 'quick'>('quick');
 
   // 获取预测数据
-  const fetchPredictions = useCallback(async () => {
+  const loadPredictions = useCallback(async () => {
     setIsLoading(true);
     setError('');
 
@@ -41,7 +108,7 @@ export function AIPredictionPanel({
       const timeContext = generateTimeContext();
 
       // 获取通用交易预测
-      const transactionPredictions = await aiPredictionService.predictTransaction({
+      const transactionPredictions = await fetchPredictTransaction({
         timeContext: timeContext.label,
         includeRecent: true
       });
@@ -51,19 +118,19 @@ export function AIPredictionPanel({
 
       if (currentAmount && !currentCategory) {
         // 有金额无分类，预测分类
-        specificPredictions = await aiPredictionService.predictCategory(
+        specificPredictions = await fetchPredictCategory(
           currentAmount,
           timeContext.label
         );
       } else if (currentCategory && !currentAmount) {
         // 有分类无金额，预测金额
-        specificPredictions = await aiPredictionService.predictAmount(
+        specificPredictions = await fetchPredictAmount(
           currentCategory,
           timeContext.label
         );
       } else if (currentAmount && currentCategory) {
         // 两者都有，预测完整交易
-        specificPredictions = await aiPredictionService.predictTransaction({
+        specificPredictions = await fetchPredictTransaction({
           timeContext: timeContext.label,
           includeRecent: true
         });
@@ -77,8 +144,8 @@ export function AIPredictionPanel({
       setPredictions(allPredictions);
 
       // 获取快速建议
-      const quickSuggestions = await aiPredictionService.generateQuickSuggestions(timeContext.label);
-      setQuickSuggestions(quickSuggestions);
+      const suggestions = await fetchQuickSuggestions(timeContext.label);
+      setQuickSuggestions(suggestions);
 
     } catch (err: unknown) {
       console.error('获取AI预测失败:', err);
@@ -90,8 +157,8 @@ export function AIPredictionPanel({
 
   // 组件加载时获取预测
   useEffect(() => {
-    fetchPredictions();
-  }, [fetchPredictions]);
+    loadPredictions();
+  }, [loadPredictions]);
 
   // 处理预测选择
   const handlePredictionSelect = useCallback((prediction: TransactionPrediction) => {
@@ -319,7 +386,7 @@ export function AIPredictionPanel({
             <Button
               variant="ghost"
               size="sm"
-              onClick={fetchPredictions}
+              onClick={loadPredictions}
               className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
             >
               刷新预测

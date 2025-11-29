@@ -22,19 +22,120 @@ import {
   AlipayIcon,
   WechatPayIcon,
 } from '@/components/icons/PaymentBrandIcons';
-import {
-  getPaymentMethodsWithStats,
-  addPaymentMethod,
-  deletePaymentMethod,
-  setDefaultPaymentMethod,
-  getPaymentMethodTypeConfig,
-  formatLast4Digits,
-  type PaymentMethod,
-  PAYMENT_METHOD_TYPES,
-  PAYMENT_ICONS,
-  PAYMENT_COLORS,
-} from '@/lib/services/paymentMethodService';
 import { ProgressToast } from '@/components/shared/ProgressToast';
+
+// 支付方式类型定义
+interface PaymentMethod {
+  id: string;
+  user_id: string | null;
+  name: string;
+  type: 'credit_card' | 'debit_card' | 'alipay' | 'wechat' | 'cash' | 'other';
+  icon: string | null;
+  color: string | null;
+  last_4_digits: string | null;
+  is_default: boolean;
+  is_active: boolean;
+  sort_order: number;
+  usage_count?: number;
+  last_used?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface DeletePaymentMethodResult {
+  success: boolean;
+  message: string;
+  transaction_count: number;
+}
+
+// 常量
+const PAYMENT_METHOD_TYPES = [
+  { value: 'alipay', label: '支付宝', icon: 'Alipay', color: '#1677FF', brandIcon: true },
+  { value: 'wechat', label: '微信支付', icon: 'WechatPay', color: '#07C160', brandIcon: true },
+  { value: 'cash', label: '现金', icon: 'Cash', color: '#10B981', brandIcon: false },
+  { value: 'debit_card', label: '借记卡', icon: 'BankCard', color: '#6366F1', brandIcon: false },
+  { value: 'credit_card', label: '信用卡', icon: 'CreditCard', color: '#EC4899', brandIcon: false },
+  { value: 'other', label: '其他', icon: 'PhonePay', color: '#8B5CF6', brandIcon: false },
+] as const;
+
+const PAYMENT_ICONS = [
+  '💳', '💰', '💵', '💴', '💶', '💷', '💸',
+  '🏦', '🏪', '💎', '📱', '⌚', '💚', '❤️',
+  '🔵', '🟢', '🟡', '🟣', '⭐', '✨', '🎯',
+];
+
+const PAYMENT_COLORS = [
+  '#1677FF', '#07C160', '#10B981', '#6366F1', '#EC4899', '#8B5CF6',
+  '#F97316', '#EAB308', '#06B6D4', '#14B8A6', '#F43F5E', '#A855F7',
+];
+
+// 工具函数
+function getPaymentMethodTypeConfig(type: PaymentMethod['type']) {
+  return PAYMENT_METHOD_TYPES.find((t) => t.value === type) || PAYMENT_METHOD_TYPES[5];
+}
+
+function formatLast4Digits(last4: string | null): string {
+  if (!last4) return '';
+  return `**** ${last4}`;
+}
+
+// API 调用函数
+async function fetchPaymentMethods(): Promise<PaymentMethod[]> {
+  const response = await fetch('/api/payment-methods');
+  if (!response.ok) throw new Error('获取支付方式失败');
+  const { data } = await response.json();
+  return data;
+}
+
+async function createPaymentMethod(params: {
+  name: string;
+  type: PaymentMethod['type'];
+  icon?: string;
+  color?: string;
+  last4Digits?: string;
+}): Promise<string> {
+  const response = await fetch('/api/payment-methods', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || '创建支付方式失败');
+  }
+  const { data } = await response.json();
+  return data.id;
+}
+
+async function deletePaymentMethodApi(
+  id: string,
+  migrateToId?: string
+): Promise<DeletePaymentMethodResult> {
+  const response = await fetch(`/api/payment-methods/${id}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ migrateToId }),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || '删除支付方式失败');
+  }
+  const { data } = await response.json();
+  return data;
+}
+
+async function setDefaultPaymentMethodApi(id: string): Promise<boolean> {
+  const response = await fetch(`/api/payment-methods/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ setDefault: true }),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || '设置默认支付方式失败');
+  }
+  return true;
+}
 
 // 支付方式类型图标映射（支付宝和微信使用品牌图标，其他使用 Lucide 官方图标）
 const PAYMENT_TYPE_ICONS: Record<PaymentMethod['type'], React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
@@ -123,7 +224,7 @@ export default function PaymentMethodsPage() {
   const loadPaymentMethods = async () => {
     try {
       setLoading(true);
-      const data = await getPaymentMethodsWithStats();
+      const data = await fetchPaymentMethods();
       setPaymentMethods(data);
     } catch (error) {
       console.error('加载支付方式失败:', error);
@@ -136,7 +237,7 @@ export default function PaymentMethodsPage() {
 
   const handleSetDefault = async (id: string) => {
     try {
-      await setDefaultPaymentMethod(id);
+      await setDefaultPaymentMethodApi(id);
       await loadPaymentMethods();
       setToastMessage('✅ 默认支付方式设置成功！');
       setShowToast(true);
@@ -507,7 +608,7 @@ function AddPaymentMethodDialog({
 
     try {
       setSaving(true);
-      await addPaymentMethod({
+      await createPaymentMethod({
         name: name.trim(),
         type,
         icon,
@@ -715,7 +816,7 @@ function DeletePaymentMethodDialog({
 
     try {
       setDeleting(true);
-      const result = await deletePaymentMethod(
+      const result = await deletePaymentMethodApi(
         method.id,
         migrateToId || undefined
       );
