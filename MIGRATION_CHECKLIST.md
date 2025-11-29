@@ -2,7 +2,7 @@
 
 > 本文档记录从 Supabase 迁移到本地 PostgreSQL (Prisma) 的进度和计划。
 >
-> 最后更新: 2025-11-28
+> 最后更新: 2025-11-29
 
 ## 迁移状态概览
 
@@ -199,13 +199,25 @@
 3.5 smart-suggestions/learning API ✅ (部分使用 Repository)
 ```
 
-### 阶段 4: 组件改造 ⏳
+### 阶段 4: 组件改造 🚧 (进行中)
 
 ```
-4.1 改造组件使用 Service 层而非直接调用 Supabase
-    ├── QuickTransaction 组件
-    ├── TransactionList 组件
-    └── AddPage 页面
+4.1 创建 Transaction API 路由 ✅
+    ├── /api/transactions (GET, POST)
+    ├── /api/transactions/[id] (GET, PUT, PATCH, DELETE)
+    └── /api/transactions/[id]/restore (POST)
+
+4.2 P0 核心组件迁移 ✅
+    ├── QuickTransaction.tsx ✅
+    ├── QuickTransactionCard.tsx ✅
+    ├── GroupedList.tsx ✅
+    └── app/add/page.tsx ✅
+
+4.3 P1 统计组件迁移 ⏳
+    ├── ComparisonPanel.tsx
+    ├── GoalTrackingPanel.tsx
+    ├── ConsumptionHabitsPanel.tsx
+    └── ConsumptionPredictionPanel.tsx
 ```
 
 ### 阶段 5: 管理功能
@@ -357,3 +369,5 @@ update: { deleted_at: new Date() }
 | 2025-11-28 | 完成服务端版本服务文件 |
 | 2025-11-28 | 更新 ServerRepositoryFactory |
 | 2025-11-28 | 完成 API 路由迁移 (阶段3) |
+| 2025-11-29 | 完成 Transaction API 路由 (/api/transactions) |
+| 2025-11-29 | 完成 P0 核心组件迁移 (QuickTransaction, GroupedList, AddPage) |
