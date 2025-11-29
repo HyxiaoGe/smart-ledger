@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withErrorHandler } from '@/lib/api/errorHandler';
+import { withErrorHandler } from '@/lib/domain/errors/errorHandler';
 import {
   getAllCronJobs,
   getCronJobStats,

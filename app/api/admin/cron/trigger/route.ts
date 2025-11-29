@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withErrorHandler } from '@/lib/api/errorHandler';
-import { ValidationError } from '@/lib/api/errors';
+import { withErrorHandler } from '@/lib/domain/errors/errorHandler';
+import { ValidationError } from '@/lib/domain/errors/AppError';
 import { prisma } from '@/lib/clients/db/prisma';
 
 // 任务名称到 SQL 函数的映射
