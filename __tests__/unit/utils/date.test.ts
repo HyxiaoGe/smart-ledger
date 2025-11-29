@@ -15,6 +15,9 @@ import {
   yesterdayRange,
   lastNDaysRange,
   getQuickRange,
+  weekRange,
+  quarterRange,
+  getExtendedQuickRange,
 } from '@/lib/utils/date';
 
 describe('date utilities', () => {
@@ -308,6 +311,96 @@ describe('date utilities', () => {
       const result = getQuickRange('month');
       expect(result.label).toMatch(/^\d{4}-\d{2}$/);
       expect(result.start).toMatch(/^\d{4}-\d{2}-01$/);
+    });
+  });
+
+  describe('weekRange', () => {
+    it('should return current week range (Monday to Sunday)', () => {
+      // 2024-06-15 是周六
+      const result = weekRange(new Date(2024, 5, 15));
+      expect(result.start).toBe('2024-06-10'); // 周一
+      expect(result.end).toBe('2024-06-17'); // 下周一（左闭右开）
+    });
+
+    it('should handle Sunday correctly', () => {
+      // 2024-06-16 是周日
+      const result = weekRange(new Date(2024, 5, 16));
+      expect(result.start).toBe('2024-06-10'); // 周一
+      expect(result.end).toBe('2024-06-17'); // 下周一
+    });
+
+    it('should handle Monday correctly', () => {
+      // 2024-06-10 是周一
+      const result = weekRange(new Date(2024, 5, 10));
+      expect(result.start).toBe('2024-06-10'); // 周一
+      expect(result.end).toBe('2024-06-17'); // 下周一
+    });
+  });
+
+  describe('quarterRange', () => {
+    it('should return Q1 range', () => {
+      const result = quarterRange(new Date(2024, 1, 15)); // 2月
+      expect(result.start).toBe('2024-01-01');
+      expect(result.end).toBe('2024-04-01');
+      expect(result.label).toBe('2024年Q1');
+    });
+
+    it('should return Q2 range', () => {
+      const result = quarterRange(new Date(2024, 5, 15)); // 6月
+      expect(result.start).toBe('2024-04-01');
+      expect(result.end).toBe('2024-07-01');
+      expect(result.label).toBe('2024年Q2');
+    });
+
+    it('should return Q3 range', () => {
+      const result = quarterRange(new Date(2024, 8, 15)); // 9月
+      expect(result.start).toBe('2024-07-01');
+      expect(result.end).toBe('2024-10-01');
+      expect(result.label).toBe('2024年Q3');
+    });
+
+    it('should return Q4 range', () => {
+      const result = quarterRange(new Date(2024, 11, 15)); // 12月
+      expect(result.start).toBe('2024-10-01');
+      expect(result.end).toBe('2025-01-01');
+      expect(result.label).toBe('2024年Q4');
+    });
+  });
+
+  describe('getExtendedQuickRange', () => {
+    it('should return today range', () => {
+      const result = getExtendedQuickRange('today', new Date(2024, 5, 15));
+      expect(result.start).toBe('2024-06-15');
+      expect(result.end).toBe('2024-06-16');
+      expect(result.label).toBe('今天');
+    });
+
+    it('should return thisWeek range', () => {
+      const result = getExtendedQuickRange('thisWeek', new Date(2024, 5, 15));
+      expect(result.start).toBe('2024-06-10');
+      expect(result.end).toBe('2024-06-17');
+      expect(result.label).toBe('本周');
+    });
+
+    it('should return thisMonth range', () => {
+      const result = getExtendedQuickRange('thisMonth', new Date(2024, 5, 15));
+      expect(result.start).toBe('2024-06-01');
+      expect(result.end).toBe('2024-07-01');
+      expect(result.label).toBe('本月');
+    });
+
+    it('should return thisQuarter range', () => {
+      const result = getExtendedQuickRange('thisQuarter', new Date(2024, 5, 15));
+      expect(result.start).toBe('2024-04-01');
+      expect(result.end).toBe('2024-07-01');
+      expect(result.label).toBe('本季度');
+    });
+
+    it('should return lastMonth range', () => {
+      const result = getExtendedQuickRange('lastMonth', new Date(2024, 5, 15));
+      expect(result.start).toBe('2024-05-01');
+      expect(result.end).toBe('2024-06-01');
+      expect(result.label).toBe('上月');
     });
   });
 });

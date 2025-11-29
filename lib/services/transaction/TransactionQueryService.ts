@@ -5,9 +5,24 @@
 
 import type { ITransactionRepository } from '@/lib/domain/repositories/ITransactionRepository';
 import type { Transaction, TransactionType } from '@/types/domain/transaction';
-import { parseMonthStr, formatMonth, getQuickRange } from '@/lib/utils/date';
+import {
+  parseMonthStr,
+  formatMonth,
+  getQuickRange,
+  getExtendedQuickRange,
+  formatDateToLocal,
+  type ExtendedQuickRange,
+} from '@/lib/utils/date';
 import { CacheDecorator } from '@/lib/infrastructure/cache';
 import type { ICache } from '@/lib/infrastructure/cache';
+
+// 扩展日期范围类型列表
+const EXTENDED_RANGE_KEYS: ExtendedQuickRange[] = [
+  'today', 'yesterday', 'dayBeforeYesterday',
+  'thisWeek', 'lastWeek', 'weekBeforeLast',
+  'thisMonth', 'lastMonth', 'monthBeforeLast',
+  'thisQuarter', 'lastQuarter',
+];
 
 /**
  * 日期范围
@@ -161,10 +176,17 @@ export class TransactionQueryService {
     startDate?: string,
     endDate?: string
   ): DateRange | undefined {
+    // 自定义范围
     if (range === 'custom' && startDate && endDate) {
-      return { start: startDate, end: endDate, label: `${startDate} - ${endDate}` };
+      return { start: startDate, end: endDate, label: `${startDate.slice(5)} ~ ${endDate.slice(5)}` };
     }
 
+    // 扩展的快捷范围类型
+    if (EXTENDED_RANGE_KEYS.includes(range as ExtendedQuickRange)) {
+      return getExtendedQuickRange(range as ExtendedQuickRange);
+    }
+
+    // 兼容旧的快捷范围（last7 等）
     return getQuickRange(range as any, month);
   }
 
@@ -184,12 +206,9 @@ export class TransactionQueryService {
       return undefined;
     }
 
-    const start = new Date(parsedMonth.getFullYear(), parsedMonth.getMonth(), 1)
-      .toISOString()
-      .slice(0, 10);
-    const end = new Date(parsedMonth.getFullYear(), parsedMonth.getMonth() + 1, 1)
-      .toISOString()
-      .slice(0, 10);
+    // 使用本地时间格式化，避免时区问题
+    const start = formatDateToLocal(new Date(parsedMonth.getFullYear(), parsedMonth.getMonth(), 1));
+    const end = formatDateToLocal(new Date(parsedMonth.getFullYear(), parsedMonth.getMonth() + 1, 1));
 
     return { start, end, label: formatMonth(parsedMonth) };
   }
@@ -198,20 +217,21 @@ export class TransactionQueryService {
    * 根据日期范围查询交易
    */
   private async queryByDateRange(dateRange: DateRange, range?: string): Promise<Transaction[]> {
-    // 特殊处理：今天或昨天使用精确日期匹配
-    if ((range === 'today' || range === 'yesterday') && dateRange.start === dateRange.end) {
-      return this.repository.findByDateRange(dateRange.start, dateRange.start, 'expense');
+    // 单日范围类型列表
+    const singleDayRanges = ['today', 'yesterday', 'dayBeforeYesterday'];
+
+    // 特殊处理：单日范围
+    if (singleDayRanges.includes(range || '')) {
+      // 单日查询使用 [start, end) 模式，end 已经是 start + 1 天
+      return this.repository.findByDateRange(dateRange.start, dateRange.end, 'expense');
     }
 
-    // 自定义范围：需要调整结束日期
+    // 自定义范围：前端已经处理了结束日期+1，直接使用
     if (range === 'custom') {
-      const end = new Date(dateRange.end);
-      end.setDate(end.getDate() + 1);
-      const endDateStr = end.toISOString().slice(0, 10);
-      return this.repository.findByDateRange(dateRange.start, endDateStr, 'expense');
+      return this.repository.findByDateRange(dateRange.start, dateRange.end, 'expense');
     }
 
-    // 其他范围：使用标准查询
+    // 其他范围（周、月、季）：使用标准的左闭右开查询
     return this.repository.findByDateRange(dateRange.start, dateRange.end, 'expense');
   }
 
