@@ -6,7 +6,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { ChartSummary } from './components/ChartSummary';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { RangePicker } from '@/components/shared/RangePicker';
+import { TabsRangePicker } from '@/components/shared/TabsRangePicker';
 import { CurrencySelect } from '@/components/shared/CurrencySelect';
 import { TopExpenses } from '@/components/TopExpenses';
 import { HomeStats } from '@/components/features/statistics/HomeStats';
@@ -181,7 +181,7 @@ export default function HomePageClient({
           {isRefreshing && <span className="text-xs text-blue-500 animate-pulse">{TEXT.refreshing}</span>}
           <div className="flex gap-2 items-center">
             <span className="text-sm text-muted-foreground">{TEXT.range}</span>
-            <RangePicker />
+            <TabsRangePicker />
           </div>
         </div>
       </div>

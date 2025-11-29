@@ -7,7 +7,7 @@ import {
   getAIAnalysisData
 } from '@/lib/services/transactions.server';
 import { getMonthlyBudgetStatus, getCurrentYearMonth } from '@/lib/services/budgetService.server';
-import { RangePicker } from '@/components/shared/RangePicker';
+import { TabsRangePicker } from '@/components/shared/TabsRangePicker';
 import { CollapsibleTransactionList } from '@/components/features/transactions/TransactionList/CollapsibleList';
 import { SkeletonBlock, SkeletonGrid } from '@/components/shared/Skeletons';
 import { AIAnalysisPanel } from '@/components/features/ai-analysis/AIAnalysisPanel';
@@ -80,7 +80,7 @@ export default async function RecordsPage({
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold">账单列表（{monthLabel}）</h1>
           <div className="flex items-center gap-4">
-            <RangePicker />
+            <TabsRangePicker />
             <AIAnalysisButton
               dateRange={range}
               currentMonth={month}
