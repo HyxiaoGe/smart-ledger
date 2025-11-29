@@ -10,3 +10,5 @@ export * from './common-notes';
 export * from './budgets';
 export * from './recurring-expenses';
 export * from './weekly-reports';
+export * from './predict';
+export * from './quick-transaction';

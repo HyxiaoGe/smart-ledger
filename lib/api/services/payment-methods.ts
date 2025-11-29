@@ -9,13 +9,17 @@ import { apiClient } from '../client';
  */
 export interface PaymentMethod {
   id: string;
+  user_id?: string | null;
   name: string;
-  type: string;
-  icon?: string;
-  color?: string;
+  type: 'credit_card' | 'debit_card' | 'alipay' | 'wechat' | 'cash' | 'other';
+  icon?: string | null;
+  color?: string | null;
+  last_4_digits?: string | null;
   is_default: boolean;
   is_active: boolean;
-  usage_count: number;
+  sort_order?: number;
+  usage_count?: number;
+  last_used?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -25,9 +29,10 @@ export interface PaymentMethod {
  */
 export interface CreatePaymentMethodParams {
   name: string;
-  type: string;
+  type: PaymentMethod['type'];
   icon?: string;
   color?: string;
+  last4Digits?: string;
   is_default?: boolean;
 }
 
@@ -36,6 +41,16 @@ export interface CreatePaymentMethodParams {
  */
 export interface UpdatePaymentMethodParams extends Partial<CreatePaymentMethodParams> {
   is_active?: boolean;
+  setDefault?: boolean;
+}
+
+/**
+ * 删除支付方式结果
+ */
+export interface DeletePaymentMethodResult {
+  success: boolean;
+  message: string;
+  transaction_count: number;
 }
 
 /**
@@ -64,9 +79,18 @@ export const paymentMethodsApi = {
   },
 
   /**
+   * 设置默认支付方式
+   */
+  setDefault(id: string): Promise<boolean> {
+    return apiClient.put<boolean>(`/api/payment-methods/${id}`, { setDefault: true });
+  },
+
+  /**
    * 删除支付方式
    */
-  delete(id: string): Promise<void> {
-    return apiClient.delete<void>(`/api/payment-methods/${id}`);
+  delete(id: string, migrateToId?: string): Promise<DeletePaymentMethodResult> {
+    return apiClient.delete<DeletePaymentMethodResult>(`/api/payment-methods/${id}`, {
+      data: migrateToId ? { migrateToId } : undefined
+    });
   },
 };

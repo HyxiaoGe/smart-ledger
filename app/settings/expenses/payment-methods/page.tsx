@@ -1,19 +1,16 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   ChevronLeft,
-  Plus,
   Trash2,
   Star,
   CreditCard,
   TrendingUp,
-  CheckCircle2,
-  Wallet,
   Smartphone,
   Landmark,
   Banknote,
@@ -23,30 +20,12 @@ import {
   WechatPayIcon,
 } from '@/components/icons/PaymentBrandIcons';
 import { ProgressToast } from '@/components/shared/ProgressToast';
-
-// 支付方式类型定义
-interface PaymentMethod {
-  id: string;
-  user_id: string | null;
-  name: string;
-  type: 'credit_card' | 'debit_card' | 'alipay' | 'wechat' | 'cash' | 'other';
-  icon: string | null;
-  color: string | null;
-  last_4_digits: string | null;
-  is_default: boolean;
-  is_active: boolean;
-  sort_order: number;
-  usage_count?: number;
-  last_used?: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-interface DeletePaymentMethodResult {
-  success: boolean;
-  message: string;
-  transaction_count: number;
-}
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  paymentMethodsApi,
+  PaymentMethod,
+  CreatePaymentMethodParams,
+} from '@/lib/api/services/payment-methods';
 
 // 常量
 const PAYMENT_METHOD_TYPES = [
@@ -79,63 +58,6 @@ function formatLast4Digits(last4: string | null): string {
   return `**** ${last4}`;
 }
 
-// API 调用函数
-async function fetchPaymentMethods(): Promise<PaymentMethod[]> {
-  const response = await fetch('/api/payment-methods');
-  if (!response.ok) throw new Error('获取支付方式失败');
-  const { data } = await response.json();
-  return data;
-}
-
-async function createPaymentMethod(params: {
-  name: string;
-  type: PaymentMethod['type'];
-  icon?: string;
-  color?: string;
-  last4Digits?: string;
-}): Promise<string> {
-  const response = await fetch('/api/payment-methods', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(params),
-  });
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || '创建支付方式失败');
-  }
-  const { data } = await response.json();
-  return data.id;
-}
-
-async function deletePaymentMethodApi(
-  id: string,
-  migrateToId?: string
-): Promise<DeletePaymentMethodResult> {
-  const response = await fetch(`/api/payment-methods/${id}`, {
-    method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ migrateToId }),
-  });
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || '删除支付方式失败');
-  }
-  const { data } = await response.json();
-  return data;
-}
-
-async function setDefaultPaymentMethodApi(id: string): Promise<boolean> {
-  const response = await fetch(`/api/payment-methods/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ setDefault: true }),
-  });
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || '设置默认支付方式失败');
-  }
-  return true;
-}
 
 // 支付方式类型图标映射（支付宝和微信使用品牌图标，其他使用 Lucide 官方图标）
 const PAYMENT_TYPE_ICONS: Record<PaymentMethod['type'], React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
@@ -210,42 +132,39 @@ function TypeIcon({ type, className = "h-8 w-8" }: { type: PaymentMethod['type']
 }
 
 export default function PaymentMethodsPage() {
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [deletingMethod, setDeletingMethod] = useState<PaymentMethod | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
-  useEffect(() => {
-    loadPaymentMethods();
-  }, []);
+  // 使用 React Query 获取支付方式
+  const {
+    data: paymentMethodsData,
+    isLoading: loading,
+  } = useQuery({
+    queryKey: ['payment-methods'],
+    queryFn: () => paymentMethodsApi.list(),
+  });
 
-  const loadPaymentMethods = async () => {
-    try {
-      setLoading(true);
-      const data = await fetchPaymentMethods();
-      setPaymentMethods(data);
-    } catch (error) {
-      console.error('加载支付方式失败:', error);
-      setToastMessage('❌ 加载支付方式失败，请刷新页面重试');
-      setShowToast(true);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const paymentMethods = paymentMethodsData || [];
 
-  const handleSetDefault = async (id: string) => {
-    try {
-      await setDefaultPaymentMethodApi(id);
-      await loadPaymentMethods();
+  // 设置默认支付方式 mutation
+  const setDefaultMutation = useMutation({
+    mutationFn: (id: string) => paymentMethodsApi.setDefault(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['payment-methods'] });
       setToastMessage('✅ 默认支付方式设置成功！');
       setShowToast(true);
-    } catch (error) {
-      console.error('设置默认支付方式失败:', error);
+    },
+    onError: () => {
       setToastMessage('❌ 设置默认支付方式失败，请重试');
       setShowToast(true);
     }
+  });
+
+  const handleSetDefault = (id: string) => {
+    setDefaultMutation.mutate(id);
   };
 
   // 统计数据
@@ -431,7 +350,7 @@ export default function PaymentMethodsPage() {
           onClose={() => setShowAddDialog(false)}
           onSuccess={() => {
             setShowAddDialog(false);
-            loadPaymentMethods();
+            queryClient.invalidateQueries({ queryKey: ['payment-methods'] });
             setToastMessage('✅ 支付方式添加成功！');
             setShowToast(true);
           }}
@@ -448,7 +367,7 @@ export default function PaymentMethodsPage() {
           onClose={() => setDeletingMethod(null)}
           onSuccess={() => {
             setDeletingMethod(null);
-            loadPaymentMethods();
+            queryClient.invalidateQueries({ queryKey: ['payment-methods'] });
             setToastMessage('✅ 支付方式删除成功！');
             setShowToast(true);
           }}
@@ -608,7 +527,7 @@ function AddPaymentMethodDialog({
 
     try {
       setSaving(true);
-      await createPaymentMethod({
+      await paymentMethodsApi.create({
         name: name.trim(),
         type,
         icon,
@@ -816,7 +735,7 @@ function DeletePaymentMethodDialog({
 
     try {
       setDeleting(true);
-      const result = await deletePaymentMethodApi(
+      const result = await paymentMethodsApi.delete(
         method.id,
         migrateToId || undefined
       );

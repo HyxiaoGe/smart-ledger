@@ -161,8 +161,9 @@ export const apiClient = {
   /**
    * DELETE 请求
    */
-  delete<T>(endpoint: string, config?: Omit<RequestConfig, 'method' | 'body'>): Promise<T> {
-    return request<T>(endpoint, { ...config, method: 'DELETE' });
+  delete<T>(endpoint: string, config?: Omit<RequestConfig, 'method'> & { data?: unknown }): Promise<T> {
+    const { data, ...rest } = config || {};
+    return request<T>(endpoint, { ...rest, method: 'DELETE', body: data });
   },
 };
 

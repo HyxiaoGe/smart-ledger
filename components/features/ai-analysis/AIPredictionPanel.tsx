@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle, TrendingUp, Clock, Target, Zap } from 'lucide-react';
 import { generateTimeContext } from '@/lib/domain/noteContext';
-import { getErrorMessage } from '@/types/common';
+import { useAIPrediction } from '@/lib/api/hooks';
+import { aiApi } from '@/lib/api/services/ai';
+import { useQuery } from '@tanstack/react-query';
 
 // 类型定义
 interface TransactionPrediction {
@@ -17,7 +19,7 @@ interface TransactionPrediction {
   predictedCategory?: string;
   predictedAmount?: number;
   suggestedNote?: string;
-  metadata?: any;
+  metadata?: unknown;
 }
 
 interface QuickTransactionSuggestion {
@@ -30,54 +32,6 @@ interface QuickTransactionSuggestion {
   confidence: number;
   icon?: string;
   reason: string;
-}
-
-// API 调用函数
-async function fetchPredictTransaction(params: {
-  timeContext?: string;
-  includeRecent?: boolean;
-}): Promise<TransactionPrediction[]> {
-  const response = await fetch('/api/ai-prediction', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type: 'predict-transaction', ...params }),
-  });
-  if (!response.ok) throw new Error('预测交易失败');
-  const data = await response.json();
-  return data.predictions || [];
-}
-
-async function fetchPredictCategory(amount: number, timeContext?: string): Promise<TransactionPrediction[]> {
-  const response = await fetch('/api/ai-prediction', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type: 'predict-category', amount, timeContext }),
-  });
-  if (!response.ok) throw new Error('预测分类失败');
-  const data = await response.json();
-  return data.predictions || [];
-}
-
-async function fetchPredictAmount(category: string, timeContext?: string): Promise<TransactionPrediction[]> {
-  const response = await fetch('/api/ai-prediction', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type: 'predict-amount', category, timeContext }),
-  });
-  if (!response.ok) throw new Error('预测金额失败');
-  const data = await response.json();
-  return data.predictions || [];
-}
-
-async function fetchQuickSuggestions(timeContext?: string): Promise<QuickTransactionSuggestion[]> {
-  const response = await fetch('/api/ai-prediction', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type: 'quick-suggestions', timeContext }),
-  });
-  if (!response.ok) throw new Error('获取快速建议失败');
-  const data = await response.json();
-  return data.suggestions || [];
 }
 
 type AIPredictionPanelProps = {
@@ -93,72 +47,100 @@ export function AIPredictionPanel({
   currentCategory,
   className = ''
 }: AIPredictionPanelProps) {
-  const [predictions, setPredictions] = useState<TransactionPrediction[]>([]);
-  const [quickSuggestions, setQuickSuggestions] = useState<QuickTransactionSuggestion[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'predictions' | 'quick'>('quick');
 
-  // 获取预测数据
-  const loadPredictions = useCallback(async () => {
-    setIsLoading(true);
-    setError('');
+  // 获取时间上下文
+  const timeContext = useMemo(() => generateTimeContext(), []);
 
-    try {
-      const timeContext = generateTimeContext();
+  // 获取快速建议
+  const {
+    data: quickSuggestionsData,
+    isLoading: isLoadingQuick,
+    error: quickError,
+    refetch: refetchQuick
+  } = useQuery({
+    queryKey: ['ai', 'quick-suggestions', timeContext.label],
+    queryFn: () => aiApi.predict({ type: 'quick-suggestions', timeContext: timeContext.label }),
+  });
+
+  // 获取交易预测
+  const {
+    data: predictionsData,
+    isLoading: isLoadingPredictions,
+    error: predictionsError,
+    refetch: refetchPredictions
+  } = useQuery({
+    queryKey: ['ai', 'predictions', { currentAmount, currentCategory, timeContext: timeContext.label }],
+    queryFn: async () => {
+      const results: TransactionPrediction[] = [];
 
       // 获取通用交易预测
-      const transactionPredictions = await fetchPredictTransaction({
-        timeContext: timeContext.label,
-        includeRecent: true
+      const transactionPrediction = await aiApi.predict({
+        type: 'full',
+        timeContext: timeContext.label
       });
-
-      // 根据当前状态获取特定预测
-      let specificPredictions: TransactionPrediction[] = [];
-
-      if (currentAmount && !currentCategory) {
-        // 有金额无分类，预测分类
-        specificPredictions = await fetchPredictCategory(
-          currentAmount,
-          timeContext.label
-        );
-      } else if (currentCategory && !currentAmount) {
-        // 有分类无金额，预测金额
-        specificPredictions = await fetchPredictAmount(
-          currentCategory,
-          timeContext.label
-        );
-      } else if (currentAmount && currentCategory) {
-        // 两者都有，预测完整交易
-        specificPredictions = await fetchPredictTransaction({
-          timeContext: timeContext.label,
-          includeRecent: true
+      if (transactionPrediction.category) {
+        results.push({
+          id: 'full-1',
+          type: 'full',
+          confidence: transactionPrediction.confidence || 0.7,
+          reason: '基于您的消费习惯预测',
+          predictedCategory: transactionPrediction.category,
+          predictedAmount: transactionPrediction.amount
         });
       }
 
-      // 合并预测结果
-      const allPredictions = [...transactionPredictions, ...specificPredictions]
-        .sort((a, b) => b.confidence - a.confidence)
-        .slice(0, 6);
+      // 根据当前状态获取特定预测
+      if (currentAmount && !currentCategory) {
+        const categoryPrediction = await aiApi.predict({
+          type: 'category',
+          amount: currentAmount,
+          timeContext: timeContext.label
+        });
+        if (categoryPrediction.category) {
+          results.push({
+            id: 'category-1',
+            type: 'category',
+            confidence: categoryPrediction.confidence || 0.7,
+            reason: `金额 ¥${currentAmount} 的常见分类`,
+            predictedCategory: categoryPrediction.category
+          });
+        }
+      } else if (currentCategory && !currentAmount) {
+        const amountPrediction = await aiApi.predict({
+          type: 'amount',
+          note: currentCategory,
+          timeContext: timeContext.label
+        });
+        if (amountPrediction.amount) {
+          results.push({
+            id: 'amount-1',
+            type: 'amount',
+            confidence: amountPrediction.confidence || 0.7,
+            reason: `${currentCategory} 分类的常见金额`,
+            predictedAmount: amountPrediction.amount
+          });
+        }
+      }
 
-      setPredictions(allPredictions);
+      return results.sort((a, b) => b.confidence - a.confidence).slice(0, 6);
+    },
+    enabled: activeTab === 'predictions',
+  });
 
-      // 获取快速建议
-      const suggestions = await fetchQuickSuggestions(timeContext.label);
-      setQuickSuggestions(suggestions);
+  const quickSuggestions = (quickSuggestionsData?.suggestions || []) as QuickTransactionSuggestion[];
+  const predictions = predictionsData || [];
+  const isLoading = activeTab === 'quick' ? isLoadingQuick : isLoadingPredictions;
+  const error = activeTab === 'quick' ? quickError : predictionsError;
 
-    } catch (err: unknown) {
-      console.error('获取AI预测失败:', err);
-      setError(getErrorMessage(err) || 'AI预测加载失败');
-    } finally {
-      setIsLoading(false);
+  // 刷新数据
+  const handleRefresh = useCallback(() => {
+    if (activeTab === 'quick') {
+      refetchQuick();
+    } else {
+      refetchPredictions();
     }
-  }, [currentAmount, currentCategory]);
-
-  // 组件加载时获取预测
-  useEffect(() => {
-    loadPredictions();
-  }, [loadPredictions]);
+  }, [activeTab, refetchQuick, refetchPredictions]);
 
   // 处理预测选择
   const handlePredictionSelect = useCallback((prediction: TransactionPrediction) => {
@@ -238,7 +220,7 @@ export function AIPredictionPanel({
         {error && (
           <div className="flex items-center gap-2 p-3 text-red-600 bg-red-50 rounded-lg border border-red-200">
             <AlertCircle className="h-4 w-4" />
-            <span className="text-sm">{error}</span>
+            <span className="text-sm">{error instanceof Error ? error.message : 'AI预测加载失败'}</span>
           </div>
         )}
 
@@ -386,7 +368,7 @@ export function AIPredictionPanel({
             <Button
               variant="ghost"
               size="sm"
-              onClick={loadPredictions}
+              onClick={handleRefresh}
               className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
             >
               刷新预测

@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ProgressToast } from '@/components/shared/ProgressToast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Zap, Clock, CheckCircle, RefreshCw, X } from 'lucide-react';
-import { getErrorMessage } from '@/types/common';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { aiApi } from '@/lib/api/services/ai';
+import { quickTransactionApi } from '@/lib/api/services/quick-transaction';
 
 // 类型定义
 interface QuickTransactionSuggestion {
@@ -21,18 +22,6 @@ interface QuickTransactionSuggestion {
   reason: string;
 }
 
-// API 调用函数
-async function fetchQuickSuggestionsApi(): Promise<QuickTransactionSuggestion[]> {
-  const response = await fetch('/api/ai-prediction', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type: 'quick-suggestions' }),
-  });
-  if (!response.ok) throw new Error('获取快速建议失败');
-  const data = await response.json();
-  return data.suggestions || [];
-}
-
 interface QuickTransactionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -40,71 +29,57 @@ interface QuickTransactionDialogProps {
 }
 
 export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickTransactionDialogProps) {
-  const [suggestions, setSuggestions] = useState<QuickTransactionSuggestion[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [submittingId, setSubmittingId] = useState<string | null>(null);
-  const [error, setError] = useState<string>('');
+  // 使用 React Query 获取快速建议
+  const {
+    data: suggestionsData,
+    isLoading: loading,
+    error: queryError,
+    refetch: fetchSuggestions
+  } = useQuery({
+    queryKey: ['quick-suggestions'],
+    queryFn: async () => {
+      const result = await aiApi.predict({ type: 'quick-suggestions' });
+      return (result.suggestions || []) as QuickTransactionSuggestion[];
+    },
+    enabled: open
+  });
 
-  // 获取快速记账建议
-  const fetchSuggestions = useCallback(async () => {
-    setLoading(true);
-    setError('');
+  const suggestions = suggestionsData || [];
 
-    try {
-      const quickSuggestions = await fetchQuickSuggestionsApi();
-      setSuggestions(quickSuggestions);
-    } catch (err: unknown) {
-      console.error('获取快速记账建议失败:', err);
-      setError(getErrorMessage(err) || '获取建议失败');
-    } finally {
-      setLoading(false);
+  // 使用 useMutation 处理快速记账
+  const quickTransactionMutation = useMutation({
+    mutationFn: (suggestion: QuickTransactionSuggestion) =>
+      quickTransactionApi.create({
+        category: suggestion.category,
+        amount: suggestion.amount,
+        note: suggestion.note,
+        currency: 'CNY'
+      }),
+    onSuccess: (_, suggestion) => {
+      onSuccess?.(suggestion);
+
+      // 延迟关闭并刷新页面
+      setTimeout(() => {
+        onOpenChange(false);
+        window.location.reload();
+      }, 1500);
+    },
+    onError: (error) => {
+      console.error('快速记账失败:', error);
     }
-  }, []);
+  });
 
-  // 对话框打开时获取建议
-  React.useEffect(() => {
-    if (open) {
-      fetchSuggestions();
-    }
-  }, [open, fetchSuggestions]);
+  // 错误信息
+  const error = queryError
+    ? (queryError instanceof Error ? queryError.message : '获取建议失败')
+    : quickTransactionMutation.error
+    ? '记账失败，请重试'
+    : '';
 
   // 处理快速记账
-  const handleQuickTransaction = useCallback(async (suggestion: QuickTransactionSuggestion) => {
-    setSubmittingId(suggestion.id);
-
-    try {
-      const response = await fetch('/api/quick-transaction', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          category: suggestion.category,
-          amount: suggestion.amount,
-          note: suggestion.note,
-          currency: 'CNY'
-        })
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        onSuccess?.(suggestion);
-
-        // 延迟关闭并刷新页面
-        setTimeout(() => {
-          onOpenChange(false);
-          window.location.reload();
-        }, 1500);
-      } else {
-        throw new Error('快速记账失败');
-      }
-    } catch (error) {
-      console.error('快速记账失败:', error);
-      setError('记账失败，请重试');
-    } finally {
-      setSubmittingId(null);
-    }
-  }, [onSuccess, onOpenChange]);
+  const handleQuickTransaction = useCallback((suggestion: QuickTransactionSuggestion) => {
+    quickTransactionMutation.mutate(suggestion);
+  }, [quickTransactionMutation]);
 
   // 获取置信度颜色
   const getConfidenceColor = (confidence: number) => {
@@ -264,10 +239,10 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
                           <Button
                             size="sm"
                             onClick={() => handleQuickTransaction(suggestion)}
-                            disabled={submittingId === suggestion.id}
+                            disabled={quickTransactionMutation.isPending && quickTransactionMutation.variables?.id === suggestion.id}
                             className="min-w-[80px] bg-orange-500 hover:bg-orange-600 text-white"
                           >
-                            {submittingId === suggestion.id ? (
+                            {quickTransactionMutation.isPending && quickTransactionMutation.variables?.id === suggestion.id ? (
                               <>
                                 <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin mr-1"></div>
                                 记录中

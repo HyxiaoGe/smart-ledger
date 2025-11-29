@@ -85,4 +85,13 @@ export const categoriesApi = {
   updateSortOrder(orders: Array<{ id: string; sort_order: number }>): Promise<void> {
     return apiClient.put<void>('/api/categories/sort-order', { orders });
   },
+
+  /**
+   * 删除分类
+   */
+  delete(id: string, migrateToKey?: string): Promise<{ success: boolean; message: string }> {
+    return apiClient.delete<{ success: boolean; message: string }>(`/api/categories/${id}`, {
+      data: { migrateToKey }
+    });
+  },
 };

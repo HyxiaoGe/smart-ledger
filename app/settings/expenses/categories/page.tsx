@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,67 +18,8 @@ import {
   Lock,
   Check,
 } from 'lucide-react';
-
-// API 调用函数
-async function fetchCategoriesWithStats(): Promise<CategoryWithStats[]> {
-  const response = await fetch('/api/categories');
-  if (!response.ok) throw new Error('获取分类失败');
-  const { data } = await response.json();
-  return data;
-}
-
-async function createCategory(params: {
-  key: string;
-  label: string;
-  icon: string;
-  color: string;
-}): Promise<Category> {
-  const response = await fetch('/api/categories', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(params),
-  });
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || '创建分类失败');
-  }
-  const { data } = await response.json();
-  return data;
-}
-
-async function updateCategoryApi(
-  id: string,
-  params: { label?: string; icon?: string; color?: string }
-): Promise<Category> {
-  const response = await fetch(`/api/categories/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(params),
-  });
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || '更新分类失败');
-  }
-  const { data } = await response.json();
-  return data;
-}
-
-async function deleteCategoryApi(
-  id: string,
-  migrateToKey?: string
-): Promise<DeleteCategoryResult> {
-  const response = await fetch(`/api/categories/${id}`, {
-    method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ migrateToKey }),
-  });
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || '删除分类失败');
-  }
-  const { data } = await response.json();
-  return data;
-}
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { categoriesApi } from '@/lib/api/services/categories';
 
 // 生成分类键
 function generateCategoryKey(): string {
@@ -115,8 +56,7 @@ const PRESET_COLORS = [
 ];
 
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -130,102 +70,115 @@ export default function CategoriesPage() {
   const [formColor, setFormColor] = useState('#6B7280');
   const [migrateToKey, setMigrateToKey] = useState('');
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
+  // 使用 React Query 获取分类
+  const {
+    data: categoriesData,
+    isLoading: loading,
+  } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => categoriesApi.list(),
+  });
 
-  const fetchCategories = async () => {
-    try {
-      setLoading(true);
-      const data = await fetchCategoriesWithStats();
-      setCategories(data);
-    } catch (error) {
-      console.error('获取类别失败:', error);
-      setToastMessage('❌ 获取类别失败');
+  const categories = categoriesData || [];
+
+  // 创建分类 mutation
+  const createMutation = useMutation({
+    mutationFn: (params: { key: string; label: string; icon: string; color: string }) =>
+      categoriesApi.create(params),
+    onSuccess: () => {
+      setToastMessage('✅ 类别添加成功');
       setShowToast(true);
-    } finally {
-      setLoading(false);
+      setShowAddDialog(false);
+      resetForm();
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+    },
+    onError: (error: unknown) => {
+      console.error('添加类别失败:', error);
+      setToastMessage(`❌ ${getErrorMessage(error) || '添加失败'}`);
+      setShowToast(true);
     }
-  };
+  });
 
-  const handleAddCategory = async () => {
+  // 更新分类 mutation
+  const updateMutation = useMutation({
+    mutationFn: (params: { id: string; data: { label?: string; icon?: string; color?: string } }) =>
+      categoriesApi.update(params.id, params.data),
+    onSuccess: () => {
+      setToastMessage('✅ 类别更新成功');
+      setShowToast(true);
+      setShowEditDialog(false);
+      resetForm();
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+    },
+    onError: (error: unknown) => {
+      console.error('更新类别失败:', error);
+      setToastMessage(`❌ ${getErrorMessage(error) || '更新失败'}`);
+      setShowToast(true);
+    }
+  });
+
+  // 删除分类 mutation
+  const deleteMutation = useMutation({
+    mutationFn: (params: { id: string; migrateToKey?: string }) =>
+      categoriesApi.delete(params.id, params.migrateToKey),
+    onSuccess: (result) => {
+      if (result.success) {
+        setToastMessage(`✅ ${result.message}`);
+        setShowDeleteDialog(false);
+        resetForm();
+        queryClient.invalidateQueries({ queryKey: ['categories'] });
+      } else {
+        setToastMessage(`❌ ${result.message}`);
+      }
+      setShowToast(true);
+    },
+    onError: (error: unknown) => {
+      console.error('删除类别失败:', error);
+      setToastMessage(`❌ ${getErrorMessage(error) || '删除失败'}`);
+      setShowToast(true);
+    }
+  });
+
+  const handleAddCategory = () => {
     if (!formLabel.trim()) {
       setToastMessage('❌ 请输入类别名称');
       setShowToast(true);
       return;
     }
 
-    try {
-      const key = generateCategoryKey();
-      await createCategory({
-        key,
-        label: formLabel,
-        icon: formIcon,
-        color: formColor,
-      });
-
-      setToastMessage('✅ 类别添加成功');
-      setShowToast(true);
-      setShowAddDialog(false);
-      resetForm();
-      await fetchCategories();
-    } catch (error: unknown) {
-      console.error('添加类别失败:', error);
-      setToastMessage(`❌ ${getErrorMessage(error) || '添加失败'}`);
-      setShowToast(true);
-    }
+    const key = generateCategoryKey();
+    createMutation.mutate({
+      key,
+      label: formLabel,
+      icon: formIcon,
+      color: formColor,
+    });
   };
 
-  const handleEditCategory = async () => {
+  const handleEditCategory = () => {
     if (!selectedCategory || !formLabel.trim()) {
       setToastMessage('❌ 请输入类别名称');
       setShowToast(true);
       return;
     }
 
-    try {
-      await updateCategoryApi(selectedCategory.id, {
+    updateMutation.mutate({
+      id: selectedCategory.id,
+      data: {
         label: formLabel,
         icon: formIcon,
         color: formColor,
-      });
-
-      setToastMessage('✅ 类别更新成功');
-      setShowToast(true);
-      setShowEditDialog(false);
-      resetForm();
-      await fetchCategories();
-    } catch (error: unknown) {
-      console.error('更新类别失败:', error);
-      setToastMessage(`❌ ${getErrorMessage(error) || '更新失败'}`);
-      setShowToast(true);
-    }
+      }
+    });
   };
 
-  const handleDeleteCategory = async () => {
+  const handleDeleteCategory = () => {
     if (!selectedCategory) return;
 
-    try {
-      const result = await deleteCategoryApi(
-        selectedCategory.id,
-        migrateToKey || undefined
-      );
-
-      if (result.success) {
-        setToastMessage(`✅ ${result.message}`);
-        setShowToast(true);
-        setShowDeleteDialog(false);
-        resetForm();
-        await fetchCategories();
-      } else {
-        setToastMessage(`❌ ${result.message}`);
-        setShowToast(true);
-      }
-    } catch (error: unknown) {
-      console.error('删除类别失败:', error);
-      setToastMessage(`❌ ${getErrorMessage(error) || '删除失败'}`);
-      setShowToast(true);
-    }
+    deleteMutation.mutate({
+      id: selectedCategory.id,
+      migrateToKey: migrateToKey || undefined
+    });
   };
 
   const openEditDialog = (category: Category) => {

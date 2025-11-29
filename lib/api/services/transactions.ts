@@ -13,6 +13,11 @@ export interface TransactionListParams {
   range?: string;
   startDate?: string;
   endDate?: string;
+  start_date?: string;
+  end_date?: string;
+  type?: 'income' | 'expense';
+  page_size?: number;
+  page?: number;
 }
 
 /**
@@ -39,8 +44,9 @@ export interface UpdateTransactionParams extends Partial<CreateTransactionParams
 /**
  * 交易列表响应
  */
-interface TransactionListResponse {
-  transactions: Transaction[];
+export interface TransactionListResponse {
+  data?: Transaction[];
+  transactions?: Transaction[];
   total?: number;
 }
 

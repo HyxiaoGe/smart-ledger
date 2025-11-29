@@ -1,11 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, TrendingDown, BarChart, ChevronDown, RefreshCw, Target } from 'lucide-react';
+import { TrendingUp, BarChart, ChevronDown, RefreshCw, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAllDataSyncEvents } from '@/hooks/useEnhancedDataSync';
+import { useQuery } from '@tanstack/react-query';
+import { transactionsApi } from '@/lib/api/services/transactions';
+import { queryKeys } from '@/lib/api/queryClient';
 
 interface CategoryPrediction {
   category: string;
@@ -36,18 +39,28 @@ export function ConsumptionPredictionPanel({
   dateRange = 'current-month',
   currentMonth = ''
 }: ConsumptionPredictionPanelProps) {
-  const [data, setData] = useState<ConsumptionPredictionData | null>(null);
-  const [loading, setLoading] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
 
-  // 监听数据同步事件
-  useAllDataSyncEvents(() => {
-    fetchPredictionData();
-  });
+  const categoryIcons: Record<string, string> = {
+    food: '🍽️',
+    transport: '🚇',
+    drink: '☕',
+    daily: '🛍️',
+    subscription: '📱',
+    entertainment: '🎮',
+    medical: '💊',
+    education: '📚',
+    shopping: '🛒'
+  };
 
-  // 获取消费预测数据
-  const fetchPredictionData = async () => {
-    try {
+  // 使用 React Query 获取消费预测数据
+  const {
+    data,
+    isLoading: loading,
+    refetch
+  } = useQuery({
+    queryKey: ['consumption-prediction', dateRange, currentMonth],
+    queryFn: async (): Promise<ConsumptionPredictionData> => {
       const month = currentMonth || new Date().toISOString().slice(0, 7);
       const currentDate = new Date();
       const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
@@ -57,35 +70,34 @@ export function ConsumptionPredictionPanel({
       // 获取当前月数据
       const startDate = `${month}-01`;
       const endDate = `${month}-31`;
-      const currentResponse = await fetch(`/api/transactions?start_date=${startDate}&end_date=${endDate}&type=expense&page_size=1000`);
-      if (!currentResponse.ok) throw new Error('获取交易数据失败');
-      const currentResult = await currentResponse.json();
+      const currentResult = await transactionsApi.list({
+        start_date: startDate,
+        end_date: endDate,
+        type: 'expense',
+        page_size: 1000
+      });
       const currentData = currentResult.data || [];
 
       // 获取历史数据用于预测
       const lastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1).toISOString().slice(0, 7);
       const twoMonthsAgo = new Date(currentDate.getFullYear(), currentDate.getMonth() - 2, 1).toISOString().slice(0, 7);
 
-      const [lastMonthResponse, twoMonthsAgoResponse] = await Promise.all([
-        fetch(`/api/transactions?start_date=${lastMonth}-01&end_date=${lastMonth}-31&type=expense&page_size=1000`),
-        fetch(`/api/transactions?start_date=${twoMonthsAgo}-01&end_date=${twoMonthsAgo}-31&type=expense&page_size=1000`)
+      const [lastMonthResult, twoMonthsAgoResult] = await Promise.all([
+        transactionsApi.list({
+          start_date: `${lastMonth}-01`,
+          end_date: `${lastMonth}-31`,
+          type: 'expense',
+          page_size: 1000
+        }),
+        transactionsApi.list({
+          start_date: `${twoMonthsAgo}-01`,
+          end_date: `${twoMonthsAgo}-31`,
+          type: 'expense',
+          page_size: 1000
+        })
       ]);
-      const lastMonthResult = await lastMonthResponse.json();
-      const twoMonthsAgoResult = await twoMonthsAgoResponse.json();
-      const lastMonthData = { data: lastMonthResult.data || [] };
-      const twoMonthsAgoData = { data: twoMonthsAgoResult.data || [] };
-
-      const categoryIcons: Record<string, string> = {
-        food: '🍽️',
-        transport: '🚇',
-        drink: '☕',
-        daily: '🛍️',
-        subscription: '📱',
-        entertainment: '🎮',
-        medical: '💊',
-        education: '📚',
-        shopping: '🛒'
-      };
+      const lastMonthData = lastMonthResult.data || [];
+      const twoMonthsAgoData = twoMonthsAgoResult.data || [];
 
       // 计算当前月总支出
       const currentMonthTotal = currentData?.reduce((sum, t) => sum + t.amount, 0) || 0;
@@ -102,12 +114,12 @@ export function ConsumptionPredictionPanel({
 
       // 获取历史类别平均值
       const lastMonthTotals = new Map<string, number>();
-      lastMonthData.data?.forEach(t => {
+      lastMonthData?.forEach(t => {
         lastMonthTotals.set(t.category, (lastMonthTotals.get(t.category) || 0) + t.amount);
       });
 
       const twoMonthsAgoTotals = new Map<string, number>();
-      twoMonthsAgoData.data?.forEach(t => {
+      twoMonthsAgoData?.forEach(t => {
         twoMonthsAgoTotals.set(t.category, (twoMonthsAgoTotals.get(t.category) || 0) + t.amount);
       });
 
@@ -117,7 +129,7 @@ export function ConsumptionPredictionPanel({
 
         // 计算历史平均值和趋势
         const historicalAvg = (lastMonthAmount + twoMonthsAgoAmount) / 2;
-        const trend = lastMonthAmount > twoMonthsAgoAmount ? 1.05 : 0.98; // 简单趋势调整
+        const trend = lastMonthAmount > twoMonthsAgoAmount ? 1.05 : 0.98;
 
         // 计算日均和预测
         const dailyAverage = currentAmount / daysPassed;
@@ -139,7 +151,7 @@ export function ConsumptionPredictionPanel({
         predictedTotal += predictedAmount;
       });
 
-      // 计算预测准确度（基于历史数据的准确性）
+      // 计算预测准确度
       const accuracy = predictions.length > 0
         ? predictions.reduce((sum, p) => sum + p.confidence, 0) / predictions.length
         : 85;
@@ -147,30 +159,25 @@ export function ConsumptionPredictionPanel({
       // 计算日均支出
       const dailyAverage = currentMonthTotal / daysPassed;
 
-      setData({
+      return {
         currentMonthTotal,
         predictedMonthTotal: Math.round(predictedTotal),
         accuracy: Math.round(accuracy),
         predictions: predictions.sort((a, b) => b.predictedAmount - a.predictedAmount).slice(0, 5),
         dailyAverage: Math.round(dailyAverage)
-      });
-
-    } catch (error) {
-      console.error('获取消费预测失败:', error);
-    } finally {
-      setLoading(false);
+      };
     }
-  };
+  });
+
+  // 监听数据同步事件
+  useAllDataSyncEvents(() => {
+    refetch();
+  });
 
   // 刷新数据
   const refreshData = () => {
-    setLoading(true);
-    fetchPredictionData();
+    refetch();
   };
-
-  useEffect(() => {
-    fetchPredictionData();
-  }, [dateRange, currentMonth]);
 
   return (
     <Card className="bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200">
