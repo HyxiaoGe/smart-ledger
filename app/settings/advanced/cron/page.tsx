@@ -429,7 +429,7 @@ export default function CronManagementPage() {
                           )}
 
                           {/* 下次执行时间 */}
-                          {nextRun && (
+                          {nextRun && !isNaN(nextRun.getTime()) && (
                             <div className="mt-3 flex items-center gap-2 text-sm">
                               <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                               <span className="text-gray-600 dark:text-gray-400">下次执行：</span>

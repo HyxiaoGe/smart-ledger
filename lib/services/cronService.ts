@@ -124,9 +124,50 @@ export function calculateNextRun(cronExp: string, lastRun?: string): Date | null
 
     const [minute, hour, day, month, weekday] = parts;
 
-    // 解析时间
-    const targetHour = parseInt(hour);
-    const targetMinute = parseInt(minute);
+    // 解析时间，处理特殊语法如 */15
+    const parseField = (field: string): number | null => {
+      if (field === '*') return null;
+      if (field.includes('/')) {
+        // 处理 */n 语法，返回下一个匹配值
+        return null; // 暂时返回 null，让下面的逻辑处理
+      }
+      const num = parseInt(field);
+      return isNaN(num) ? null : num;
+    };
+
+    const targetHour = parseField(hour);
+    const targetMinute = parseField(minute);
+
+    // 处理每小时任务 (hour = *, minute = */n 或具体值)
+    if (hour === '*' || hour.includes('/')) {
+      const next = new Date(now);
+
+      if (minute.includes('/')) {
+        // 每隔N分钟执行，如 */15
+        const interval = parseInt(minute.split('/')[1]) || 15;
+        const currentMinute = next.getMinutes();
+        const nextMinute = Math.ceil((currentMinute + 1) / interval) * interval;
+
+        if (nextMinute >= 60) {
+          next.setHours(next.getHours() + 1);
+          next.setMinutes(0, 0, 0);
+        } else {
+          next.setMinutes(nextMinute, 0, 0);
+        }
+      } else if (targetMinute !== null) {
+        next.setMinutes(targetMinute, 0, 0);
+        if (next <= now) {
+          next.setHours(next.getHours() + 1);
+        }
+      }
+
+      return next;
+    }
+
+    // 如果 hour 或 minute 无法解析为数字，返回 null
+    if (targetHour === null || targetMinute === null) {
+      return null;
+    }
 
     // 处理每日任务 (day = *, month = *, weekday = *)
     if (day === '*' && month === '*' && weekday === '*') {
@@ -144,6 +185,8 @@ export function calculateNextRun(cronExp: string, lastRun?: string): Date | null
     // 处理每周任务 (weekday != *)
     if (weekday !== '*') {
       const targetWeekday = parseInt(weekday); // 0 = 周日, 1 = 周一, ..., 6 = 周六
+      if (isNaN(targetWeekday)) return null;
+
       const next = new Date(now);
       next.setHours(targetHour, targetMinute, 0, 0);
 
@@ -163,6 +206,8 @@ export function calculateNextRun(cronExp: string, lastRun?: string): Date | null
     // 处理每月任务 (day != *)
     if (day !== '*' && month === '*' && weekday === '*') {
       const targetDay = parseInt(day);
+      if (isNaN(targetDay)) return null;
+
       const next = new Date(now);
       next.setDate(targetDay);
       next.setHours(targetHour, targetMinute, 0, 0);
