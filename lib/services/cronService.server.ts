@@ -53,11 +53,11 @@ export async function getAllCronJobs(): Promise<CronJob[]> {
   try {
     const jobs = await prisma.$queryRaw<CronJob[]>`
       SELECT
-        jobid,
+        jobid::int as jobid,
         schedule,
         command,
         nodename,
-        nodeport,
+        nodeport::int as nodeport,
         database,
         username,
         active,
@@ -80,9 +80,9 @@ export async function getCronJobHistory(jobId?: number, limit = 50): Promise<Cro
     if (jobId) {
       const history = await prisma.$queryRaw<CronJobRun[]>`
         SELECT
-          runid,
-          jobid,
-          job_pid,
+          runid::int as runid,
+          jobid::int as jobid,
+          job_pid::int as job_pid,
           database,
           username,
           command,
@@ -99,9 +99,9 @@ export async function getCronJobHistory(jobId?: number, limit = 50): Promise<Cro
     } else {
       const history = await prisma.$queryRaw<CronJobRun[]>`
         SELECT
-          runid,
-          jobid,
-          job_pid,
+          runid::int as runid,
+          jobid::int as jobid,
+          job_pid::int as job_pid,
           database,
           username,
           command,
@@ -128,7 +128,7 @@ export async function getCronJobStats(): Promise<CronJobStats[]> {
   try {
     const stats = await prisma.$queryRaw<CronJobStats[]>`
       SELECT
-        j.jobid,
+        j.jobid::int as jobid,
         j.jobname,
         j.schedule,
         j.active,
