@@ -1,5 +1,5 @@
 import { getPrismaClient } from '@/lib/clients/db';
-import { parseMonthStr, formatMonth, getQuickRange } from '@/lib/utils/date';
+import { parseMonthStr, formatMonth, getExtendedQuickRange, type ExtendedQuickRange } from '@/lib/utils/date';
 import * as mvService from '@/lib/services/materializedViewService.server';
 
 type MonthData = {
@@ -144,13 +144,16 @@ async function loadRangeAndTopData(
     rEnd = endParam;
     rLabel = `${startParam} - ${endParam}`;
   } else {
-    const quickRange = getQuickRange(rangeParam as any, monthLabel);
-    rStart = quickRange.start;
-    rEnd = quickRange.end;
-    rLabel = quickRange.label;
+    // 使用扩展的日期范围函数，支持所有新的范围类型
+    const extendedRange = getExtendedQuickRange(rangeParam as ExtendedQuickRange);
+    rStart = extendedRange.start;
+    rEnd = extendedRange.end;
+    rLabel = extendedRange.label;
   }
 
-  const isSingleDay = rangeParam === 'today' || rangeParam === 'yesterday' || rStart === rEnd;
+  // 单日范围类型列表
+  const singleDayRanges = ['today', 'yesterday', 'dayBeforeYesterday'];
+  const isSingleDay = singleDayRanges.includes(rangeParam) || rStart === rEnd;
 
   // 计算结束日期
   let queryEnd = rEnd;
