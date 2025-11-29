@@ -26,7 +26,7 @@ export interface TransactionListParams {
 export interface CreateTransactionParams {
   type: 'income' | 'expense';
   category: string;
-  subcategory?: string;
+  subcategory?: string | null;
   amount: number;
   note?: string;
   date: string;
