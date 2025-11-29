@@ -8,7 +8,6 @@ import type { Transaction, TransactionType } from '@/types/domain/transaction';
 import {
   parseMonthStr,
   formatMonth,
-  getQuickRange,
   getExtendedQuickRange,
   formatDateToLocal,
   type ExtendedQuickRange,
@@ -73,18 +72,14 @@ export class TransactionQueryService {
 
         // 处理不同的范围类型
         if (range && range !== 'month') {
-          dateRange = this.calculateDateRange(range, month, startDate, endDate);
+          dateRange = this.calculateDateRange(range, startDate, endDate);
         } else {
           dateRange = this.calculateMonthRange(month, range);
         }
 
         if (!dateRange) {
-          // 查询所有数据
-          const transactions = await this.repository.findMany(
-            { type: 'expense' },
-            { field: 'date', order: 'desc' }
-          );
-          return { rows: transactions.data, monthLabel: '全部' };
+          // 不支持的范围类型，返回空数据
+          return { rows: [], monthLabel: '无效范围' };
         }
 
         // 根据日期范围查询
@@ -172,7 +167,6 @@ export class TransactionQueryService {
    */
   private calculateDateRange(
     range: string,
-    month?: string,
     startDate?: string,
     endDate?: string
   ): DateRange | undefined {
@@ -188,8 +182,8 @@ export class TransactionQueryService {
       return getExtendedQuickRange(range as ExtendedQuickRange);
     }
 
-    // 兼容旧的快捷范围（last7 等）
-    return getQuickRange(range as any, month);
+    // 不支持的范围类型，返回 undefined（会显示无数据）
+    return undefined;
   }
 
   /**
