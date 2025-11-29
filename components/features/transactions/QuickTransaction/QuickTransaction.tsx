@@ -1,40 +1,16 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { formatDateToLocal } from '@/lib/utils/date';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ProgressToast } from '@/components/shared/ProgressToast';
-import { enhancedDataSync, markTransactionsDirty } from '@/lib/core/EnhancedDataSync';
 import { generateTimeContext } from '@/lib/domain/noteContext';
 import { STORAGE_KEYS } from '@/lib/config/storageKeys';
 import { Zap, Clock, TrendingUp, CheckCircle } from 'lucide-react';
-
-// 类型定义
-interface QuickTransactionSuggestion {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  amount: number;
-  note: string;
-  confidence: number;
-  icon?: string;
-  reason: string;
-}
-
-// API 调用函数
-async function fetchQuickSuggestionsApi(timeContext?: string): Promise<QuickTransactionSuggestion[]> {
-  const response = await fetch('/api/ai-prediction', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type: 'quick-suggestions', timeContext }),
-  });
-  if (!response.ok) throw new Error('获取快速建议失败');
-  const data = await response.json();
-  return data.suggestions || [];
-}
+import { useQuickSuggestions, useCreateTransaction } from '@/lib/api/hooks';
+import type { QuickTransactionSuggestion } from '@/lib/api/services/ai';
 
 interface QuickTransactionProps {
   onSuccess?: () => void;
@@ -42,73 +18,42 @@ interface QuickTransactionProps {
 }
 
 export function QuickTransaction({ onSuccess, className = '' }: QuickTransactionProps) {
-  const [suggestions, setSuggestions] = useState<QuickTransactionSuggestion[]>([]);
-  const [loading, setLoading] = useState(false);
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [lastSuccessTransaction, setLastSuccessTransaction] = useState<QuickTransactionSuggestion | null>(null);
 
-  // 获取快速记账建议
-  const fetchQuickSuggestions = useCallback(async () => {
-    setLoading(true);
-    try {
-      const timeContext = generateTimeContext();
-      const quickSuggestions = await fetchQuickSuggestionsApi(timeContext.label);
-      setSuggestions(quickSuggestions);
-    } catch (error) {
-      console.error('获取快速记账建议失败:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // 获取当前时间上下文
+  const timeContext = useMemo(() => generateTimeContext(), []);
 
-  // 组件加载时获取建议
-  React.useEffect(() => {
-    fetchQuickSuggestions();
-  }, [fetchQuickSuggestions]);
+  // 使用 React Query 获取快速建议
+  const {
+    data: suggestionsData,
+    isLoading,
+    refetch: refetchSuggestions,
+  } = useQuickSuggestions(timeContext.label);
+
+  const suggestions = suggestionsData?.suggestions || [];
+
+  // 使用 React Query 创建交易
+  const createTransaction = useCreateTransaction();
 
   // 一键快速记账
   const handleQuickTransaction = useCallback(async (suggestion: QuickTransactionSuggestion) => {
     setSubmittingId(suggestion.id);
-    setLoading(true);
 
     try {
-      const type = 'expense';
       const date = formatDateToLocal(new Date());
 
-      // 使用 API 路由创建交易（API 会自动更新常用备注）
-      const response = await fetch('/api/transactions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          type,
-          category: suggestion.category,
-          amount: suggestion.amount,
-          note: suggestion.note,
-          date,
-          currency: 'CNY',
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || '创建交易失败');
-      }
-
-      // 触发同步事件
-      enhancedDataSync.notifyTransactionAdded({
-        type,
+      await createTransaction.mutateAsync({
+        type: 'expense',
         category: suggestion.category,
         amount: suggestion.amount,
         note: suggestion.note,
-        date: new Date().toISOString(),
-        currency: 'CNY'
+        date,
+        currency: 'CNY',
       });
-      markTransactionsDirty();
 
-      // 清除缓存
+      // 清除本地缓存
       localStorage.removeItem(STORAGE_KEYS.COMMON_NOTES_CACHE);
 
       // 显示成功提示
@@ -120,17 +65,16 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
 
       // 刷新建议
       setTimeout(() => {
-        fetchQuickSuggestions();
+        refetchSuggestions();
       }, 1000);
 
     } catch (error: unknown) {
       console.error('快速记账失败:', error);
-      // 这里可以显示错误提示
+      // 错误已由 React Query 处理
     } finally {
       setSubmittingId(null);
-      setLoading(false);
     }
-  }, [onSuccess, fetchQuickSuggestions]);
+  }, [createTransaction, onSuccess, refetchSuggestions]);
 
   // 获取置信度颜色
   const getConfidenceColor = (confidence: number) => {
@@ -155,6 +99,8 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
     return icons[category] || '💰';
   };
 
+  const loading = isLoading || createTransaction.isPending;
+
   return (
     <>
       {showToast && lastSuccessTransaction && (
@@ -178,14 +124,14 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
 
         <CardContent className="space-y-4">
           {/* 加载状态 */}
-          {loading && suggestions.length === 0 && (
+          {isLoading && suggestions.length === 0 && (
             <div className="flex items-center justify-center py-8 text-gray-500 dark:text-gray-400">
               <div className="text-sm">AI正在生成快速记账建议...</div>
             </div>
           )}
 
           {/* 快速记账建议列表 */}
-          {!loading && suggestions.length > 0 && (
+          {!isLoading && suggestions.length > 0 && (
             <div className="grid gap-3">
               {suggestions.map((suggestion) => (
                 <div
@@ -236,7 +182,7 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
                       <Button
                         size="sm"
                         onClick={() => handleQuickTransaction(suggestion)}
-                        disabled={submittingId === suggestion.id}
+                        disabled={submittingId === suggestion.id || createTransaction.isPending}
                         className="min-w-[80px] bg-orange-500 hover:bg-orange-600 text-white"
                       >
                         {submittingId === suggestion.id ? (
@@ -266,7 +212,7 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
           )}
 
           {/* 空状态 */}
-          {!loading && suggestions.length === 0 && (
+          {!isLoading && suggestions.length === 0 && (
             <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               <Clock className="h-8 w-8 mx-auto mb-2 text-gray-300" />
               <div className="text-sm">暂无快速记账建议</div>
@@ -282,7 +228,7 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={fetchQuickSuggestions}
+                onClick={() => refetchSuggestions()}
                 className="text-gray-500 dark:text-gray-400 hover:text-gray-700"
               >
                 刷新建议
@@ -300,7 +246,7 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />
-                  <span>基于当前时间: {generateTimeContext().label}</span>
+                  <span>基于当前时间: {timeContext.label}</span>
                 </div>
               </div>
             </div>

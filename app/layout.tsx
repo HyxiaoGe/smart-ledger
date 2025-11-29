@@ -10,6 +10,7 @@ import { GlobalErrorHandler } from '@/components/layout/GlobalErrorHandler';
 import { SyncNotificationProvider } from '@/components/shared/SyncNotificationProvider';
 import { ToastProvider } from '@/components/ui/toast';
 import { CategoryProvider } from '@/contexts/CategoryContext';
+import { QueryProvider } from '@/lib/api/QueryProvider';
 
 export const metadata: Metadata = {
   title: 'Smart Ledger',
@@ -21,8 +22,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="zh-CN" suppressHydrationWarning>
       <body className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 text-foreground transition-colors duration-300">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <CategoryProvider>
-            <ToastProvider>
+          <QueryProvider>
+            <CategoryProvider>
+              <ToastProvider>
               <GlobalErrorHandler />
               <NavigationProgress />
               <SyncNotificationProvider />
@@ -43,8 +45,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <main className="container py-6">
                 <ErrorBoundary>{children}</ErrorBoundary>
               </main>
-            </ToastProvider>
-          </CategoryProvider>
+              </ToastProvider>
+            </CategoryProvider>
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>
