@@ -182,7 +182,9 @@ export class TransactionQueryService {
     }
 
     // 扩展的快捷范围类型
-    if (EXTENDED_RANGE_KEYS.includes(range as ExtendedQuickRange)) {
+    const isExtendedRange = EXTENDED_RANGE_KEYS.includes(range as ExtendedQuickRange);
+
+    if (isExtendedRange) {
       return getExtendedQuickRange(range as ExtendedQuickRange);
     }
 
