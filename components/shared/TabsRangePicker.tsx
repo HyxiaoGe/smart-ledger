@@ -215,7 +215,7 @@ export function TabsRangePicker({ className, onRangeChange }: TabsRangePickerPro
           />
 
           {/* 弹出内容 */}
-          <Card className="absolute top-full right-0 z-50 mt-2 w-[320px] shadow-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
+          <Card className="absolute top-full right-0 z-50 mt-2 w-auto min-w-[320px] shadow-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
             <CardContent className="p-0">
               {/* Tab 切换 */}
               <div className="flex border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
@@ -278,7 +278,7 @@ export function TabsRangePicker({ className, onRangeChange }: TabsRangePickerPro
                         </div>
                       }
                     >
-                      <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-2">
+                      <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-2 overflow-x-auto">
                         <DatePicker
                           mode="range"
                           selected={
@@ -288,8 +288,7 @@ export function TabsRangePicker({ className, onRangeChange }: TabsRangePickerPro
                           }
                           onSelect={handleCustomRangeSelect}
                           locale={zhCN}
-                          className="mx-auto rdp-enhanced"
-                          compact
+                          className="rdp-enhanced"
                         />
                       </div>
                     </ComponentErrorBoundary>
