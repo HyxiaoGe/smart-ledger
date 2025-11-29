@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseServerClient } from '@/lib/clients/supabase/server';
+import { prisma } from '@/lib/clients/db/prisma';
 import { getCommonNoteRepository, getTransactionRepository } from '@/lib/infrastructure/repositories/index.server';
 import {
   type SmartSuggestionParams,
@@ -139,42 +139,61 @@ async function generateSmartSuggestions(params: SmartSuggestionParams): Promise<
 }
 
 /**
- * 上下文感知提示（复杂查询，使用 Supabase）
+ * 上下文感知提示（使用 Prisma）
  */
 async function generateContextSuggestions(params: SmartSuggestionParams): Promise<SmartSuggestion[]> {
   const { category, amount, time_context, partial_input } = params;
   const suggestions: SmartSuggestion[] = [];
 
   try {
-    const supabase = supabaseServerClient;
-
-    // 查询匹配当前上下文的备注
-    let query = supabase
-      .from('common_notes')
-      .select('*')
-      .eq('is_active', true);
+    // 构建查询条件
+    const whereConditions: any[] = [{ is_active: true }];
 
     // 如果有类别，优先匹配类别关联度
     if (category) {
-      query = query.or(`category_affinity.eq.${category},category_affinity.is.null`);
+      whereConditions.push({
+        OR: [
+          { category_affinity: category },
+          { category_affinity: null }
+        ]
+      });
     }
 
     // 如果有金额，匹配平均金额范围
     if (amount) {
       const amountRange = amount * 0.3; // 30% 浮动范围
-      query = query.or(`avg_amount.gte.${amount - amountRange},avg_amount.lte.${amount + amountRange},avg_amount.is.null`);
+      whereConditions.push({
+        OR: [
+          {
+            avg_amount: {
+              gte: amount - amountRange,
+              lte: amount + amountRange
+            }
+          },
+          { avg_amount: null }
+        ]
+      });
     }
 
     // 如果有输入内容，进行内容匹配
     if (partial_input) {
-      query = query.ilike('content', `%${partial_input}%`);
+      whereConditions.push({
+        content: {
+          contains: partial_input,
+          mode: 'insensitive'
+        }
+      });
     }
 
-    const { data: notes, error } = await query
-      .order('usage_count', { ascending: false })
-      .limit(10);
+    const notes = await prisma.common_notes.findMany({
+      where: {
+        AND: whereConditions
+      },
+      orderBy: { usage_count: 'desc' },
+      take: 10
+    });
 
-    if (error || !notes || notes.length === 0) {
+    if (!notes || notes.length === 0) {
       return suggestions;
     }
 
@@ -190,7 +209,7 @@ async function generateContextSuggestions(params: SmartSuggestionParams): Promis
           reason: generateContextReason(note, params),
           source: '智能上下文分析',
           metadata: {
-            avg_amount: note.avg_amount,
+            avg_amount: note.avg_amount ? Number(note.avg_amount) : null,
             category: note.category_affinity,
             usage_count: note.usage_count,
             time_context: time_context
@@ -206,38 +225,51 @@ async function generateContextSuggestions(params: SmartSuggestionParams): Promis
 }
 
 /**
- * 模式匹配提示（复杂查询，使用 Supabase）
+ * 模式匹配提示（使用 Prisma）
  */
 async function generatePatternSuggestions(params: SmartSuggestionParams): Promise<SmartSuggestion[]> {
   const { category, partial_input } = params;
   const suggestions: SmartSuggestion[] = [];
 
   try {
-    const supabase = supabaseServerClient;
-
     // 基于时间模式匹配
     const timeContext = generateTimeContext();
     const timeTags = timeContext.tags;
 
-    let query = supabase
-      .from('common_notes')
-      .select('*')
-      .eq('is_active', true)
-      .contains('context_tags', timeTags);
+    // 构建查询条件
+    const whereConditions: any[] = [{ is_active: true }];
+
+    // 匹配包含任意时间标签的备注
+    if (timeTags && timeTags.length > 0) {
+      whereConditions.push({
+        context_tags: {
+          hasSome: timeTags
+        }
+      });
+    }
 
     if (category) {
-      query = query.eq('category_affinity', category);
+      whereConditions.push({ category_affinity: category });
     }
 
     if (partial_input) {
-      query = query.ilike('content', `%${partial_input}%`);
+      whereConditions.push({
+        content: {
+          contains: partial_input,
+          mode: 'insensitive'
+        }
+      });
     }
 
-    const { data: notes, error } = await query
-      .order('usage_count', { ascending: false })
-      .limit(8);
+    const notes = await prisma.common_notes.findMany({
+      where: {
+        AND: whereConditions
+      },
+      orderBy: { usage_count: 'desc' },
+      take: 8
+    });
 
-    if (error || !notes || notes.length === 0) {
+    if (!notes || notes.length === 0) {
       return suggestions;
     }
 
@@ -252,7 +284,7 @@ async function generatePatternSuggestions(params: SmartSuggestionParams): Promis
           reason: generatePatternReason(note, timeContext),
           source: '时间模式识别',
           metadata: {
-            avg_amount: note.avg_amount,
+            avg_amount: note.avg_amount ? Number(note.avg_amount) : null,
             category: note.category_affinity,
             usage_count: note.usage_count,
             time_context: timeContext.label
