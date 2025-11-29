@@ -85,8 +85,7 @@ export async function loadPageData(
 }
 
 /**
- * 加载月度数据
- * 优化策略：优先使用物化视图，失败时回退到直接查询
+ * 加载月度数据（从物化视图）
  */
 async function loadMonthData(currency: string, date: Date): Promise<MonthData> {
   const year = date.getFullYear();
@@ -94,110 +93,29 @@ async function loadMonthData(currency: string, date: Date): Promise<MonthData> {
   const prevMonth = month === 1 ? 12 : month - 1;
   const prevYear = month === 1 ? year - 1 : year;
 
-  try {
-    // 尝试使用物化视图（优化路径）
-    const [
-      currentSummary,
-      prevSummary,
-      currentIncomeSummary,
-      prevIncomeSummary,
-      trend,
-      pie
-    ] = await Promise.all([
-      mvService.getMonthlySummary(year, month, currency, 'expense'),
-      mvService.getMonthlySummary(prevYear, prevMonth, currency, 'expense'),
-      mvService.getMonthlySummary(year, month, currency, 'income'),
-      mvService.getMonthlySummary(prevYear, prevMonth, currency, 'income'),
-      mvService.getMonthlyTrend(year, month, currency),
-      mvService.getCategoryPieData(year, month, currency)
-    ]);
-
-    // 如果物化视图有数据，使用优化路径
-    if (currentSummary || trend.length > 0 || pie.length > 0) {
-      const income = currentIncomeSummary?.totalAmount || 0;
-      const expense = currentSummary?.totalAmount || 0;
-      const balance = income - expense;
-
-      const prevIncome = prevIncomeSummary?.totalAmount || 0;
-      const prevExpense = prevSummary?.totalAmount || 0;
-
-      const compare = [
-        { name: '本月', income, expense },
-        { name: '上月', income: prevIncome, expense: prevExpense }
-      ];
-
-      return { income, expense, balance, trend, pie, compare };
-    }
-  } catch (error) {
-    // 物化视图查询失败，回退到直接查询
-    console.warn('物化视图查询失败，使用直接查询:', error);
-  }
-
-  // 回退路径：直接查询数据库
-  return loadMonthDataFallback(currency, date);
-}
-
-/**
- * 回退方法：直接从事务表查询月度数据
- */
-async function loadMonthDataFallback(currency: string, date: Date): Promise<MonthData> {
-  function monthRange(d = new Date()) {
-    const start = new Date(d.getFullYear(), d.getMonth(), 1);
-    const end = new Date(d.getFullYear(), d.getMonth() + 1, 1);
-    const prevStart = new Date(d.getFullYear(), d.getMonth() - 1, 1);
-    const prevEnd = new Date(d.getFullYear(), d.getMonth(), 1);
-    const toISO = (day: Date) => day.toISOString().slice(0, 10);
-    return { start: toISO(start), end: toISO(end), prevStart: toISO(prevStart), prevEnd: toISO(prevEnd) };
-  }
-
-  const { start, end, prevStart, prevEnd } = monthRange(date);
-  const prisma = getPrismaClient();
-
-  const [rows, prevRows] = await Promise.all([
-    prisma.transactions.findMany({
-      where: {
-        deleted_at: null,
-        date: { gte: new Date(start), lt: new Date(end) },
-        currency,
-      },
-      select: { type: true, category: true, amount: true, date: true, currency: true },
-    }),
-    prisma.transactions.findMany({
-      where: {
-        deleted_at: null,
-        date: { gte: new Date(prevStart), lt: new Date(prevEnd) },
-        currency,
-      },
-      select: { type: true, amount: true, date: true, currency: true },
-    }),
+  const [
+    currentSummary,
+    prevSummary,
+    currentIncomeSummary,
+    prevIncomeSummary,
+    trend,
+    pie
+  ] = await Promise.all([
+    mvService.getMonthlySummary(year, month, currency, 'expense'),
+    mvService.getMonthlySummary(prevYear, prevMonth, currency, 'expense'),
+    mvService.getMonthlySummary(year, month, currency, 'income'),
+    mvService.getMonthlySummary(prevYear, prevMonth, currency, 'income'),
+    mvService.getMonthlyTrend(year, month, currency),
+    mvService.getCategoryPieData(year, month, currency)
   ]);
 
-  const sum = (arr: any[], pred: (item: any) => boolean) =>
-    arr.filter(pred).reduce((a, b) => a + Number(b.amount || 0), 0);
-
-  const income = sum(rows, (r) => r.type === 'income');
-  const expense = sum(rows, (r) => r.type === 'expense');
+  const income = currentIncomeSummary?.totalAmount || 0;
+  const expense = currentSummary?.totalAmount || 0;
   const balance = income - expense;
 
-  const byDay = new Map<string, number>();
-  for (const r of rows) {
-    if (r.type !== 'expense') continue;
-    const day = String(new Date(r.date).getDate());
-    byDay.set(day, (byDay.get(day) || 0) + Number(r.amount || 0));
-  }
-  const trend = Array.from(byDay.entries())
-    .sort((a, b) => Number(a[0]) - Number(b[0]))
-    .map(([name, expenseValue]) => ({ name, expense: expenseValue }));
+  const prevIncome = prevIncomeSummary?.totalAmount || 0;
+  const prevExpense = prevSummary?.totalAmount || 0;
 
-  const byCat = new Map<string, number>();
-  for (const r of rows) {
-    if (r.type !== 'expense') continue;
-    byCat.set(r.category, (byCat.get(r.category) || 0) + Number(r.amount || 0));
-  }
-  const pie = Array.from(byCat.entries()).map(([name, value]) => ({ name, value }));
-
-  const prevIncome = sum(prevRows, (r) => r.type === 'income');
-  const prevExpense = sum(prevRows, (r) => r.type === 'expense');
   const compare = [
     { name: '本月', income, expense },
     { name: '上月', income: prevIncome, expense: prevExpense }
