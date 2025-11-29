@@ -195,7 +195,7 @@ model common_notes {
 
 model data_quality_reports {
   id                            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  report_date                   DateTime  @db.Date
+  report_date                   DateTime  @unique @db.Date
   total_transactions            Int?
   transactions_with_merchant    Int?
   transactions_with_note        Int?
