@@ -1,6 +1,19 @@
 "use client";
-import { useSearchParams, useRouter } from 'next/navigation';
-import { AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
+import {
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+  Legend,
+} from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/EmptyState';
 import { formatCurrency } from '@/lib/utils/format';
@@ -19,7 +32,7 @@ interface ChartSummaryTooltipProps {
   payload?: TooltipPayloadItem[];
   label?: string | number;
   currency: string;
-  kind: 'trend' | 'compare' | 'pie';
+  kind: 'trend' | 'pie';
   catMeta?: Map<string, CategoryMeta>;
 }
 
@@ -48,13 +61,7 @@ function CustomTooltip({ active, payload, label, currency, kind, catMeta }: Char
   );
   if (kind === 'trend') {
     const val = payload?.[0]?.value ?? 0;
-    return box(`第 ${label} 日`, [["支出", formatCurrency(val, currency)]]);
-  }
-  if (kind === 'compare') {
-    const p = payload || [];
-    const inc = p.find((x: TooltipPayloadItem) => x.dataKey === 'income')?.value ?? 0;
-    const exp = p.find((x: TooltipPayloadItem) => x.dataKey === 'expense')?.value ?? 0;
-    return box(String(label), [["收入", formatCurrency(inc, currency)], ["支出", formatCurrency(exp, currency)]]);
+    return box(String(label), [['支出', formatCurrency(val, currency)]]);
   }
   if (kind === 'pie') {
     const p = payload?.[0];
@@ -66,103 +73,98 @@ function CustomTooltip({ active, payload, label, currency, kind, catMeta }: Char
     const pct = (p as TooltipPayloadItem & { percent?: number })?.percent
       ? ((p as TooltipPayloadItem & { percent?: number }).percent! * 100).toFixed(1) + '%'
       : '';
-    return box(name, [["金额", formatCurrency(val, currency)], ["占比", pct]]);
+    return box(name, [['金额', formatCurrency(val, currency)], ['占比', pct]]);
   }
   return null;
 }
 
 export function ChartSummary({
   trend,
-  pieMonth,
-  pieRange,
-    currency
+  pie,
+  rangeLabel,
+  currency,
 }: {
   trend: { name: string; expense: number }[];
-  pieMonth: { name: string; value: number }[];
-  pieRange?: { name: string; value: number }[];
-    currency: string;
+  pie: { name: string; value: number }[];
+  rangeLabel: string;
+  currency: string;
 }) {
-  const searchParams = useSearchParams();
-  const router = useRouter();
   const { categories } = useCategories();
 
   // 动态构建分类元数据映射
   const catMeta = useMemo(() => {
-    return new Map(categories.map(c => [c.key, { label: c.label, color: c.color || '#94A3B8' }]));
+    return new Map(categories.map((c) => [c.key, { label: c.label, color: c.color || '#94A3B8' }]));
   }, [categories]);
 
-  const rangeParam = searchParams.get('range') || 'today';
-  const monthParam = searchParams.get('month') || '';
-  const currencyParam = searchParams.get('currency') || '';
+  // 判断是否显示趋势图（日粒度时不显示）
+  const showTrend = trend.length > 0;
 
-  // 将range参数映射为pieMode
-  const pieMode = rangeParam === 'month' ? 'month' : 'range';
-  const pie = pieMode === 'range' && pieRange ? pieRange : pieMonth;
+  // 判断是使用柱状图还是面积图
+  // 周粒度（7个数据点）用柱状图，月/季粒度用面积图
+  const useBarChart = trend.length <= 7;
 
-  // 处理按钮点击，更新URL参数
-  const handleModeChange = (mode: 'month' | 'range') => {
-    const newParams = new URLSearchParams(searchParams);
-    newParams.set('range', mode === 'month' ? 'month' : 'today');
-    if (monthParam) newParams.set('month', monthParam);
-    if (currencyParam) newParams.set('currency', currencyParam);
-    router.push(`/?${newParams.toString()}`);
-  };
   return (
-    <div className="grid gap-4 md:grid-cols-2">
-      <Card>
-        <CardHeader>
-          <Title text="月度支出趋势" />
-        </CardHeader>
-        <CardContent>
-          {trend.length === 0 ? (
-            <EmptyState
-              icon={BarChart3}
-              title="暂无趋势数据"
-              description="当月暂无支出记录，开始记账后将显示趋势图"
-            />
-          ) : (
+    <div className={`grid gap-4 ${showTrend ? 'md:grid-cols-2' : 'md:grid-cols-1'}`}>
+      {/* 动态趋势图 */}
+      {showTrend && (
+        <Card>
+          <CardHeader>
+            <Title text={`${rangeLabel}支出趋势`} />
+          </CardHeader>
+          <CardContent>
             <div className="w-full h-[260px]">
               <ResponsiveContainer>
-                <AreaChart data={trend} margin={{ left: 8, right: 8, top: 8, bottom: 8 }}>
-                  <defs>
-                    <linearGradient id="expGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#EF4444" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="name" tickLine={false} axisLine={false} />
-                  <YAxis tickFormatter={(v) => currencyTick(v, currency)} tickLine={false} axisLine={false} width={80} />
-                  <Tooltip content={<CustomTooltip currency={currency} kind="trend" />} />
-                  <Area type="monotone" dataKey="expense" stroke="#EF4444" strokeWidth={2} fillOpacity={1} fill="url(#expGradient)" activeDot={{ r: 4 }} />
-                </AreaChart>
+                {useBarChart ? (
+                  <BarChart data={trend} margin={{ left: 8, right: 8, top: 8, bottom: 8 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="name" tickLine={false} axisLine={false} />
+                    <YAxis
+                      tickFormatter={(v) => currencyTick(v, currency)}
+                      tickLine={false}
+                      axisLine={false}
+                      width={80}
+                    />
+                    <Tooltip content={<CustomTooltip currency={currency} kind="trend" />} />
+                    <Bar dataKey="expense" fill="#EF4444" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                ) : (
+                  <AreaChart data={trend} margin={{ left: 8, right: 8, top: 8, bottom: 8 }}>
+                    <defs>
+                      <linearGradient id="expGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#EF4444" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="name" tickLine={false} axisLine={false} />
+                    <YAxis
+                      tickFormatter={(v) => currencyTick(v, currency)}
+                      tickLine={false}
+                      axisLine={false}
+                      width={80}
+                    />
+                    <Tooltip content={<CustomTooltip currency={currency} kind="trend" />} />
+                    <Area
+                      type="monotone"
+                      dataKey="expense"
+                      stroke="#EF4444"
+                      strokeWidth={2}
+                      fillOpacity={1}
+                      fill="url(#expGradient)"
+                      activeDot={{ r: 4 }}
+                    />
+                  </AreaChart>
+                )}
               </ResponsiveContainer>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
+      {/* 分类饼图 */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <Title text="类别占比" />
-            {pieRange && (
-              <div className="flex gap-1 text-xs">
-                <button
-                  className={`h-7 px-2 rounded-md border ${pieMode==='range'?'bg-muted':''}`}
-                  onClick={() => handleModeChange('range')}
-                >
-                  今日
-                </button>
-                <button
-                  className={`h-7 px-2 rounded-md border ${pieMode==='month'?'bg-muted':''}`}
-                  onClick={() => handleModeChange('month')}
-                >
-                  本月
-                </button>
-              </div>
-            )}
-          </div>
+          <Title text={`${rangeLabel}分类占比`} />
         </CardHeader>
         <CardContent>
           {pie.length === 0 ? (
@@ -175,7 +177,16 @@ export function ChartSummary({
             <div className="w-full h-[260px]">
               <ResponsiveContainer>
                 <PieChart>
-                  <Pie data={pie} dataKey="value" nameKey="name" innerRadius={60} outerRadius={90} paddingAngle={2} stroke="#fff" strokeWidth={1}>
+                  <Pie
+                    data={pie}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={60}
+                    outerRadius={90}
+                    paddingAngle={2}
+                    stroke="#fff"
+                    strokeWidth={1}
+                  >
                     {pie.map((entry, index) => {
                       const meta = catMeta.get(entry.name);
                       const color = meta?.color || COLORS[index % COLORS.length];
@@ -183,15 +194,17 @@ export function ChartSummary({
                     })}
                   </Pie>
                   <Tooltip content={<CustomTooltip currency={currency} kind="pie" catMeta={catMeta} />} />
-                  <Legend verticalAlign="bottom" height={24} formatter={(value: string) => (catMeta.get(value)?.label || value)} />
+                  <Legend
+                    verticalAlign="bottom"
+                    height={24}
+                    formatter={(value: string) => catMeta.get(value)?.label || value}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>
           )}
         </CardContent>
       </Card>
-
-      {null}
     </div>
   );
 }
