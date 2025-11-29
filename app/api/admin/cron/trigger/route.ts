@@ -36,7 +36,8 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
   try {
     // 尝试调用数据库函数
-    await prisma.$queryRawUnsafe(`SELECT ${functionName}()`);
+    // 使用 DO 块执行 void 函数，避免 Prisma 序列化问题
+    await prisma.$executeRawUnsafe(`DO $$ BEGIN PERFORM public.${functionName}(); END $$;`);
 
     return NextResponse.json({
       success: true,
