@@ -232,6 +232,7 @@ function calculateNextGenerateDate(expense: any, fromDate: Date): Date {
 
 /**
  * 查询固定账单生成历史
+ * 优化：原来 N*2 次查询 → 3 次批量查询
  */
 export async function getGenerationHistory(limit = 20): Promise<GenerationHistoryItem[]> {
   const logs = await prisma.recurring_generation_logs.findMany({
@@ -239,43 +240,44 @@ export async function getGenerationHistory(limit = 20): Promise<GenerationHistor
     take: limit,
   });
 
-  // 获取关联的固定支出和交易
-  const result: GenerationHistoryItem[] = [];
+  if (logs.length === 0) {
+    return [];
+  }
 
-  for (const log of logs) {
-    let recurringExpense = null;
-    let transaction = null;
+  // 收集所有需要查询的 ID
+  const expenseIds = logs
+    .map(log => log.recurring_expense_id)
+    .filter((id): id is string => id !== null);
+  const transactionIds = logs
+    .map(log => log.generated_transaction_id)
+    .filter((id): id is string => id !== null);
 
-    if (log.recurring_expense_id) {
-      const expense = await prisma.recurring_expenses.findUnique({
-        where: { id: log.recurring_expense_id },
-        select: { name: true, amount: true, category: true },
-      });
-      if (expense) {
-        recurringExpense = {
-          name: expense.name,
-          amount: Number(expense.amount),
-          category: expense.category,
-        };
-      }
-    }
+  // 批量查询关联数据（2 次查询代替 N*2 次）
+  const [expenses, transactions] = await Promise.all([
+    expenseIds.length > 0
+      ? prisma.recurring_expenses.findMany({
+          where: { id: { in: expenseIds } },
+          select: { id: true, name: true, amount: true, category: true },
+        })
+      : Promise.resolve([]),
+    transactionIds.length > 0
+      ? prisma.transactions.findMany({
+          where: { id: { in: transactionIds } },
+          select: { id: true, amount: true, note: true, date: true },
+        })
+      : Promise.resolve([]),
+  ]);
 
-    if (log.generated_transaction_id) {
-      const tx = await prisma.transactions.findUnique({
-        where: { id: log.generated_transaction_id },
-        select: { id: true, amount: true, note: true, date: true },
-      });
-      if (tx) {
-        transaction = {
-          id: tx.id,
-          amount: Number(tx.amount),
-          note: tx.note,
-          date: tx.date.toISOString().split('T')[0],
-        };
-      }
-    }
+  // 构建查找映射
+  const expenseMap = new Map(expenses.map(e => [e.id, e]));
+  const transactionMap = new Map(transactions.map(t => [t.id, t]));
 
-    result.push({
+  // 组装结果
+  return logs.map(log => {
+    const expense = log.recurring_expense_id ? expenseMap.get(log.recurring_expense_id) : null;
+    const tx = log.generated_transaction_id ? transactionMap.get(log.generated_transaction_id) : null;
+
+    return {
       id: log.id,
       recurring_expense_id: log.recurring_expense_id,
       generation_date: log.generation_date.toISOString().split('T')[0],
@@ -283,12 +285,23 @@ export async function getGenerationHistory(limit = 20): Promise<GenerationHistor
       status: log.status,
       reason: log.reason,
       created_at: log.created_at?.toISOString() || new Date().toISOString(),
-      recurring_expense: recurringExpense,
-      transaction,
-    });
-  }
-
-  return result;
+      recurring_expense: expense
+        ? {
+            name: expense.name,
+            amount: Number(expense.amount),
+            category: expense.category,
+          }
+        : null,
+      transaction: tx
+        ? {
+            id: tx.id,
+            amount: Number(tx.amount),
+            note: tx.note,
+            date: tx.date.toISOString().split('T')[0],
+          }
+        : null,
+    };
+  });
 }
 
 /**

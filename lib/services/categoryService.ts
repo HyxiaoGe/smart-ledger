@@ -108,16 +108,10 @@ class CategoryService {
 
   /**
    * 获取所有分类的子分类映射
+   * 优化：使用批量查询替代 N+1 循环查询
    */
   async getAllSubcategories(): Promise<Record<string, Subcategory[]>> {
-    const categories = await this.repository.findAll({ is_active: true });
-    const result: Record<string, Subcategory[]> = {};
-
-    for (const category of categories) {
-      result[category.key] = await this.repository.getSubcategories(category.key);
-    }
-
-    return result;
+    return this.repository.getAllSubcategoriesBatch();
   }
 
   /**
