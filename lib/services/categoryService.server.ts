@@ -7,6 +7,7 @@
 
 import { getCategoryRepository } from '@/lib/infrastructure/repositories/index.server';
 import type { ICategoryRepository } from '@/lib/domain/repositories/ICategoryRepository';
+import { CacheDecorator, memoryCache } from '@/lib/infrastructure/cache';
 import type {
   Category,
   CategoryWithStats,
@@ -34,22 +35,36 @@ export type {
 
 /**
  * 服务端分类服务类
+ * 带缓存支持，减少数据库查询
  */
 class ServerCategoryService {
+  private cacheDecorator: CacheDecorator;
+
+  constructor() {
+    this.cacheDecorator = new CacheDecorator(memoryCache, {
+      ttl: 3600 * 1000, // 1小时缓存
+      tags: ['categories'],
+      debug: false,
+    });
+  }
+
   private get repository(): ICategoryRepository {
     return getCategoryRepository();
   }
 
   async getCategoriesWithStats(filter?: CategoryQueryFilter): Promise<CategoryWithStats[]> {
-    return this.repository.findAllWithStats(filter);
+    const cacheKey = `categories:with-stats:${JSON.stringify(filter || {})}`;
+    return this.cacheDecorator.wrap(cacheKey, () => this.repository.findAllWithStats(filter));
   }
 
   async getActiveCategories(): Promise<Category[]> {
-    return this.repository.findAll({ is_active: true });
+    const cacheKey = 'categories:active';
+    return this.cacheDecorator.wrap(cacheKey, () => this.repository.findAll({ is_active: true }));
   }
 
   async getExpenseCategories(): Promise<Category[]> {
-    return this.repository.findAll({ type: 'expense', is_active: true });
+    const cacheKey = 'categories:expense';
+    return this.cacheDecorator.wrap(cacheKey, () => this.repository.findAll({ type: 'expense', is_active: true }));
   }
 
   async getCategoryByKey(key: string): Promise<Category | null> {
@@ -61,15 +76,28 @@ class ServerCategoryService {
     if (exists) {
       throw new Error(`分类 key "${params.key}" 已存在`);
     }
-    return this.repository.create(params);
+    const result = await this.repository.create(params);
+    this.invalidateCache();
+    return result;
   }
 
   async updateCategory(id: string, params: UpdateCategoryDTO): Promise<Category> {
-    return this.repository.update(id, params);
+    const result = await this.repository.update(id, params);
+    this.invalidateCache();
+    return result;
   }
 
   async deleteCategory(id: string, migrateToKey?: string): Promise<DeleteCategoryResult> {
-    return this.repository.delete(id, migrateToKey);
+    const result = await this.repository.delete(id, migrateToKey);
+    this.invalidateCache();
+    return result;
+  }
+
+  /**
+   * 失效分类缓存
+   */
+  private invalidateCache(): void {
+    this.cacheDecorator.invalidateByTag('categories');
   }
 
   async getCategoryUsageDetail(key: string): Promise<CategoryUsageDetail> {
@@ -81,14 +109,17 @@ class ServerCategoryService {
   }
 
   async getAllSubcategories(): Promise<Record<string, Subcategory[]>> {
-    const categories = await this.repository.findAll({ is_active: true });
-    const result: Record<string, Subcategory[]> = {};
+    const cacheKey = 'categories:all-subcategories';
+    return this.cacheDecorator.wrap(cacheKey, async () => {
+      const categories = await this.repository.findAll({ is_active: true });
+      const result: Record<string, Subcategory[]> = {};
 
-    for (const category of categories) {
-      result[category.key] = await this.repository.getSubcategories(category.key);
-    }
+      for (const category of categories) {
+        result[category.key] = await this.repository.getSubcategories(category.key);
+      }
 
-    return result;
+      return result;
+    });
   }
 
   async getFrequentMerchants(categoryKey: string, limit?: number): Promise<MerchantSuggestion[]> {
@@ -96,7 +127,12 @@ class ServerCategoryService {
   }
 
   async getAllFrequentMerchants(limit?: number): Promise<Record<string, MerchantSuggestion[]>> {
-    return this.repository.getAllFrequentMerchants(limit);
+    const cacheKey = `categories:all-frequent-merchants:${limit || 10}`;
+    return this.cacheDecorator.wrap(
+      cacheKey,
+      () => this.repository.getAllFrequentMerchants(limit),
+      { ttl: 1800 * 1000 } // 30分钟缓存（商户数据更新较频繁）
+    );
   }
 
   async updateSortOrder(items: { id: string; sort_order: number }[]): Promise<void> {

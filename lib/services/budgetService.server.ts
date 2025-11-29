@@ -1,10 +1,26 @@
 /**
  * 预算服务 - 服务端版本
  * 使用 Prisma 替代 Supabase，用于 API 路由和 Server Components
+ * 带缓存支持，减少数据库查询
  */
 
 import { prisma } from '@/lib/clients/db/prisma';
 import { getBudgetRepository, getTransactionRepository, getCategoryRepository } from '@/lib/infrastructure/repositories/index.server';
+import { CacheDecorator, memoryCache } from '@/lib/infrastructure/cache';
+
+// 创建缓存装饰器实例
+const cacheDecorator = new CacheDecorator(memoryCache, {
+  ttl: 60 * 1000, // 60秒缓存（预算数据变化较频繁）
+  tags: ['budgets'],
+  debug: false,
+});
+
+/**
+ * 失效预算缓存
+ */
+function invalidateBudgetCache(): void {
+  cacheDecorator.invalidateByTag('budgets');
+}
 
 /**
  * 预算定义
@@ -127,6 +143,7 @@ export async function setBudget(params: {
         updated_at: new Date(),
       },
     });
+    invalidateBudgetCache();
     return updated.id;
   } else {
     // 创建新预算
@@ -140,14 +157,26 @@ export async function setBudget(params: {
         is_active: true,
       },
     });
+    invalidateBudgetCache();
     return created.id;
   }
 }
 
 /**
- * 获取本月预算执行情况
+ * 获取本月预算执行情况（带缓存）
  */
 export async function getMonthlyBudgetStatus(
+  year: number,
+  month: number
+): Promise<BudgetStatus[]> {
+  const cacheKey = `budgets:status:${year}-${month}`;
+  return cacheDecorator.wrap(cacheKey, () => getMonthlyBudgetStatusInternal(year, month));
+}
+
+/**
+ * 获取本月预算执行情况（内部实现）
+ */
+async function getMonthlyBudgetStatusInternal(
   year: number,
   month: number
 ): Promise<BudgetStatus[]> {
@@ -334,6 +363,7 @@ export async function deleteBudget(id: string): Promise<boolean> {
     await prisma.budgets.delete({
       where: { id },
     });
+    invalidateBudgetCache();
     return true;
   } catch (error) {
     console.error('删除预算失败:', error);
