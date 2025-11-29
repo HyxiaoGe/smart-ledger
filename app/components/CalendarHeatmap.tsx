@@ -92,92 +92,95 @@ export function CalendarHeatmap({
   const monthName = `${year}年${month}月`;
 
   return (
-    <Card className="max-w-sm">
-      <CardHeader className="pb-1 pt-3 px-3">
+    <Card>
+      <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm text-muted-foreground">
+          <CardTitle className="text-base text-muted-foreground">
             {monthName} 消费日历
           </CardTitle>
           {/* 图例 */}
-          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <span>少</span>
             {HEAT_COLORS.map((color, i) => (
               <div
                 key={i}
-                className={`w-2 h-2 rounded-sm ${color}`}
+                className={`w-3 h-3 rounded-sm ${color}`}
               />
             ))}
             <span>多</span>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="px-3 pb-3 pt-1">
-        {/* 星期标题 */}
-        <div className="grid grid-cols-7 gap-0.5 mb-1">
-          {WEEKDAY_LABELS.map((label) => (
-            <div
-              key={label}
-              className="text-center text-[10px] text-muted-foreground font-medium"
-            >
-              {label}
-            </div>
-          ))}
-        </div>
-
-        {/* 日历网格 */}
-        <div className="grid grid-cols-7 gap-0.5">
-          {calendarDays.map((item, index) => {
-            if (item.day === null) {
-              return <div key={`empty-${index}`} className="w-8 h-8" />;
-            }
-
-            const dayData = item.date ? dayMap.get(item.date) : null;
-            const amount = dayData?.amount || 0;
-            const count = dayData?.count || 0;
-            const heatLevel = getHeatLevel(amount, maxAmount);
-            const colorClass = HEAT_COLORS[heatLevel];
-
-            const isToday =
-              item.date === new Date().toISOString().slice(0, 10);
-            const isHovered = hoveredDay === item.date;
-
-            return (
-              <div key={item.date} className="relative">
-                <button
-                  className={`
-                    w-8 h-8 rounded-sm flex items-center justify-center
-                    text-[11px] font-medium transition-all
-                    ${colorClass}
-                    ${isToday ? 'ring-1 ring-blue-500 ring-offset-1' : ''}
-                    ${amount > 0 ? 'text-gray-700 dark:text-gray-200' : 'text-gray-400 dark:text-gray-500'}
-                    hover:ring-1 hover:ring-gray-400 hover:ring-offset-1
-                  `}
-                  onClick={() => item.date && onDayClick?.(item.date)}
-                  onMouseEnter={() => setHoveredDay(item.date)}
-                  onMouseLeave={() => setHoveredDay(null)}
-                >
-                  {item.day}
-                </button>
-
-                {/* 自定义 Tooltip */}
-                {isHovered && (
-                  <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 pointer-events-none">
-                    <div className="bg-popover text-popover-foreground rounded-md border px-2 py-1.5 text-[10px] shadow-md whitespace-nowrap">
-                      <div className="font-medium">{item.date}</div>
-                      {amount > 0 ? (
-                        <>
-                          <div>支出: {formatCurrency(amount, currency)}</div>
-                          <div>笔数: {count} 笔</div>
-                        </>
-                      ) : (
-                        <div className="text-muted-foreground">无消费记录</div>
-                      )}
-                    </div>
-                  </div>
-                )}
+      <CardContent>
+        {/* 日历容器 - 限制最大宽度并居中 */}
+        <div className="max-w-xs">
+          {/* 星期标题 */}
+          <div className="grid grid-cols-7 gap-1 mb-1">
+            {WEEKDAY_LABELS.map((label) => (
+              <div
+                key={label}
+                className="text-center text-[10px] text-muted-foreground font-medium"
+              >
+                {label}
               </div>
-            );
-          })}
+            ))}
+          </div>
+
+          {/* 日历网格 */}
+          <div className="grid grid-cols-7 gap-1">
+            {calendarDays.map((item, index) => {
+              if (item.day === null) {
+                return <div key={`empty-${index}`} className="w-7 h-7" />;
+              }
+
+              const dayData = item.date ? dayMap.get(item.date) : null;
+              const amount = dayData?.amount || 0;
+              const count = dayData?.count || 0;
+              const heatLevel = getHeatLevel(amount, maxAmount);
+              const colorClass = HEAT_COLORS[heatLevel];
+
+              const isToday =
+                item.date === new Date().toISOString().slice(0, 10);
+              const isHovered = hoveredDay === item.date;
+
+              return (
+                <div key={item.date} className="relative">
+                  <button
+                    className={`
+                      w-7 h-7 rounded-sm flex items-center justify-center
+                      text-[10px] font-medium transition-all
+                      ${colorClass}
+                      ${isToday ? 'ring-1 ring-blue-500 ring-offset-1' : ''}
+                      ${amount > 0 ? 'text-gray-700 dark:text-gray-200' : 'text-gray-400 dark:text-gray-500'}
+                      hover:ring-1 hover:ring-gray-400 hover:ring-offset-1
+                    `}
+                    onClick={() => item.date && onDayClick?.(item.date)}
+                    onMouseEnter={() => setHoveredDay(item.date)}
+                    onMouseLeave={() => setHoveredDay(null)}
+                  >
+                    {item.day}
+                  </button>
+
+                  {/* 自定义 Tooltip */}
+                  {isHovered && (
+                    <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 pointer-events-none">
+                      <div className="bg-popover text-popover-foreground rounded-md border px-2 py-1.5 text-[10px] shadow-md whitespace-nowrap">
+                        <div className="font-medium">{item.date}</div>
+                        {amount > 0 ? (
+                          <>
+                            <div>支出: {formatCurrency(amount, currency)}</div>
+                            <div>笔数: {count} 笔</div>
+                          </>
+                        ) : (
+                          <div className="text-muted-foreground">无消费记录</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </CardContent>
     </Card>
