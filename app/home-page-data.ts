@@ -40,6 +40,11 @@ export type PageData = {
   // Top 10 支出
   top10: any[];
 
+  // 日历热力图数据
+  calendarData: { date: string; amount: number; count: number }[];
+  calendarYear: number;
+  calendarMonth: number;
+
   // 固定支出
   recurringExpenses: RecurringExpense[];
 };
@@ -182,14 +187,20 @@ export async function loadPageData(
   startParam?: string,
   endParam?: string
 ): Promise<PageData> {
-  const [rangeData, recurringData] = await Promise.all([
+  const prisma = getPrismaClient();
+
+  const [rangeData, recurringData, calendarResult] = await Promise.all([
     loadRangeData(currency, rangeParam, startParam, endParam),
     loadRecurringExpenses(),
+    loadCalendarData(prisma, currency),
   ]);
 
   return {
     ...rangeData,
     recurringExpenses: recurringData,
+    calendarData: calendarResult.data,
+    calendarYear: calendarResult.year,
+    calendarMonth: calendarResult.month,
   };
 }
 
@@ -201,7 +212,7 @@ async function loadRangeData(
   rangeParam: string,
   startParam?: string,
   endParam?: string
-): Promise<Omit<PageData, 'recurringExpenses'>> {
+): Promise<Omit<PageData, 'recurringExpenses' | 'calendarData' | 'calendarYear' | 'calendarMonth'>> {
   // 计算当前范围
   let rStart: string;
   let rEnd: string;
@@ -385,6 +396,61 @@ function generateTop10(expenseRows: any[], currency: string) {
       currency,
       merchant: undefined,
     }));
+}
+
+/**
+ * 加载当月日历热力图数据
+ */
+async function loadCalendarData(
+  prisma: ReturnType<typeof getPrismaClient>,
+  currency: string
+): Promise<{ data: { date: string; amount: number; count: number }[]; year: number; month: number }> {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1; // 1-12
+
+  // 计算当月的开始和结束日期
+  const firstDay = new Date(year, month - 1, 1);
+  const lastDay = new Date(year, month, 0); // 当月最后一天
+  const nextMonthFirst = new Date(year, month, 1);
+
+  const rows = await prisma.transactions.findMany({
+    where: {
+      deleted_at: null,
+      currency,
+      type: 'expense',
+      date: {
+        gte: firstDay,
+        lt: nextMonthFirst,
+      },
+    },
+    select: {
+      date: true,
+      amount: true,
+    },
+  });
+
+  // 按日期聚合
+  const dailyMap = new Map<string, { amount: number; count: number }>();
+
+  for (const row of rows) {
+    const date = row.date instanceof Date ? row.date : new Date(row.date);
+    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    const existing = dailyMap.get(dateStr) || { amount: 0, count: 0 };
+    dailyMap.set(dateStr, {
+      amount: existing.amount + Number(row.amount || 0),
+      count: existing.count + 1,
+    });
+  }
+
+  // 转换为数组格式
+  const data = Array.from(dailyMap.entries()).map(([date, { amount, count }]) => ({
+    date,
+    amount,
+    count,
+  }));
+
+  return { data, year, month };
 }
 
 async function loadRecurringExpenses(): Promise<RecurringExpense[]> {
