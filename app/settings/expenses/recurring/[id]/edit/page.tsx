@@ -3,11 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { DateInput } from '@/components/features/input/DateInput';
 import { BackNavigation } from '@/components/layout/BackNavigation';
+import { recurringExpensesApi, type RecurringExpense } from '@/lib/api/services/recurring-expenses';
+import { ApiError } from '@/lib/api/client';
 import {
   Edit3,
   Calendar,
@@ -19,34 +22,24 @@ import {
   History
 } from 'lucide-react';
 
-interface RecurringExpense {
-  id: string;
-  name: string;
-  amount: number;
-  category: string;
-  frequency: 'daily' | 'weekly' | 'monthly';
-  frequency_config: Record<string, any>;
-  start_date: string;
-  end_date?: string;
-  is_active: boolean;
-  last_generated?: string;
-  next_generate?: string;
-}
-
 export default function EditRecurringExpensePage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
 
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
-  const [notFound, setNotFound] = useState(false);
   const [activeDateInput, setActiveDateInput] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    amount: string;
+    category: string;
+    frequency: string;
+    frequency_config: { day_of_month?: number; days_of_week?: number[] };
+    start_date: Date | null;
+    end_date: Date | null;
+  }>({
     name: '',
     amount: '',
     category: '',
@@ -76,43 +69,46 @@ export default function EditRecurringExpensePage() {
   ];
 
   // 获取固定支出详情
+  const { data: expenseData, isLoading: loading, error: fetchError } = useQuery({
+    queryKey: ['recurring-expense', id],
+    queryFn: () => recurringExpensesApi.get(id),
+    enabled: !!id,
+  });
+
+  // 当数据加载完成后填充表单
   useEffect(() => {
-    if (id) {
-      fetchExpense();
-    }
-  }, [id]);
-
-  const fetchExpense = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/recurring-expenses/${id}`);
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          setNotFound(true);
-        } else {
-          throw new Error('获取固定支出详情失败');
-        }
-        return;
-      }
-
-      const data: RecurringExpense = await response.json();
+    if (expenseData) {
       setFormData({
-        name: data.name,
-        amount: data.amount.toString(),
-        category: data.category,
-        frequency: data.frequency,
-        frequency_config: data.frequency_config,
-        start_date: data.start_date ? new Date(data.start_date) : null,
-        end_date: data.end_date ? new Date(data.end_date) : null
+        name: expenseData.name,
+        amount: expenseData.amount.toString(),
+        category: expenseData.category,
+        frequency: expenseData.frequency,
+        frequency_config: expenseData.frequency_config || { day_of_month: 1 },
+        start_date: expenseData.start_date ? new Date(expenseData.start_date) : null,
+        end_date: expenseData.end_date ? new Date(expenseData.end_date) : null
       });
-    } catch (error) {
-      console.error('获取固定支出详情失败:', error);
-      setError('获取固定支出详情失败');
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [expenseData]);
+
+  // 更新 mutation
+  const updateMutation = useMutation({
+    mutationFn: (data: Parameters<typeof recurringExpensesApi.update>[1]) =>
+      recurringExpensesApi.update(id, data),
+    onSuccess: () => {
+      setToastMessage('固定支出更新成功！');
+      setShowToast(true);
+      setTimeout(() => {
+        router.push('/settings/expenses/recurring');
+      }, 2000);
+    },
+    onError: (error: ApiError) => {
+      setToastMessage(error.message || '更新固定支出失败');
+      setShowToast(true);
+    },
+  });
+
+  const notFound = fetchError instanceof ApiError && fetchError.status === 404;
+  const error = fetchError && !notFound ? (fetchError as ApiError).message || '获取固定支出详情失败' : null;
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -138,7 +134,7 @@ export default function EditRecurringExpensePage() {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     // 验证表单
@@ -155,44 +151,15 @@ export default function EditRecurringExpensePage() {
       return;
     }
 
-    try {
-      setSaving(true);
-
-      const payload = {
-        name: formData.name,
-        amount: amount,
-        category: formData.category,
-        frequency: formData.frequency,
-        frequency_config: formData.frequency_config,
-        start_date: formData.start_date ? formData.start_date.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-        end_date: formData.end_date ? formData.end_date.toISOString().split('T')[0] : null,
-      };
-
-      const response = await fetch(`/api/recurring-expenses/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || '更新失败');
-      }
-
-      setToastMessage('固定支出更新成功！');
-      setShowToast(true);
-      setTimeout(() => {
-        router.push('/settings/expenses/recurring');
-      }, 2000);
-    } catch (error) {
-      console.error('更新固定支出失败:', error);
-      setToastMessage(error instanceof Error ? error.message : '更新固定支出失败');
-      setShowToast(true);
-    } finally {
-      setSaving(false);
-    }
+    updateMutation.mutate({
+      name: formData.name,
+      amount: amount,
+      category: formData.category,
+      frequency: formData.frequency as 'daily' | 'weekly' | 'monthly' | 'yearly',
+      frequency_config: formData.frequency_config,
+      start_date: formData.start_date ? formData.start_date.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      end_date: formData.end_date ? formData.end_date.toISOString().split('T')[0] : null,
+    });
   };
 
   if (loading) {
@@ -249,7 +216,9 @@ export default function EditRecurringExpensePage() {
           </div>
           <div className="text-center py-12">
             <div className="text-red-500 mb-4">{error}</div>
-            <Button onClick={fetchExpense}>重试</Button>
+            <Link href="/settings/expenses/recurring">
+              <Button>返回列表</Button>
+            </Link>
           </div>
         </div>
       </div>
@@ -543,15 +512,15 @@ export default function EditRecurringExpensePage() {
                 <Button
                   type="submit"
                   className="flex-1 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white py-3 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
-                  disabled={saving}
+                  disabled={updateMutation.isPending}
                 >
                   <div className="flex items-center justify-center gap-2">
-                    {saving ? (
+                    {updateMutation.isPending ? (
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     ) : (
                       <Edit3 className="h-5 w-5" />
                     )}
-                    <span>{saving ? '保存中...' : '保存修改'}</span>
+                    <span>{updateMutation.isPending ? '保存中...' : '保存修改'}</span>
                   </div>
                 </Button>
                 <Link href="/settings/expenses/recurring">

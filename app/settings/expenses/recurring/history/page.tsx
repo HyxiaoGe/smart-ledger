@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { PageSkeleton } from '@/components/shared/PageSkeleton';
-// 使用 API 获取生成历史
+import { recurringExpensesApi, type RecurringGenerationHistory } from '@/lib/api/services/recurring-expenses';
 import {
   ChevronLeft,
   History,
@@ -41,56 +41,47 @@ interface GenerationLog {
 type FilterStatus = 'all' | 'success' | 'failed' | 'skipped';
 
 export default function RecurringHistoryPage() {
-  const [logs, setLogs] = useState<GenerationLog[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
 
-  useEffect(() => {
-    fetchHistory();
-  }, []);
-
-  const fetchHistory = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/recurring/history?limit=50');
-      if (!response.ok) {
-        throw new Error('获取生成历史失败');
-      }
-      const data = await response.json();
-      // 转换数据格式以匹配 GenerationLog 接口
-      const formattedLogs = data.map((item: any) => ({
-        id: item.id,
-        recurring_expense_id: item.recurring_expense_id,
-        transaction_id: item.generated_transaction_id,
-        status: item.status || 'skipped',
-        message: item.reason || '',
-        created_at: item.created_at,
-        recurring_expense: item.recurring_expense,
-        transaction: item.transaction,
-      }));
-      setLogs(formattedLogs);
-    } catch (error) {
-      console.error('获取生成历史失败:', error);
-      setError('获取生成历史失败');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 筛选日志
-  const filteredLogs = logs.filter(log => {
-    if (filterStatus === 'all') return true;
-    return log.status === filterStatus;
+  // 获取生成历史
+  const { data: historyData, isLoading: loading, error: fetchError, refetch } = useQuery({
+    queryKey: ['recurring-history'],
+    queryFn: () => recurringExpensesApi.getHistory(50),
   });
 
+  // 转换数据格式以匹配 GenerationLog 接口
+  const logs = useMemo(() => {
+    if (!historyData) return [];
+    return historyData.map((item) => ({
+      id: item.id,
+      recurring_expense_id: item.recurring_expense_id,
+      transaction_id: item.generated_transaction_id || null,
+      status: (item.status || 'skipped') as 'success' | 'failed' | 'skipped',
+      message: item.reason || '',
+      created_at: item.created_at,
+      recurring_expense: item.recurring_expense,
+      transaction: item.transaction,
+    }));
+  }, [historyData]);
+
+  const error = fetchError ? '获取生成历史失败' : null;
+
+  // 筛选日志
+  const filteredLogs = useMemo(() =>
+    logs.filter(log => {
+      if (filterStatus === 'all') return true;
+      return log.status === filterStatus;
+    }),
+    [logs, filterStatus]
+  );
+
   // 统计数据
-  const stats = {
+  const stats = useMemo(() => ({
     total: logs.length,
     success: logs.filter(l => l.status === 'success').length,
     failed: logs.filter(l => l.status === 'failed').length,
     skipped: logs.filter(l => l.status === 'skipped').length,
-  };
+  }), [logs]);
 
   // 状态样式
   const getStatusStyle = (status: string) => {
@@ -162,7 +153,7 @@ export default function RecurringHistoryPage() {
           </div>
           <div className="text-center py-12">
             <div className="text-red-500 mb-4">{error}</div>
-            <Button onClick={fetchHistory}>重试</Button>
+            <Button onClick={() => refetch()}>重试</Button>
           </div>
         </div>
       </div>

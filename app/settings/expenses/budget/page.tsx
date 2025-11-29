@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useQuery, useQueries } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { PageSkeleton } from '@/components/shared/PageSkeleton';
 import {
@@ -12,51 +12,9 @@ import {
   formatMonth,
   getProgressBarColor,
 } from '@/lib/services/budgetService.server';
-
-// 类型定义 (从 budgetService.server.ts 复用)
-interface TotalBudgetSummary {
-  total_budget: number;
-  total_spent: number;
-  total_remaining: number;
-  usage_percentage: number;
-  category_budgets_count: number;
-  over_budget_count: number;
-  near_limit_count: number;
-}
-
-interface BudgetPrediction {
-  current_spending: number;
-  daily_rate: number;
-  predicted_total: number;
-  days_passed: number;
-  days_remaining: number;
-  will_exceed_budget: boolean;
-  predicted_overage?: number;
-}
-
-interface BudgetSuggestion {
-  categoryKey: string;
-  suggestedAmount: number;
-  confidenceLevel: string;
-  reason: string;
-  historicalAvg: number;
-  historicalMonths: number;
-  currentMonthSpending: number;
-  currentDailyRate: number;
-  predictedMonthTotal: number;
-  trendDirection: string;
-  daysIntoMonth: number;
-  calculatedAt: string;
-}
+import { budgetsApi, type BudgetSuggestion, type TotalBudgetSummary, type BudgetPrediction } from '@/lib/api/services/budgets';
+import { categoriesApi } from '@/lib/api/services/categories';
 import type { Category } from '@/types/dto/category.dto';
-
-// API 调用函数
-async function fetchCategoriesWithStats(): Promise<Category[]> {
-  const response = await fetch('/api/categories');
-  if (!response.ok) throw new Error('获取分类失败');
-  const { data } = await response.json();
-  return data;
-}
 import {
   ChevronLeft,
   TrendingUp,
@@ -71,71 +29,68 @@ import {
 
 export default function BudgetPage() {
   const { year, month } = getCurrentYearMonth();
-  const [summary, setSummary] = useState<TotalBudgetSummary | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
-  const [suggestions, setSuggestions] = useState<any[]>([]);
-  const [predictions, setPredictions] = useState<Map<string, BudgetPrediction>>(new Map());
   const [isSuggestionsExpanded, setIsSuggestionsExpanded] = useState(true);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  // 获取预算汇总
+  const { data: summary, isLoading: summaryLoading, error: summaryError } = useQuery({
+    queryKey: ['budget-summary', year, month],
+    queryFn: () => budgetsApi.getSummary({ year, month, currency: 'CNY' }),
+  });
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
+  // 获取分类列表
+  const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => categoriesApi.list(),
+  });
 
-      // 使用 API 路由获取数据
-      const [summaryRes, categoriesData, suggestionsRes] = await Promise.all([
-        fetch(`/api/budgets/summary?year=${year}&month=${month}&currency=CNY`).then(r => r.json()),
-        fetchCategoriesWithStats(),
-        fetch(`/api/budgets/suggestions?year=${year}&month=${month}`).then(r => r.json()),
-      ]);
+  // 获取预算建议
+  const { data: suggestions = [], isLoading: suggestionsLoading } = useQuery({
+    queryKey: ['budget-suggestions', year, month],
+    queryFn: () => budgetsApi.getSuggestions({ year, month }),
+  });
 
-      setSummary(summaryRes);
-      setCategories(categoriesData.filter(c => c.is_active));
-      setSuggestions(suggestionsRes);
+  // 批量获取预测数据
+  const predictionQueries = useQueries({
+    queries: suggestions.map((suggestion) => ({
+      queryKey: ['budget-prediction', suggestion.categoryKey, year, month, suggestion.suggestedAmount],
+      queryFn: () => budgetsApi.predict({
+        categoryKey: suggestion.categoryKey,
+        year,
+        month,
+        budgetAmount: suggestion.suggestedAmount,
+        currency: 'CNY',
+      }),
+      enabled: !!suggestion.categoryKey,
+    })),
+  });
 
-      // 获取每个分类建议的月底预测
-      const predictionMap = new Map<string, BudgetPrediction>();
+  // 构建预测数据 Map
+  const predictions = useMemo(() => {
+    const map = new Map<string, BudgetPrediction>();
+    suggestions.forEach((suggestion, index) => {
+      const query = predictionQueries[index];
+      if (query?.data) {
+        map.set(suggestion.categoryKey, query.data);
+      }
+    });
+    return map;
+  }, [suggestions, predictionQueries]);
 
-      await Promise.all(
-        suggestionsRes.map(async (suggestion: BudgetSuggestion) => {
-          if (suggestion.categoryKey) {
-            const predictionRes = await fetch('/api/budgets/predict', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                categoryKey: suggestion.categoryKey,
-                year,
-                month,
-                budgetAmount: suggestion.suggestedAmount,
-                currency: 'CNY'
-              })
-            });
+  // 过滤活跃分类
+  const categories = useMemo(() =>
+    (categoriesData || []).filter(c => c.is_active) as Category[],
+    [categoriesData]
+  );
 
-            if (predictionRes.ok) {
-              const prediction = await predictionRes.json();
-              predictionMap.set(suggestion.categoryKey, prediction);
-            }
-          }
-        })
-      );
+  // 显示错误提示
+  if (summaryError && !showToast) {
+    setToastMessage('❌ 获取数据失败');
+    setShowToast(true);
+  }
 
-      setPredictions(predictionMap);
-    } catch (error) {
-      console.error('获取预算数据失败:', error);
-      setToastMessage('❌ 获取数据失败');
-      setShowToast(true);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  
+  const loading = summaryLoading || categoriesLoading || suggestionsLoading;
   const totalBudget = summary?.total_budget || 0;
   const totalSpent = summary?.total_spent || 0;
   const totalRemaining = summary?.total_remaining || 0;

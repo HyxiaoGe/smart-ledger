@@ -5,6 +5,14 @@
 import { apiClient } from '../client';
 
 /**
+ * 频率配置
+ */
+export interface FrequencyConfig {
+  day_of_month?: number;
+  days_of_week?: number[];
+}
+
+/**
  * 定期支出
  */
 export interface RecurringExpense {
@@ -13,6 +21,7 @@ export interface RecurringExpense {
   category: string;
   amount: number;
   frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  frequency_config?: FrequencyConfig;
   day_of_week?: number;
   day_of_month?: number;
   month_of_year?: number;
@@ -20,7 +29,9 @@ export interface RecurringExpense {
   end_date?: string;
   note?: string;
   is_active: boolean;
+  last_generated?: string;
   last_generated_at?: string;
+  next_generate?: string;
   created_at: string;
   updated_at: string;
 }
@@ -33,12 +44,14 @@ export interface CreateRecurringExpenseParams {
   category: string;
   amount: number;
   frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  frequency_config?: Record<string, unknown>;
   day_of_week?: number;
   day_of_month?: number;
   month_of_year?: number;
   start_date: string;
-  end_date?: string;
+  end_date?: string | null;
   note?: string;
+  is_active?: boolean;
 }
 
 /**
@@ -54,9 +67,21 @@ export interface UpdateRecurringExpenseParams extends Partial<CreateRecurringExp
 export interface RecurringGenerationHistory {
   id: string;
   recurring_expense_id: string;
-  generated_at: string;
-  transaction_id: string;
-  amount: number;
+  generated_transaction_id?: string | null;
+  status?: 'success' | 'failed' | 'skipped';
+  reason?: string;
+  created_at: string;
+  recurring_expense?: {
+    name: string;
+    amount: number;
+    category: string;
+  };
+  transaction?: {
+    id: string;
+    amount: number;
+    note: string;
+    date: string;
+  };
 }
 
 /**
@@ -108,7 +133,8 @@ export const recurringExpensesApi = {
   /**
    * 获取生成历史
    */
-  getHistory(): Promise<RecurringGenerationHistory[]> {
-    return apiClient.get<RecurringGenerationHistory[]>('/api/recurring/history');
+  getHistory(limit?: number): Promise<RecurringGenerationHistory[]> {
+    const query = limit ? `?limit=${limit}` : '';
+    return apiClient.get<RecurringGenerationHistory[]>(`/api/recurring/history${query}`);
   },
 };

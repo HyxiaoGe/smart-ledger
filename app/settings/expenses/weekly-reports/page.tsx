@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
+import { weeklyReportsApi, type WeeklyReport } from '@/lib/api/services/weekly-reports';
 import {
   ChevronLeft,
   TrendingDown,
@@ -17,70 +19,6 @@ import {
   Loader2,
   BarChart3
 } from 'lucide-react';
-// 周报告类型定义
-interface CategoryStat {
-  category: string;
-  amount: number;
-  count: number;
-  percentage: number;
-}
-
-interface MerchantStat {
-  merchant: string;
-  amount: number;
-  count: number;
-}
-
-interface PaymentMethodStat {
-  method: string;
-  amount: number;
-  count: number;
-  percentage: number;
-}
-
-interface WeeklyReport {
-  id: string;
-  user_id: string | null;
-  week_start_date: string;
-  week_end_date: string;
-  total_expenses: number;
-  transaction_count: number;
-  average_transaction: number | null;
-  category_breakdown: CategoryStat[];
-  top_merchants: MerchantStat[];
-  payment_method_stats: PaymentMethodStat[];
-  week_over_week_change: number | null;
-  week_over_week_percentage: number;
-  ai_insights: string | null;
-  generated_at: string;
-  generation_type: 'auto' | 'manual';
-}
-
-// API 调用函数
-async function fetchAllWeeklyReports(): Promise<WeeklyReport[]> {
-  const response = await fetch('/api/weekly-reports');
-  if (!response.ok) throw new Error('获取周报告列表失败');
-  const { data } = await response.json();
-  return data || [];
-}
-
-async function fetchLatestWeeklyReport(): Promise<WeeklyReport | null> {
-  const response = await fetch('/api/weekly-reports/latest');
-  if (!response.ok) throw new Error('获取最新周报告失败');
-  const { data } = await response.json();
-  return data;
-}
-
-async function generateWeeklyReportApi(): Promise<{ success: boolean; message: string }> {
-  const response = await fetch('/api/weekly-reports/generate', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({}),
-  });
-  if (!response.ok) throw new Error('生成周报告失败');
-  const { data } = await response.json();
-  return data;
-}
 
 // 工具函数
 function formatWeekRange(startDate: string, endDate: string): string {
@@ -136,27 +74,49 @@ import {
 type FilterType = 'all' | 'thisWeek' | 'thisMonth' | 'lastMonth';
 
 export default function WeeklyReportsPage() {
-  const [reports, setReports] = useState<WeeklyReport[]>([]);
-  const [filteredReports, setFilteredReports] = useState<WeeklyReport[]>([]);
-  const [latestReport, setLatestReport] = useState<WeeklyReport | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [generating, setGenerating] = useState(false);
   const [filter, setFilter] = useState<FilterType>('all');
   const { showToast } = useToast();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    loadReports();
-  }, []);
+  // 获取所有周报告
+  const { data: reports = [], isLoading: reportsLoading } = useQuery({
+    queryKey: ['weekly-reports'],
+    queryFn: () => weeklyReportsApi.list(),
+  });
 
-  useEffect(() => {
-    // 根据筛选条件过滤报告
+  // 获取最新周报告
+  const { data: latestReport, isLoading: latestLoading } = useQuery({
+    queryKey: ['weekly-reports', 'latest'],
+    queryFn: () => weeklyReportsApi.getLatest(),
+  });
+
+  // 生成周报告 mutation
+  const generateMutation = useMutation({
+    mutationFn: () => weeklyReportsApi.generate(),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['weekly-reports'] });
+      if (result.success) {
+        showToast('报告生成成功！', 'success');
+      } else {
+        showToast(result.message, 'info');
+      }
+    },
+    onError: () => {
+      showToast('生成报告失败，请稍后重试', 'error');
+    },
+  });
+
+  const loading = reportsLoading || latestLoading;
+  const generating = generateMutation.isPending;
+
+  // 根据筛选条件过滤报告
+  const filteredReports = useMemo(() => {
     if (filter === 'all') {
-      setFilteredReports(reports);
-      return;
+      return reports;
     }
 
     const now = new Date();
-    const filtered = reports.filter(report => {
+    return reports.filter(report => {
       const reportDate = new Date(report.week_start_date);
 
       switch (filter) {
@@ -178,44 +138,10 @@ export default function WeeklyReportsPage() {
           return true;
       }
     });
-
-    setFilteredReports(filtered);
   }, [filter, reports]);
 
-  async function loadReports() {
-    try {
-      setLoading(true);
-      const [allReports, latest] = await Promise.all([
-        fetchAllWeeklyReports(),
-        fetchLatestWeeklyReport()
-      ]);
-      setReports(allReports);
-      setLatestReport(latest);
-    } catch (error) {
-      console.error('Error loading reports:', error);
-      showToast('加载报告失败，请刷新重试', 'error');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleGenerateReport() {
-    try {
-      setGenerating(true);
-      const result = await generateWeeklyReportApi();
-      await loadReports();
-
-      if (result.success) {
-        showToast('报告生成成功！', 'success');
-      } else {
-        showToast(result.message, 'info');
-      }
-    } catch (error) {
-      console.error('Error generating report:', error);
-      showToast('生成报告失败，请稍后重试', 'error');
-    } finally {
-      setGenerating(false);
-    }
+  function handleGenerateReport() {
+    generateMutation.mutate();
   }
 
   return (

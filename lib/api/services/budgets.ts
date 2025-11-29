@@ -5,11 +5,12 @@
 import { apiClient, buildQueryString } from '../client';
 
 /**
- * 预算状态查询参数
+ * 预算查询参数
  */
-export interface BudgetStatusParams {
+export interface BudgetQueryParams {
   year?: number;
   month?: number;
+  currency?: string;
 }
 
 /**
@@ -25,24 +26,58 @@ export interface BudgetStatus {
 }
 
 /**
- * 预算汇总
+ * 预算汇总 (API 返回格式)
  */
-export interface BudgetSummary {
-  totalBudget: number;
-  totalSpent: number;
-  totalRemaining: number;
-  overallPercentage: number;
-  categoryBreakdown: BudgetStatus[];
+export interface TotalBudgetSummary {
+  total_budget: number;
+  total_spent: number;
+  total_remaining: number;
+  usage_percentage: number;
+  category_budgets_count: number;
+  over_budget_count: number;
+  near_limit_count: number;
 }
 
 /**
  * 预算建议
  */
 export interface BudgetSuggestion {
-  category: string;
+  categoryKey: string;
   suggestedAmount: number;
+  confidenceLevel: string;
   reason: string;
-  basedOn: string;
+  historicalAvg: number;
+  historicalMonths: number;
+  currentMonthSpending: number;
+  currentDailyRate: number;
+  predictedMonthTotal: number;
+  trendDirection: string;
+  daysIntoMonth: number;
+  calculatedAt: string;
+}
+
+/**
+ * 预算预测参数
+ */
+export interface BudgetPredictParams {
+  categoryKey: string;
+  year: number;
+  month: number;
+  budgetAmount: number;
+  currency?: string;
+}
+
+/**
+ * 预算预测结果
+ */
+export interface BudgetPrediction {
+  current_spending: number;
+  daily_rate: number;
+  predicted_total: number;
+  days_passed: number;
+  days_remaining: number;
+  will_exceed_budget: boolean;
+  predicted_overage?: number;
 }
 
 /**
@@ -52,7 +87,7 @@ export const budgetsApi = {
   /**
    * 获取预算执行状态
    */
-  getStatus(params?: BudgetStatusParams): Promise<BudgetStatus[]> {
+  getStatus(params?: BudgetQueryParams): Promise<BudgetStatus[]> {
     const query = buildQueryString(params || {});
     return apiClient.get<BudgetStatus[]>(`/api/budgets/status${query}`);
   },
@@ -60,22 +95,23 @@ export const budgetsApi = {
   /**
    * 获取预算汇总
    */
-  getSummary(params?: BudgetStatusParams): Promise<BudgetSummary> {
+  getSummary(params?: BudgetQueryParams): Promise<TotalBudgetSummary> {
     const query = buildQueryString(params || {});
-    return apiClient.post<BudgetSummary>(`/api/budgets/summary${query}`);
+    return apiClient.get<TotalBudgetSummary>(`/api/budgets/summary${query}`);
   },
 
   /**
    * 获取预算建议
    */
-  getSuggestions(): Promise<BudgetSuggestion[]> {
-    return apiClient.get<BudgetSuggestion[]>('/api/budgets/suggestions');
+  getSuggestions(params?: { year?: number; month?: number }): Promise<BudgetSuggestion[]> {
+    const query = buildQueryString(params || {});
+    return apiClient.get<BudgetSuggestion[]>(`/api/budgets/suggestions${query}`);
   },
 
   /**
-   * 预测预算
+   * 预测分类预算
    */
-  predict(): Promise<unknown> {
-    return apiClient.get('/api/budgets/predict');
+  predict(params: BudgetPredictParams): Promise<BudgetPrediction> {
+    return apiClient.post<BudgetPrediction>('/api/budgets/predict', params);
   },
 };

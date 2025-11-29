@@ -5,18 +5,61 @@
 import { apiClient } from '../client';
 
 /**
+ * 分类统计
+ */
+export interface CategoryStat {
+  category: string;
+  amount: number;
+  count: number;
+  percentage: number;
+}
+
+/**
+ * 商家统计
+ */
+export interface MerchantStat {
+  merchant: string;
+  amount: number;
+  count: number;
+}
+
+/**
+ * 支付方式统计
+ */
+export interface PaymentMethodStat {
+  method: string;
+  amount: number;
+  count: number;
+  percentage: number;
+}
+
+/**
  * 周报告
  */
 export interface WeeklyReport {
   id: string;
-  week_start: string;
-  week_end: string;
-  total_expense: number;
-  total_income: number;
-  category_breakdown: Record<string, number>;
-  ai_summary?: string;
-  insights?: unknown[];
-  created_at: string;
+  user_id: string | null;
+  week_start_date: string;
+  week_end_date: string;
+  total_expenses: number;
+  transaction_count: number;
+  average_transaction: number | null;
+  category_breakdown: CategoryStat[];
+  top_merchants: MerchantStat[];
+  payment_method_stats: PaymentMethodStat[];
+  week_over_week_change: number | null;
+  week_over_week_percentage: number;
+  ai_insights: string | null;
+  generated_at: string;
+  generation_type: 'auto' | 'manual';
+}
+
+/**
+ * 生成周报告结果
+ */
+export interface GenerateReportResult {
+  success: boolean;
+  message: string;
 }
 
 /**
@@ -47,7 +90,7 @@ export const weeklyReportsApi = {
   /**
    * 生成周报告
    */
-  generate(): Promise<WeeklyReport> {
-    return apiClient.post<WeeklyReport>('/api/weekly-reports/generate');
+  generate(): Promise<GenerateReportResult> {
+    return apiClient.post<GenerateReportResult>('/api/weekly-reports/generate');
   },
 };
