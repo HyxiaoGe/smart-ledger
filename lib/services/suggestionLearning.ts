@@ -1,4 +1,4 @@
-import { fetchJson } from '@/lib/utils/http';
+import { apiClient } from '@/lib/api/client';
 import { generateSessionId } from '@/lib/utils/helpers';
 
 export type LearningEventType = 'suggestion_selected' | 'suggestion_ignored' | 'manual_input';
@@ -142,12 +142,9 @@ class SuggestionLearningManager {
     this.pendingData = [];
 
     try {
-      await fetchJson('/api/smart-suggestions/learning', {
-        method: 'POST',
-        body: JSON.stringify({
-          session_id: this.sessionId,
-          learning_data: dataToSend
-        })
+      await apiClient.post('/api/smart-suggestions/learning', {
+        session_id: this.sessionId,
+        learning_data: dataToSend
       });
     } catch (error) {
       console.error('学习数据发送失败:', error);
