@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { supabase } from '@/lib/clients/supabase/client';
 import { Button } from '@/components/ui/button';
 import { formatDateToLocal } from '@/lib/utils/date';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -53,27 +52,26 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
       const type = 'expense';
       const date = formatDateToLocal(new Date());
 
-      // 使用原子化的数据库函数来避免竞态条件
-      const { error: upsertError } = await supabase
-        .rpc('upsert_transaction', {
-          p_type: type,
-          p_category: suggestion.category,
-          p_amount: suggestion.amount,
-          p_note: suggestion.note,
-          p_date: date,
-          p_currency: 'CNY',
-          p_payment_method: null,
-          p_merchant: null,
-          p_subcategory: null,
-          p_product: null
-        });
+      // 使用 API 路由创建交易（API 会自动更新常用备注）
+      const response = await fetch('/api/transactions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type,
+          category: suggestion.category,
+          amount: suggestion.amount,
+          note: suggestion.note,
+          date,
+          currency: 'CNY',
+        }),
+      });
 
-      if (upsertError) {
-        throw upsertError;
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || '创建交易失败');
       }
-
-      // 更新常用备注
-      await updateCommonNote(suggestion.note, suggestion.amount, suggestion.category);
 
       // 触发同步事件
       enhancedDataSync.notifyTransactionAdded({
@@ -109,32 +107,6 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
       setLoading(false);
     }
   }, [onSuccess, fetchQuickSuggestions]);
-
-  // 更新常用备注
-  const updateCommonNote = async (noteContent: string, amount: number, category: string) => {
-    try {
-      const timeContext = generateTimeContext();
-
-      const response = await fetch('/api/common-notes', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          content: noteContent,
-          amount: amount,
-          category: category,
-          time_context: timeContext.label
-        })
-      });
-
-      if (!response.ok) {
-        console.error('更新常用备注失败');
-      }
-    } catch (error) {
-      console.error('更新常用备注失败:', error);
-    }
-  };
 
   // 获取置信度颜色
   const getConfidenceColor = (confidence: number) => {
