@@ -61,6 +61,13 @@ export interface DailySummary {
 }
 
 /**
+ * 格式化月份为字符串（避免时区问题）
+ */
+function formatMonthString(year: number, month: number): string {
+  return `${year}-${String(month).padStart(2, '0')}-01`;
+}
+
+/**
  * 获取月度汇总数据（从物化视图）
  */
 export async function getMonthlySummary(
@@ -72,7 +79,7 @@ export async function getMonthlySummary(
   const cacheKey = `mv:monthly:${year}-${month}:${currency}:${type}`;
 
   return cacheDecorator.wrap(cacheKey, async () => {
-    const monthStart = new Date(year, month - 1, 1);
+    const monthStart = formatMonthString(year, month);
 
     try {
       const result = await prisma.$queryRaw<any[]>`
@@ -89,7 +96,7 @@ export async function getMonthlySummary(
           active_days::int as "activeDays",
           merchant_count::int as "merchantCount"
         FROM mv_monthly_summary
-        WHERE month = ${monthStart}
+        WHERE month = ${monthStart}::date
           AND currency = ${currency}
           AND type = ${type}
       `;
@@ -113,7 +120,7 @@ export async function getMonthlyComparison(
   const cacheKey = `mv:monthly-compare:${JSON.stringify(months)}:${currency}:${type}`;
 
   return cacheDecorator.wrap(cacheKey, async () => {
-    const monthDates = months.map(m => new Date(m.year, m.month - 1, 1));
+    const monthStrings = months.map(m => formatMonthString(m.year, m.month));
 
     try {
       const results = await prisma.$queryRaw<any[]>`
@@ -130,7 +137,7 @@ export async function getMonthlyComparison(
           active_days::int as "activeDays",
           merchant_count::int as "merchantCount"
         FROM mv_monthly_summary
-        WHERE month = ANY(${monthDates})
+        WHERE month = ANY(${monthStrings}::date[])
           AND currency = ${currency}
           AND type = ${type}
         ORDER BY month DESC
@@ -156,7 +163,7 @@ export async function getCategoryMonthlyStat(
   const cacheKey = `mv:category:${year}-${month}:${currency}:${type}`;
 
   return cacheDecorator.wrap(cacheKey, async () => {
-    const monthStart = new Date(year, month - 1, 1);
+    const monthStart = formatMonthString(year, month);
 
     try {
       const results = await prisma.$queryRaw<any[]>`
@@ -174,7 +181,7 @@ export async function getCategoryMonthlyStat(
           merchant_count::int as "merchantCount",
           subcategories
         FROM mv_category_monthly_stats
-        WHERE month = ${monthStart}
+        WHERE month = ${monthStart}::date
           AND currency = ${currency}
           AND type = ${type}
         ORDER BY total_amount DESC
@@ -189,6 +196,16 @@ export async function getCategoryMonthlyStat(
 }
 
 /**
+ * 格式化日期为字符串（避免时区问题）
+ */
+function formatDateString(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/**
  * 获取每日汇总（从物化视图）
  */
 export async function getDailySummary(
@@ -197,8 +214,8 @@ export async function getDailySummary(
   currency: string = 'CNY',
   type: string = 'expense'
 ): Promise<DailySummary[]> {
-  const startStr = startDate.toISOString().slice(0, 10);
-  const endStr = endDate.toISOString().slice(0, 10);
+  const startStr = formatDateString(startDate);
+  const endStr = formatDateString(endDate);
   const cacheKey = `mv:daily:${startStr}:${endStr}:${currency}:${type}`;
 
   return cacheDecorator.wrap(cacheKey, async () => {
@@ -212,8 +229,8 @@ export async function getDailySummary(
           total_amount::float as "totalAmount",
           avg_amount::float as "avgAmount"
         FROM mv_daily_summary
-        WHERE date >= ${startDate}
-          AND date < ${endDate}
+        WHERE date >= ${startStr}::date
+          AND date < ${endStr}::date
           AND currency = ${currency}
           AND type = ${type}
         ORDER BY date ASC
@@ -238,8 +255,11 @@ export async function getMonthlyTrend(
   const cacheKey = `mv:trend:${year}-${month}:${currency}`;
 
   return cacheDecorator.wrap(cacheKey, async () => {
-    const monthStart = new Date(year, month - 1, 1);
-    const monthEnd = new Date(year, month, 1);
+    const monthStart = formatMonthString(year, month);
+    // 下个月的第一天
+    const nextMonth = month === 12 ? 1 : month + 1;
+    const nextYear = month === 12 ? year + 1 : year;
+    const monthEnd = formatMonthString(nextYear, nextMonth);
 
     try {
       const results = await prisma.$queryRaw<any[]>`
@@ -247,8 +267,8 @@ export async function getMonthlyTrend(
           EXTRACT(DAY FROM date)::int as day,
           total_amount::float as "totalAmount"
         FROM mv_daily_summary
-        WHERE date >= ${monthStart}
-          AND date < ${monthEnd}
+        WHERE date >= ${monthStart}::date
+          AND date < ${monthEnd}::date
           AND currency = ${currency}
           AND type = 'expense'
         ORDER BY date ASC
