@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChartSummary } from './components/ChartSummary';
+import { CalendarHeatmap } from './components/CalendarHeatmap';
 import { Card, CardContent } from '@/components/ui/card';
 import { TabsRangePicker } from '@/components/shared/TabsRangePicker';
 import { CurrencySelect } from '@/components/shared/CurrencySelect';
@@ -153,6 +154,16 @@ export default function HomePageClient({
           trend={data.trend}
           pie={data.pie}
           rangeLabel={data.rangeLabel}
+          currency={currency}
+        />
+      </section>
+
+      {/* 消费日历热力图 */}
+      <section className="space-y-2">
+        <CalendarHeatmap
+          data={data.calendarData}
+          year={data.calendarYear}
+          month={data.calendarMonth}
           currency={currency}
         />
       </section>
