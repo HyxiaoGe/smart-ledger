@@ -82,6 +82,7 @@ export class TransactionAnalyticsService {
 
   /**
    * 获取AI分析所需数据
+   * 优化：合并当月完整数据和Top20查询（原来3次查询 → 2次查询）
    */
   async getAIAnalysisData(targetMonth?: string): Promise<AIAnalysisData> {
     const today = new Date();
@@ -109,8 +110,8 @@ export class TransactionAnalyticsService {
         const currentMonthStr = this.formatMonth(currentYear, currentMonthNum);
         const lastMonthStr = this.formatMonth(lastYear, lastMonthNum);
 
-        // 并行查询所需数据
-        const [currentMonthFull, lastMonth, currentMonthTop20] = await Promise.all([
+        // 并行查询：当前月和上个月数据（优化：移除重复的Top20查询）
+        const [currentMonthResult, lastMonthResult] = await Promise.all([
           // 当前月完整数据
           this.repository.findMany(
             {
@@ -129,24 +130,20 @@ export class TransactionAnalyticsService {
               endDate: `${currentMonthStr}-01`
             },
             { field: 'date', order: 'desc' }
-          ),
-
-          // 当前月高金额数据
-          this.repository.findMany(
-            {
-              type: 'expense',
-              startDate: `${currentMonthStr}-01`,
-              endDate: this.getMonthEnd(currentYear, currentMonthNum)
-            },
-            { field: 'amount', order: 'desc' },
-            { page: 1, pageSize: 20 }
           )
         ]);
 
+        const currentMonthFull = currentMonthResult.data;
+
+        // 在应用层按金额排序取Top20（避免重复查询）
+        const currentMonthTop20 = [...currentMonthFull]
+          .sort((a, b) => Number(b.amount) - Number(a.amount))
+          .slice(0, 20);
+
         return {
-          currentMonthFull: currentMonthFull.data,
-          lastMonth: lastMonth.data,
-          currentMonthTop20: currentMonthTop20.data,
+          currentMonthFull,
+          lastMonth: lastMonthResult.data,
+          currentMonthTop20,
           currentMonthStr,
           lastMonthStr
         };
@@ -157,6 +154,7 @@ export class TransactionAnalyticsService {
 
   /**
    * 获取预测数据
+   * 优化：单次查询所有月份数据，应用层按月分组
    */
   async getPredictionData(monthsToAnalyze: number = 6): Promise<PredictionData> {
     const currentDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
@@ -167,30 +165,42 @@ export class TransactionAnalyticsService {
     return this.cacheDecorator.wrap(
       cacheKey,
       async () => {
-        // 生成要分析的月份数组
-        const monthsData: MonthlyData[] = [];
+        // 计算日期范围：从 N 个月前到当前月末
+        const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - monthsToAnalyze + 1, 1);
+        const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
 
+        const startStr = startDate.toISOString().slice(0, 10);
+        const endStr = endDate.toISOString().slice(0, 10);
+
+        // 单次查询所有月份数据（优化前：6次查询 → 优化后：1次查询）
+        const allTransactions = await this.repository.findByDateRange(startStr, endStr, 'expense');
+
+        // 按月份分组
+        const monthsMap = new Map<string, any[]>();
         for (let i = 0; i < monthsToAnalyze; i++) {
           const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
-          const year = date.getFullYear();
-          const month = date.getMonth() + 1;
-          const monthStr = this.formatMonth(year, month);
-
-          const start = `${monthStr}-01`;
-          const end = this.getMonthEnd(year, month);
-
-          const transactions = await this.repository.findByDateRange(start, end, 'expense');
-
-          monthsData.push({
-            month: monthStr,
-            transactions,
-            totalAmount: transactions.reduce((sum, t) => sum + t.amount, 0),
-            transactionCount: transactions.length
-          });
+          const monthStr = this.formatMonth(date.getFullYear(), date.getMonth() + 1);
+          monthsMap.set(monthStr, []);
         }
 
-        // 分析整体趋势和模式
-        const allTransactions = monthsData.flatMap((m) => m.transactions);
+        // 将交易分配到对应月份
+        allTransactions.forEach((t) => {
+          const monthStr = t.date.slice(0, 7);
+          if (monthsMap.has(monthStr)) {
+            monthsMap.get(monthStr)!.push(t);
+          }
+        });
+
+        // 构建月度数据
+        const monthsData: MonthlyData[] = Array.from(monthsMap.entries()).map(([month, transactions]) => ({
+          month,
+          transactions,
+          totalAmount: transactions.reduce((sum, t) => sum + t.amount, 0),
+          transactionCount: transactions.length
+        }));
+
+        // 按月份倒序排列（最近的在前）
+        monthsData.sort((a, b) => b.month.localeCompare(a.month));
 
         // 按类别聚合数据
         const categoryAnalysis = this.analyzeCategoryData(allTransactions, monthsData);

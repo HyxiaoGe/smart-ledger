@@ -60,10 +60,11 @@ export async function loadPageData(
   endParam?: string
 ): Promise<PageData> {
   const baseDate = parseMonthStr(monthLabel) || new Date();
-  const [monthData, rangeData, topData, recurringData] = await Promise.all([
+
+  // 优化：合并 rangeData 和 topData 查询（原来4次查询 → 3次查询）
+  const [monthData, rangeAndTopData, recurringData] = await Promise.all([
     loadMonthData(currency, baseDate),
-    loadRangeData(currency, rangeParam, monthLabel, startParam, endParam),
-    loadTopData(currency, rangeParam, monthLabel, startParam, endParam),
+    loadRangeAndTopData(currency, rangeParam, monthLabel, startParam, endParam),
     loadRecurringExpenses()
   ]);
 
@@ -74,10 +75,10 @@ export async function loadPageData(
     trend: monthData.trend,
     pie: monthData.pie,
     compare: monthData.compare,
-    rangeExpense: rangeData.expense,
-    rangeLabel: rangeData.label,
-    rangeRows: rangeData.rows,
-    top10: topData,
+    rangeExpense: rangeAndTopData.expense,
+    rangeLabel: rangeAndTopData.label,
+    rangeRows: rangeAndTopData.rows,
+    top10: rangeAndTopData.top10,
     recurringExpenses: recurringData
   };
 }
@@ -148,13 +149,17 @@ async function loadMonthData(currency: string, date: Date): Promise<MonthData> {
   return { income, expense, balance, trend, pie, compare };
 }
 
-async function loadRangeData(
+/**
+ * 合并的范围数据和Top10查询
+ * 优化：原来2次查询 → 1次查询
+ */
+async function loadRangeAndTopData(
   currency: string,
   rangeParam: string,
   monthLabel: string,
   startParam?: string,
   endParam?: string
-): Promise<RangeData> {
+): Promise<RangeData & { top10: any[] }> {
   let rStart: string;
   let rEnd: string;
   let rLabel: string;
@@ -192,60 +197,8 @@ async function loadRangeData(
     where.date = { gte: new Date(rStart), lt: new Date(queryEnd) };
   }
 
+  // 单次查询获取所有数据（包含 Top10 需要的字段）
   const rows = await prisma.transactions.findMany({
-    where,
-    select: { type: true, category: true, amount: true, date: true, currency: true },
-  });
-
-  const expense = rows.filter((r) => r.type === 'expense').reduce((a, b) => a + Number(b.amount || 0), 0);
-
-  return { expense, label: rLabel, rows };
-}
-
-async function loadTopData(
-  currency: string,
-  rangeParam: string,
-  monthLabel: string,
-  startParam?: string,
-  endParam?: string
-) {
-  let rStart: string;
-  let rEnd: string;
-
-  if (rangeParam === 'custom' && startParam && endParam) {
-    rStart = startParam;
-    rEnd = endParam;
-  } else {
-    const quickRange = getQuickRange(rangeParam as any, monthLabel);
-    rStart = quickRange.start;
-    rEnd = quickRange.end;
-  }
-
-  // 判断是否为单日查询（和 loadRangeData 逻辑一致）
-  const isSingleDay = rangeParam === 'today' || rangeParam === 'yesterday' || rStart === rEnd;
-
-  // 计算结束日期
-  let queryEnd = rEnd;
-  if (rangeParam === 'custom') {
-    const endDate = new Date(rEnd);
-    endDate.setDate(endDate.getDate() + 1);
-    queryEnd = endDate.toISOString().slice(0, 10);
-  }
-
-  const prisma = getPrismaClient();
-  const where: any = {
-    deleted_at: null,
-    currency,
-    type: 'expense',
-  };
-
-  if (isSingleDay) {
-    where.date = new Date(rStart);
-  } else {
-    where.date = { gte: new Date(rStart), lt: new Date(queryEnd) };
-  }
-
-  const transactions = await prisma.transactions.findMany({
     where,
     select: {
       id: true,
@@ -261,7 +214,11 @@ async function loadTopData(
     },
   });
 
-  // 按分类聚合数据
+  // 计算总支出
+  const expense = rows.filter((r) => r.type === 'expense').reduce((a, b) => a + Number(b.amount || 0), 0);
+
+  // 按分类聚合数据生成 Top10
+  const expenseRows = rows.filter((r) => r.type === 'expense');
   const categoryMap = new Map<string, {
     category: string;
     total: number;
@@ -271,7 +228,7 @@ async function loadTopData(
     note?: string;
   }>();
 
-  for (const transaction of transactions) {
+  for (const transaction of expenseRows) {
     const category = transaction.category || 'other';
     const amount = Number(transaction.amount || 0);
     const dateStr = transaction.date instanceof Date
@@ -293,7 +250,6 @@ async function loadTopData(
     categoryData.total += amount;
     categoryData.count += 1;
 
-    // 保留最新的日期和商家信息
     if (dateStr > categoryData.latestDate) {
       categoryData.latestDate = dateStr;
       categoryData.merchant = transaction.merchant || undefined;
@@ -301,8 +257,7 @@ async function loadTopData(
     }
   }
 
-  // 转换为数组并排序
-  const aggregatedData = Array.from(categoryMap.values())
+  const top10 = Array.from(categoryMap.values())
     .sort((a, b) => b.total - a.total)
     .slice(0, 10)
     .map(item => ({
@@ -312,10 +267,10 @@ async function loadTopData(
       date: item.latestDate,
       note: `共${item.count}笔消费`,
       currency,
-      merchant: undefined // 不显示商家信息，避免误导
+      merchant: undefined
     }));
 
-  return aggregatedData;
+  return { expense, label: rLabel, rows, top10 };
 }
 
 async function loadRecurringExpenses(): Promise<RecurringExpense[]> {
