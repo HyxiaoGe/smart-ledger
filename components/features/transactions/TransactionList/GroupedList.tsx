@@ -1,7 +1,6 @@
 "use client";
 // 交易分组列表组件（客户端支持编辑和删除）
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/clients/supabase/client';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -89,42 +88,33 @@ export function TransactionGroupedList({
       setLoading(false);
       return;
     }
-    const { error } = await supabase.from('transactions').update(patch).eq('id', editingId);
-    if (error) setError(error.message);
-    else {
-      const updatedTransaction = { ...form, type: 'expense' } as Transaction;
-      setTransactions((ts) => ts.map((t) => (t.id === editingId ? { ...t, ...updatedTransaction } : t)));
-      setEditingId(null);
-      setForm({});
-      setShowEditToast(true);
 
-      // 验证更新是否真正成功
-      const verifyUpdate = async () => {
-        try {
-          const { data: verifyData, error: verifyError } = await supabase
-            .from('transactions')
-            .select('*')
-            .eq('id', editingId)
-            .maybeSingle();
-
-          if (verifyError || !verifyData) {
-            return null;
-          }
-
-          return verifyData;
-        } catch {
-          return null;
-        }
-      };
-
-      // 异步验证更新结果
-      verifyUpdate().then((verifiedData) => {
-        if (verifiedData) {
-          // 只有验证成功后才触发同步事件
-          enhancedDataSync.notifyTransactionUpdated(verifiedData, true);
-        }
+    try {
+      // 使用 API 路由更新交易
+      const response = await fetch(`/api/transactions/${editingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        setError(errorData.message || '更新失败');
+      } else {
+        const result = await response.json();
+        const updatedTransaction = result.data || { ...form, type: 'expense' } as Transaction;
+        setTransactions((ts) => ts.map((t) => (t.id === editingId ? { ...t, ...updatedTransaction } : t)));
+        setEditingId(null);
+        setForm({});
+        setShowEditToast(true);
+
+        // 触发同步事件
+        enhancedDataSync.notifyTransactionUpdated(updatedTransaction, true);
+      }
+    } catch (err) {
+      setError('更新失败，请重试');
     }
+
     setLoading(false);
   }
 
@@ -137,72 +127,32 @@ export function TransactionGroupedList({
     setError('');
 
     try {
-      // 先尝试软删除；若列不存在或 RLS 拒绝，再回退物理删除
-      const soft = await supabase
-        .from('transactions')
-        .update({ deleted_at: new Date().toISOString() })
-        .eq('id', transaction.id)
-        .select();
+      // 使用 API 路由删除交易（软删除）
+      const response = await fetch(`/api/transactions/${transaction.id}`, {
+        method: 'DELETE',
+      });
 
-      if (soft.error) {
-        // 回退为物理删除
-        const hard = await supabase.from('transactions').delete().eq('id', transaction.id);
-        if (hard.error) {
-          setError(soft.error.message || hard.error.message);
-          setLoading(false);
-          return;
-        }
-        setRecentlyDeleted(null); // 物理删除无法撤销
-      } else if (!soft.data || soft.data.length === 0) {
-        // 未命中记录，直接刷新列表
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        setError(errorData.message || '删除失败');
         setLoading(false);
         return;
-      } else {
-        setRecentlyDeleted(transaction);
       }
 
+      setRecentlyDeleted(transaction);
       setTransactions((ts) => ts.filter((t) => t.id !== transaction.id));
       setShowDeleteToast(true);
 
-      // 验证删除是否真正成功
-      const verifyDelete = async () => {
-        try {
-          const { data: verifyData, error: verifyError } = await supabase
-            .from('transactions')
-            .select('id, deleted_at')
-            .eq('id', transaction.id)
-            .maybeSingle();
+      // 触发同步事件
+      enhancedDataSync.notifyTransactionDeleted(transaction, true);
 
-          if (verifyError || !verifyData) {
-            // 如果查询失败或记录不存在，可能是记录已被物理删除
-            return { deleted: true, transaction };
-          }
-
-          if (verifyData && verifyData.deleted_at) {
-            return { deleted: true, transaction, deletedAt: verifyData.deleted_at };
-          }
-
-          return { deleted: false, transaction };
-        } catch {
-          return { deleted: false, transaction };
-        }
-      };
-
-      // 异步验证删除结果
-      verifyDelete().then((result) => {
-        if (result.deleted) {
-          // 只有验证成功后才触发同步事件
-          enhancedDataSync.notifyTransactionDeleted(result.transaction, true);
-
-          // 清除缓存以确保实时更新
-          void fetch('/api/revalidate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tag: 'transactions' }),
-            cache: 'no-store'
-          }).catch(() => {});
-        }
-      });
+      // 清除缓存以确保实时更新
+      void fetch('/api/revalidate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tag: 'transactions' }),
+        cache: 'no-store'
+      }).catch(() => {});
 
     } catch (err) {
       setError('删除失败，请重试');
@@ -216,12 +166,12 @@ export function TransactionGroupedList({
     setLoading(true);
 
     try {
-      const { error } = await supabase
-        .from('transactions')
-        .update({ deleted_at: null })
-        .eq('id', recentlyDeleted.id);
+      // 使用 API 路由恢复交易
+      const response = await fetch(`/api/transactions/${recentlyDeleted.id}/restore`, {
+        method: 'POST',
+      });
 
-      if (!error) {
+      if (response.ok) {
         setTransactions((ts) => [recentlyDeleted, ...ts].sort((a, b) =>
           new Date(b.date).getTime() - new Date(a.date).getTime()
         ));
