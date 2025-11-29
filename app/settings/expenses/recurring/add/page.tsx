@@ -3,11 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useMutation } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { DateInput } from '@/components/features/input/DateInput';
 import { BackNavigation } from '@/components/layout/BackNavigation';
+import { recurringExpensesApi } from '@/lib/api/services/recurring-expenses';
+import { ApiError } from '@/lib/api/client';
 import {
   Plus,
   Calendar,
@@ -20,12 +23,19 @@ import {
 
 export default function AddRecurringExpensePage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [mounted, setMounted] = useState(false);
   const [activeDateInput, setActiveDateInput] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    amount: string;
+    category: string;
+    frequency: string;
+    frequency_config: { day_of_month?: number; days_of_week?: number[] };
+    start_date: Date | null;
+    end_date: Date | null;
+  }>({
     name: '',
     amount: '',
     category: '',
@@ -33,6 +43,22 @@ export default function AddRecurringExpensePage() {
     frequency_config: { day_of_month: 1 },
     start_date: null,
     end_date: null
+  });
+
+  // 创建定期支出 mutation
+  const createMutation = useMutation({
+    mutationFn: recurringExpensesApi.create,
+    onSuccess: () => {
+      setToastMessage('固定支出创建成功！');
+      setShowToast(true);
+      setTimeout(() => {
+        router.push('/settings/expenses/recurring');
+      }, 2000);
+    },
+    onError: (error: ApiError) => {
+      setToastMessage(error.message || '创建固定支出失败');
+      setShowToast(true);
+    },
   });
 
   // 客户端初始化
@@ -87,7 +113,7 @@ export default function AddRecurringExpensePage() {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     // 验证表单
@@ -104,45 +130,16 @@ export default function AddRecurringExpensePage() {
       return;
     }
 
-    try {
-      setLoading(true);
-
-      const payload = {
-        name: formData.name,
-        amount: amount,
-        category: formData.category,
-        frequency: formData.frequency,
-        frequency_config: formData.frequency_config,
-        start_date: formData.start_date ? formData.start_date.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-        end_date: formData.end_date ? formData.end_date.toISOString().split('T')[0] : null,
-        is_active: true
-      };
-
-      const response = await fetch('/api/recurring-expenses', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || '创建失败');
-      }
-
-      setToastMessage('固定支出创建成功！');
-      setShowToast(true);
-      setTimeout(() => {
-        router.push('/settings/expenses/recurring');
-      }, 2000);
-    } catch (error) {
-      console.error('创建固定支出失败:', error);
-      setToastMessage(error instanceof Error ? error.message : '创建固定支出失败');
-      setShowToast(true);
-    } finally {
-      setLoading(false);
-    }
+    createMutation.mutate({
+      name: formData.name,
+      amount: amount,
+      category: formData.category,
+      frequency: formData.frequency as 'daily' | 'weekly' | 'monthly' | 'yearly',
+      frequency_config: formData.frequency_config,
+      start_date: formData.start_date ? formData.start_date.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      end_date: formData.end_date ? formData.end_date.toISOString().split('T')[0] : null,
+      is_active: true
+    });
   };
 
   if (!mounted) {
@@ -450,15 +447,15 @@ export default function AddRecurringExpensePage() {
                 <Button
                   type="submit"
                   className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
-                  disabled={loading}
+                  disabled={createMutation.isPending}
                 >
                   <div className="flex items-center justify-center gap-2">
-                    {loading ? (
+                    {createMutation.isPending ? (
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     ) : (
                       <Plus className="h-5 w-5" />
                     )}
-                    <span>{loading ? '创建中...' : '创建固定支出'}</span>
+                    <span>{createMutation.isPending ? '创建中...' : '创建固定支出'}</span>
                   </div>
                 </Button>
                 <Link href="/settings/expenses/recurring">

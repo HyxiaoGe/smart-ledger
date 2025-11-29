@@ -34,11 +34,14 @@ export default function RecurringExpensesPage() {
   const {
     data: recurringExpensesData,
     isLoading: loading,
-    error,
+    error: fetchError,
+    refetch,
   } = useQuery({
     queryKey: ['recurring-expenses'],
     queryFn: () => recurringExpensesApi.list(),
   });
+
+  const error = fetchError ? '获取固定支出列表失败' : null;
 
   const recurringExpenses = recurringExpensesData || [];
 
@@ -157,17 +160,16 @@ export default function RecurringExpensesPage() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Breadcrumb
-            items={[
-              { label: '设置', href: '/settings' },
-              { label: '消费配置', href: '/settings/expenses' },
-              { label: '固定支出' }
-            ]}
-            className="mb-6"
-          />
+          <div className="mb-6">
+            <Link href="/settings/expenses">
+              <Button variant="ghost" className="text-gray-600 hover:text-gray-900 dark:text-gray-100">
+                ← 返回消费配置
+              </Button>
+            </Link>
+          </div>
           <div className="text-center py-12">
             <div className="text-red-500 mb-4">{error}</div>
-            <Button onClick={fetchRecurringExpenses}>重试</Button>
+            <Button onClick={() => refetch()}>重试</Button>
           </div>
         </div>
       </div>
@@ -178,15 +180,14 @@ export default function RecurringExpensesPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* 主内容区域 */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 面包屑导航 */}
-        <Breadcrumb
-          items={[
-            { label: '设置', href: '/settings' },
-            { label: '消费配置', href: '/settings/expenses' },
-            { label: '固定支出' }
-          ]}
-          className="mb-6"
-        />
+        {/* 返回导航 */}
+        <div className="mb-6">
+          <Link href="/settings/expenses">
+            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 dark:text-gray-100">
+              ← 返回消费配置
+            </Button>
+          </Link>
+        </div>
 
         {/* 页面标题和操作按钮 */}
         <div className="flex items-center justify-between mb-8">
