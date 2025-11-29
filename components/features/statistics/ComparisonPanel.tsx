@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Trophy, Users, ChevronDown, RefreshCw, Award, ArrowUp, ArrowDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '@/lib/clients/supabase/client';
 import { useAllDataSyncEvents } from '@/hooks/useEnhancedDataSync';
 
 interface ComparisonData {
@@ -59,13 +58,12 @@ export function ComparisonPanel({
       const month = currentMonth || new Date().toISOString().slice(0, 7);
 
       // 获取用户当前月数据
-      const { data: currentData, error } = await supabase
-        .from('transactions')
-        .select('category, amount, type')
-        .eq('date', 'like', `${month}%`)
-        .is('deleted_at', null);
-
-      if (error) throw error;
+      const startDate = `${month}-01`;
+      const endDate = `${month}-31`;
+      const response = await fetch(`/api/transactions?start_date=${startDate}&end_date=${endDate}&page_size=1000`);
+      if (!response.ok) throw new Error('获取交易数据失败');
+      const result = await response.json();
+      const currentData = result.data || [];
 
       // 计算用户统计数据
       const expenseData = currentData?.filter(t => t.type === 'expense') || [];

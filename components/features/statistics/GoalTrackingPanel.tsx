@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Target, TrendingUp, TrendingDown, ChevronDown, RefreshCw, Trophy, Flag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '@/lib/clients/supabase/client';
 import { useAllDataSyncEvents } from '@/hooks/useEnhancedDataSync';
 
 interface Goal {
@@ -60,23 +59,18 @@ export function GoalTrackingPanel({
       const dayOfMonth = currentDate.getDate();
       const progressPercent = (dayOfMonth / daysInMonth) * 100;
 
-      // 获取当前月收入数据（如果有）
-      const { data: incomeData } = await supabase
-        .from('transactions')
-        .select('amount')
-        .eq('date', 'like', `${month}%`)
-        .eq('type', 'income')
-        .is('deleted_at', null);
+      // 获取当前月数据
+      const startDate = `${month}-01`;
+      const endDate = `${month}-31`;
+      const response = await fetch(`/api/transactions?start_date=${startDate}&end_date=${endDate}&page_size=1000`);
+      const result = await response.json();
+      const allData = result.data || [];
 
-      const monthlyIncome = incomeData?.reduce((sum, t) => sum + t.amount, 0);
+      const incomeData = allData.filter((t: { type: string }) => t.type === 'income');
+      const monthlyIncome = incomeData.reduce((sum: number, t: { amount: number }) => sum + t.amount, 0);
 
       // 获取当前月支出数据
-      const { data: expenseData } = await supabase
-        .from('transactions')
-        .select('amount')
-        .eq('date', 'like', `${month}%`)
-        .eq('type', 'expense')
-        .is('deleted_at', null);
+      const expenseData = allData.filter((t: { type: string }) => t.type === 'expense');
 
       const currentMonthExpense = expenseData?.reduce((sum, t) => sum + t.amount, 0) || 0;
 

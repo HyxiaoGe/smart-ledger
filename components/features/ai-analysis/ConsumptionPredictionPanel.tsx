@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, TrendingDown, BarChart, ChevronDown, RefreshCw, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '@/lib/clients/supabase/client';
 import { useAllDataSyncEvents } from '@/hooks/useEnhancedDataSync';
 
 interface CategoryPrediction {
@@ -56,33 +55,25 @@ export function ConsumptionPredictionPanel({
       const remainingDays = daysInMonth - daysPassed;
 
       // 获取当前月数据
-      const { data: currentData, error: currentError } = await supabase
-        .from('transactions')
-        .select('category, amount, date')
-        .eq('date', 'like', `${month}%`)
-        .eq('type', 'expense')
-        .is('deleted_at', null);
-
-      if (currentError) throw currentError;
+      const startDate = `${month}-01`;
+      const endDate = `${month}-31`;
+      const currentResponse = await fetch(`/api/transactions?start_date=${startDate}&end_date=${endDate}&type=expense&page_size=1000`);
+      if (!currentResponse.ok) throw new Error('获取交易数据失败');
+      const currentResult = await currentResponse.json();
+      const currentData = currentResult.data || [];
 
       // 获取历史数据用于预测
       const lastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1).toISOString().slice(0, 7);
       const twoMonthsAgo = new Date(currentDate.getFullYear(), currentDate.getMonth() - 2, 1).toISOString().slice(0, 7);
 
-      const [lastMonthData, twoMonthsAgoData] = await Promise.all([
-        supabase
-          .from('transactions')
-          .select('category, amount')
-          .eq('date', 'like', `${lastMonth}%`)
-          .eq('type', 'expense')
-          .is('deleted_at', null),
-        supabase
-          .from('transactions')
-          .select('category, amount')
-          .eq('date', 'like', `${twoMonthsAgo}%`)
-          .eq('type', 'expense')
-          .is('deleted_at', null)
+      const [lastMonthResponse, twoMonthsAgoResponse] = await Promise.all([
+        fetch(`/api/transactions?start_date=${lastMonth}-01&end_date=${lastMonth}-31&type=expense&page_size=1000`),
+        fetch(`/api/transactions?start_date=${twoMonthsAgo}-01&end_date=${twoMonthsAgo}-31&type=expense&page_size=1000`)
       ]);
+      const lastMonthResult = await lastMonthResponse.json();
+      const twoMonthsAgoResult = await twoMonthsAgoResponse.json();
+      const lastMonthData = { data: lastMonthResult.data || [] };
+      const twoMonthsAgoData = { data: twoMonthsAgoResult.data || [] };
 
       const categoryIcons: Record<string, string> = {
         food: '🍽️',

@@ -116,19 +116,19 @@
 | # | 组件文件 | 用途 | 使用的 RPC/表 | 状态 |
 |---|---------|------|-------------|------|
 | 1 | `app/add/page.tsx` | 添加账单页 | API 调用 | ✅ |
-| 2 | `app/components/TransactionList.tsx` | 交易列表 | 服务端查询 | ⏳ |
+| 2 | `app/components/TransactionList.tsx` | 交易列表 | API 调用 | ✅ |
 | 3 | `QuickTransaction.tsx` | 快速记账 | API 调用 | ✅ |
 | 4 | `QuickTransactionCard.tsx` | 快速记账卡片 | API 调用 | ✅ |
 | 5 | `GroupedList.tsx` | 交易列表分组 | API 调用 | ✅ |
 
-### P1 - 统计/分析组件 ⏳
+### P1 - 统计/分析组件 ✅
 
 | # | 组件文件 | 用途 | 使用的 RPC/表 | 状态 |
 |---|---------|------|-------------|------|
-| 6 | `ComparisonPanel.tsx` | 对比面板 | `transactions` 聚合 | ⏳ |
-| 7 | `GoalTrackingPanel.tsx` | 目标追踪 | `budgets`, `transactions` | ⏳ |
-| 8 | `ConsumptionHabitsPanel.tsx` | 消费习惯 | `transactions` 分析 | ⏳ |
-| 9 | `ConsumptionPredictionPanel.tsx` | 消费预测 | `transactions` 预测 | ⏳ |
+| 6 | `ComparisonPanel.tsx` | 对比面板 | API 调用 | ✅ |
+| 7 | `GoalTrackingPanel.tsx` | 目标追踪 | API 调用 | ✅ |
+| 8 | `ConsumptionHabitsPanel.tsx` | 消费习惯 | API 调用 | ✅ |
+| 9 | `ConsumptionPredictionPanel.tsx` | 消费预测 | API 调用 | ✅ |
 
 ---
 
@@ -199,7 +199,7 @@
 3.5 smart-suggestions/learning API ✅ (部分使用 Repository)
 ```
 
-### 阶段 4: 组件改造 🚧 (进行中)
+### 阶段 4: 组件改造 ✅ (已完成)
 
 ```
 4.1 创建 Transaction API 路由 ✅
@@ -211,13 +211,14 @@
     ├── QuickTransaction.tsx ✅
     ├── QuickTransactionCard.tsx ✅
     ├── GroupedList.tsx ✅
+    ├── TransactionList.tsx ✅
     └── app/add/page.tsx ✅
 
-4.3 P1 统计组件迁移 ⏳
-    ├── ComparisonPanel.tsx
-    ├── GoalTrackingPanel.tsx
-    ├── ConsumptionHabitsPanel.tsx
-    └── ConsumptionPredictionPanel.tsx
+4.3 P1 统计组件迁移 ✅
+    ├── ComparisonPanel.tsx ✅
+    ├── GoalTrackingPanel.tsx ✅
+    ├── ConsumptionHabitsPanel.tsx ✅
+    └── ConsumptionPredictionPanel.tsx ✅
 ```
 
 ### 阶段 5: 管理功能
@@ -371,3 +372,5 @@ update: { deleted_at: new Date() }
 | 2025-11-28 | 完成 API 路由迁移 (阶段3) |
 | 2025-11-29 | 完成 Transaction API 路由 (/api/transactions) |
 | 2025-11-29 | 完成 P0 核心组件迁移 (QuickTransaction, GroupedList, AddPage) |
+| 2025-11-29 | 完成 P1 统计组件迁移 (ComparisonPanel, GoalTrackingPanel, ConsumptionHabitsPanel, ConsumptionPredictionPanel) |
+| 2025-11-29 | 完成 TransactionList.tsx 迁移 |
