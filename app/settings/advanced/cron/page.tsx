@@ -8,10 +8,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { PageSkeleton } from '@/components/shared/PageSkeleton';
 import {
-  getAllCronJobs,
-  getCronJobHistory,
-  getCronJobStats,
-  manualTriggerCronJob,
   parseCronExpression,
   calculateNextRun,
   getJobDescription,
@@ -60,15 +56,16 @@ export default function CronManagementPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [jobsData, statsData, historyData] = await Promise.all([
-        getAllCronJobs(),
-        getCronJobStats(),
-        getCronJobHistory(undefined, 20),
-      ]);
+      const response = await fetch('/api/admin/cron');
+      const result = await response.json();
 
-      setJobs(jobsData);
-      setStats(statsData);
-      setHistory(historyData);
+      if (!result.success) {
+        throw new Error(result.error || '获取数据失败');
+      }
+
+      setJobs(result.data.jobs || []);
+      setStats(result.data.stats || []);
+      setHistory(result.data.history || []);
     } catch (error) {
       console.error('获取 Cron 数据失败:', error);
       setError('获取 Cron 数据失败');
@@ -79,8 +76,11 @@ export default function CronManagementPage() {
 
   const fetchHistory = async (jobId: number) => {
     try {
-      const historyData = await getCronJobHistory(jobId, 50);
-      setHistory(historyData);
+      const response = await fetch(`/api/admin/cron?type=history&job_id=${jobId}&limit=50`);
+      const result = await response.json();
+      if (result.success) {
+        setHistory(result.data || []);
+      }
     } catch (error) {
       console.error('获取执行历史失败:', error);
     }
@@ -89,8 +89,18 @@ export default function CronManagementPage() {
   const handleTrigger = async (jobName: string) => {
     try {
       setTriggering(jobName);
-      await manualTriggerCronJob(jobName);
-      setToastMessage(`✅ 任务 "${getJobDescription(jobName).title}" 执行成功`);
+      const response = await fetch('/api/admin/cron/trigger', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobName }),
+      });
+      const result = await response.json();
+
+      if (result.success) {
+        setToastMessage(`✅ 任务 "${getJobDescription(jobName).title}" 执行成功`);
+      } else {
+        setToastMessage(`❌ ${result.error || '任务执行失败'}`);
+      }
       setShowToast(true);
 
       // 刷新数据
