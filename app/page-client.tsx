@@ -158,16 +158,6 @@ export default function HomePageClient({
         />
       </section>
 
-      {/* 消费日历热力图 */}
-      <section className="space-y-2">
-        <CalendarHeatmap
-          data={data.calendarData}
-          year={data.calendarYear}
-          month={data.calendarMonth}
-          currency={currency}
-        />
-      </section>
-
       {/* Top 10 支出 */}
       <section className="space-y-2">
         <div className="flex items-center justify-between">
@@ -184,6 +174,16 @@ export default function HomePageClient({
             <TopExpenses items={data.top10} currency={currency} />
           </CardContent>
         </Card>
+      </section>
+
+      {/* 消费日历热力图 */}
+      <section>
+        <CalendarHeatmap
+          data={data.calendarData}
+          year={data.calendarYear}
+          month={data.calendarMonth}
+          currency={currency}
+        />
       </section>
 
       {/* 快速记账悬浮按钮 */}

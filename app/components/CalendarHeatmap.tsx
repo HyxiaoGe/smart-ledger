@@ -92,19 +92,32 @@ export function CalendarHeatmap({
   const monthName = `${year}年${month}月`;
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base text-muted-foreground">
-          {monthName} 消费日历
-        </CardTitle>
+    <Card className="max-w-sm">
+      <CardHeader className="pb-1 pt-3 px-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm text-muted-foreground">
+            {monthName} 消费日历
+          </CardTitle>
+          {/* 图例 */}
+          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <span>少</span>
+            {HEAT_COLORS.map((color, i) => (
+              <div
+                key={i}
+                className={`w-2 h-2 rounded-sm ${color}`}
+              />
+            ))}
+            <span>多</span>
+          </div>
+        </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-3 pb-3 pt-1">
         {/* 星期标题 */}
-        <div className="grid grid-cols-7 gap-1 mb-2">
+        <div className="grid grid-cols-7 gap-0.5 mb-1">
           {WEEKDAY_LABELS.map((label) => (
             <div
               key={label}
-              className="text-center text-xs text-muted-foreground font-medium py-1"
+              className="text-center text-[10px] text-muted-foreground font-medium"
             >
               {label}
             </div>
@@ -112,10 +125,10 @@ export function CalendarHeatmap({
         </div>
 
         {/* 日历网格 */}
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-0.5">
           {calendarDays.map((item, index) => {
             if (item.day === null) {
-              return <div key={`empty-${index}`} className="aspect-square" />;
+              return <div key={`empty-${index}`} className="w-8 h-8" />;
             }
 
             const dayData = item.date ? dayMap.get(item.date) : null;
@@ -132,12 +145,12 @@ export function CalendarHeatmap({
               <div key={item.date} className="relative">
                 <button
                   className={`
-                    w-full aspect-square rounded-sm flex items-center justify-center
-                    text-xs font-medium transition-all
+                    w-8 h-8 rounded-sm flex items-center justify-center
+                    text-[11px] font-medium transition-all
                     ${colorClass}
-                    ${isToday ? 'ring-2 ring-blue-500 ring-offset-1' : ''}
+                    ${isToday ? 'ring-1 ring-blue-500 ring-offset-1' : ''}
                     ${amount > 0 ? 'text-gray-700 dark:text-gray-200' : 'text-gray-400 dark:text-gray-500'}
-                    hover:ring-2 hover:ring-gray-400 hover:ring-offset-1
+                    hover:ring-1 hover:ring-gray-400 hover:ring-offset-1
                   `}
                   onClick={() => item.date && onDayClick?.(item.date)}
                   onMouseEnter={() => setHoveredDay(item.date)}
@@ -148,8 +161,8 @@ export function CalendarHeatmap({
 
                 {/* 自定义 Tooltip */}
                 {isHovered && (
-                  <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none">
-                    <div className="bg-popover text-popover-foreground rounded-md border px-3 py-2 text-xs shadow-md whitespace-nowrap">
+                  <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 pointer-events-none">
+                    <div className="bg-popover text-popover-foreground rounded-md border px-2 py-1.5 text-[10px] shadow-md whitespace-nowrap">
                       <div className="font-medium">{item.date}</div>
                       {amount > 0 ? (
                         <>
@@ -159,26 +172,12 @@ export function CalendarHeatmap({
                       ) : (
                         <div className="text-muted-foreground">无消费记录</div>
                       )}
-                      {/* 小三角 */}
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-border" />
                     </div>
                   </div>
                 )}
               </div>
             );
           })}
-        </div>
-
-        {/* 图例 */}
-        <div className="flex items-center justify-end gap-2 mt-4 text-xs text-muted-foreground">
-          <span>少</span>
-          {HEAT_COLORS.map((color, i) => (
-            <div
-              key={i}
-              className={`w-3 h-3 rounded-sm ${color}`}
-            />
-          ))}
-          <span>多</span>
         </div>
       </CardContent>
     </Card>
