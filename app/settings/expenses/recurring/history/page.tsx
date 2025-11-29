@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageSkeleton } from '@/components/shared/PageSkeleton';
-import { getGenerationHistory } from '@/lib/services/recurringService';
+// 使用 API 获取生成历史
 import {
   ChevronLeft,
   History,
@@ -53,8 +53,23 @@ export default function RecurringHistoryPage() {
   const fetchHistory = async () => {
     try {
       setLoading(true);
-      const data = await getGenerationHistory(50);
-      setLogs(data);
+      const response = await fetch('/api/recurring/history?limit=50');
+      if (!response.ok) {
+        throw new Error('获取生成历史失败');
+      }
+      const data = await response.json();
+      // 转换数据格式以匹配 GenerationLog 接口
+      const formattedLogs = data.map((item: any) => ({
+        id: item.id,
+        recurring_expense_id: item.recurring_expense_id,
+        transaction_id: item.generated_transaction_id,
+        status: item.status || 'skipped',
+        message: item.reason || '',
+        created_at: item.created_at,
+        recurring_expense: item.recurring_expense,
+        transaction: item.transaction,
+      }));
+      setLogs(formattedLogs);
     } catch (error) {
       console.error('获取生成历史失败:', error);
       setError('获取生成历史失败');

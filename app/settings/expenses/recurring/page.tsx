@@ -8,7 +8,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { PageSkeleton } from '@/components/shared/PageSkeleton';
 import { useAutoGenerateRecurring } from '@/hooks/useAutoGenerateRecurring';
-import { manualGenerateRecurring } from '@/lib/services/recurringService';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import {
   Calendar,
@@ -75,14 +74,24 @@ export default function RecurringExpensesPage() {
     }
   };
 
-  // 手动生成固定支出（调用 Supabase RPC）
+  // 手动生成固定支出（调用 API）
   const handleGenerateExpenses = async () => {
     try {
       setGenerating(true);
-      const results = await manualGenerateRecurring();
 
-      const successCount = results.filter(r => r.status === 'success').length;
-      const failedCount = results.filter(r => r.status === 'failed').length;
+      const response = await fetch('/api/recurring/generate', {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('生成请求失败');
+      }
+
+      const data = await response.json();
+      const results = data.results || [];
+
+      const successCount = results.filter((r: any) => r.status === 'success').length;
+      const failedCount = results.filter((r: any) => r.status === 'failed').length;
 
       let message = '';
       if (successCount > 0) {
