@@ -13,6 +13,14 @@ export default defineConfig({
     setupFiles: ['./vitest.setup.ts'],
     include: ['**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     exclude: ['node_modules', '.next', 'e2e'],
+    // Windows 性能优化
+    pool: 'threads',
+    poolOptions: {
+      threads: {
+        singleThread: true,
+      },
+    },
+    testTimeout: 10000,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
