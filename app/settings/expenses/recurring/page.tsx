@@ -1,21 +1,18 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { PageSkeleton } from '@/components/shared/PageSkeleton';
 import { useAutoGenerateRecurring } from '@/hooks/useAutoGenerateRecurring';
-import { Breadcrumb } from '@/components/ui/breadcrumb';
 import {
   Calendar,
   Plus,
   Wallet,
   Clock,
   DollarSign,
-  Settings2,
   Pause,
   Play,
   Edit,
@@ -23,100 +20,51 @@ import {
   History,
   Zap
 } from 'lucide-react';
-
-interface RecurringExpense {
-  id: string;
-  name: string;
-  amount: number;
-  category: string;
-  frequency: 'daily' | 'weekly' | 'monthly';
-  frequency_config: Record<string, any>;
-  start_date: string;
-  end_date?: string;
-  is_active: boolean;
-  last_generated?: string;
-  next_generate?: string;
-  created_at: string;
-}
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { recurringExpensesApi, RecurringExpense } from '@/lib/api/services/recurring-expenses';
 
 export default function RecurringExpensesPage() {
-  const [recurringExpenses, setRecurringExpenses] = useState<RecurringExpense[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [generating, setGenerating] = useState(false);
+  const queryClient = useQueryClient();
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [confirmDelete, setConfirmDelete] = useState<RecurringExpense | null>(null);
   const [confirmPause, setConfirmPause] = useState<RecurringExpense | null>(null);
 
+  // 使用 React Query 获取固定支出列表
+  const {
+    data: recurringExpensesData,
+    isLoading: loading,
+    error,
+  } = useQuery({
+    queryKey: ['recurring-expenses'],
+    queryFn: () => recurringExpensesApi.list(),
+  });
+
+  const recurringExpenses = recurringExpensesData || [];
+
   // 使用状态展示 Hook
   const { getExpenseGenerationStatus } = useAutoGenerateRecurring(recurringExpenses);
 
-  // 获取固定支出列表
-  useEffect(() => {
-    fetchRecurringExpenses();
-  }, []);
-
-  const fetchRecurringExpenses = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/recurring-expenses');
-      if (!response.ok) {
-        throw new Error('获取固定支出列表失败');
-      }
-      const data = await response.json();
-      setRecurringExpenses(data);
-    } catch (error) {
-      console.error('获取固定支出列表失败:', error);
-      setError('获取固定支出列表失败');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 手动生成固定支出（调用 API）
-  const handleGenerateExpenses = async () => {
-    try {
-      setGenerating(true);
-
-      const response = await fetch('/api/recurring/generate', {
-        method: 'POST',
-      });
-
-      if (!response.ok) {
-        throw new Error('生成请求失败');
-      }
-
-      const data = await response.json();
-      const results = data.results || [];
-
-      const successCount = results.filter((r: any) => r.status === 'success').length;
-      const failedCount = results.filter((r: any) => r.status === 'failed').length;
-
-      let message = '';
-      if (successCount > 0) {
-        message += `✅ 成功生成 ${successCount} 笔`;
-      }
-      if (failedCount > 0) {
-        message += ` ❌ 失败 ${failedCount} 笔`;
-      }
-      if (successCount === 0 && failedCount === 0) {
-        message = '💡 今日无需生成';
-      }
-
-      setToastMessage(message);
+  // 生成固定支出 mutation
+  const generateMutation = useMutation({
+    mutationFn: () => recurringExpensesApi.generate(),
+    onSuccess: (data) => {
+      const count = data.count || 0;
+      setToastMessage(count > 0 ? `✅ 成功生成 ${count} 笔` : '💡 今日无需生成');
       setShowToast(true);
-
-      // 重新获取列表
-      await fetchRecurringExpenses();
-    } catch (error) {
-      console.error('生成固定支出失败:', error);
+      queryClient.invalidateQueries({ queryKey: ['recurring-expenses'] });
+    },
+    onError: () => {
       setToastMessage('❌ 生成失败');
       setShowToast(true);
-    } finally {
-      setGenerating(false);
     }
+  });
+
+  const handleGenerateExpenses = () => {
+    generateMutation.mutate();
   };
+
+  const generating = generateMutation.isPending;
 
   // 切换启用/禁用状态
   const toggleActiveStatus = (expense: RecurringExpense) => {
@@ -129,48 +77,48 @@ export default function RecurringExpensesPage() {
     }
   };
 
-  // 执行状态切换
-  const performToggleActive = async (id: string, showPauseConfirm: boolean) => {
-    try {
-      // 获取当前状态
-      const currentExpense = recurringExpenses.find(e => e.id === id);
-      if (!currentExpense) return;
-
-      const response = await fetch(`/api/recurring-expenses/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          is_active: !currentExpense.is_active,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('更新状态失败');
-      }
-
-      const action = currentExpense.is_active ? '暂停' : '启用';
-      setToastMessage(`${action}成功`);
+  // 更新状态 mutation
+  const updateMutation = useMutation({
+    mutationFn: (params: { id: string; is_active: boolean }) =>
+      recurringExpensesApi.update(params.id, { is_active: params.is_active }),
+    onSuccess: (_, variables) => {
+      setToastMessage(variables.is_active ? '✅ 已启用' : '⏸️ 已暂停');
       setShowToast(true);
-
-      // 清除确认状态
-      if (showPauseConfirm) {
-        setConfirmPause(null);
-      }
-
-      // 重新获取列表
-      await fetchRecurringExpenses();
-    } catch (error) {
-      console.error('更新状态失败:', error);
-      setToastMessage('更新状态失败');
+      setConfirmPause(null);
+      queryClient.invalidateQueries({ queryKey: ['recurring-expenses'] });
+    },
+    onError: () => {
+      setToastMessage('❌ 更新状态失败');
       setShowToast(true);
     }
+  });
+
+  // 删除 mutation
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => recurringExpensesApi.delete(id),
+    onSuccess: () => {
+      setToastMessage('✅ 已删除');
+      setShowToast(true);
+      setConfirmDelete(null);
+      queryClient.invalidateQueries({ queryKey: ['recurring-expenses'] });
+    },
+    onError: () => {
+      setToastMessage('❌ 删除失败');
+      setShowToast(true);
+    }
+  });
+
+  // 执行状态切换
+  const performToggleActive = (id: string, _showPauseConfirm: boolean) => {
+    const currentExpense = recurringExpenses.find(e => e.id === id);
+    if (!currentExpense) return;
+
+    updateMutation.mutate({ id, is_active: !currentExpense.is_active });
   };
 
   // 确认暂停
-  const confirmPauseExpense = async (expense: RecurringExpense) => {
-    await performToggleActive(expense.id, true);
+  const confirmPauseExpense = (expense: RecurringExpense) => {
+    performToggleActive(expense.id, true);
   };
 
   // 删除固定支出
@@ -179,27 +127,8 @@ export default function RecurringExpensesPage() {
   };
 
   // 确认删除
-  const confirmDeleteExpense = async (expense: RecurringExpense) => {
-    try {
-      const response = await fetch(`/api/recurring-expenses/${expense.id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('删除失败');
-      }
-
-      setToastMessage('删除成功');
-      setShowToast(true);
-      setConfirmDelete(null);
-
-      // 重新获取列表
-      await fetchRecurringExpenses();
-    } catch (error) {
-      console.error('删除失败:', error);
-      setToastMessage('删除失败');
-      setShowToast(true);
-    }
+  const confirmDeleteExpense = (expense: RecurringExpense) => {
+    deleteMutation.mutate(expense.id);
   };
 
   const frequencyLabels = {
