@@ -3,6 +3,74 @@
 > 基于 `SUPABASE_CLEANUP_GUIDE.md` 制定的具体执行方案
 >
 > 创建日期: 2025-11-29
+> 更新日期: 2025-11-29
+
+---
+
+## 执行进度
+
+| 阶段 | 状态 | 说明 |
+|-----|------|------|
+| 阶段1 | ✅ 完成 | 创建缺失的服务端版本 |
+| 阶段2 | ✅ 完成 | 更新页面组件使用 API 路由 |
+| 阶段3 | ✅ 完成 | 清理 API 路由中的 Supabase 依赖 |
+| 阶段4 | ✅ 完成 | 简化 Repository 工厂和数据库客户端 |
+| 阶段5 | 🔄 进行中 | 迁移剩余服务 |
+| 阶段6 | ⏳ 待处理 | 删除 Supabase 相关文件 |
+| 阶段7 | ⏳ 待处理 | 更新配置和依赖 |
+| 阶段8 | ⏳ 待处理 | 更新文档 |
+
+---
+
+## 已完成的工作
+
+### 已创建的 API 路由:
+- `/api/budgets/status` - 预算状态
+- `/api/budgets/summary` - 预算汇总
+- `/api/budgets/suggestions` - 预算建议
+- `/api/budgets/predict` - 月底支出预测
+- `/api/recurring/generate` - 手动生成固定账单
+- `/api/recurring/history` - 生成历史
+- `/api/recurring/stats` - 今日统计
+- `/api/categories` - 分类 CRUD
+- `/api/categories/[id]` - 分类详情/更新/删除
+- `/api/categories/subcategories` - 子分类
+- `/api/categories/merchants` - 常用商家
+- `/api/categories/sort-order` - 排序更新
+- `/api/payment-methods` - 支付方式 CRUD
+- `/api/payment-methods/[id]` - 支付方式详情/更新/删除
+
+### 已更新的组件:
+- `CategoryContext.tsx` - 使用 API 调用
+- `categories/page.tsx` - 使用 API 调用
+- `budget/page.tsx` - 使用 API 调用
+- `recurring/page.tsx` - 使用 API 调用
+- `recurring/history/page.tsx` - 使用 API 调用
+
+### 已简化的文件:
+- `lib/clients/db/index.ts` - 移除 Supabase 切换逻辑
+- `lib/infrastructure/repositories/index.server.ts` - 直接使用 Prisma
+- `lib/services/transaction/index.ts` - 使用服务端 Repository
+
+---
+
+## 待完成的工作
+
+### 阶段5: 迁移剩余服务
+
+以下服务文件仍然使用 Supabase，需要迁移或替换:
+
+| 文件 | 被引用位置 | 建议方案 |
+|-----|-----------|---------|
+| `lib/services/weeklyReportService.ts` | weekly-reports 页面 | 创建 .server.ts + API |
+| `lib/services/paymentMethodService.ts` | 组件 + 页面 | 更新组件使用 API (API 已创建) |
+| `lib/services/recurringExpenses.ts` | API 路由 | 迁移到 .server.ts |
+| `lib/services/cronService.ts` | cron 页面 + API | 已有 .server.ts |
+| `lib/services/aiPrediction.ts` | 组件 + API | 迁移到 .server.ts |
+| `lib/services/categoryService.ts` | 无引用 | 可删除 |
+
+### 阶段6-8
+按原计划执行删除、配置更新和文档更新。
 
 ---
 
