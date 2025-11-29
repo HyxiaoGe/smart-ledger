@@ -3,7 +3,7 @@
 /**
  * 分类上下文
  * 提供全局的分类数据访问，替代硬编码的 PRESET_CATEGORIES
- * 通过 API 路由获取数据
+ * 通过 API 服务获取数据
  */
 
 import React, {
@@ -21,42 +21,7 @@ import type {
   MerchantSuggestion,
 } from '@/types/dto/category.dto';
 import { readJSON, writeJSON } from '@/lib/utils/storage';
-
-// API 调用函数
-async function fetchCategoriesWithStats(filter?: { is_active?: boolean }): Promise<CategoryWithStats[]> {
-  const params = new URLSearchParams();
-  if (filter?.is_active !== undefined) {
-    params.set('is_active', String(filter.is_active));
-  }
-  const response = await fetch(`/api/categories?${params.toString()}`);
-  if (!response.ok) throw new Error('获取分类失败');
-  const { data } = await response.json();
-  return data;
-}
-
-async function fetchSubcategories(categoryKey: string): Promise<Subcategory[]> {
-  const response = await fetch(`/api/categories/subcategories?category=${encodeURIComponent(categoryKey)}`);
-  if (!response.ok) throw new Error('获取子分类失败');
-  const { data } = await response.json();
-  return data;
-}
-
-/**
- * 批量获取所有子分类（一次请求）
- */
-async function fetchAllSubcategories(): Promise<Record<string, Subcategory[]>> {
-  const response = await fetch('/api/categories/subcategories');
-  if (!response.ok) throw new Error('获取子分类失败');
-  const { data } = await response.json();
-  return data;
-}
-
-async function fetchAllFrequentMerchants(limit: number): Promise<Record<string, MerchantSuggestion[]>> {
-  const response = await fetch(`/api/categories/merchants?limit=${limit}`);
-  if (!response.ok) throw new Error('获取商家失败');
-  const { data } = await response.json();
-  return data;
-}
+import { categoriesApi } from '@/lib/api/services/categories';
 
 // 缓存配置
 const CATEGORIES_CACHE_KEY = 'categories-cache';
@@ -169,7 +134,7 @@ export function CategoryProvider({ children }: { children: ReactNode }) {
   }, []);
 
   /**
-   * 从服务端获取数据（通过 API 路由）
+   * 从服务端获取数据（通过 API 服务）
    * 优化：使用批量接口，3 次并行请求获取所有数据
    */
   const fetchFromServer = useCallback(async () => {
@@ -179,9 +144,9 @@ export function CategoryProvider({ children }: { children: ReactNode }) {
     try {
       // 并行获取所有数据（3 次请求代替 N+2 次）
       const [categoriesData, subcategoriesData, merchantsData] = await Promise.all([
-        fetchCategoriesWithStats({ is_active: true }),
-        fetchAllSubcategories(),
-        fetchAllFrequentMerchants(10),
+        categoriesApi.list({ is_active: true }),
+        categoriesApi.getAllSubcategories(),
+        categoriesApi.getMerchants(10),
       ]);
 
       // 更新状态

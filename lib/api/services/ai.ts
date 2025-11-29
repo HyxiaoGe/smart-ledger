@@ -94,6 +94,13 @@ export const aiApi = {
   },
 
   /**
+   * 重新验证缓存
+   */
+  revalidate(tag: string): Promise<{ success: boolean }> {
+    return apiClient.post<{ success: boolean }>('/api/revalidate', { tag });
+  },
+
+  /**
    * 智能建议
    */
   getSuggestions(params: SmartSuggestionParams): Promise<unknown> {
@@ -109,5 +116,34 @@ export const aiApi = {
     context?: unknown;
   }): Promise<void> {
     return apiClient.post<void>('/api/smart-suggestions/learning', data);
+  },
+
+  /**
+   * 收集 AI 反馈
+   */
+  collectFeedback(data: {
+    featureType: string;
+    feedbackType?: string;
+    data: unknown;
+  }): Promise<{ feedbackId: string }> {
+    return apiClient.post<{ feedbackId: string }>('/api/ai-feedback', {
+      featureType: data.featureType,
+      feedbackType: data.feedbackType || 'composite',
+      data: data.data,
+    });
+  },
+
+  /**
+   * 获取 AI 反馈统计
+   */
+  getFeedbackStats(params?: {
+    featureType?: string;
+    period?: '24h' | '7d' | '30d';
+  }): Promise<{ data: unknown }> {
+    const query = new URLSearchParams();
+    if (params?.featureType) query.set('featureType', params.featureType);
+    if (params?.period) query.set('period', params.period);
+    const queryStr = query.toString();
+    return apiClient.get<{ data: unknown }>(`/api/ai-feedback${queryStr ? `?${queryStr}` : ''}`);
   },
 };

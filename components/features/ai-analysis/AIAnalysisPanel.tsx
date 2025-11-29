@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Brain, CheckCircle, AlertCircle } from 'lucide-react';
@@ -17,6 +18,7 @@ import {
   type PersonalizedAdviceData
 } from './AIAnalysisPanel/utils';
 import { memoryCache } from '@/lib/infrastructure/cache';
+import { aiApi } from '@/lib/api/services/ai';
 
 interface AIAnalysisPanelProps {
   className?: string;
@@ -100,31 +102,31 @@ export function AIAnalysisPanel({
     }
   }, [aiData, processData, currentMonth]);
 
-  // 调用真正的AI分析接口
-  const callAIAnalysis = useCallback(async (transactions: any[]) => {
-    try {
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          month: currentMonth || new Date().toISOString().slice(0, 7),
-          transactions: transactions
-        })
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        console.log('🤖 AI分析结果:', result.summary);
-        return result.summary;
-      } else {
-        console.error('AI分析请求失败:', response.status);
-        return null;
-      }
-    } catch (error) {
+  // AI 分析 mutation
+  const analyzeMutation = useMutation({
+    mutationFn: (transactions: unknown[]) => aiApi.analyze({
+      month: currentMonth || new Date().toISOString().slice(0, 7),
+      transactions,
+    }),
+    onSuccess: (result) => {
+      console.log('🤖 AI分析结果:', result.summary);
+      setAiSummary(result.summary);
+    },
+    onError: (error) => {
       console.error('AI分析出错:', error);
-      return null;
-    }
-  }, [currentMonth]);
+    },
+  });
+
+  // 重新验证缓存 mutation
+  const revalidateMutation = useMutation({
+    mutationFn: () => aiApi.revalidate('transactions'),
+    onSuccess: () => {
+      console.log('✅ 缓存已清除');
+    },
+    onError: (error) => {
+      console.error('❌ 缓存清除失败:', error);
+    },
+  });
 
   // 增强的刷新功能 - 重新获取数据并处理
   const handleRefresh = useCallback(async () => {
@@ -133,46 +135,30 @@ export function AIAnalysisPanel({
 
     try {
       // 1. 清除数据缓存，强制重新获取
-      const revalidateResponse = await fetch('/api/revalidate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tag: 'transactions' }),
-        cache: 'no-store'
-      });
+      await revalidateMutation.mutateAsync();
 
-      if (revalidateResponse.ok) {
-        console.log('✅ 缓存已清除');
-
-        // 2. 调用真正的AI分析
-        if (aiData?.currentMonthFull) {
-          const aiSummaryResult = await callAIAnalysis(aiData.currentMonthFull);
-          if (aiSummaryResult) {
-            setAiSummary(aiSummaryResult);
-            console.log('🤖 获得AI分析:', aiSummaryResult);
-
-            // 3. 保存到缓存（30分钟有效期）
-            const month = currentMonth || new Date().toISOString().slice(0, 7);
-            const dataHash = JSON.stringify(aiData.currentMonthTop20).substring(0, 50);
-            const cacheKey = `ai_analysis_${month}_${dataHash}`;
-            memoryCache.set(cacheKey, aiSummaryResult, {
-              ttl: 30 * 60 * 1000, // 30分钟
-              tags: ['ai-cache']
-            });
-            console.log('💾 AI分析结果已缓存');
-          }
+      // 2. 调用真正的AI分析
+      if (aiData?.currentMonthFull) {
+        const result = await analyzeMutation.mutateAsync(aiData.currentMonthFull);
+        if (result.summary) {
+          // 3. 保存到缓存（30分钟有效期）
+          const month = currentMonth || new Date().toISOString().slice(0, 7);
+          const dataHash = JSON.stringify(aiData.currentMonthTop20).substring(0, 50);
+          const cacheKey = `ai_analysis_${month}_${dataHash}`;
+          memoryCache.set(cacheKey, result.summary, {
+            ttl: 30 * 60 * 1000, // 30分钟
+            tags: ['ai-cache']
+          });
+          console.log('💾 AI分析结果已缓存');
         }
-
-        // 4. 重新处理本地数据（作为补充）
-        processData();
-
-        setRefreshStatus('success');
-        setTimeout(() => setRefreshStatus('idle'), 2000);
-        console.log('✅ AI分析完成');
-      } else {
-        setRefreshStatus('error');
-        setTimeout(() => setRefreshStatus('idle'), 3000);
-        console.error('❌ 刷新失败');
       }
+
+      // 4. 重新处理本地数据（作为补充）
+      processData();
+
+      setRefreshStatus('success');
+      setTimeout(() => setRefreshStatus('idle'), 2000);
+      console.log('✅ AI分析完成');
     } catch (error) {
       setRefreshStatus('error');
       setTimeout(() => setRefreshStatus('idle'), 3000);
@@ -180,7 +166,7 @@ export function AIAnalysisPanel({
     } finally {
       setLoading(false);
     }
-  }, [processData, aiData, callAIAnalysis]);
+  }, [processData, aiData, analyzeMutation, revalidateMutation, currentMonth]);
 
   // 切换模块折叠状态
   const toggleModule = (moduleId: string) => {

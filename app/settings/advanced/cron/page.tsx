@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -16,6 +17,7 @@ import {
   type CronJobStats,
 } from '@/lib/services/cronService';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
+import { adminApi } from '@/lib/api/services/admin';
 import {
   Clock,
   PlayCircle,
@@ -33,85 +35,51 @@ import {
 } from 'lucide-react';
 
 export default function CronManagementPage() {
-  const [jobs, setJobs] = useState<CronJob[]>([]);
-  const [stats, setStats] = useState<CronJobStats[]>([]);
-  const [history, setHistory] = useState<CronJobRun[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
-  const [triggering, setTriggering] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  // 使用 React Query 获取 Cron 数据
+  const { data: cronData, isLoading: loading, error: fetchError, refetch } = useQuery({
+    queryKey: ['admin-cron'],
+    queryFn: () => adminApi.getCronData(),
+  });
 
-  useEffect(() => {
-    if (selectedJobId !== null) {
-      fetchHistory(selectedJobId);
-    }
-  }, [selectedJobId]);
+  // 获取任务执行历史
+  const { data: historyData } = useQuery({
+    queryKey: ['admin-cron-history', selectedJobId],
+    queryFn: () => adminApi.getCronHistory(selectedJobId!, 50),
+    enabled: selectedJobId !== null,
+  });
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/admin/cron');
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || '获取数据失败');
-      }
-
-      setJobs(result.data.jobs || []);
-      setStats(result.data.stats || []);
-      setHistory(result.data.history || []);
-    } catch (error) {
-      console.error('获取 Cron 数据失败:', error);
-      setError('获取 Cron 数据失败');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchHistory = async (jobId: number) => {
-    try {
-      const response = await fetch(`/api/admin/cron?type=history&job_id=${jobId}&limit=50`);
-      const result = await response.json();
-      if (result.success) {
-        setHistory(result.data || []);
-      }
-    } catch (error) {
-      console.error('获取执行历史失败:', error);
-    }
-  };
-
-  const handleTrigger = async (jobName: string) => {
-    try {
-      setTriggering(jobName);
-      const response = await fetch('/api/admin/cron/trigger', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jobName }),
-      });
-      const result = await response.json();
-
+  // 触发任务的 mutation
+  const triggerMutation = useMutation({
+    mutationFn: (jobName: string) => adminApi.triggerCronJob(jobName),
+    onSuccess: (result, jobName) => {
       if (result.success) {
         setToastMessage(`✅ 任务 "${getJobDescription(jobName).title}" 执行成功`);
       } else {
         setToastMessage(`❌ ${result.error || '任务执行失败'}`);
       }
       setShowToast(true);
-
       // 刷新数据
-      await fetchData();
-    } catch (error) {
-      console.error('触发任务失败:', error);
+      queryClient.invalidateQueries({ queryKey: ['admin-cron'] });
+    },
+    onError: () => {
       setToastMessage(`❌ 任务执行失败`);
       setShowToast(true);
-    } finally {
-      setTriggering(null);
-    }
+    },
+  });
+
+  // 从查询结果中提取数据
+  const jobs = cronData?.jobs || [];
+  const stats = cronData?.stats || [];
+  const history = historyData || cronData?.history || [];
+  const error = fetchError ? '获取 Cron 数据失败' : null;
+
+  const handleTrigger = (jobName: string) => {
+    triggerMutation.mutate(jobName);
   };
 
   // 计算总体统计
@@ -238,7 +206,7 @@ export default function CronManagementPage() {
           />
           <div className="text-center py-12">
             <div className="text-red-500 mb-4">{error}</div>
-            <Button onClick={fetchData}>重试</Button>
+            <Button onClick={() => refetch()}>重试</Button>
           </div>
         </div>
       </div>
@@ -398,11 +366,11 @@ export default function CronManagementPage() {
                             <Button
                               size="sm"
                               onClick={() => handleTrigger(job.jobname)}
-                              disabled={triggering === job.jobname}
+                              disabled={triggerMutation.isPending && triggerMutation.variables === job.jobname}
                               className="group/btn"
                             >
                               <Zap className="h-4 w-4 mr-1 group-hover/btn:text-yellow-400 transition-colors" />
-                              {triggering === job.jobname ? '执行中...' : '手动触发'}
+                              {triggerMutation.isPending && triggerMutation.variables === job.jobname ? '执行中...' : '手动触发'}
                             </Button>
                           </div>
 

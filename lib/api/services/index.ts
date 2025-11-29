@@ -12,3 +12,4 @@ export * from './recurring-expenses';
 export * from './weekly-reports';
 export * from './predict';
 export * from './quick-transaction';
+export * from './admin';

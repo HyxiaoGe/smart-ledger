@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useQueries } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, Clock, ChevronDown, RefreshCw, Activity, Coffee, ShoppingCart, Gamepad2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAllDataSyncEvents } from '@/hooks/useEnhancedDataSync';
+import { transactionsApi } from '@/lib/api/services/transactions';
 
 interface HabitPattern {
   period: string;
@@ -70,40 +72,50 @@ export function ConsumptionHabitsPanel({
   className = '',
   currentMonth = ''
 }: ConsumptionHabitsPanelProps) {
-  const [data, setData] = useState<ConsumptionHabitsData | null>(null);
-  const [loading, setLoading] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
+
+  // 计算月份参数
+  const month = currentMonth || new Date().toISOString().slice(0, 7);
+  const currentDate = new Date();
+  const months = [
+    month,
+    new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1).toISOString().slice(0, 7),
+    new Date(currentDate.getFullYear(), currentDate.getMonth() - 2, 1).toISOString().slice(0, 7)
+  ];
+
+  // 使用 React Query 批量获取多个月的数据
+  const monthlyQueries = useQueries({
+    queries: months.map((m) => ({
+      queryKey: ['habits-transactions', m],
+      queryFn: () => transactionsApi.list({
+        start_date: `${m}-01`,
+        end_date: `${m}-31`,
+        type: 'expense',
+        page_size: 1000,
+      }),
+    })),
+  });
+
+  const loading = monthlyQueries.some(q => q.isLoading);
+  const refetchAll = () => monthlyQueries.forEach(q => q.refetch());
 
   // 监听数据同步事件
   useAllDataSyncEvents(() => {
-    analyzeConsumptionHabits();
+    refetchAll();
   });
 
-  // 分析消费习惯
-  const analyzeConsumptionHabits = async () => {
-    try {
-      const month = currentMonth || new Date().toISOString().slice(0, 7);
+  // 从交易数据分析消费习惯
+  const { data, currentMonthData } = useMemo(() => {
+    if (monthlyQueries.some(q => !q.data)) {
+      return { data: null, currentMonthData: [] };
+    }
 
-      // 获取最近3个月的数据用于习惯分析
-      const currentDate = new Date();
-      const months = [
-        month,
-        new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1).toISOString().slice(0, 7),
-        new Date(currentDate.getFullYear(), currentDate.getMonth() - 2, 1).toISOString().slice(0, 7)
-      ];
+    const monthlyData = months.map((m, index) => ({
+      month: m,
+      data: monthlyQueries[index].data?.data || []
+    }));
 
-      const monthlyData = await Promise.all(
-        months.map(async (m) => {
-          const startDate = `${m}-01`;
-          const endDate = `${m}-31`;
-          const response = await fetch(`/api/transactions?start_date=${startDate}&end_date=${endDate}&type=expense&page_size=1000`);
-          const result = await response.json();
-          return { month: m, data: result.data || [] };
-        })
-      );
-
-      const currentMonthData = monthlyData.find(d => d.month === month)?.data || [];
-      const lastMonthData = monthlyData.find(d => d.month !== month)?.data || [];
+    const currentMonthData = monthlyData.find(d => d.month === month)?.data || [];
 
       // 分析月度模式
       const monthlyPatterns: HabitPattern[] = [];
@@ -165,21 +177,18 @@ export function ConsumptionHabitsPanel({
       // 生成洞察
       const insights = generateInsights(monthlyPatterns, weeklyPattern, timePattern, topMerchants, habitScore);
 
-      setData({
+    return {
+      data: {
         monthlyPatterns: monthlyPatterns.slice(0, 5),
         weeklyPattern,
         timePattern,
         topMerchants: topMerchants.slice(0, 5),
         habitScore,
         insights: insights.slice(0, 4)
-      });
-
-    } catch (error) {
-      console.error('分析消费习惯失败:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      },
+      currentMonthData
+    };
+  }, [monthlyQueries, month, months]);
 
   // 分析周模式
   const analyzeWeeklyPattern = (transactions: any[]): WeeklyPattern => {
@@ -402,13 +411,8 @@ export function ConsumptionHabitsPanel({
 
   // 刷新数据
   const refreshData = () => {
-    setLoading(true);
-    analyzeConsumptionHabits();
+    refetchAll();
   };
-
-  useEffect(() => {
-    analyzeConsumptionHabits();
-  }, [currentMonth]);
 
   // 获取时间图标
   const getTimeIcon = (timeSlot: string) => {

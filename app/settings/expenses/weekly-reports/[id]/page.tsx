@@ -1,11 +1,14 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { weeklyReportsApi, type WeeklyReport } from '@/lib/api/services/weekly-reports';
+import { ApiError } from '@/lib/api/client';
 import {
   ChevronLeft,
   TrendingDown,
@@ -24,53 +27,6 @@ import {
   CreditCard,
   AlertCircle
 } from 'lucide-react';
-// 周报告类型定义
-interface CategoryStat {
-  category: string;
-  amount: number;
-  count: number;
-  percentage: number;
-}
-
-interface MerchantStat {
-  merchant: string;
-  amount: number;
-  count: number;
-}
-
-interface PaymentMethodStat {
-  method: string;
-  amount: number;
-  count: number;
-  percentage: number;
-}
-
-interface WeeklyReport {
-  id: string;
-  user_id: string | null;
-  week_start_date: string;
-  week_end_date: string;
-  total_expenses: number;
-  transaction_count: number;
-  average_transaction: number;
-  category_breakdown: CategoryStat[];
-  top_merchants: MerchantStat[];
-  payment_method_stats: PaymentMethodStat[];
-  week_over_week_change: number;
-  week_over_week_percentage: number;
-  ai_insights: string | null;
-  generated_at: string;
-  generation_type: 'auto' | 'manual';
-}
-
-// API 调用函数
-async function fetchWeeklyReportById(id: string): Promise<WeeklyReport | null> {
-  const response = await fetch(`/api/weekly-reports/${id}`);
-  if (response.status === 404) return null;
-  if (!response.ok) throw new Error('获取周报告失败');
-  const { data } = await response.json();
-  return data;
-}
 
 // 工具函数
 function formatWeekRange(startDate: string, endDate: string): string {
@@ -161,24 +117,16 @@ import {
 
 export default function WeeklyReportDetailPage() {
   const params = useParams();
-  const [report, setReport] = useState<WeeklyReport | null>(null);
-  const [loading, setLoading] = useState(true);
+  const id = params.id as string;
 
-  useEffect(() => {
-    loadReport();
-  }, [params.id]);
+  // 使用 React Query 获取周报告详情
+  const { data: report, isLoading: loading, error: fetchError } = useQuery({
+    queryKey: ['weekly-report', id],
+    queryFn: () => weeklyReportsApi.get(id),
+    enabled: !!id,
+  });
 
-  async function loadReport() {
-    try {
-      setLoading(true);
-      const data = await fetchWeeklyReportById(params.id as string);
-      setReport(data);
-    } catch (error) {
-      console.error('Error loading report:', error);
-    } finally {
-      setLoading(false);
-    }
-  }
+  const notFound = fetchError instanceof ApiError && fetchError.status === 404;
 
   if (loading) {
     return (
@@ -201,7 +149,7 @@ export default function WeeklyReportDetailPage() {
     );
   }
 
-  if (!report) {
+  if (notFound || !report) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

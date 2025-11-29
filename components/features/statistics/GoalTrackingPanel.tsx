@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Target, TrendingUp, TrendingDown, ChevronDown, RefreshCw, Trophy, Flag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAllDataSyncEvents } from '@/hooks/useEnhancedDataSync';
+import { transactionsApi } from '@/lib/api/services/transactions';
 
 interface Goal {
   id: string;
@@ -41,150 +43,142 @@ export function GoalTrackingPanel({
   className = '',
   currentMonth = ''
 }: GoalTrackingPanelProps) {
-  const [data, setData] = useState<GoalTrackingData | null>(null);
-  const [loading, setLoading] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
+  const queryClient = useQueryClient();
+
+  // 计算月份参数
+  const month = currentMonth || new Date().toISOString().slice(0, 7);
+  const startDate = `${month}-01`;
+  const endDate = `${month}-31`;
+
+  // 使用 React Query 获取交易数据
+  const { data: transactionsData, isLoading: loading, refetch } = useQuery({
+    queryKey: ['goal-tracking-transactions', month],
+    queryFn: () => transactionsApi.list({
+      start_date: startDate,
+      end_date: endDate,
+      page_size: 1000,
+    }),
+  });
 
   // 监听数据同步事件
   useAllDataSyncEvents(() => {
-    fetchGoalData();
+    refetch();
   });
 
-  // 获取目标数据
-  const fetchGoalData = async () => {
-    try {
-      const month = currentMonth || new Date().toISOString().slice(0, 7);
-      const currentDate = new Date();
-      const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
-      const dayOfMonth = currentDate.getDate();
-      const progressPercent = (dayOfMonth / daysInMonth) * 100;
+  // 从交易数据计算目标数据
+  const data = useMemo<GoalTrackingData | null>(() => {
+    if (!transactionsData) return null;
 
-      // 获取当前月数据
-      const startDate = `${month}-01`;
-      const endDate = `${month}-31`;
-      const response = await fetch(`/api/transactions?start_date=${startDate}&end_date=${endDate}&page_size=1000`);
-      const result = await response.json();
-      const allData = result.data || [];
+    const allData = transactionsData.data || [];
+    const currentDate = new Date();
+    const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+    const dayOfMonth = currentDate.getDate();
+    const progressPercent = (dayOfMonth / daysInMonth) * 100;
 
-      const incomeData = allData.filter((t: { type: string }) => t.type === 'income');
-      const monthlyIncome = incomeData.reduce((sum: number, t: { amount: number }) => sum + t.amount, 0);
+    const incomeData = allData.filter((t: { type: string }) => t.type === 'income');
+    const monthlyIncome = incomeData.reduce((sum: number, t: { amount: number }) => sum + t.amount, 0);
 
-      // 获取当前月支出数据
-      const expenseData = allData.filter((t: { type: string }) => t.type === 'expense');
+    // 获取当前月支出数据
+    const expenseData = allData.filter((t: { type: string }) => t.type === 'expense');
+    const currentMonthExpense = expenseData?.reduce((sum: number, t: { amount: number }) => sum + t.amount, 0) || 0;
 
-      const currentMonthExpense = expenseData?.reduce((sum, t) => sum + t.amount, 0) || 0;
+    // 计算当前月储蓄（收入 - 支出）
+    const currentMonthSavings = monthlyIncome - currentMonthExpense;
 
-      // 计算当前月储蓄（收入 - 支出）
-      const currentMonthSavings = monthlyIncome - currentMonthExpense;
+    // 生成默认目标（基于当前数据）
+    const defaultGoals: Goal[] = [
+      {
+        id: 'monthly-savings',
+        type: 'savings',
+        title: '月度储蓄目标',
+        targetAmount: Math.round((monthlyIncome || 5000) * 0.2),
+        currentAmount: Math.max(0, currentMonthSavings),
+        period: 'monthly',
+        startDate: month + '-01',
+        endDate: month + '-31',
+        isCompleted: false,
+        priority: 'high'
+      },
+      {
+        id: 'expense-control',
+        type: 'expense_limit',
+        title: '支出控制目标',
+        targetAmount: Math.round((monthlyIncome || 5000) * 0.8),
+        currentAmount: currentMonthExpense,
+        period: 'monthly',
+        startDate: month + '-01',
+        endDate: month + '-31',
+        isCompleted: false,
+        priority: 'high'
+      },
+      {
+        id: 'food-budget',
+        type: 'category_budget',
+        title: '餐饮预算',
+        targetAmount: 1500,
+        currentAmount: 0,
+        period: 'monthly',
+        startDate: month + '-01',
+        endDate: month + '-31',
+        isCompleted: false,
+        priority: 'medium'
+      },
+      {
+        id: 'transport-budget',
+        type: 'category_budget',
+        title: '交通预算',
+        targetAmount: 500,
+        currentAmount: 0,
+        period: 'monthly',
+        startDate: month + '-01',
+        endDate: month + '-31',
+        isCompleted: false,
+        priority: 'medium'
+      }
+    ];
 
-      // 生成默认目标（基于当前数据）
-      const defaultGoals: Goal[] = [
-        {
-          id: 'monthly-savings',
-          type: 'savings',
-          title: '月度储蓄目标',
-          targetAmount: Math.round((monthlyIncome || 5000) * 0.2), // 默认储蓄率20%
-          currentAmount: Math.max(0, currentMonthSavings),
-          period: 'monthly',
-          startDate: month + '-01',
-          endDate: month + '-31',
-          isCompleted: false,
-          priority: 'high'
-        },
-        {
-          id: 'expense-control',
-          type: 'expense_limit',
-          title: '支出控制目标',
-          targetAmount: Math.round((monthlyIncome || 5000) * 0.8), // 默认支出不超过80%
-          currentAmount: currentMonthExpense,
-          period: 'monthly',
-          startDate: month + '-01',
-          endDate: month + '-31',
-          isCompleted: false,
-          priority: 'high'
-        },
-        {
-          id: 'food-budget',
-          type: 'category_budget',
-          title: '餐饮预算',
-          targetAmount: 1500,
-          currentAmount: 0,
-          period: 'monthly',
-          startDate: month + '-01',
-          endDate: month + '-31',
-          isCompleted: false,
-          priority: 'medium'
-        },
-        {
-          id: 'transport-budget',
-          type: 'category_budget',
-          title: '交通预算',
-          targetAmount: 500,
-          currentAmount: 0,
-          period: 'monthly',
-          startDate: month + '-01',
-          endDate: month + '-31',
-          isCompleted: false,
-          priority: 'medium'
+    // 计算分类当前支出
+    const categoryExpenses = new Map<string, number>();
+    expenseData?.forEach((t: { amount: number }) => {
+      if (t.amount < 50) categoryExpenses.set('food', (categoryExpenses.get('food') || 0) + t.amount);
+      if (t.amount < 30) categoryExpenses.set('transport', (categoryExpenses.get('transport') || 0) + t.amount);
+    });
+
+    // 更新分类目标
+    defaultGoals.forEach(goal => {
+      if (goal.type === 'category_budget') {
+        if (goal.title === '餐饮预算') {
+          goal.currentAmount = categoryExpenses.get('food') || 0;
+        } else if (goal.title === '交通预算') {
+          goal.currentAmount = categoryExpenses.get('transport') || 0;
         }
-      ];
+      }
+      goal.isCompleted = goal.currentAmount <= goal.targetAmount;
+    });
 
-      // 计算分类当前支出
-      const categoryExpenses = new Map<string, number>();
-      expenseData?.forEach(t => {
-        // 这里需要从交易数据中获取分类信息
-        // 暂时使用模拟数据
-        if (t.amount < 50) categoryExpenses.set('food', (categoryExpenses.get('food') || 0) + t.amount);
-        if (t.amount < 30) categoryExpenses.set('transport', (categoryExpenses.get('transport') || 0) + t.amount);
-      });
+    // 计算整体进度
+    const completedGoals = defaultGoals.filter(g => g.isCompleted).length;
+    const onTrackGoals = defaultGoals.filter(g => !g.isCompleted && (g.currentAmount / g.targetAmount) <= (progressPercent / 100)).length;
+    const atRiskGoals = defaultGoals.length - completedGoals - onTrackGoals;
 
-      // 更新分类目标
-      defaultGoals.forEach(goal => {
-        if (goal.type === 'category_budget') {
-          if (goal.title === '餐饮预算') {
-            goal.currentAmount = categoryExpenses.get('food') || 0;
-          } else if (goal.title === '交通预算') {
-            goal.currentAmount = categoryExpenses.get('transport') || 0;
-          }
-        }
-
-        // 检查目标是否完成
-        goal.isCompleted = goal.currentAmount <= goal.targetAmount;
-      });
-
-      // 计算整体进度
-      const completedGoals = defaultGoals.filter(g => g.isCompleted).length;
-      const onTrackGoals = defaultGoals.filter(g => !g.isCompleted && (g.currentAmount / g.targetAmount) <= (progressPercent / 100)).length;
-      const atRiskGoals = defaultGoals.length - completedGoals - onTrackGoals;
-
-      setData({
-        goals: defaultGoals,
-        overallProgress: {
-          totalGoals: defaultGoals.length,
-          completedGoals,
-          onTrackGoals,
-          atRiskGoals
-        },
-        currentMonthSavings,
-        monthlyIncome
-      });
-
-    } catch (error) {
-      console.error('获取目标数据失败:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    return {
+      goals: defaultGoals,
+      overallProgress: {
+        totalGoals: defaultGoals.length,
+        completedGoals,
+        onTrackGoals,
+        atRiskGoals
+      },
+      currentMonthSavings,
+      monthlyIncome
+    };
+  }, [transactionsData, month]);
 
   // 刷新数据
   const refreshData = () => {
-    setLoading(true);
-    fetchGoalData();
+    refetch();
   };
-
-  useEffect(() => {
-    fetchGoalData();
-  }, [currentMonth]);
 
   // 获取进度条颜色
   const getProgressColor = (percentage: number) => {

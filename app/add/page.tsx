@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { TransactionType, Currency } from '@/types/domain/transaction';
 import { SUPPORTED_CURRENCIES, DEFAULT_CURRENCY } from '@/lib/config/config';
 import { useCategories } from '@/contexts/CategoryContext';
@@ -15,6 +16,10 @@ import { MerchantInput, SubcategorySelect } from '@/components/features/input/Me
 import { AIPredictionPanel } from '@/components/features/ai-analysis/AIPredictionPanel';
 import { enhancedDataSync, markTransactionsDirty } from '@/lib/core/EnhancedDataSync';
 import { ProgressToast } from '@/components/shared/ProgressToast';
+import { paymentMethodsApi } from '@/lib/api/services/payment-methods';
+import { transactionsApi } from '@/lib/api/services/transactions';
+import { commonNotesApi } from '@/lib/api/services/common-notes';
+import { aiApi } from '@/lib/api/services/ai';
 // AI 预测类型定义
 interface TransactionPrediction {
   id: string;
@@ -43,24 +48,7 @@ import { logger } from '@/lib/services/logging';
 import { STORAGE_KEYS } from '@/lib/config/storageKeys';
 import { getErrorMessage } from '@/types/common';
 
-// 支付方式类型定义
-interface PaymentMethod {
-  id: string;
-  name: string;
-  type: string;
-  icon: string | null;
-  color: string | null;
-  is_default: boolean;
-  is_active: boolean;
-}
-
-// API 调用函数
-async function fetchPaymentMethods(): Promise<PaymentMethod[]> {
-  const response = await fetch('/api/payment-methods');
-  if (!response.ok) throw new Error('获取支付方式失败');
-  const { data } = await response.json();
-  return data;
-}
+import type { PaymentMethod } from '@/lib/api/services/payment-methods';
 
 export default function AddPage() {
   const type: TransactionType = 'expense'; // 固定为支出类型
@@ -121,34 +109,21 @@ export default function AddPage() {
       // 使用本地时区格式化日期，避免时区问题
       const dateStr = formatDateToLocal(formData.date);
 
-      // 使用 API 路由创建交易
-      const response = await fetch('/api/transactions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          type,
-          category: formData.category,
-          amount: formData.amt,
-          note: formData.note,
-          date: dateStr,
-          currency: formData.currency,
-          payment_method: formData.paymentMethod || null,
-          merchant: formData.merchant || null,
-          subcategory: formData.subcategory || null,
-          product: formData.product || null,
-        }),
+      // 使用 API 服务创建交易
+      const result = await transactionsApi.create({
+        type,
+        category: formData.category,
+        amount: formData.amt,
+        note: formData.note,
+        date: dateStr,
+        currency: formData.currency,
+        payment_method: formData.paymentMethod || null,
+        merchant: formData.merchant || null,
+        subcategory: formData.subcategory || null,
+        product: formData.product || null,
       });
 
-      // 处理错误
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || '创建交易失败');
-      }
-
-      const result = await response.json();
-      const transactionId = result.data?.id;
+      const transactionId = result.id;
 
       // ✅ 记录用户操作日志（异步，不阻塞响应）
       void logger.logUserAction({
@@ -202,12 +177,7 @@ export default function AddPage() {
       markTransactionsDirty();
 
       // 异步刷新缓存（带错误日志）
-      fetch('/api/revalidate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tag: 'transactions' }),
-        cache: 'no-store'
-      }).catch((err) => {
+      aiApi.revalidate('transactions').catch((err) => {
         console.error('缓存刷新失败:', err);
       });
 
@@ -350,23 +320,22 @@ export default function AddPage() {
     setProduct('');
   }
 
-  // 加载支付方式列表
+  // 使用 React Query 加载支付方式列表
+  const { data: paymentMethodsData } = useQuery({
+    queryKey: ['payment-methods'],
+    queryFn: () => paymentMethodsApi.list(),
+  });
+
+  // 当支付方式数据加载完成时更新状态
   useEffect(() => {
-    async function loadPaymentMethods() {
-      try {
-        const methods = await fetchPaymentMethods();
-        setPaymentMethods(methods);
-        // 设置默认支付方式
-        const defaultMethod = methods.find(m => m.is_default);
-        if (defaultMethod) {
-          setPaymentMethod(defaultMethod.id);
-        }
-      } catch (err) {
-        console.error('加载支付方式失败:', err);
+    if (paymentMethodsData) {
+      setPaymentMethods(paymentMethodsData);
+      const defaultMethod = paymentMethodsData.find(m => m.is_default);
+      if (defaultMethod && !paymentMethod) {
+        setPaymentMethod(defaultMethod.id);
       }
     }
-    loadPaymentMethods();
-  }, []);
+  }, [paymentMethodsData, paymentMethod]);
 
   // 组件卸载时清理
   React.useEffect(() => {
@@ -382,26 +351,12 @@ export default function AddPage() {
   // 异步更新常用备注
   async function updateCommonNote(noteContent: string, amount: number) {
     try {
-      // 生成时间上下文
-      const timeContext = generateTimeContext();
-
-      const response = await fetch('/api/common-notes', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          content: noteContent,
-          amount: amount,
-          category: category,
-          time_context: timeContext.label
-        })
+      await commonNotesApi.upsert({
+        content: noteContent,
+        amount: amount,
       });
-
-      if (response.ok) {
-        // 清除本地缓存，强制下次重新获取最新数据
-        localStorage.removeItem(STORAGE_KEYS.COMMON_NOTES_CACHE);
-      }
+      // 清除本地缓存，强制下次重新获取最新数据
+      localStorage.removeItem(STORAGE_KEYS.COMMON_NOTES_CACHE);
     } catch {
       // ignore note update failures
     }
