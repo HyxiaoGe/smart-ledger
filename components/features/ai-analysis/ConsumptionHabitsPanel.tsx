@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, Clock, ChevronDown, RefreshCw, Activity, Coffee, ShoppingCart, Gamepad2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '@/lib/clients/supabase/client';
 import { useAllDataSyncEvents } from '@/hooks/useEnhancedDataSync';
 
 interface HabitPattern {
@@ -94,15 +93,12 @@ export function ConsumptionHabitsPanel({
       ];
 
       const monthlyData = await Promise.all(
-        months.map(async (month) => {
-          const { data } = await supabase
-            .from('transactions')
-            .select('amount, date, category, note')
-            .eq('date', 'like', `${month}%`)
-            .eq('type', 'expense')
-            .is('deleted_at', null)
-            .order('date');
-          return { month, data: data || [] };
+        months.map(async (m) => {
+          const startDate = `${m}-01`;
+          const endDate = `${m}-31`;
+          const response = await fetch(`/api/transactions?start_date=${startDate}&end_date=${endDate}&type=expense&page_size=1000`);
+          const result = await response.json();
+          return { month: m, data: result.data || [] };
         })
       );
 
