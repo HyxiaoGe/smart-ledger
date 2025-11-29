@@ -1,13 +1,7 @@
 /**
  * 数据库客户端统一入口
- * 仅使用 Prisma，服务端使用（API 路由、Server Components）
+ * 使用 Prisma ORM
  */
-
-export type DbClient = 'prisma';
-
-export function getDbType(): DbClient {
-  return 'prisma';
-}
 
 /**
  * 获取 Prisma 客户端
@@ -27,10 +21,10 @@ export function getPrismaClient() {
 
 /**
  * 执行数据库查询
- * 直接执行 Prisma 查询
+ * @deprecated 直接使用 getPrismaClient() 代替
  */
 export async function executeQuery<T>(
-  _supabaseQuery: () => Promise<T>,
+  _legacyQuery: () => Promise<T>,
   prismaQuery: () => Promise<T>
 ): Promise<T> {
   return prismaQuery();

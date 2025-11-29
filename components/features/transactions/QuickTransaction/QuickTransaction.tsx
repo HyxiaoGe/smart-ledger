@@ -8,9 +8,33 @@ import { Badge } from '@/components/ui/badge';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { enhancedDataSync, markTransactionsDirty } from '@/lib/core/EnhancedDataSync';
 import { generateTimeContext } from '@/lib/domain/noteContext';
-import { aiPredictionService, type QuickTransactionSuggestion } from '@/lib/services/aiPrediction';
 import { STORAGE_KEYS } from '@/lib/config/storageKeys';
 import { Zap, Clock, TrendingUp, CheckCircle } from 'lucide-react';
+
+// 类型定义
+interface QuickTransactionSuggestion {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  amount: number;
+  note: string;
+  confidence: number;
+  icon?: string;
+  reason: string;
+}
+
+// API 调用函数
+async function fetchQuickSuggestionsApi(timeContext?: string): Promise<QuickTransactionSuggestion[]> {
+  const response = await fetch('/api/ai-prediction', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'quick-suggestions', timeContext }),
+  });
+  if (!response.ok) throw new Error('获取快速建议失败');
+  const data = await response.json();
+  return data.suggestions || [];
+}
 
 interface QuickTransactionProps {
   onSuccess?: () => void;
@@ -29,7 +53,7 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
     setLoading(true);
     try {
       const timeContext = generateTimeContext();
-      const quickSuggestions = await aiPredictionService.generateQuickSuggestions(timeContext.label);
+      const quickSuggestions = await fetchQuickSuggestionsApi(timeContext.label);
       setSuggestions(quickSuggestions);
     } catch (error) {
       console.error('获取快速记账建议失败:', error);

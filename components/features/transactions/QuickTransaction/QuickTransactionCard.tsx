@@ -11,7 +11,25 @@ import { FaRobot, FaCheck, FaHeart } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDateToLocal } from '@/lib/utils/date';
-import { getPaymentMethodsWithStats, type PaymentMethod } from '@/lib/services/paymentMethodService';
+
+// 支付方式类型定义
+interface PaymentMethod {
+  id: string;
+  name: string;
+  type: string;
+  icon: string | null;
+  color: string | null;
+  is_default: boolean;
+  is_active: boolean;
+}
+
+// API 调用函数
+async function fetchPaymentMethods(): Promise<PaymentMethod[]> {
+  const response = await fetch('/api/payment-methods');
+  if (!response.ok) throw new Error('获取支付方式失败');
+  const { data } = await response.json();
+  return data;
+}
 
 interface QuickTransactionItem {
   id: string;
@@ -171,7 +189,7 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
   useEffect(() => {
     async function loadPaymentMethods() {
       try {
-        const methods = await getPaymentMethodsWithStats();
+        const methods = await fetchPaymentMethods();
         setPaymentMethods(methods);
         // 设置默认支付方式
         const defaultMethod = methods.find(m => m.is_default);

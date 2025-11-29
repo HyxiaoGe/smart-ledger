@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
-import { executeQuery, getPrismaClient, getSupabaseClient } from '@/lib/clients/db';
-import { aiPredictionService, type TransactionPrediction, type QuickTransactionSuggestion } from '@/lib/services/aiPrediction';
+import { getPrismaClient } from '@/lib/clients/db';
+import { aiPredictionServiceServer } from '@/lib/services/aiPrediction.server';
 import { generateTimeContext } from '@/lib/domain/noteContext';
 import { withErrorHandler, ApiError } from '@/lib/utils/apiErrorHandler';
 
@@ -44,7 +44,7 @@ async function handlePredictCategory(params: {
     );
   }
 
-  const predictions = await aiPredictionService.predictCategory(amount, timeContext);
+  const predictions = await aiPredictionServiceServer.predictCategory(amount, timeContext);
 
   return Response.json({
     type: 'category',
@@ -70,7 +70,7 @@ async function handlePredictAmount(params: {
     );
   }
 
-  const predictions = await aiPredictionService.predictAmount(category, timeContext);
+  const predictions = await aiPredictionServiceServer.predictAmount(category, timeContext);
 
   return Response.json({
     type: 'amount',
@@ -89,7 +89,7 @@ async function handlePredictTransaction(params: {
 }) {
   const { timeContext, includeRecent = true } = params;
 
-  let recentTransactions = [];
+  let recentTransactions: any[] = [];
 
   if (includeRecent) {
     try {
@@ -98,40 +98,21 @@ async function handlePredictTransaction(params: {
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
       const startDate = sevenDaysAgo.toISOString().slice(0, 10);
 
-      recentTransactions = await executeQuery(
-        // Supabase 查询
-        async () => {
-          const supabase = getSupabaseClient();
-          const { data, error } = await supabase
-            .from('transactions')
-            .select('*')
-            .gte('date', startDate)
-            .is('deleted_at', null)
-            .order('date', { ascending: false })
-            .limit(20);
-
-          if (error) throw error;
-          return data || [];
+      const prisma = getPrismaClient();
+      recentTransactions = await prisma.transactions.findMany({
+        where: {
+          date: { gte: startDate },
+          deleted_at: null,
         },
-        // Prisma 查询
-        async () => {
-          const prisma = getPrismaClient();
-          return await prisma.transactions.findMany({
-            where: {
-              date: { gte: startDate },
-              deleted_at: null,
-            },
-            orderBy: { date: 'desc' },
-            take: 20,
-          });
-        }
-      );
+        orderBy: { date: 'desc' },
+        take: 20,
+      });
     } catch (error) {
       console.error('获取最近交易失败:', error);
     }
   }
 
-  const predictions = await aiPredictionService.predictTransaction({
+  const predictions = await aiPredictionServiceServer.predictTransaction({
     timeContext,
     recentTransactions
   });
@@ -152,7 +133,7 @@ async function handleQuickSuggestions(params: {
 }) {
   const { timeContext } = params;
 
-  const suggestions = await aiPredictionService.generateQuickSuggestions(timeContext);
+  const suggestions = await aiPredictionServiceServer.generateQuickSuggestions(timeContext);
 
   return Response.json({
     type: 'quick-suggestions',

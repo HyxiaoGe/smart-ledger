@@ -1,26 +1,12 @@
 /**
- * AI 预测服务 - 自动分类和金额预测
- *
- * @deprecated 此服务将在后续版本中重构，建议关注以下改进：
- * - 应迁移到统一的 Repository 层 (ITransactionRepository)
- * - 应使用统一缓存系统 (@/lib/infrastructure/cache)
- * - 应与 TransactionAnalyticsService 集成
- * - 内部缓存实现应替换为 CacheDecorator
- *
- * 当前版本保持功能完整性，暂不修改核心逻辑。
- * 未来优化方向：
- * 1. 数据访问层使用 Repository 抽象
- * 2. 缓存管理使用统一 ICache 接口
- * 3. 与分析服务解耦，提供独立的预测能力
+ * AI 预测服务 - 服务端版本
+ * 使用 Prisma 进行数据访问
  */
 
-// AI预测服务 - 自动分类和金额预测
-import { supabase } from '@/lib/clients/supabase/client';
+import { getPrismaClient } from '@/lib/clients/db';
 import { generateTimeContext } from '@/lib/domain/noteContext';
 import {
   CONSUMPTION_PATTERNS,
-  matchConsumptionPattern,
-  getConsumptionStats,
   type ConsumptionPattern
 } from './smartPatterns';
 
@@ -52,21 +38,18 @@ export interface QuickTransactionSuggestion {
 }
 
 /**
- * AI预测服务类
+ * AI预测服务类 - 服务端版本
  */
-export class AIPredictionService {
-  private static instance: AIPredictionService;
-  /**
-   * @deprecated 应使用统一缓存系统 (@/lib/infrastructure/cache) 替代内部缓存实现
-   */
+export class AIPredictionServiceServer {
+  private static instance: AIPredictionServiceServer;
   private cache = new Map<string, { data: any; timestamp: number }>();
   private readonly CACHE_TTL = 5 * 60 * 1000; // 5分钟缓存
 
-  static getInstance(): AIPredictionService {
-    if (!AIPredictionService.instance) {
-      AIPredictionService.instance = new AIPredictionService();
+  static getInstance(): AIPredictionServiceServer {
+    if (!AIPredictionServiceServer.instance) {
+      AIPredictionServiceServer.instance = new AIPredictionServiceServer();
     }
-    return AIPredictionService.instance;
+    return AIPredictionServiceServer.instance;
   }
 
   /**
@@ -88,7 +71,7 @@ export class AIPredictionService {
     const timeBasedPredictions = await this.generateTimeBasedPredictions(timeContext);
     predictions.push(...timeBasedPredictions);
 
-    // 2. 基于历史模式的预测
+    // 2. 基于消费模式的预测
     const patternBasedPredictions = await this.generatePatternBasedPredictions(timeContext);
     predictions.push(...patternBasedPredictions);
 
@@ -343,23 +326,33 @@ export class AIPredictionService {
   }
 
   /**
-   * 基于历史数据预测分类
+   * 基于历史数据预测分类 - 使用 Prisma
    */
   private async predictCategoryFromHistory(amount: number, timeContext?: string): Promise<TransactionPrediction[]> {
     const predictions: TransactionPrediction[] = [];
 
     try {
-      // 查询相似金额的历史交易
-      const { data: similarTransactions, error } = await supabase
-        .from('transactions')
-        .select('category, amount, note')
-        .gte('amount', amount * 0.8)
-        .lte('amount', amount * 1.2)
-        .is('deleted_at', null)
-        .order('date', { ascending: false })
-        .limit(50);
+      const prisma = getPrismaClient();
 
-      if (error || !similarTransactions || similarTransactions.length === 0) {
+      // 查询相似金额的历史交易
+      const similarTransactions = await prisma.transactions.findMany({
+        where: {
+          amount: {
+            gte: amount * 0.8,
+            lte: amount * 1.2
+          },
+          deleted_at: null
+        },
+        select: {
+          category: true,
+          amount: true,
+          note: true
+        },
+        orderBy: { date: 'desc' },
+        take: 50
+      });
+
+      if (!similarTransactions || similarTransactions.length === 0) {
         return predictions;
       }
 
@@ -371,7 +364,7 @@ export class AIPredictionService {
           categoryFrequency[transaction.category] = { count: 0, totalAmount: 0, examples: [] };
         }
         categoryFrequency[transaction.category].count++;
-        categoryFrequency[transaction.category].totalAmount += transaction.amount;
+        categoryFrequency[transaction.category].totalAmount += Number(transaction.amount);
         if (categoryFrequency[transaction.category].examples.length < 3) {
           categoryFrequency[transaction.category].examples.push(transaction.note || '');
         }
@@ -406,22 +399,30 @@ export class AIPredictionService {
   }
 
   /**
-   * 基于历史数据预测金额
+   * 基于历史数据预测金额 - 使用 Prisma
    */
   private async predictAmountFromHistory(category: string, timeContext?: string): Promise<TransactionPrediction[]> {
     const predictions: TransactionPrediction[] = [];
 
     try {
-      // 查询该分类的最近交易
-      const { data: categoryTransactions, error } = await supabase
-        .from('transactions')
-        .select('amount, note, date')
-        .eq('category', category)
-        .is('deleted_at', null)
-        .order('date', { ascending: false })
-        .limit(100);
+      const prisma = getPrismaClient();
 
-      if (error || !categoryTransactions || categoryTransactions.length === 0) {
+      // 查询该分类的最近交易
+      const categoryTransactions = await prisma.transactions.findMany({
+        where: {
+          category: category,
+          deleted_at: null
+        },
+        select: {
+          amount: true,
+          note: true,
+          date: true
+        },
+        orderBy: { date: 'desc' },
+        take: 100
+      });
+
+      if (!categoryTransactions || categoryTransactions.length === 0) {
         return predictions;
       }
 
@@ -430,9 +431,9 @@ export class AIPredictionService {
       const amounts: number[] = [];
 
       categoryTransactions.forEach(transaction => {
-        const roundedAmount = Math.round(transaction.amount * 100) / 100; // 保留两位小数
+        const roundedAmount = Math.round(Number(transaction.amount) * 100) / 100;
         amountFrequency[roundedAmount] = (amountFrequency[roundedAmount] || 0) + 1;
-        amounts.push(transaction.amount);
+        amounts.push(Number(transaction.amount));
       });
 
       // 计算统计数据
@@ -625,7 +626,7 @@ export class AIPredictionService {
 
     recentTransactions.forEach(transaction => {
       categoryCount[transaction.category] = (categoryCount[transaction.category] || 0) + 1;
-      totalAmount += transaction.amount;
+      totalAmount += Number(transaction.amount);
     });
 
     const frequentCategory = Object.entries(categoryCount)
@@ -681,4 +682,4 @@ export class AIPredictionService {
 }
 
 // 导出单例实例
-export const aiPredictionService = AIPredictionService.getInstance();
+export const aiPredictionServiceServer = AIPredictionServiceServer.getInstance();

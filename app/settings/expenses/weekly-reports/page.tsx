@@ -17,16 +17,112 @@ import {
   Loader2,
   BarChart3
 } from 'lucide-react';
-import {
-  getAllWeeklyReports,
-  getLatestWeeklyReport,
-  generateWeeklyReport,
-  formatWeekRange,
-  getWeekDescription,
-  formatCurrency,
-  formatPercentage,
-  type WeeklyReport
-} from '@/lib/services/weeklyReportService';
+// 周报告类型定义
+interface CategoryStat {
+  category: string;
+  amount: number;
+  count: number;
+  percentage: number;
+}
+
+interface MerchantStat {
+  merchant: string;
+  amount: number;
+  count: number;
+}
+
+interface PaymentMethodStat {
+  method: string;
+  amount: number;
+  count: number;
+  percentage: number;
+}
+
+interface WeeklyReport {
+  id: string;
+  user_id: string | null;
+  week_start_date: string;
+  week_end_date: string;
+  total_expenses: number;
+  transaction_count: number;
+  average_transaction: number | null;
+  category_breakdown: CategoryStat[];
+  top_merchants: MerchantStat[];
+  payment_method_stats: PaymentMethodStat[];
+  week_over_week_change: number | null;
+  week_over_week_percentage: number;
+  ai_insights: string | null;
+  generated_at: string;
+  generation_type: 'auto' | 'manual';
+}
+
+// API 调用函数
+async function fetchAllWeeklyReports(): Promise<WeeklyReport[]> {
+  const response = await fetch('/api/weekly-reports');
+  if (!response.ok) throw new Error('获取周报告列表失败');
+  const { data } = await response.json();
+  return data || [];
+}
+
+async function fetchLatestWeeklyReport(): Promise<WeeklyReport | null> {
+  const response = await fetch('/api/weekly-reports/latest');
+  if (!response.ok) throw new Error('获取最新周报告失败');
+  const { data } = await response.json();
+  return data;
+}
+
+async function generateWeeklyReportApi(): Promise<{ success: boolean; message: string }> {
+  const response = await fetch('/api/weekly-reports/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  });
+  if (!response.ok) throw new Error('生成周报告失败');
+  const { data } = await response.json();
+  return data;
+}
+
+// 工具函数
+function formatWeekRange(startDate: string, endDate: string): string {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  const startMonth = start.getMonth() + 1;
+  const startDay = start.getDate();
+  const endMonth = end.getMonth() + 1;
+  const endDay = end.getDate();
+
+  if (startMonth === endMonth) {
+    return `${startMonth}月${startDay}日 - ${endDay}日`;
+  } else {
+    return `${startMonth}月${startDay}日 - ${endMonth}月${endDay}日`;
+  }
+}
+
+function getWeekDescription(date: string): string {
+  const d = new Date(date);
+  const year = d.getFullYear();
+
+  const firstDayOfYear = new Date(year, 0, 1);
+  const daysDiff = Math.floor(
+    (d.getTime() - firstDayOfYear.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  const weekNumber = Math.ceil((daysDiff + firstDayOfYear.getDay() + 1) / 7);
+
+  return `${year}年第${weekNumber}周`;
+}
+
+function formatCurrency(amount: number): string {
+  return amount.toLocaleString('zh-CN', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+function formatPercentage(value: number): string {
+  const sign = value > 0 ? '+' : '';
+  return `${sign}${value.toFixed(1)}%`;
+}
 import {
   LineChart,
   Line,
@@ -90,8 +186,8 @@ export default function WeeklyReportsPage() {
     try {
       setLoading(true);
       const [allReports, latest] = await Promise.all([
-        getAllWeeklyReports(),
-        getLatestWeeklyReport()
+        fetchAllWeeklyReports(),
+        fetchLatestWeeklyReport()
       ]);
       setReports(allReports);
       setLatestReport(latest);
@@ -106,7 +202,7 @@ export default function WeeklyReportsPage() {
   async function handleGenerateReport() {
     try {
       setGenerating(true);
-      const result = await generateWeeklyReport();
+      const result = await generateWeeklyReportApi();
       await loadReports();
 
       if (result.success) {

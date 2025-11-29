@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { recurringExpenseService } from '@/lib/services/recurringExpenses';
+import { recurringExpenseService } from '@/lib/services/recurringExpenses.server';
 import { z } from 'zod';
 import { validateRequest, commonSchemas } from '@/lib/utils/validation';
 import { withErrorHandler } from '@/lib/domain/errors/errorHandler';
