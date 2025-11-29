@@ -1,5 +1,5 @@
 import { getPrismaClient } from '@/lib/clients/db';
-import { getExtendedQuickRange, type ExtendedQuickRange } from '@/lib/utils/date';
+import { getExtendedQuickRange, formatMonth, type ExtendedQuickRange } from '@/lib/utils/date';
 
 type RecurringExpense = {
   id: string;
@@ -43,6 +43,13 @@ export type PageData = {
   // 固定支出
   recurringExpenses: RecurringExpense[];
 };
+
+/**
+ * 解析月份标签（兼容旧逻辑）
+ */
+export function resolveMonthLabel(monthParam?: string): string {
+  return monthParam || formatMonth(new Date());
+}
 
 /**
  * 获取上一周期的范围类型
