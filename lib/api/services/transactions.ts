@@ -32,6 +32,9 @@ export interface CreateTransactionParams {
   date: string;
   currency?: string;
   paymentMethodId?: string;
+  payment_method?: string | null;
+  merchant?: string | null;
+  product?: string | null;
 }
 
 /**

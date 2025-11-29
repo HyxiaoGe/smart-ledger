@@ -1,11 +1,13 @@
 "use client";
-import { useEffect, useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CategoryChip } from '@/components/CategoryChip';
 import { useCategories } from '@/contexts/CategoryContext';
 import { formatCurrency } from '@/lib/utils/format';
 import { EmptyState } from '@/components/EmptyState';
+import { transactionsApi } from '@/lib/api/services/transactions';
 import { FileText } from 'lucide-react';
 import Link from 'next/link';
 
@@ -20,88 +22,62 @@ type Row = {
 };
 
 export function TransactionList({ initialRows = [] as Row[], start, end }: { initialRows?: Row[]; start?: string; end?: string }) {
-  const [rows, setRows] = useState<Row[]>(initialRows);
-  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [allRows, setAllRows] = useState<Row[]>(initialRows);
   const [query, setQuery] = useState('');
   const [view, setView] = useState<'card' | 'table'>('card');
-  const [hasMore, setHasMore] = useState(true);
   const { getCategoryLabel } = useCategories();
-  
-      
-  useEffect(() => {
-    if (initialRows.length === 0 && start) {
-      (async () => {
-        setLoading(true);
-        const params = new URLSearchParams();
-        if (start) params.set('start_date', start);
-        if (end) params.set('end_date', end);
-        params.set('type', 'expense');
-        params.set('page_size', '50');
 
-        const response = await fetch(`/api/transactions?${params.toString()}`);
-        const result = await response.json();
-        const data = result.data || [];
-        setRows(data as Row[]);
-        if (data.length < 50) setHasMore(false);
-        setLoading(false);
-      })();
-    }
-  }, [initialRows.length, start, end]);
-
-  useEffect(() => {
-    if (initialRows.length > 0 && start) {
-      (async () => {
-        setLoading(true);
-        const params = new URLSearchParams();
-        if (start) params.set('start_date', start);
-        if (end) params.set('end_date', end);
-        params.set('type', 'expense');
-        params.set('page_size', '50');
-
-        const response = await fetch(`/api/transactions?${params.toString()}`);
-        const result = await response.json();
-        const data = result.data || [];
-        setRows(data as Row[]);
-        if (data.length < 50) setHasMore(false);
-        setLoading(false);
-      })();
-    }
-  }, [start, end]);
-
-  
-  
-  
-  
-  const busy = loading;
-  const filtered = rows.filter((r) => {
-    const q = query.trim().toLowerCase();
-    if (!q) return true;
-    const catLabel = getCategoryLabel(r.category);
-    const typeLabel = r.type === 'income' ? '收入' : '支出';
-    return (
-      r.category.toLowerCase().includes(q) ||
-      catLabel.toLowerCase().includes(q) ||
-      r.type.toLowerCase().includes(q) ||
-      typeLabel.toLowerCase().includes(q)
-    );
+  // 使用 React Query 获取交易列表
+  const { data: transactionsData, isLoading: loading, isFetching } = useQuery({
+    queryKey: ['transaction-list', start, end, page],
+    queryFn: () => transactionsApi.list({
+      start_date: start,
+      end_date: end,
+      type: 'expense',
+      page,
+      page_size: 50,
+    }),
+    enabled: !!start,
   });
 
-  async function loadMore() {
-    setLoading(true);
-    const currentPage = Math.floor(rows.length / 50) + 1;
-    const params = new URLSearchParams();
-    if (start) params.set('start_date', start);
-    if (end) params.set('end_date', end);
-    params.set('type', 'expense');
-    params.set('page', String(currentPage + 1));
-    params.set('page_size', '50');
+  // 当数据变化时更新行列表
+  useEffect(() => {
+    if (transactionsData?.data) {
+      if (page === 1) {
+        setAllRows(transactionsData.data as Row[]);
+      } else {
+        setAllRows(prev => [...prev, ...(transactionsData.data as Row[])]);
+      }
+    }
+  }, [transactionsData, page]);
 
-    const response = await fetch(`/api/transactions?${params.toString()}`);
-    const result = await response.json();
-    const more = (result.data || []) as Row[];
-    setRows((rs) => rs.concat(more));
-    if (more.length < 50) setHasMore(false);
-    setLoading(false);
+  // 计算是否还有更多数据
+  const hasMore = useMemo(() => {
+    const currentData = transactionsData?.data || [];
+    return currentData.length >= 50;
+  }, [transactionsData]);
+
+  const rows = allRows;
+  const busy = loading || isFetching;
+
+  const filtered = useMemo(() => {
+    return rows.filter((r) => {
+      const q = query.trim().toLowerCase();
+      if (!q) return true;
+      const catLabel = getCategoryLabel(r.category);
+      const typeLabel = r.type === 'income' ? '收入' : '支出';
+      return (
+        r.category.toLowerCase().includes(q) ||
+        catLabel.toLowerCase().includes(q) ||
+        r.type.toLowerCase().includes(q) ||
+        typeLabel.toLowerCase().includes(q)
+      );
+    });
+  }, [rows, query, getCategoryLabel]);
+
+  function loadMore() {
+    setPage(p => p + 1);
   }
 
   function exportCsv() {

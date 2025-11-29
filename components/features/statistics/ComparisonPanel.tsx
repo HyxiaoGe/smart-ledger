@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Trophy, Users, ChevronDown, RefreshCw, Award, ArrowUp, ArrowDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAllDataSyncEvents } from '@/hooks/useEnhancedDataSync';
+import { transactionsApi } from '@/lib/api/services/transactions';
 
 interface ComparisonData {
   userStats: {
@@ -43,166 +45,157 @@ export function ComparisonPanel({
   className = '',
   currentMonth = ''
 }: ComparisonPanelProps) {
-  const [data, setData] = useState<ComparisonData | null>(null);
-  const [loading, setLoading] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
+
+  // 计算月份参数
+  const month = currentMonth || new Date().toISOString().slice(0, 7);
+  const startDate = `${month}-01`;
+  const endDate = `${month}-31`;
+
+  // 使用 React Query 获取交易数据
+  const { data: transactionsData, isLoading: loading, refetch } = useQuery({
+    queryKey: ['comparison-transactions', month],
+    queryFn: () => transactionsApi.list({
+      start_date: startDate,
+      end_date: endDate,
+      page_size: 1000,
+    }),
+  });
 
   // 监听数据同步事件
   useAllDataSyncEvents(() => {
-    generateComparisonData();
+    refetch();
   });
 
-  // 模拟同类用户数据（实际项目中应该有更复杂的对比算法）
-  const generateComparisonData = async () => {
-    try {
-      const month = currentMonth || new Date().toISOString().slice(0, 7);
+  // 从交易数据计算对比数据
+  const data = useMemo<ComparisonData | null>(() => {
+    if (!transactionsData) return null;
 
-      // 获取用户当前月数据
-      const startDate = `${month}-01`;
-      const endDate = `${month}-31`;
-      const response = await fetch(`/api/transactions?start_date=${startDate}&end_date=${endDate}&page_size=1000`);
-      if (!response.ok) throw new Error('获取交易数据失败');
-      const result = await response.json();
-      const currentData = result.data || [];
+    const currentData = transactionsData.data || [];
+    const expenseData = currentData.filter((t: { type: string }) => t.type === 'expense') || [];
+    const incomeData = currentData.filter((t: { type: string }) => t.type === 'income') || [];
 
-      // 计算用户统计数据
-      const expenseData = currentData?.filter(t => t.type === 'expense') || [];
-      const incomeData = currentData?.filter(t => t.type === 'income') || [];
+    const totalExpense = expenseData.reduce((sum: number, t: { amount: number }) => sum + t.amount, 0);
+    const totalIncome = incomeData.reduce((sum: number, t: { amount: number }) => sum + t.amount, 0);
 
-      const totalExpense = expenseData.reduce((sum, t) => sum + t.amount, 0);
-      const totalIncome = incomeData.reduce((sum, t) => sum + t.amount, 0);
+    const categoryBreakdown: Record<string, number> = {};
+    expenseData.forEach((t: { category: string; amount: number }) => {
+      categoryBreakdown[t.category] = (categoryBreakdown[t.category] || 0) + t.amount;
+    });
 
-      const categoryBreakdown: Record<string, number> = {};
-      expenseData.forEach(t => {
-        categoryBreakdown[t.category] = (categoryBreakdown[t.category] || 0) + t.amount;
+    // 模拟同类用户统计数据
+    const peerStats = {
+      average: 3500,
+      median: 3200,
+      top10Percent: 8000,
+      bottom10Percent: 1200,
+      categoryAverages: {
+        food: 1200,
+        transport: 400,
+        housing: 800,
+        entertainment: 300,
+        shopping: 500,
+        utilities: 200,
+        healthcare: 200,
+        education: 150
+      }
+    };
+
+    // 计算排名（模拟）
+    const allUsers = 1000;
+    const sortedExpenses = Array.from({ length: allUsers }, () => {
+      return peerStats.average + (Math.random() - 0.5) * 2000;
+    }).sort((a, b) => a - b);
+
+    const userRank = sortedExpenses.findIndex(amount => amount >= totalExpense) + 1;
+    const percentile = ((allUsers - userRank + 1) / allUsers) * 100;
+
+    // 生成洞察
+    const insights: ComparisonData['insights'] = [];
+
+    if (totalExpense < peerStats.average) {
+      insights.push({
+        type: 'advantage',
+        title: '支出控制良好',
+        description: '您的支出低于同类用户平均水平',
+        comparison: `比平均少¥${(peerStats.average - totalExpense).toFixed(0)}`
       });
 
-      // 模拟同类用户统计数据（基于行业数据）
-      const peerStats = {
-        average: 3500,
-        median: 3200,
-        top10Percent: 8000,
-        bottom10Percent: 1200,
-        categoryAverages: {
-          food: 1200,
-          transport: 400,
-          housing: 800,
-          entertainment: 300,
-          shopping: 500,
-          utilities: 200,
-          healthcare: 200,
-          education: 150
-        }
-      };
-
-      // 计算排名（模拟）
-      const allUsers = 1000; // 模拟总用户数
-      const sortedExpenses = Array.from({ length: allUsers }, () => {
-        // 使用正态分布模拟用户支出
-        const randomExpenses = peerStats.average + (Math.random() - 0.5) * 2000;
-        return randomExpenses;
-      }).sort((a, b) => a - b);
-
-      const userRank = sortedExpenses.findIndex(amount => amount >= totalExpense) + 1;
-      const percentile = ((allUsers - userRank + 1) / allUsers) * 100;
-
-      // 生成洞察
-      const insights: ComparisonData['insights'] = [];
-
-      if (totalExpense < peerStats.average) {
+      if (percentile <= 25) {
         insights.push({
           type: 'advantage',
-          title: '支出控制良好',
-          description: '您的支出低于同类用户平均水平',
-          comparison: `比平均少¥${(peerStats.average - totalExpense).toFixed(0)}`
+          title: '理财能力优秀',
+          description: '您处于用户支出最低的25%',
+          comparison: '具备较强的储蓄能力'
         });
+      }
+    } else {
+      insights.push({
+        type: 'disadvantage',
+        title: '支出偏高',
+        description: '您的支出高于同类用户平均水平',
+        comparison: `比平均多¥${(totalExpense - peerStats.average).toFixed(0)}`
+      });
 
-        if (percentile <= 25) {
-          insights.push({
-            type: 'advantage',
-            title: '理财能力优秀',
-            description: '您处于用户支出最低的25%',
-            comparison: '具备较强的储蓄能力'
-          });
-        }
-      } else {
+      if (percentile >= 75) {
         insights.push({
           type: 'disadvantage',
-          title: '支出偏高',
-          description: '您的支出高于同类用户平均水平',
-          comparison: `比平均多¥${(totalExpense - peerStats.average).toFixed(0)}`
-        });
-
-        if (percentile >= 75) {
-          insights.push({
-            type: 'disadvantage',
-            title: '需要注意预算',
-            description: '您处于用户支出最高的25%',
-            comparison: '建议审视支出结构'
-          });
-        }
-      }
-
-      // 类别对比洞察
-      Object.entries(categoryBreakdown).forEach(([category, amount]) => {
-        const peerAverage = peerStats.categoryAverages[category] || 0;
-        if (Math.abs(amount - peerAverage) > peerAverage * 0.3) {
-          insights.push({
-            type: 'opportunity',
-            title: `${category}类消费`,
-            description: `${category}支出${amount > peerAverage ? '偏高' : '偏低'}`,
-            comparison: `同类平均: ¥${peerAverage.toFixed(0)}`
-          });
-        }
-      });
-
-      // 储蓄能力分析
-      const savingsRate = totalIncome > 0 ? ((totalIncome - totalExpense) / totalIncome) * 100 : 0;
-      const peerSavingsRate = 25; // 假设平均储蓄率25%
-
-      if (savingsRate > peerSavingsRate) {
-        insights.push({
-          type: 'advantage',
-          title: '储蓄能力较强',
-          description: `储蓄率${savingsRate.toFixed(1)}%高于平均`,
-          comparison: `同类平均: ${peerSavingsRate}%`
+          title: '需要注意预算',
+          description: '您处于用户支出最高的25%',
+          comparison: '建议审视支出结构'
         });
       }
-
-      setData({
-        userStats: {
-          monthlyAverage: totalExpense,
-          categoryBreakdown,
-          spendingStability: 75, // 模拟稳定性评分
-          incomeRatio: totalIncome > 0 ? (totalIncome - totalExpense) / totalIncome * 100 : 0
-        },
-        peerStats,
-        ranking: {
-          position: userRank,
-          percentile: Math.round(percentile),
-          totalUsers: allUsers
-        },
-        insights: insights.slice(0, 5)
-      });
-
-    } catch (error) {
-      console.error('生成对比数据失败:', error);
-    } finally {
-      setLoading(false);
     }
-  };
+
+    // 类别对比洞察
+    Object.entries(categoryBreakdown).forEach(([category, amount]) => {
+      const peerAverage = peerStats.categoryAverages[category as keyof typeof peerStats.categoryAverages] || 0;
+      if (Math.abs(amount - peerAverage) > peerAverage * 0.3) {
+        insights.push({
+          type: 'opportunity',
+          title: `${category}类消费`,
+          description: `${category}支出${amount > peerAverage ? '偏高' : '偏低'}`,
+          comparison: `同类平均: ¥${peerAverage.toFixed(0)}`
+        });
+      }
+    });
+
+    // 储蓄能力分析
+    const savingsRate = totalIncome > 0 ? ((totalIncome - totalExpense) / totalIncome) * 100 : 0;
+    const peerSavingsRate = 25;
+
+    if (savingsRate > peerSavingsRate) {
+      insights.push({
+        type: 'advantage',
+        title: '储蓄能力较强',
+        description: `储蓄率${savingsRate.toFixed(1)}%高于平均`,
+        comparison: `同类平均: ${peerSavingsRate}%`
+      });
+    }
+
+    return {
+      userStats: {
+        monthlyAverage: totalExpense,
+        categoryBreakdown,
+        spendingStability: 75,
+        incomeRatio: totalIncome > 0 ? (totalIncome - totalExpense) / totalIncome * 100 : 0
+      },
+      peerStats,
+      ranking: {
+        position: userRank,
+        percentile: Math.round(percentile),
+        totalUsers: allUsers
+      },
+      insights: insights.slice(0, 5)
+    };
+  }, [transactionsData]);
 
   // 刷新数据
   const refreshData = () => {
-    setLoading(true);
-    generateComparisonData();
+    refetch();
   };
 
-  useEffect(() => {
-    generateComparisonData();
-  }, [currentMonth]);
 
-  
   // 获取排名图标
   const getRankingIcon = (percentile: number) => {
     if (percentile >= 90) return <Trophy className="h-4 w-4 text-yellow-500" />;

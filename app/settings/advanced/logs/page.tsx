@@ -1,12 +1,20 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PageSkeleton } from '@/components/shared/PageSkeleton';
+import {
+  adminApi,
+  type LogLevel,
+  type LogCategory,
+  type LogRecord,
+  type LogStats,
+} from '@/lib/api/services/admin';
 import {
   AlertCircle,
   Info,
@@ -21,56 +29,10 @@ import {
   ChevronRight,
 } from 'lucide-react';
 
-// 日志类型定义
-type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'fatal';
-type LogCategory = 'api_request' | 'user_action' | 'system' | 'error' | 'performance' | 'security' | 'data_sync';
-
-interface LogRecord {
-  id: string;
-  level: LogLevel;
-  category: LogCategory;
-  message: string;
-  trace_id?: string;
-  method?: string;
-  path?: string;
-  status_code?: number;
-  duration_ms?: number;
-  metadata?: Record<string, any>;
-  created_at: string;
-}
-
-interface LogStats {
-  overview: {
-    total_logs: number;
-    error_logs: number;
-    recent_24h: number;
-    recent_1h: number;
-  };
-  level_stats: Array<{ level: string; count: number }>;
-  category_stats: Array<{ category: string; count: number }>;
-  api_stats: {
-    total_requests: number;
-    success_requests: number;
-    client_errors: number;
-    server_errors: number;
-    success_rate: number;
-    avg_response_time: number;
-  };
-  recent_errors: LogRecord[];
-}
-
 export default function LogsPage() {
-  // 状态管理
-  const [logs, setLogs] = useState<LogRecord[]>([]);
-  const [stats, setStats] = useState<LogStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   // 分页状态
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
-  const [totalPages, setTotalPages] = useState(0);
-  const [total, setTotal] = useState(0);
 
   // 过滤状态
   const [filters, setFilters] = useState({
@@ -82,63 +44,39 @@ export default function LogsPage() {
   // 选中的日志详情
   const [selectedLog, setSelectedLog] = useState<LogRecord | null>(null);
 
-  // 加载日志列表
-  const fetchLogs = async () => {
-    setLoading(true);
-    setError(null);
+  // 使用 React Query 获取日志列表
+  const {
+    data: logsData,
+    isLoading: loading,
+    error: logsError,
+    refetch: refetchLogs,
+  } = useQuery({
+    queryKey: ['admin-logs', page, pageSize, filters],
+    queryFn: () => adminApi.getLogs({
+      page,
+      page_size: pageSize,
+      level: filters.level || undefined,
+      category: filters.category || undefined,
+      search: filters.search || undefined,
+    }),
+  });
 
-    try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        page_size: pageSize.toString(),
-      });
+  // 使用 React Query 获取统计信息
+  const { data: stats, refetch: refetchStats } = useQuery({
+    queryKey: ['admin-logs-stats'],
+    queryFn: () => adminApi.getLogStats(),
+  });
 
-      if (filters.level) params.append('level', filters.level);
-      if (filters.category) params.append('category', filters.category);
-      if (filters.search) params.append('search', filters.search);
-
-      const response = await fetch(`/api/admin/logs?${params.toString()}`);
-      const data = await response.json();
-
-      if (data.success) {
-        setLogs(data.data);
-        setTotalPages(data.pagination.total_pages);
-        setTotal(data.pagination.total);
-      } else {
-        setError('加载日志失败');
-      }
-    } catch (err) {
-      setError('网络错误，请稍后重试');
-      console.error('Failed to fetch logs:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 加载统计信息
-  const fetchStats = async () => {
-    try {
-      const response = await fetch('/api/admin/logs/stats');
-      const data = await response.json();
-
-      if (data.success) {
-        setStats(data.data);
-      }
-    } catch (err) {
-      console.error('Failed to fetch stats:', err);
-    }
-  };
-
-  // 初始加载
-  useEffect(() => {
-    fetchLogs();
-    fetchStats();
-  }, [page, filters]);
+  // 从查询结果中提取数据
+  const logs = logsData?.data || [];
+  const totalPages = logsData?.pagination.total_pages || 0;
+  const total = logsData?.pagination.total || 0;
+  const error = logsError ? '网络错误，请稍后重试' : null;
 
   // 刷新
   const handleRefresh = () => {
-    fetchLogs();
-    fetchStats();
+    refetchLogs();
+    refetchStats();
   };
 
   // 应用过滤
