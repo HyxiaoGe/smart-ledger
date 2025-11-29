@@ -15,10 +15,12 @@
 | 阶段2 | ✅ 完成 | 更新页面组件使用 API 路由 |
 | 阶段3 | ✅ 完成 | 清理 API 路由中的 Supabase 依赖 |
 | 阶段4 | ✅ 完成 | 简化 Repository 工厂和数据库客户端 |
-| 阶段5 | 🔄 进行中 | 迁移剩余服务 |
-| 阶段6 | ⏳ 待处理 | 删除 Supabase 相关文件 |
-| 阶段7 | ⏳ 待处理 | 更新配置和依赖 |
-| 阶段8 | ⏳ 待处理 | 更新文档 |
+| 阶段5 | ✅ 完成 | 迁移剩余服务 (weeklyReport, aiPrediction, paymentMethod, recurringExpenses) |
+| 阶段6 | ✅ 完成 | 删除 Supabase 相关文件 (~41个文件, ~5700行代码) |
+| 阶段7 | ✅ 完成 | 更新配置和依赖 (package.json, .env.local.example) |
+| 阶段8 | ✅ 完成 | 更新文档 (CLAUDE.md, README.md) |
+
+> **🎉 清理完成!** Supabase 依赖已完全移除，项目现在使用 Prisma + PostgreSQL。
 
 ---
 
@@ -54,23 +56,33 @@
 
 ---
 
-## 待完成的工作
+## ✅ 已完成的迁移工作
 
-### 阶段5: 迁移剩余服务
+### 阶段5: 迁移剩余服务 (已完成)
 
-以下服务文件仍然使用 Supabase，需要迁移或替换:
+| 文件 | 处理方案 | 状态 |
+|-----|---------|------|
+| `lib/services/weeklyReportService.ts` | 创建 .server.ts + 4个 API 路由 | ✅ 已删除 |
+| `lib/services/paymentMethodService.ts` | 组件改用 API 调用 | ✅ 已删除 |
+| `lib/services/recurringExpenses.ts` | API 路由迁移到 .server.ts | ✅ 已删除 |
+| `lib/services/cronService.ts` | 保留工具函数，移除数据库操作 | ✅ 已简化 |
+| `lib/services/aiPrediction.ts` | 创建 .server.ts + API 调用 | ✅ 已删除 |
+| `lib/services/categoryService.ts` | 无引用 | ✅ 已删除 |
 
-| 文件 | 被引用位置 | 建议方案 |
-|-----|-----------|---------|
-| `lib/services/weeklyReportService.ts` | weekly-reports 页面 | 创建 .server.ts + API |
-| `lib/services/paymentMethodService.ts` | 组件 + 页面 | 更新组件使用 API (API 已创建) |
-| `lib/services/recurringExpenses.ts` | API 路由 | 迁移到 .server.ts |
-| `lib/services/cronService.ts` | cron 页面 + API | 已有 .server.ts |
-| `lib/services/aiPrediction.ts` | 组件 + API | 迁移到 .server.ts |
-| `lib/services/categoryService.ts` | 无引用 | 可删除 |
+### 阶段6: 删除 Supabase 相关文件 (已完成)
 
-### 阶段6-8
-按原计划执行删除、配置更新和文档更新。
+- ✅ 删除 `lib/clients/supabase/` 目录
+- ✅ 删除 9 个 Supabase Repository 文件
+- ✅ 删除旧版服务文件
+- ✅ 删除日志传输器和迁移脚本
+- ✅ 简化数据库客户端入口
+
+### 阶段7-8: 配置和文档更新 (已完成)
+
+- ✅ 从 package.json 移除 `@supabase/supabase-js`
+- ✅ 更新 .env.local.example
+- ✅ 更新 CLAUDE.md 项目文档
+- ✅ 更新 README.md
 
 ---
 

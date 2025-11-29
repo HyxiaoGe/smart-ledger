@@ -1,6 +1,6 @@
 /**
  * Prisma 客户端单例
- * 用于替换 Supabase 客户端，提供本地 PostgreSQL 数据库访问
+ * 提供 PostgreSQL 数据库访问
  */
 const { PrismaClient } = require('@prisma/client');
 
