@@ -1,14 +1,8 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils/format';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 interface DayData {
   date: string; // YYYY-MM-DD
@@ -57,6 +51,8 @@ export function CalendarHeatmap({
   currency,
   onDayClick,
 }: CalendarHeatmapProps) {
+  const [hoveredDay, setHoveredDay] = useState<string | null>(null);
+
   // 构建日期到数据的映射
   const dayMap = useMemo(() => {
     const map = new Map<string, DayData>();
@@ -116,55 +112,62 @@ export function CalendarHeatmap({
         </div>
 
         {/* 日历网格 */}
-        <TooltipProvider delayDuration={100}>
-          <div className="grid grid-cols-7 gap-1">
-            {calendarDays.map((item, index) => {
-              if (item.day === null) {
-                return <div key={`empty-${index}`} className="aspect-square" />;
-              }
+        <div className="grid grid-cols-7 gap-1">
+          {calendarDays.map((item, index) => {
+            if (item.day === null) {
+              return <div key={`empty-${index}`} className="aspect-square" />;
+            }
 
-              const dayData = item.date ? dayMap.get(item.date) : null;
-              const amount = dayData?.amount || 0;
-              const count = dayData?.count || 0;
-              const heatLevel = getHeatLevel(amount, maxAmount);
-              const colorClass = HEAT_COLORS[heatLevel];
+            const dayData = item.date ? dayMap.get(item.date) : null;
+            const amount = dayData?.amount || 0;
+            const count = dayData?.count || 0;
+            const heatLevel = getHeatLevel(amount, maxAmount);
+            const colorClass = HEAT_COLORS[heatLevel];
 
-              const isToday =
-                item.date === new Date().toISOString().slice(0, 10);
+            const isToday =
+              item.date === new Date().toISOString().slice(0, 10);
+            const isHovered = hoveredDay === item.date;
 
-              return (
-                <Tooltip key={item.date}>
-                  <TooltipTrigger asChild>
-                    <button
-                      className={`
-                        aspect-square rounded-sm flex items-center justify-center
-                        text-xs font-medium transition-all
-                        ${colorClass}
-                        ${isToday ? 'ring-2 ring-blue-500 ring-offset-1' : ''}
-                        ${amount > 0 ? 'text-gray-700 dark:text-gray-200' : 'text-gray-400 dark:text-gray-500'}
-                        hover:ring-2 hover:ring-gray-400 hover:ring-offset-1
-                      `}
-                      onClick={() => item.date && onDayClick?.(item.date)}
-                    >
-                      {item.day}
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="text-xs">
-                    <div className="font-medium">{item.date}</div>
-                    {amount > 0 ? (
-                      <>
-                        <div>支出: {formatCurrency(amount, currency)}</div>
-                        <div>笔数: {count} 笔</div>
-                      </>
-                    ) : (
-                      <div className="text-muted-foreground">无消费记录</div>
-                    )}
-                  </TooltipContent>
-                </Tooltip>
-              );
-            })}
-          </div>
-        </TooltipProvider>
+            return (
+              <div key={item.date} className="relative">
+                <button
+                  className={`
+                    w-full aspect-square rounded-sm flex items-center justify-center
+                    text-xs font-medium transition-all
+                    ${colorClass}
+                    ${isToday ? 'ring-2 ring-blue-500 ring-offset-1' : ''}
+                    ${amount > 0 ? 'text-gray-700 dark:text-gray-200' : 'text-gray-400 dark:text-gray-500'}
+                    hover:ring-2 hover:ring-gray-400 hover:ring-offset-1
+                  `}
+                  onClick={() => item.date && onDayClick?.(item.date)}
+                  onMouseEnter={() => setHoveredDay(item.date)}
+                  onMouseLeave={() => setHoveredDay(null)}
+                >
+                  {item.day}
+                </button>
+
+                {/* 自定义 Tooltip */}
+                {isHovered && (
+                  <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none">
+                    <div className="bg-popover text-popover-foreground rounded-md border px-3 py-2 text-xs shadow-md whitespace-nowrap">
+                      <div className="font-medium">{item.date}</div>
+                      {amount > 0 ? (
+                        <>
+                          <div>支出: {formatCurrency(amount, currency)}</div>
+                          <div>笔数: {count} 笔</div>
+                        </>
+                      ) : (
+                        <div className="text-muted-foreground">无消费记录</div>
+                      )}
+                      {/* 小三角 */}
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-border" />
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
 
         {/* 图例 */}
         <div className="flex items-center justify-end gap-2 mt-4 text-xs text-muted-foreground">
