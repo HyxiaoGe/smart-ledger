@@ -1,4 +1,4 @@
-import { executeQuery, getPrismaClient, getSupabaseClient } from '@/lib/clients/db';
+import { getPrismaClient } from '@/lib/clients/db';
 import { parseMonthStr, formatMonth, getQuickRange } from '@/lib/utils/date';
 
 type MonthData = {
@@ -93,53 +93,26 @@ async function loadMonthData(currency: string, date: Date): Promise<MonthData> {
   }
 
   const { start, end, prevStart, prevEnd } = monthRange(date);
+  const prisma = getPrismaClient();
 
-  const [rows, prevRows] = await executeQuery(
-    // Supabase 查询
-    async () => {
-      const supabase = getSupabaseClient();
-      const [cur, prev] = await Promise.all([
-        supabase
-          .from('transactions')
-          .select('type, category, amount, date, currency')
-          .is('deleted_at', null)
-          .gte('date', start)
-          .lt('date', end)
-          .eq('currency', currency),
-        supabase
-          .from('transactions')
-          .select('type, amount, date, currency')
-          .is('deleted_at', null)
-          .gte('date', prevStart)
-          .lt('date', prevEnd)
-          .eq('currency', currency)
-      ]);
-      return [cur.data || [], prev.data || []] as [any[], any[]];
-    },
-    // Prisma 查询
-    async () => {
-      const prisma = getPrismaClient();
-      const [cur, prev] = await Promise.all([
-        prisma.transactions.findMany({
-          where: {
-            deleted_at: null,
-            date: { gte: new Date(start), lt: new Date(end) },
-            currency,
-          },
-          select: { type: true, category: true, amount: true, date: true, currency: true },
-        }),
-        prisma.transactions.findMany({
-          where: {
-            deleted_at: null,
-            date: { gte: new Date(prevStart), lt: new Date(prevEnd) },
-            currency,
-          },
-          select: { type: true, amount: true, date: true, currency: true },
-        }),
-      ]);
-      return [cur, prev] as [any[], any[]];
-    }
-  );
+  const [rows, prevRows] = await Promise.all([
+    prisma.transactions.findMany({
+      where: {
+        deleted_at: null,
+        date: { gte: new Date(start), lt: new Date(end) },
+        currency,
+      },
+      select: { type: true, category: true, amount: true, date: true, currency: true },
+    }),
+    prisma.transactions.findMany({
+      where: {
+        deleted_at: null,
+        date: { gte: new Date(prevStart), lt: new Date(prevEnd) },
+        currency,
+      },
+      select: { type: true, amount: true, date: true, currency: true },
+    }),
+  ]);
 
   const sum = (arr: any[], pred: (item: any) => boolean) =>
     arr.filter(pred).reduce((a, b) => a + Number(b.amount || 0), 0);
@@ -207,45 +180,23 @@ async function loadRangeData(
     queryEnd = endDate.toISOString().slice(0, 10);
   }
 
-  const rows = await executeQuery(
-    // Supabase 查询
-    async () => {
-      const supabase = getSupabaseClient();
-      let query = supabase
-        .from('transactions')
-        .select('type, category, amount, date, currency')
-        .is('deleted_at', null)
-        .eq('currency', currency);
+  const prisma = getPrismaClient();
+  const where: any = {
+    deleted_at: null,
+    currency,
+  };
 
-      if (isSingleDay) {
-        query = query.eq('date', rStart);
-      } else {
-        query = query.gte('date', rStart).lt('date', queryEnd);
-      }
+  if (isSingleDay) {
+    where.date = new Date(rStart);
+  } else {
+    where.date = { gte: new Date(rStart), lt: new Date(queryEnd) };
+  }
 
-      const { data } = await query;
-      return data || [];
-    },
-    // Prisma 查询
-    async () => {
-      const prisma = getPrismaClient();
-      const where: any = {
-        deleted_at: null,
-        currency,
-      };
+  const rows = await prisma.transactions.findMany({
+    where,
+    select: { type: true, category: true, amount: true, date: true, currency: true },
+  });
 
-      if (isSingleDay) {
-        where.date = new Date(rStart);
-      } else {
-        where.date = { gte: new Date(rStart), lt: new Date(queryEnd) };
-      }
-
-      return await prisma.transactions.findMany({
-        where,
-        select: { type: true, category: true, amount: true, date: true, currency: true },
-      });
-    }
-  );
   const expense = rows.filter((r) => r.type === 'expense').reduce((a, b) => a + Number(b.amount || 0), 0);
 
   return { expense, label: rLabel, rows };
@@ -281,58 +232,34 @@ async function loadTopData(
     queryEnd = endDate.toISOString().slice(0, 10);
   }
 
-  const transactions = await executeQuery(
-    // Supabase 查询
-    async () => {
-      const supabase = getSupabaseClient();
-      let query = supabase
-        .from('transactions')
-        .select('id, type, category, amount, date, note, currency, merchant, subcategory, product')
-        .is('deleted_at', null)
-        .eq('currency', currency)
-        .eq('type', 'expense');
+  const prisma = getPrismaClient();
+  const where: any = {
+    deleted_at: null,
+    currency,
+    type: 'expense',
+  };
 
-      if (isSingleDay) {
-        query = query.eq('date', rStart);
-      } else {
-        query = query.gte('date', rStart).lt('date', queryEnd);
-      }
+  if (isSingleDay) {
+    where.date = new Date(rStart);
+  } else {
+    where.date = { gte: new Date(rStart), lt: new Date(queryEnd) };
+  }
 
-      const { data } = await query;
-      return data || [];
+  const transactions = await prisma.transactions.findMany({
+    where,
+    select: {
+      id: true,
+      type: true,
+      category: true,
+      amount: true,
+      date: true,
+      note: true,
+      currency: true,
+      merchant: true,
+      subcategory: true,
+      product: true,
     },
-    // Prisma 查询
-    async () => {
-      const prisma = getPrismaClient();
-      const where: any = {
-        deleted_at: null,
-        currency,
-        type: 'expense',
-      };
-
-      if (isSingleDay) {
-        where.date = new Date(rStart);
-      } else {
-        where.date = { gte: new Date(rStart), lt: new Date(queryEnd) };
-      }
-
-      return await prisma.transactions.findMany({
-        where,
-        select: {
-          id: true,
-          type: true,
-          category: true,
-          amount: true,
-          date: true,
-          note: true,
-          currency: true,
-          merchant: true,
-          subcategory: true,
-          product: true,
-        },
-      });
-    }
-  );
+  });
 
   // 按分类聚合数据
   const categoryMap = new Map<string, {
@@ -347,15 +274,18 @@ async function loadTopData(
   for (const transaction of transactions) {
     const category = transaction.category || 'other';
     const amount = Number(transaction.amount || 0);
+    const dateStr = transaction.date instanceof Date
+      ? transaction.date.toISOString().slice(0, 10)
+      : String(transaction.date);
 
     if (!categoryMap.has(category)) {
       categoryMap.set(category, {
         category,
         total: 0,
         count: 0,
-        latestDate: transaction.date,
-        merchant: transaction.merchant,
-        note: transaction.note
+        latestDate: dateStr,
+        merchant: transaction.merchant || undefined,
+        note: transaction.note || undefined
       });
     }
 
@@ -364,10 +294,10 @@ async function loadTopData(
     categoryData.count += 1;
 
     // 保留最新的日期和商家信息
-    if (transaction.date > categoryData.latestDate) {
-      categoryData.latestDate = transaction.date;
-      categoryData.merchant = transaction.merchant;
-      categoryData.note = transaction.note;
+    if (dateStr > categoryData.latestDate) {
+      categoryData.latestDate = dateStr;
+      categoryData.merchant = transaction.merchant || undefined;
+      categoryData.note = transaction.note || undefined;
     }
   }
 
@@ -390,31 +320,15 @@ async function loadTopData(
 
 async function loadRecurringExpenses(): Promise<RecurringExpense[]> {
   try {
-    return await executeQuery(
-      // Supabase 查询
-      async () => {
-        const supabase = getSupabaseClient();
-        const { data, error } = await supabase
-          .from('recurring_expenses')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        return (data || []) as RecurringExpense[];
-      },
-      // Prisma 查询
-      async () => {
-        const prisma = getPrismaClient();
-        const data = await prisma.recurring_expenses.findMany({
-          orderBy: { created_at: 'desc' },
-        });
-        // 转换 Decimal 为 number
-        return data.map((item: any) => ({
-          ...item,
-          amount: Number(item.amount),
-        })) as RecurringExpense[];
-      }
-    );
+    const prisma = getPrismaClient();
+    const data = await prisma.recurring_expenses.findMany({
+      orderBy: { created_at: 'desc' },
+    });
+    // 转换 Decimal 为 number
+    return data.map((item: any) => ({
+      ...item,
+      amount: Number(item.amount),
+    })) as RecurringExpense[];
   } catch (error) {
     console.error('获取固定支出列表失败:', error);
     return [];
