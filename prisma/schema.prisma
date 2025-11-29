@@ -113,6 +113,12 @@ model ai_requests {
   request_id       String?   @db.VarChar
   created_at       DateTime? @default(now()) @db.Timestamptz(6)
   updated_at       DateTime? @default(now()) @db.Timestamptz(6)
+
+  // 性能优化索引
+  @@index([timestamp])                      // 按时间查询
+  @@index([feature_type])                   // 按功能类型查询
+  @@index([status])                         // 按状态筛选
+  @@index([ai_provider, feature_type])      // 按提供商+功能类型
 }
 
 model ai_sessions {
@@ -162,6 +168,12 @@ model budgets {
   is_active       Boolean  @default(true)
   created_at      DateTime @default(now()) @db.Timestamptz(6)
   updated_at      DateTime @default(now()) @db.Timestamptz(6)
+
+  // 性能优化索引
+  @@index([year, month])                    // 按年月查询预算
+  @@index([category_key])                   // 按分类查询
+  @@index([year, month, category_key])      // 复合查询（最常用）
+  @@index([is_active])                      // 活跃预算筛选
 }
 
 model categories {
@@ -176,6 +188,11 @@ model categories {
   sort_order Int?     @default(0)
   created_at DateTime @default(now()) @db.Timestamptz(6)
   updated_at DateTime @default(now()) @db.Timestamptz(6)
+
+  // 性能优化索引
+  @@index([key])                            // 按 key 查询分类
+  @@index([type, is_active])                // 按类型+活跃状态筛选
+  @@index([sort_order])                     // 排序查询
 }
 
 model common_notes {
@@ -191,6 +208,12 @@ model common_notes {
   category_affinity String?
   merchant          String?  @db.VarChar
   subcategory       String?  @db.VarChar
+
+  // 性能优化索引
+  @@index([usage_count])                    // 按使用频率排序
+  @@index([is_active, usage_count])         // 活跃备注按频率查询
+  @@index([category_affinity])              // 按分类关联查询
+  @@index([last_used])                      // 按最近使用时间查询
 }
 
 model data_quality_reports {
@@ -286,6 +309,12 @@ model recurring_expenses {
   next_generate    DateTime? @db.Date
   created_at       DateTime? @default(now()) @db.Timestamptz(6)
   updated_at       DateTime? @default(now()) @db.Timestamptz(6)
+
+  // 性能优化索引
+  @@index([is_active])                      // 活跃固定支出筛选
+  @@index([next_generate])                  // 按下次生成日期查询
+  @@index([is_active, next_generate])       // 活跃+待生成组合查询
+  @@index([category])                       // 按分类查询
 }
 
 model recurring_generation_logs {
@@ -320,6 +349,11 @@ model subcategories {
   is_active    Boolean?  @default(true)
   created_at   DateTime? @default(now()) @db.Timestamptz(6)
   updated_at   DateTime? @default(now()) @db.Timestamptz(6)
+
+  // 性能优化索引
+  @@index([category_key])                   // 按父分类查询子分类
+  @@index([category_key, is_active])        // 按父分类查询活跃子分类
+  @@index([key])                            // 按 key 查询
 }
 
 model suggestion_learning_logs {
@@ -363,6 +397,14 @@ model system_logs {
   error_stack  String?
   metadata     Json?    @default("{}")
   duration_ms  Int?
+
+  // 性能优化索引
+  @@index([created_at])                     // 按时间查询日志
+  @@index([level])                          // 按日志级别筛选
+  @@index([category])                       // 按类别筛选
+  @@index([level, category])                // 级别+类别组合查询
+  @@index([trace_id])                       // 按追踪ID查询
+  @@index([path])                           // 按路径查询
 }
 
 model transaction_features {
@@ -403,6 +445,16 @@ model transactions {
   subcategory          String?   @db.VarChar
   product              String?   @db.VarChar
   payment_method       String?
+
+  // 性能优化索引
+  @@index([date])                              // 日期范围查询
+  @@index([category])                          // 分类筛选
+  @@index([deleted_at])                        // 软删除过滤
+  @@index([type, deleted_at])                  // 类型+软删除组合查询
+  @@index([date, deleted_at])                  // 日期范围+软删除（最常用）
+  @@index([currency, type, deleted_at])        // 币种+类型+软删除
+  @@index([category, date, deleted_at])        // 分类统计查询
+  @@index([payment_method])                    // 支付方式统计
 }
 
 model user_behavior_patterns {
@@ -433,4 +485,9 @@ model weekly_reports {
   generation_type           String?   @default("auto") @db.VarChar
   created_at                DateTime? @default(now()) @db.Timestamptz(6)
   updated_at                DateTime? @default(now()) @db.Timestamptz(6)
+
+  // 性能优化索引
+  @@index([week_start_date])                // 按周开始日期查询
+  @@index([week_start_date, week_end_date]) // 日期范围查询
+  @@index([generated_at])                   // 按生成时间查询
 }
