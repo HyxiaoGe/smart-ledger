@@ -1,5 +1,6 @@
 import { getPrismaClient } from '@/lib/clients/db';
 import { parseMonthStr, formatMonth, getQuickRange } from '@/lib/utils/date';
+import * as mvService from '@/lib/services/materializedViewService.server';
 
 type MonthData = {
   income: number;
@@ -83,7 +84,63 @@ export async function loadPageData(
   };
 }
 
+/**
+ * 加载月度数据
+ * 优化策略：优先使用物化视图，失败时回退到直接查询
+ */
 async function loadMonthData(currency: string, date: Date): Promise<MonthData> {
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const prevMonth = month === 1 ? 12 : month - 1;
+  const prevYear = month === 1 ? year - 1 : year;
+
+  try {
+    // 尝试使用物化视图（优化路径）
+    const [
+      currentSummary,
+      prevSummary,
+      currentIncomeSummary,
+      prevIncomeSummary,
+      trend,
+      pie
+    ] = await Promise.all([
+      mvService.getMonthlySummary(year, month, currency, 'expense'),
+      mvService.getMonthlySummary(prevYear, prevMonth, currency, 'expense'),
+      mvService.getMonthlySummary(year, month, currency, 'income'),
+      mvService.getMonthlySummary(prevYear, prevMonth, currency, 'income'),
+      mvService.getMonthlyTrend(year, month, currency),
+      mvService.getCategoryPieData(year, month, currency)
+    ]);
+
+    // 如果物化视图有数据，使用优化路径
+    if (currentSummary || trend.length > 0 || pie.length > 0) {
+      const income = currentIncomeSummary?.totalAmount || 0;
+      const expense = currentSummary?.totalAmount || 0;
+      const balance = income - expense;
+
+      const prevIncome = prevIncomeSummary?.totalAmount || 0;
+      const prevExpense = prevSummary?.totalAmount || 0;
+
+      const compare = [
+        { name: '本月', income, expense },
+        { name: '上月', income: prevIncome, expense: prevExpense }
+      ];
+
+      return { income, expense, balance, trend, pie, compare };
+    }
+  } catch (error) {
+    // 物化视图查询失败，回退到直接查询
+    console.warn('物化视图查询失败，使用直接查询:', error);
+  }
+
+  // 回退路径：直接查询数据库
+  return loadMonthDataFallback(currency, date);
+}
+
+/**
+ * 回退方法：直接从事务表查询月度数据
+ */
+async function loadMonthDataFallback(currency: string, date: Date): Promise<MonthData> {
   function monthRange(d = new Date()) {
     const start = new Date(d.getFullYear(), d.getMonth(), 1);
     const end = new Date(d.getFullYear(), d.getMonth() + 1, 1);
