@@ -4,19 +4,9 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { PageSkeleton } from '@/components/shared/PageSkeleton';
-import {
-  getCategoriesWithStats,
-  addCustomCategory,
-  updateCategory,
-  deleteCategory,
-  generateCategoryKey,
-  EMOJI_ICONS,
-  PRESET_COLORS,
-  type Category,
-} from '@/lib/services/categoryService';
+import type { Category, CategoryWithStats, DeleteCategoryResult } from '@/types/dto/category.dto';
 import { getErrorMessage } from '@/types/common';
 import {
   ChevronLeft,
@@ -27,8 +17,102 @@ import {
   TrendingUp,
   Lock,
   Check,
-  X,
 } from 'lucide-react';
+
+// API 调用函数
+async function fetchCategoriesWithStats(): Promise<CategoryWithStats[]> {
+  const response = await fetch('/api/categories');
+  if (!response.ok) throw new Error('获取分类失败');
+  const { data } = await response.json();
+  return data;
+}
+
+async function createCategory(params: {
+  key: string;
+  label: string;
+  icon: string;
+  color: string;
+}): Promise<Category> {
+  const response = await fetch('/api/categories', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || '创建分类失败');
+  }
+  const { data } = await response.json();
+  return data;
+}
+
+async function updateCategoryApi(
+  id: string,
+  params: { label?: string; icon?: string; color?: string }
+): Promise<Category> {
+  const response = await fetch(`/api/categories/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || '更新分类失败');
+  }
+  const { data } = await response.json();
+  return data;
+}
+
+async function deleteCategoryApi(
+  id: string,
+  migrateToKey?: string
+): Promise<DeleteCategoryResult> {
+  const response = await fetch(`/api/categories/${id}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ migrateToKey }),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || '删除分类失败');
+  }
+  const { data } = await response.json();
+  return data;
+}
+
+// 生成分类键
+function generateCategoryKey(): string {
+  const timestamp = Date.now().toString(36);
+  const random = Math.random().toString(36).substring(2, 5);
+  return `custom_${timestamp}_${random}`;
+}
+
+// 常用 Emoji 图标列表
+const EMOJI_ICONS = [
+  '🍜', '🍕', '🍔', '🍟', '🌮', '🍱', '🍝', '🥗', '🍖', '🍗',
+  '🥤', '☕', '🍵', '🧃', '🥛', '🍺', '🍷', '🍹', '🧋',
+  '🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑', '🚒', '🚐',
+  '🚛', '🚚', '🚜', '🛴', '🚲', '🛵', '🏍️', '✈️', '🚁', '⛵',
+  '🚂', '🚆', '🚇', '🚈', '🚝', '🚄', '🚅', '🚞',
+  '🎮', '🎯', '🎲', '🎰', '🎳', '🎪', '🎭', '🎨', '🎬', '🎤',
+  '🎧', '🎼', '🎹', '🎸', '🥁', '🎺', '🎷', '📻', '📺', '📷',
+  '🏠', '🏡', '🏢', '🏬', '🏪', '🏥', '🏦', '💡', '🔌', '🔋',
+  '🛏️', '🛋️', '🚪', '🪟', '🚿', '🛁', '🚽', '🧹', '🧺', '🧼',
+  '🛒', '🛍️', '💳', '💰', '💵', '💴', '💶', '💷', '💸', '💎',
+  '👔', '👕', '👖', '👗', '👘', '👚', '👙', '👠', '👡', '👢',
+  '💊', '💉', '🩺', '🩹', '🩼', '⚕️', '🏥', '🧘', '🏋️', '🚴',
+  '💼', '📝', '📚', '📖', '📕', '📗', '📘', '📙', '📓', '📔',
+  '✏️', '✒️', '🖊️', '🖋️', '🖍️', '📌', '📍', '📎', '📏', '📐',
+  '📦', '📫', '📪', '📬', '📭', '📮', '📁', '🗂️', '🗃️', '🗄️',
+  '🎁', '🎈', '🎊', '🎉', '🎀', '🪅', '🎐', '🧧', '💌', '❤️',
+];
+
+// 预设颜色列表
+const PRESET_COLORS = [
+  '#F97316', '#22C55E', '#06B6D4', '#A855F7', '#3B82F6', '#0EA5E9',
+  '#F59E0B', '#EF4444', '#6B7280', '#EC4899', '#8B5CF6', '#10B981',
+  '#F472B6', '#14B8A6', '#F97316', '#6366F1',
+];
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -53,7 +137,7 @@ export default function CategoriesPage() {
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const data = await getCategoriesWithStats();
+      const data = await fetchCategoriesWithStats();
       setCategories(data);
     } catch (error) {
       console.error('获取类别失败:', error);
@@ -72,8 +156,8 @@ export default function CategoriesPage() {
     }
 
     try {
-      const key = generateCategoryKey(formLabel);
-      await addCustomCategory({
+      const key = generateCategoryKey();
+      await createCategory({
         key,
         label: formLabel,
         icon: formIcon,
@@ -100,8 +184,7 @@ export default function CategoriesPage() {
     }
 
     try {
-      await updateCategory({
-        id: selectedCategory.id,
+      await updateCategoryApi(selectedCategory.id, {
         label: formLabel,
         icon: formIcon,
         color: formColor,
@@ -123,10 +206,10 @@ export default function CategoriesPage() {
     if (!selectedCategory) return;
 
     try {
-      const result = await deleteCategory({
-        id: selectedCategory.id,
-        migrateToKey: migrateToKey || undefined,
-      });
+      const result = await deleteCategoryApi(
+        selectedCategory.id,
+        migrateToKey || undefined
+      );
 
       if (result.success) {
         setToastMessage(`✅ ${result.message}`);

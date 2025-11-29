@@ -1,8 +1,9 @@
 /**
  * Transaction 服务统一导出
+ * 使用服务端 Repository 工厂
  */
 
-import { getTransactionRepository } from '@/lib/infrastructure/repositories';
+import { getTransactionRepository } from '@/lib/infrastructure/repositories/index.server';
 import { memoryCache } from '@/lib/infrastructure/cache';
 import { TransactionQueryService } from './TransactionQueryService';
 import { TransactionSummaryService } from './TransactionSummaryService';
