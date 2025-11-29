@@ -41,6 +41,16 @@ async function fetchSubcategories(categoryKey: string): Promise<Subcategory[]> {
   return data;
 }
 
+/**
+ * 批量获取所有子分类（一次请求）
+ */
+async function fetchAllSubcategories(): Promise<Record<string, Subcategory[]>> {
+  const response = await fetch('/api/categories/subcategories');
+  if (!response.ok) throw new Error('获取子分类失败');
+  const { data } = await response.json();
+  return data;
+}
+
 async function fetchAllFrequentMerchants(limit: number): Promise<Record<string, MerchantSuggestion[]>> {
   const response = await fetch(`/api/categories/merchants?limit=${limit}`);
   if (!response.ok) throw new Error('获取商家失败');
@@ -160,23 +170,19 @@ export function CategoryProvider({ children }: { children: ReactNode }) {
 
   /**
    * 从服务端获取数据（通过 API 路由）
+   * 优化：使用批量接口，3 次并行请求获取所有数据
    */
   const fetchFromServer = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      // 并行获取分类和商家数据
-      const [categoriesData, merchantsData] = await Promise.all([
+      // 并行获取所有数据（3 次请求代替 N+2 次）
+      const [categoriesData, subcategoriesData, merchantsData] = await Promise.all([
         fetchCategoriesWithStats({ is_active: true }),
+        fetchAllSubcategories(),
         fetchAllFrequentMerchants(10),
       ]);
-
-      // 获取每个分类的子分类
-      const subcategoriesData: Record<string, Subcategory[]> = {};
-      for (const category of categoriesData) {
-        subcategoriesData[category.key] = await fetchSubcategories(category.key);
-      }
 
       // 更新状态
       setCategories(categoriesData);
