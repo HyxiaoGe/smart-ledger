@@ -1,10 +1,9 @@
 /**
  * 日志系统统一导出
+ * 简化版本 - 仅使用控制台输出
  */
 
 import { Logger } from './Logger';
-import { getSupabaseTransport } from './SupabaseTransport';
-import { defaultLogConfig } from './config';
 
 /**
  * 全局单例 logger 实例
@@ -17,15 +16,8 @@ let loggerInstance: Logger | null = null;
 export function getLogger(): Logger {
   if (!loggerInstance) {
     loggerInstance = new Logger();
-
-    // 添加 Supabase 传输器
-    const transport = getSupabaseTransport({
-      batchEnabled: defaultLogConfig.batch.enabled,
-      batchSize: defaultLogConfig.batch.size,
-      batchInterval: defaultLogConfig.batch.interval,
-    });
-
-    loggerInstance.addTransport(transport);
+    // 日志直接输出到控制台，不再写入数据库
+    // 如需数据库日志，可以创建 PrismaTransport 并添加
   }
 
   return loggerInstance;

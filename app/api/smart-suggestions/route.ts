@@ -1,7 +1,7 @@
 /**
  * 智能备注提示 API
  * 支持多种提示策略：频率、上下文、模式、相似性
- * 部分使用 Repository 模式，复杂查询仍使用 Supabase
+ * 使用 Repository 模式和 Prisma ORM
  */
 
 import { NextRequest, NextResponse } from 'next/server';

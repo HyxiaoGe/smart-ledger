@@ -32,7 +32,7 @@
 - **前端框架**: Next.js 14 (App Router)
 - **UI组件**: Tailwind CSS + Lucide React
 - **图表库**: Recharts
-- **数据库**: Supabase
+- **数据库**: PostgreSQL + Prisma ORM
 - **AI服务**: DeepSeek API
 - **语言**: TypeScript
 - **状态管理**: React Hooks + URL参数
@@ -55,13 +55,13 @@ smart-ledger/
 │   ├── NoteInput.tsx          # 备注输入组件
 │   └── ...
 ├── lib/                        # 工具库
-│   ├── supabaseClient.ts      # Supabase客户端
+│   ├── clients/db/            # 数据库客户端 (Prisma)
 │   ├── config.ts              # 配置文件
 │   ├── taskQueue.ts           # 通用任务队列管理器
 │   ├── dataSync.ts            # 跨页面数据同步
 │   └── ...
 ├── types/                      # TypeScript类型定义
-└── supabase/                   # 数据库配置
+└── prisma/                     # Prisma Schema 和迁移
 ```
 
 ## 🚀 快速开始
@@ -91,9 +91,8 @@ npm install
 创建 `.env.local` 文件并添加以下环境变量：
 
 ```env
-# Supabase 配置
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+# 数据库配置 (PostgreSQL)
+DATABASE_URL=postgresql://user:password@localhost:5432/smart_ledger
 
 # AI 服务配置
 DEEPSEEK_API_KEY=your_deepseek_api_key
@@ -101,9 +100,9 @@ DEEPSEEK_API_KEY=your_deepseek_api_key
 
 4. **数据库设置**
 
-- 在 Supabase 中创建新项目
-- 运行 `supabase/schema.sql` 中的 SQL 语句创建表结构
-- 配置数据库权限
+- 确保 PostgreSQL 数据库运行中
+- 运行 `npx prisma generate` 生成 Prisma Client
+- 运行 `npx prisma db push` 或 `npx prisma migrate dev` 初始化数据库
 
 5. **启动开发服务器**
 
@@ -224,7 +223,7 @@ chore: 构建工具或辅助工具的变动
 ## 🙏 致谢
 
 - [Next.js](https://nextjs.org/) - React 全栈框架
-- [Supabase](https://supabase.com/) - 开源 Firebase 替代方案
+- [Prisma](https://www.prisma.io/) - 现代 TypeScript ORM
 - [Tailwind CSS](https://tailwindcss.com/) - 实用优先的 CSS 框架
 - [Recharts](https://recharts.org/) - React 图表库
 - [DeepSeek](https://www.deepseek.ai/) - AI 分析服务
