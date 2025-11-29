@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { CommonNote } from '@/types/domain/transaction';
 import { getCommonNoteRepository } from '@/lib/infrastructure/repositories/index.server';
-import { supabaseServerClient } from '@/lib/clients/supabase/server';
+import { prisma } from '@/lib/clients/db/prisma';
 import { unstable_cache, revalidateTag } from 'next/cache';
 import { z } from 'zod';
 import { validateRequest, commonSchemas } from '@/lib/utils/validation';
@@ -135,35 +135,33 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   }
 });
 
-// 异步函数：更新AI分析数据（仍使用 Supabase，因为 note_analytics 表不在核心业务流程中）
+// 异步函数：更新AI分析数据（使用 Prisma）
 async function updateAnalytics(noteId: string, amount: number) {
   try {
-    const supabase = supabaseServerClient;
-    const { data: existingAnalytics } = await supabase
-      .from('note_analytics')
-      .select('*')
-      .eq('note_id', noteId)
-      .maybeSingle();
+    const existingAnalytics = await prisma.note_analytics.findUnique({
+      where: { note_id: noteId }
+    });
 
     if (existingAnalytics) {
       // 更新现有分析数据
-      const newTypicalAmount = existingAnalytics.typical_amount
-        ? (existingAnalytics.typical_amount + amount) / 2
-        : amount;
+      const currentTypical = Number(existingAnalytics.typical_amount || 0);
+      const newTypicalAmount = currentTypical ? (currentTypical + amount) / 2 : amount;
 
-      await supabase
-        .from('note_analytics')
-        .update({
+      await prisma.note_analytics.update({
+        where: { note_id: noteId },
+        data: {
           typical_amount: newTypicalAmount,
-          updated_at: new Date().toISOString()
-        })
-        .eq('note_id', noteId);
+          updated_at: new Date()
+        }
+      });
     } else {
       // 创建新的分析数据
-      await supabase.from('note_analytics').insert({
-        note_id: noteId,
-        typical_amount: amount,
-        confidence_score: 0.5 // 初始置信度
+      await prisma.note_analytics.create({
+        data: {
+          note_id: noteId,
+          typical_amount: amount,
+          confidence_score: 0.5 // 初始置信度
+        }
       });
     }
   } catch {
@@ -174,11 +172,12 @@ async function updateAnalytics(noteId: string, amount: number) {
 // 异步函数：创建AI分析数据
 async function createAnalytics(noteId: string, amount: number) {
   try {
-    const supabase = supabaseServerClient;
-    await supabase.from('note_analytics').insert({
-      note_id: noteId,
-      typical_amount: amount,
-      confidence_score: 0.5 // 初始置信度
+    await prisma.note_analytics.create({
+      data: {
+        note_id: noteId,
+        typical_amount: amount,
+        confidence_score: 0.5 // 初始置信度
+      }
     });
   } catch {
     // ignore analytics creation failures

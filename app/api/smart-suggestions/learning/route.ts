@@ -5,7 +5,7 @@
  */
 
 import { NextRequest } from 'next/server';
-import { supabaseServerClient } from '@/lib/clients/supabase/server';
+import { prisma } from '@/lib/clients/db/prisma';
 import { getCommonNoteRepository } from '@/lib/infrastructure/repositories/index.server';
 import { logger } from '@/lib/services/logging';
 import { withErrorHandler, ApiError } from '@/lib/utils/apiErrorHandler';
@@ -103,29 +103,23 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 });
 
 /**
- * 存储学习数据（学习日志使用 Supabase）
+ * 存储学习数据（使用 Prisma）
  */
 async function storeLearningData(data: LearningData) {
   try {
-    const supabase = supabaseServerClient;
-
     // 存储主要学习记录
-    const { error: learningError } = await supabase
-      .from('suggestion_learning_logs')
-      .insert({
+    await prisma.suggestion_learning_logs.create({
+      data: {
         session_id: data.session_id,
         event_type: data.event_type,
-        timestamp: data.timestamp,
-        context: data.context,
-        suggestion_data: data.suggestion_data,
-        ignored_suggestions: data.ignored_suggestions,
+        timestamp: data.timestamp ? new Date(data.timestamp) : new Date(),
+        context: data.context || {},
+        suggestion_data: data.suggestion_data || null,
+        ignored_suggestions: data.ignored_suggestions || [],
         final_input: data.final_input,
         learning_outcome: data.learning_outcome
-      });
-
-    if (learningError) {
-      console.error('存储学习记录失败:', learningError);
-    }
+      }
+    });
 
     // 更新常用备注的上下文标签和使用模式
     if (data.final_input && data.final_input.trim()) {
@@ -292,29 +286,38 @@ async function processLearningData(data: LearningData) {
 }
 
 /**
- * 更新建议权重统计（使用 Supabase）
+ * 更新建议权重统计（使用 Prisma）
  */
 async function updateSuggestionWeights(data: LearningData) {
   try {
     if (data.event_type === 'suggestion_selected' && data.suggestion_data) {
       const { suggestion_type } = data.suggestion_data;
-      const supabase = supabaseServerClient;
 
-      // 更新该类型建议的成功统计
-      const { error } = await supabase
-        .from('suggestion_type_stats')
-        .upsert({
-          suggestion_type,
-          total_usage: 1,
-          success_count: data.learning_outcome === 'positive' ? 1 : 0,
-          last_updated: new Date().toISOString()
-        }, {
-          onConflict: 'suggestion_type',
-          ignoreDuplicates: false
+      // 查找现有统计记录
+      const existingStat = await prisma.suggestion_type_stats.findFirst({
+        where: { suggestion_type }
+      });
+
+      if (existingStat) {
+        // 更新现有统计
+        await prisma.suggestion_type_stats.update({
+          where: { id: existingStat.id },
+          data: {
+            total_usage: existingStat.total_usage + 1,
+            success_count: existingStat.success_count + (data.learning_outcome === 'positive' ? 1 : 0),
+            last_updated: new Date()
+          }
         });
-
-      if (error) {
-        console.error('更新建议类型统计失败:', error);
+      } else {
+        // 创建新统计记录
+        await prisma.suggestion_type_stats.create({
+          data: {
+            suggestion_type,
+            total_usage: 1,
+            success_count: data.learning_outcome === 'positive' ? 1 : 0,
+            last_updated: new Date()
+          }
+        });
       }
     }
 
