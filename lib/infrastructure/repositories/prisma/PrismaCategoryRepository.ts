@@ -240,6 +240,42 @@ export class PrismaCategoryRepository implements ICategoryRepository {
   }
 
   /**
+   * 批量获取所有子分类（一次查询）
+   * 优化：避免 N+1 查询问题
+   */
+  async getAllSubcategoriesBatch(): Promise<Record<string, Subcategory[]>> {
+    const data = await this.prisma.subcategories.findMany({
+      where: {
+        is_active: true,
+      },
+      orderBy: [
+        { category_key: 'asc' },
+        { sort_order: 'asc' },
+      ],
+      select: {
+        key: true,
+        label: true,
+        category_key: true,
+      },
+    });
+
+    // 按 category_key 分组
+    const result: Record<string, Subcategory[]> = {};
+    for (const row of data) {
+      if (!result[row.category_key]) {
+        result[row.category_key] = [];
+      }
+      result[row.category_key].push({
+        key: row.key,
+        label: row.label,
+        category_key: row.category_key,
+      });
+    }
+
+    return result;
+  }
+
+  /**
    * 获取分类下的常用商家
    */
   async getFrequentMerchants(categoryKey: string, limit: number = 10): Promise<MerchantSuggestion[]> {
