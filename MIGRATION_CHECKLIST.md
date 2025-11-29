@@ -221,12 +221,28 @@
     └── ConsumptionPredictionPanel.tsx ✅
 ```
 
-### 阶段 5: 管理功能
+### 阶段 5: 管理功能 ✅ (已完成)
 
 ```
-5.1 保留 CronService (依赖 pg_cron)
-5.2 考虑使用 Node.js 定时任务替代
+5.1 创建 cronService.server.ts ✅
+    ├── getAllCronJobs() - 使用 Prisma $queryRaw 查询 cron.job
+    ├── getCronJobHistory() - 查询 cron.job_run_details
+    ├── getCronJobStats() - 聚合统计
+    └── 工具函数保持兼容
+
+5.2 创建 Cron API 路由 ✅
+    ├── /api/admin/cron (GET) - 获取任务列表/统计/历史
+    └── /api/admin/cron/trigger (POST) - 手动触发任务
+
+5.3 更新 Cron 管理页面 ✅
+    └── app/settings/advanced/cron/page.tsx - 使用 API 替代直接调用
 ```
+
+> **注意**: 需要在 PostgreSQL 中启用 pg_cron 扩展：
+> ```sql
+> CREATE EXTENSION IF NOT EXISTS pg_cron;
+> GRANT USAGE ON SCHEMA cron TO your_db_user;
+> ```
 
 ---
 
@@ -350,6 +366,15 @@ update: { deleted_at: new Date() }
 - `recurringExpenses.server.ts`
 - `weeklyReportService.server.ts`
 - `ai/AIFeedbackService.server.ts`
+- `cronService.server.ts`
+
+### API 路由 (`app/api/`)
+
+- `admin/cron/route.ts` - Cron 任务管理
+- `admin/cron/trigger/route.ts` - 手动触发任务
+- `transactions/route.ts` - 交易 CRUD
+- `transactions/[id]/route.ts` - 单个交易操作
+- `transactions/[id]/restore/route.ts` - 恢复删除
 
 ---
 
@@ -374,3 +399,4 @@ update: { deleted_at: new Date() }
 | 2025-11-29 | 完成 P0 核心组件迁移 (QuickTransaction, GroupedList, AddPage) |
 | 2025-11-29 | 完成 P1 统计组件迁移 (ComparisonPanel, GoalTrackingPanel, ConsumptionHabitsPanel, ConsumptionPredictionPanel) |
 | 2025-11-29 | 完成 TransactionList.tsx 迁移 |
+| 2025-11-29 | 完成阶段5 - CronService 迁移 (使用 pg_cron 扩展) |
