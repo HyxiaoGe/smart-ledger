@@ -77,6 +77,12 @@ export interface ICategoryRepository {
   getSubcategories(categoryKey: string): Promise<Subcategory[]>;
 
   /**
+   * 批量获取所有子分类（一次查询）
+   * 避免 N+1 查询问题
+   */
+  getAllSubcategoriesBatch(): Promise<Record<string, Subcategory[]>>;
+
+  /**
    * 获取分类下的常用商家
    * 从 transactions 表中提取
    */

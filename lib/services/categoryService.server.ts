@@ -108,18 +108,14 @@ class ServerCategoryService {
     return this.repository.getSubcategories(categoryKey);
   }
 
+  /**
+   * 获取所有子分类
+   * 优化：使用批量查询替代 N+1 循环查询
+   * 原来: N+1 次查询 → 现在: 1 次查询
+   */
   async getAllSubcategories(): Promise<Record<string, Subcategory[]>> {
     const cacheKey = 'categories:all-subcategories';
-    return this.cacheDecorator.wrap(cacheKey, async () => {
-      const categories = await this.repository.findAll({ is_active: true });
-      const result: Record<string, Subcategory[]> = {};
-
-      for (const category of categories) {
-        result[category.key] = await this.repository.getSubcategories(category.key);
-      }
-
-      return result;
-    });
+    return this.cacheDecorator.wrap(cacheKey, () => this.repository.getAllSubcategoriesBatch());
   }
 
   async getFrequentMerchants(categoryKey: string, limit?: number): Promise<MerchantSuggestion[]> {
