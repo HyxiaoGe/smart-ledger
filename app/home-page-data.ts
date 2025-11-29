@@ -86,14 +86,9 @@ export async function loadPageData(
 
 /**
  * 加载月度数据
- * 注意：物化视图优化已暂时禁用，需要确保物化视图已创建并刷新后再启用
- * TODO: 启用物化视图后，取消注释下方的优化代码
+ * 优化策略：优先使用物化视图，失败时回退到直接查询
  */
 async function loadMonthData(currency: string, date: Date): Promise<MonthData> {
-  // 暂时直接使用回退路径，确保数据显示正常
-  return loadMonthDataFallback(currency, date);
-
-  /* 物化视图优化代码（暂时禁用）
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
   const prevMonth = month === 1 ? 12 : month - 1;
@@ -140,7 +135,6 @@ async function loadMonthData(currency: string, date: Date): Promise<MonthData> {
 
   // 回退路径：直接查询数据库
   return loadMonthDataFallback(currency, date);
-  */
 }
 
 /**
