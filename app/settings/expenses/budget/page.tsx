@@ -8,15 +8,46 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { PageSkeleton } from '@/components/shared/PageSkeleton';
 import {
-  getTotalBudgetSummary,
   getCurrentYearMonth,
   formatMonth,
-  getBudgetSuggestions,
-  predictMonthEndSpending,
   getProgressBarColor,
-  type TotalBudgetSummary,
-  type BudgetPrediction,
-} from '@/lib/services/budgetService';
+} from '@/lib/services/budgetService.server';
+
+// 类型定义 (从 budgetService.server.ts 复用)
+interface TotalBudgetSummary {
+  total_budget: number;
+  total_spent: number;
+  total_remaining: number;
+  usage_percentage: number;
+  category_budgets_count: number;
+  over_budget_count: number;
+  near_limit_count: number;
+}
+
+interface BudgetPrediction {
+  current_spending: number;
+  daily_rate: number;
+  predicted_total: number;
+  days_passed: number;
+  days_remaining: number;
+  will_exceed_budget: boolean;
+  predicted_overage?: number;
+}
+
+interface BudgetSuggestion {
+  categoryKey: string;
+  suggestedAmount: number;
+  confidenceLevel: string;
+  reason: string;
+  historicalAvg: number;
+  historicalMonths: number;
+  currentMonthSpending: number;
+  currentDailyRate: number;
+  predictedMonthTotal: number;
+  trendDirection: string;
+  daysIntoMonth: number;
+  calculatedAt: string;
+}
 import { getCategoriesWithStats, type Category } from '@/lib/services/categoryService';
 import {
   ChevronLeft,
@@ -48,30 +79,38 @@ export default function BudgetPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [summaryData, categoriesData, suggestionsData] = await Promise.all([
-        getTotalBudgetSummary(year, month, 'CNY'),
+
+      // 使用 API 路由获取数据
+      const [summaryRes, categoriesData, suggestionsRes] = await Promise.all([
+        fetch(`/api/budgets/summary?year=${year}&month=${month}&currency=CNY`).then(r => r.json()),
         getCategoriesWithStats(),
-        getBudgetSuggestions(year, month),
+        fetch(`/api/budgets/suggestions?year=${year}&month=${month}`).then(r => r.json()),
       ]);
 
-      setSummary(summaryData);
+      setSummary(summaryRes);
       setCategories(categoriesData.filter(c => c.is_active));
-      setSuggestions(suggestionsData);
+      setSuggestions(suggestionsRes);
 
       // 获取每个分类建议的月底预测
       const predictionMap = new Map<string, BudgetPrediction>();
 
       await Promise.all(
-        suggestionsData.map(async (suggestion) => {
+        suggestionsRes.map(async (suggestion: BudgetSuggestion) => {
           if (suggestion.categoryKey) {
-            const prediction = await predictMonthEndSpending(
-              suggestion.categoryKey,
-              year,
-              month,
-              suggestion.suggestedAmount,
-              'CNY'
-            );
-            if (prediction) {
+            const predictionRes = await fetch('/api/budgets/predict', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                categoryKey: suggestion.categoryKey,
+                year,
+                month,
+                budgetAmount: suggestion.suggestedAmount,
+                currency: 'CNY'
+              })
+            });
+
+            if (predictionRes.ok) {
+              const prediction = await predictionRes.json();
               predictionMap.set(suggestion.categoryKey, prediction);
             }
           }

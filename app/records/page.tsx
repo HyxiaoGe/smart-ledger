@@ -6,7 +6,7 @@ import {
   listYesterdayTransactions,
   getAIAnalysisData
 } from '@/lib/services/transactions.server';
-import { getMonthlyBudgetStatus, getCurrentYearMonth } from '@/lib/services/budgetService';
+import { getMonthlyBudgetStatus, getCurrentYearMonth } from '@/lib/services/budgetService.server';
 import { RangePicker } from '@/components/shared/RangePicker';
 import { CollapsibleTransactionList } from '@/components/features/transactions/TransactionList/CollapsibleList';
 import { SkeletonBlock, SkeletonGrid } from '@/components/shared/Skeletons';
