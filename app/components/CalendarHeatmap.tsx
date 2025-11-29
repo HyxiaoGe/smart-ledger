@@ -112,23 +112,22 @@ export function CalendarHeatmap({
         </div>
       </CardHeader>
       <CardContent>
-        {/* 星期标题 */}
-        <div className="grid grid-cols-7 gap-1 mb-1">
+        {/* 日历容器 */}
+        <div className="inline-grid grid-cols-7 gap-1">
+          {/* 星期标题 */}
           {WEEKDAY_LABELS.map((label) => (
             <div
               key={label}
-              className="text-center text-xs text-muted-foreground font-medium py-1"
+              className="w-6 h-6 flex items-center justify-center text-[10px] text-muted-foreground font-medium"
             >
               {label}
             </div>
           ))}
-        </div>
 
-        {/* 日历网格 */}
-        <div className="grid grid-cols-7 gap-1">
+          {/* 日历网格 */}
           {calendarDays.map((item, index) => {
             if (item.day === null) {
-              return <div key={`empty-${index}`} className="aspect-square" />;
+              return <div key={`empty-${index}`} className="w-6 h-6" />;
             }
 
             const dayData = item.date ? dayMap.get(item.date) : null;
@@ -145,12 +144,12 @@ export function CalendarHeatmap({
               <div key={item.date} className="relative">
                 <button
                   className={`
-                    w-full aspect-square rounded-sm flex items-center justify-center
-                    text-xs font-medium transition-all
+                    w-6 h-6 rounded-sm flex items-center justify-center
+                    text-[10px] font-medium transition-all
                     ${colorClass}
-                    ${isToday ? 'ring-2 ring-blue-500 ring-offset-1' : ''}
+                    ${isToday ? 'ring-1 ring-blue-500 ring-offset-1' : ''}
                     ${amount > 0 ? 'text-gray-700 dark:text-gray-200' : 'text-gray-400 dark:text-gray-500'}
-                    hover:ring-2 hover:ring-gray-400 hover:ring-offset-1
+                    hover:ring-1 hover:ring-gray-400 hover:ring-offset-1
                   `}
                   onClick={() => item.date && onDayClick?.(item.date)}
                   onMouseEnter={() => setHoveredDay(item.date)}
@@ -159,10 +158,10 @@ export function CalendarHeatmap({
                   {item.day}
                 </button>
 
-                {/* 自定义 Tooltip */}
+                {/* Tooltip */}
                 {isHovered && (
-                  <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none">
-                    <div className="bg-popover text-popover-foreground rounded-md border px-3 py-2 text-xs shadow-md whitespace-nowrap">
+                  <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 pointer-events-none">
+                    <div className="bg-popover text-popover-foreground rounded border px-2 py-1 text-[10px] shadow-md whitespace-nowrap">
                       <div className="font-medium">{item.date}</div>
                       {amount > 0 ? (
                         <>
