@@ -48,7 +48,15 @@ interface BudgetSuggestion {
   daysIntoMonth: number;
   calculatedAt: string;
 }
-import { getCategoriesWithStats, type Category } from '@/lib/services/categoryService';
+import type { Category } from '@/types/dto/category.dto';
+
+// API 调用函数
+async function fetchCategoriesWithStats(): Promise<Category[]> {
+  const response = await fetch('/api/categories');
+  if (!response.ok) throw new Error('获取分类失败');
+  const { data } = await response.json();
+  return data;
+}
 import {
   ChevronLeft,
   TrendingUp,
@@ -83,7 +91,7 @@ export default function BudgetPage() {
       // 使用 API 路由获取数据
       const [summaryRes, categoriesData, suggestionsRes] = await Promise.all([
         fetch(`/api/budgets/summary?year=${year}&month=${month}&currency=CNY`).then(r => r.json()),
-        getCategoriesWithStats(),
+        fetchCategoriesWithStats(),
         fetch(`/api/budgets/suggestions?year=${year}&month=${month}`).then(r => r.json()),
       ]);
 

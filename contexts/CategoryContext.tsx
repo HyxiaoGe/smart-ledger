@@ -3,6 +3,7 @@
 /**
  * 分类上下文
  * 提供全局的分类数据访问，替代硬编码的 PRESET_CATEGORIES
+ * 通过 API 路由获取数据
  */
 
 import React, {
@@ -14,15 +15,38 @@ import React, {
   useMemo,
   type ReactNode,
 } from 'react';
-import {
-  getCategoriesWithStats,
-  getSubcategories,
-  getAllFrequentMerchants,
-  type CategoryWithStats,
-  type Subcategory,
-  type MerchantSuggestion,
-} from '@/lib/services/categoryService';
+import type {
+  CategoryWithStats,
+  Subcategory,
+  MerchantSuggestion,
+} from '@/types/dto/category.dto';
 import { readJSON, writeJSON } from '@/lib/utils/storage';
+
+// API 调用函数
+async function fetchCategoriesWithStats(filter?: { is_active?: boolean }): Promise<CategoryWithStats[]> {
+  const params = new URLSearchParams();
+  if (filter?.is_active !== undefined) {
+    params.set('is_active', String(filter.is_active));
+  }
+  const response = await fetch(`/api/categories?${params.toString()}`);
+  if (!response.ok) throw new Error('获取分类失败');
+  const { data } = await response.json();
+  return data;
+}
+
+async function fetchSubcategories(categoryKey: string): Promise<Subcategory[]> {
+  const response = await fetch(`/api/categories/subcategories?category=${encodeURIComponent(categoryKey)}`);
+  if (!response.ok) throw new Error('获取子分类失败');
+  const { data } = await response.json();
+  return data;
+}
+
+async function fetchAllFrequentMerchants(limit: number): Promise<Record<string, MerchantSuggestion[]>> {
+  const response = await fetch(`/api/categories/merchants?limit=${limit}`);
+  if (!response.ok) throw new Error('获取商家失败');
+  const { data } = await response.json();
+  return data;
+}
 
 // 缓存配置
 const CATEGORIES_CACHE_KEY = 'categories-cache';
@@ -135,7 +159,7 @@ export function CategoryProvider({ children }: { children: ReactNode }) {
   }, []);
 
   /**
-   * 从服务端获取数据
+   * 从服务端获取数据（通过 API 路由）
    */
   const fetchFromServer = useCallback(async () => {
     setIsLoading(true);
@@ -144,14 +168,14 @@ export function CategoryProvider({ children }: { children: ReactNode }) {
     try {
       // 并行获取分类和商家数据
       const [categoriesData, merchantsData] = await Promise.all([
-        getCategoriesWithStats({ is_active: true }),
-        getAllFrequentMerchants(10),
+        fetchCategoriesWithStats({ is_active: true }),
+        fetchAllFrequentMerchants(10),
       ]);
 
       // 获取每个分类的子分类
       const subcategoriesData: Record<string, Subcategory[]> = {};
       for (const category of categoriesData) {
-        subcategoriesData[category.key] = await getSubcategories(category.key);
+        subcategoriesData[category.key] = await fetchSubcategories(category.key);
       }
 
       // 更新状态
