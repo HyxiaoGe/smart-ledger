@@ -10,7 +10,6 @@ import { CheckCircle, X, Edit2, RefreshCw } from 'lucide-react';
 import { FaRobot, FaCheck, FaHeart } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '@/lib/clients/supabase/client';
 import { formatDateToLocal } from '@/lib/utils/date';
 import { getPaymentMethodsWithStats, type PaymentMethod } from '@/lib/services/paymentMethodService';
 
@@ -105,22 +104,21 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
     try {
       const today = getTodayDateString();
 
-      const { data, error } = await supabase
-        .from('transactions')
-        .select('category, note')
-        .eq('date', today)
-        .is('deleted_at', null);
-
-      if (error) {
-        throw error;
+      // 使用 API 路由查询今日交易
+      const response = await fetch(`/api/transactions?start_date=${today}&end_date=${today}&page_size=100`);
+      if (!response.ok) {
+        throw new Error('获取今日交易失败');
       }
 
-      const categories = new Set(data?.map(t => t.category) || []);
+      const result = await response.json();
+      const data = result.data || [];
+
+      const categories = new Set(data.map((t: { category: string }) => t.category));
       setTodayCategories(categories);
 
       // 获取今天已记录的具体项目（基于note匹配）
       const items = new Set<string>();
-      data?.forEach(transaction => {
+      data.forEach((transaction: { note?: string }) => {
         // 根据note匹配具体的项目
         const matchedItem = QUICK_ITEMS.find(item => {
           // 精确匹配标题

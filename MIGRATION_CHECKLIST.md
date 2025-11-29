@@ -90,7 +90,7 @@
 
 ---
 
-## 四、待迁移组件 (阶段4)
+## 四、组件迁移 (阶段4) - 部分完成
 
 > **注意**: 客户端组件使用 `'use client'` 指令，不能直接使用 Prisma（服务端运行）。
 > 需要创建对应的 API 路由，组件通过 API 调用来访问数据。
@@ -101,24 +101,27 @@
 2. **更新组件**: 将 Supabase RPC 调用替换为 API 调用
 3. **保持兼容**: API 路由使用 Repository 模式，支持 Prisma/Supabase 切换
 
-### 需要创建的 API 路由
+### 已创建的 API 路由
 
 | RPC 函数 | API 路由 | 状态 |
 |---------|---------|------|
-| `upsert_transaction` | `/api/transactions` (POST) | ⏳ |
-| 直接 `transactions` 查询 | `/api/transactions` (GET) | ⏳ |
+| `upsert_transaction` | `/api/transactions` (POST) | ✅ |
+| `transactions` 查询 | `/api/transactions` (GET) | ✅ |
+| 更新交易 | `/api/transactions/[id]` (PUT) | ✅ |
+| 删除交易 | `/api/transactions/[id]` (DELETE) | ✅ |
+| 恢复交易 | `/api/transactions/[id]/restore` (POST) | ✅ |
 
-### P0 - 核心组件
+### P0 - 核心组件 ✅
 
 | # | 组件文件 | 用途 | 使用的 RPC/表 | 状态 |
 |---|---------|------|-------------|------|
-| 1 | `app/add/page.tsx` | 添加账单页 | `upsert_transaction` | ⏳ |
-| 2 | `app/components/TransactionList.tsx` | 交易列表 | `transactions` 查询 | ⏳ |
-| 3 | `QuickTransaction.tsx` | 快速记账 | `upsert_transaction` | ⏳ |
-| 4 | `QuickTransactionCard.tsx` | 快速记账卡片 | `upsert_transaction` | ⏳ |
-| 5 | `GroupedList.tsx` | 交易列表分组 | `transactions` 查询 | ⏳ |
+| 1 | `app/add/page.tsx` | 添加账单页 | API 调用 | ✅ |
+| 2 | `app/components/TransactionList.tsx` | 交易列表 | 服务端查询 | ⏳ |
+| 3 | `QuickTransaction.tsx` | 快速记账 | API 调用 | ✅ |
+| 4 | `QuickTransactionCard.tsx` | 快速记账卡片 | API 调用 | ✅ |
+| 5 | `GroupedList.tsx` | 交易列表分组 | API 调用 | ✅ |
 
-### P1 - 统计/分析组件
+### P1 - 统计/分析组件 ⏳
 
 | # | 组件文件 | 用途 | 使用的 RPC/表 | 状态 |
 |---|---------|------|-------------|------|

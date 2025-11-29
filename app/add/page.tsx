@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import { supabase } from '@/lib/clients/supabase/client';
 import type { TransactionType, Currency } from '@/types/domain/transaction';
 import { SUPPORTED_CURRENCIES, DEFAULT_CURRENCY } from '@/lib/config/config';
 import { useCategories } from '@/contexts/CategoryContext';
@@ -82,23 +81,34 @@ export default function AddPage() {
       // 使用本地时区格式化日期，避免时区问题
       const dateStr = formatDateToLocal(formData.date);
 
-      // 使用原子化的数据库函数来避免竞态条件
-      const { data: transactionId, error: upsertError } = await supabase
-        .rpc('upsert_transaction', {
-          p_type: type,
-          p_category: formData.category,
-          p_amount: formData.amt,
-          p_note: formData.note,
-          p_date: dateStr,
-          p_currency: formData.currency,
-          p_payment_method: formData.paymentMethod || null,
-          p_merchant: formData.merchant || null,
-          p_subcategory: formData.subcategory || null,
-          p_product: formData.product || null
-        });
+      // 使用 API 路由创建交易
+      const response = await fetch('/api/transactions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type,
+          category: formData.category,
+          amount: formData.amt,
+          note: formData.note,
+          date: dateStr,
+          currency: formData.currency,
+          payment_method: formData.paymentMethod || null,
+          merchant: formData.merchant || null,
+          subcategory: formData.subcategory || null,
+          product: formData.product || null,
+        }),
+      });
 
       // 处理错误
-      if (upsertError) throw upsertError;
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || '创建交易失败');
+      }
+
+      const result = await response.json();
+      const transactionId = result.data?.id;
 
       // ✅ 记录用户操作日志（异步，不阻塞响应）
       void logger.logUserAction({
