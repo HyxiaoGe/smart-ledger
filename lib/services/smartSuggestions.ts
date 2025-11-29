@@ -1,4 +1,4 @@
-import { fetchJson } from '@/lib/utils/http';
+import { apiClient } from '@/lib/api/client';
 import type {
   SmartSuggestionParams,
   SmartSuggestionResponse,
@@ -15,10 +15,7 @@ export const smartSuggestionsService = {
    * 获取智能备注建议
    */
   async getSuggestions(params: SmartSuggestionParams): Promise<SmartSuggestionResponse> {
-    return fetchJson<SmartSuggestionResponse>(BASE_URL, {
-      method: 'POST',
-      body: JSON.stringify(params)
-    });
+    return apiClient.post<SmartSuggestionResponse>(BASE_URL, params);
   },
 
   /**

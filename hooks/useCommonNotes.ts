@@ -1,9 +1,10 @@
 /* eslint-disable */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { readJSON, writeJSON, removeItem } from '@/lib/utils/storage';
-import { commonNotesService, type CommonNote } from '@/lib/services/commonNotes';
+import { commonNotesApi } from '@/lib/api/services/common-notes';
 import { STORAGE_KEYS } from '@/lib/config/storageKeys';
 import { isAbortError } from '@/types/common';
+import type { CommonNote } from '@/types/domain/transaction';
 
 export const COMMON_NOTES_CACHE_KEY = STORAGE_KEYS.COMMON_NOTES_CACHE;
 const CACHE_TTL = 24 * 60 * 60 * 1000;
@@ -22,8 +23,6 @@ export function useCommonNotes(): UseCommonNotesResult {
   const [localCache, setLocalCache] = useState<CommonNote[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const needsRemoteFetchRef = useRef(true);
-  const listControllerRef = useRef<AbortController | null>(null);
-  const searchControllerRef = useRef<AbortController | null>(null);
 
   const primeFromStorage = useCallback(() => {
     const cached = readJSON<CachePayload | null>(COMMON_NOTES_CACHE_KEY, null);
@@ -43,20 +42,13 @@ export function useCommonNotes(): UseCommonNotesResult {
 
   useEffect(() => {
     primeFromStorage();
-    return () => {
-      listControllerRef.current?.abort();
-      searchControllerRef.current?.abort();
-    };
   }, [primeFromStorage]);
 
   const fetchRemoteList = useCallback(async () => {
     setIsLoading(true);
-    listControllerRef.current?.abort();
-    const controller = new AbortController();
-    listControllerRef.current = controller;
 
     try {
-      const { data } = await commonNotesService.list({ signal: controller.signal });
+      const data = await commonNotesApi.list({ limit: 10 });
       setLocalCache(data);
       writeJSON<CachePayload>(COMMON_NOTES_CACHE_KEY, { data, timestamp: Date.now() });
       needsRemoteFetchRef.current = false;
@@ -78,15 +70,8 @@ export function useCommonNotes(): UseCommonNotesResult {
   const searchRemote = useCallback(async (keyword: string) => {
     if (!keyword.trim()) return [];
 
-    searchControllerRef.current?.abort();
-    const controller = new AbortController();
-    searchControllerRef.current = controller;
-
     try {
-      const { data } = await commonNotesService.search({
-        keyword,
-        signal: controller.signal
-      });
+      const data = await commonNotesApi.search(keyword, 6);
       return data;
     } catch (error: unknown) {
       if (isAbortError(error)) {
