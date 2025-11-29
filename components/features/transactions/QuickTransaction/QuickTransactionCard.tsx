@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Fragment } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,25 +10,10 @@ import { FaRobot, FaCheck, FaHeart } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDateToLocal } from '@/lib/utils/date';
-
-// 支付方式类型定义
-interface PaymentMethod {
-  id: string;
-  name: string;
-  type: string;
-  icon: string | null;
-  color: string | null;
-  is_default: boolean;
-  is_active: boolean;
-}
-
-// API 调用函数
-async function fetchPaymentMethods(): Promise<PaymentMethod[]> {
-  const response = await fetch('/api/payment-methods');
-  if (!response.ok) throw new Error('获取支付方式失败');
-  const { data } = await response.json();
-  return data;
-}
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { paymentMethodsApi, PaymentMethod } from '@/lib/api/services/payment-methods';
+import { transactionsApi } from '@/lib/api/services/transactions';
+import { quickTransactionApi } from '@/lib/api/services/quick-transaction';
 
 interface QuickTransactionItem {
   id: string;
@@ -100,15 +84,10 @@ const QUICK_ITEMS: QuickTransactionItem[] = [
 ];
 
 export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTransactionCardProps) {
-  const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [customAmounts, setCustomAmounts] = useState<Record<string, string>>({});
   const [showToast, setShowToast] = useState(false);
   const [lastTransaction, setLastTransaction] = useState<string | null>(null);
-  const [todayCategories, setTodayCategories] = useState<Set<string>>(new Set());
-  const [todayItems, setTodayItems] = useState<Set<string>>(new Set());
-  const [loadingCategories, setLoadingCategories] = useState(false);
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<string>('');
 
   // 获取今天的日期字符串
@@ -116,92 +95,119 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
     return formatDateToLocal(new Date());
   };
 
-  // 获取今天已记录的分类和具体项目
-  const fetchTodayCategories = async () => {
-    setLoadingCategories(true);
-    try {
+  // 使用 React Query 获取支付方式
+  const {
+    data: paymentMethodsData
+  } = useQuery({
+    queryKey: ['payment-methods'],
+    queryFn: async () => {
+      const response = await paymentMethodsApi.list();
+      // API 返回格式可能是 { data: [...] } 或直接数组
+      return Array.isArray(response) ? response : (response as unknown as { data: PaymentMethod[] }).data || [];
+    }
+  });
+
+  const paymentMethods = paymentMethodsData || [];
+
+  // 设置默认支付方式
+  useEffect(() => {
+    if (paymentMethods.length > 0 && !paymentMethod) {
+      const defaultMethod = paymentMethods.find(m => m.is_default);
+      if (defaultMethod) {
+        setPaymentMethod(defaultMethod.id);
+      }
+    }
+  }, [paymentMethods, paymentMethod]);
+
+  // 使用 React Query 获取今日交易记录
+  const {
+    data: todayTransactionsData,
+    isLoading: loadingCategories,
+    refetch: refetchTodayCategories
+  } = useQuery({
+    queryKey: ['today-transactions', getTodayDateString()],
+    queryFn: async () => {
       const today = getTodayDateString();
-
-      // 使用 API 路由查询今日交易
-      const response = await fetch(`/api/transactions?start_date=${today}&end_date=${today}&page_size=100`);
-      if (!response.ok) {
-        throw new Error('获取今日交易失败');
-      }
-
-      const result = await response.json();
-      const data = result.data || [];
-
-      const categories = new Set(data.map((t: { category: string }) => t.category));
-      setTodayCategories(categories);
-
-      // 获取今天已记录的具体项目（基于note匹配）
-      const items = new Set<string>();
-      data.forEach((transaction: { note?: string }) => {
-        // 根据note匹配具体的项目
-        const matchedItem = QUICK_ITEMS.find(item => {
-          // 精确匹配标题
-          if (transaction.note === item.title) {
-            return true;
-          }
-
-          // 智能模糊匹配 - 支持包含关键词
-          if (transaction.note) {
-            // 检查是否包含项目标题的核心关键词
-            const keywords = {
-              'lunch': ['午餐', '午饭', '午饭'],
-              'dinner': ['晚餐', '晚饭', '晚餐'],
-              'subway': ['地铁', '通勤', '地铁'],
-              'coffee': ['咖啡', '瑞幸', '咖啡'],
-              'bread': ['面包', '烘焙', '面包'],
-              'subscription': ['订阅', '会员', '订阅']
-            };
-
-            const itemKeywords = keywords[item.id as keyof typeof keywords] || [item.title];
-            return itemKeywords.some(keyword =>
-              transaction.note.includes(keyword) ||
-              keyword.includes(transaction.note)
-            );
-          }
-
-          return false;
-        });
-
-        if (matchedItem) {
-          items.add(matchedItem.id);
-        }
+      const result = await transactionsApi.list({
+        start_date: today,
+        end_date: today,
+        page_size: 100
       });
-      setTodayItems(items);
-    } catch (error) {
-      console.error('获取今日分类失败:', error);
-    } finally {
-      setLoadingCategories(false);
-    }
-  };
+      return result.data || [];
+    },
+    enabled: open
+  });
 
-  // 组件打开时获取今日分类
-  useEffect(() => {
-    if (open) {
-      fetchTodayCategories();
-    }
-  }, [open]);
+  // 计算今日已记录的分类和项目
+  const { todayCategories, todayItems } = useMemo(() => {
+    const data = todayTransactionsData || [];
+    const categories = new Set(data.map((t: { category: string }) => t.category));
 
-  // 加载支付方式列表
-  useEffect(() => {
-    async function loadPaymentMethods() {
-      try {
-        const methods = await fetchPaymentMethods();
-        setPaymentMethods(methods);
-        // 设置默认支付方式
-        const defaultMethod = methods.find(m => m.is_default);
-        if (defaultMethod) {
-          setPaymentMethod(defaultMethod.id);
+    const items = new Set<string>();
+    data.forEach((transaction: { note?: string }) => {
+      const matchedItem = QUICK_ITEMS.find(item => {
+        if (transaction.note === item.title) {
+          return true;
         }
-      } catch (err) {
-        console.error('加载支付方式失败:', err);
+
+        if (transaction.note) {
+          const keywords: Record<string, string[]> = {
+            'lunch': ['午餐', '午饭', '午饭'],
+            'dinner': ['晚餐', '晚饭', '晚餐'],
+            'subway': ['地铁', '通勤', '地铁'],
+            'coffee': ['咖啡', '瑞幸', '咖啡'],
+            'bread': ['面包', '烘焙', '面包'],
+            'subscription': ['订阅', '会员', '订阅']
+          };
+
+          const itemKeywords = keywords[item.id] || [item.title];
+          return itemKeywords.some(keyword =>
+            transaction.note!.includes(keyword) ||
+            keyword.includes(transaction.note!)
+          );
+        }
+
+        return false;
+      });
+
+      if (matchedItem) {
+        items.add(matchedItem.id);
       }
+    });
+
+    return { todayCategories: categories, todayItems: items };
+  }, [todayTransactionsData]);
+
+  // 使用 useMutation 处理快速记账
+  const quickTransactionMutation = useMutation({
+    mutationFn: (params: { category: string; amount: number; note: string; currency: string; paymentMethod: string | null }) =>
+      quickTransactionApi.create(params),
+    onSuccess: (_, variables) => {
+      setLastTransaction(variables.note);
+      setShowToast(true);
+      onSuccess?.();
+      refetchTodayCategories();
+
+      // 清空该项目的自定义金额
+      const item = QUICK_ITEMS.find(i => i.title === variables.note);
+      if (item && !item.isFixed) {
+        setCustomAmounts(prev => {
+          const newAmounts = { ...prev };
+          delete newAmounts[item.id];
+          return newAmounts;
+        });
+      }
+
+      // 延迟关闭卡片
+      setTimeout(() => {
+        onOpenChange(false);
+      }, 1500);
+    },
+    onError: (error) => {
+      console.error('快速记账失败:', error);
+      alert('记账失败，请重试');
     }
-    loadPaymentMethods();
-  }, []);
+  });
 
   // 处理金额输入
   const handleAmountChange = (itemId: string, value: string) => {
@@ -216,89 +222,44 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
 
   // 处理快速记账
   const handleQuickTransaction = async (item: QuickTransactionItem) => {
-    setSubmittingId(item.id);
-
-    try {
-      // 获取最终金额
-      let finalAmount: number;
-      if (item.isFixed) {
-        finalAmount = item.fixedAmount!;
-      } else {
-        const customAmount = customAmounts[item.id];
-        // 如果用户没有输入金额，使用建议金额
-        if (!customAmount || customAmount.trim() === '') {
-          if (item.suggestedAmount && item.suggestedAmount > 0) {
-            finalAmount = item.suggestedAmount;
-          } else {
-            alert('请输入有效金额');
-            setSubmittingId(null);
-            return;
-          }
+    // 获取最终金额
+    let finalAmount: number;
+    if (item.isFixed) {
+      finalAmount = item.fixedAmount!;
+    } else {
+      const customAmount = customAmounts[item.id];
+      // 如果用户没有输入金额，使用建议金额
+      if (!customAmount || customAmount.trim() === '') {
+        if (item.suggestedAmount && item.suggestedAmount > 0) {
+          finalAmount = item.suggestedAmount;
         } else {
-          const parsedAmount = parseFloat(customAmount);
-          if (isNaN(parsedAmount) || parsedAmount <= 0) {
-            alert('请输入有效金额');
-            setSubmittingId(null);
-            return;
-          }
-          finalAmount = parsedAmount;
+          alert('请输入有效金额');
+          return;
         }
-      }
-
-      const response = await fetch('/api/quick-transaction', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          category: item.category,
-          amount: finalAmount,
-          note: item.title,
-          currency: 'CNY',
-          paymentMethod: paymentMethod || null
-        })
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        setLastTransaction(item.title);
-        setShowToast(true);
-        onSuccess?.();
-
-        // 更新今日分类缓存
-        setTodayCategories(prev => new Set(prev).add(item.category));
-
-        // 更新今日项目缓存
-        setTodayItems(prev => new Set(prev).add(item.id));
-
-        // 清空该项目的自定义金额
-        if (!item.isFixed) {
-          setCustomAmounts(prev => {
-            const newAmounts = { ...prev };
-            delete newAmounts[item.id];
-            return newAmounts;
-          });
-        }
-
-        // 延迟关闭卡片
-        setTimeout(() => {
-          onOpenChange(false);
-        }, 1500);
       } else {
-        throw new Error('快速记账失败');
+        const parsedAmount = parseFloat(customAmount);
+        if (isNaN(parsedAmount) || parsedAmount <= 0) {
+          alert('请输入有效金额');
+          return;
+        }
+        finalAmount = parsedAmount;
       }
-    } catch (error) {
-      console.error('快速记账失败:', error);
-      alert('记账失败，请重试');
-    } finally {
-      setSubmittingId(null);
-      setEditingId(null);
     }
+
+    quickTransactionMutation.mutate({
+      category: item.category,
+      amount: finalAmount,
+      note: item.title,
+      currency: 'CNY',
+      paymentMethod: paymentMethod || null
+    });
+
+    setEditingId(null);
   };
 
   // 渲染项目
   const renderItem = (item: QuickTransactionItem) => {
-    const isSubmitting = submittingId === item.id;
+    const isSubmitting = quickTransactionMutation.isPending && quickTransactionMutation.variables?.note === item.title;
     const isEditing = editingId === item.id;
     const currentAmount = customAmounts[item.id] || item.suggestedAmount?.toFixed(2) || '';
     const isRecordedToday = todayItems.has(item.id);
@@ -676,7 +637,7 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={fetchTodayCategories}
+                    onClick={() => refetchTodayCategories()}
                     disabled={loadingCategories}
                     className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 h-7 px-2 text-xs"
                   >

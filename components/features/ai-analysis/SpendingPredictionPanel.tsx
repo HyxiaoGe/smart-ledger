@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, TrendingDown, AlertTriangle, Target, RefreshCw, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PredictionTrendChart } from '@/components/features/ai-analysis/PredictionTrendChart';
 import { AIFeedbackTrigger, QuickFeedback } from '@/components/features/ai-analysis/AIFeedbackModal';
-import { getErrorMessage } from '@/types/common';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { predictApi } from '@/lib/api/services/predict';
 
 interface PredictionData {
   predictions: Array<{
@@ -77,11 +78,6 @@ export function SpendingPredictionPanel({
   className = '',
   onLoadingChange
 }: SpendingPredictionPanelProps) {
-  const [predictionData, setPredictionData] = useState<PredictionData | null>(null);
-  const [anomalyData, setAnomalyData] = useState<AnomalyData | null>(null);
-  const [budgetData, setBudgetData] = useState<BudgetData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [collapsedModules, setCollapsedModules] = useState<Record<string, boolean>>({});
   const [refreshStatus, setRefreshStatus] = useState<'idle' | 'refreshing' | 'success' | 'error'>('idle');
 
@@ -116,76 +112,39 @@ export function SpendingPredictionPanel({
     utilities: '水电费'
   };
 
-  // 获取预测数据
-  const fetchPredictionData = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      onLoadingChange?.(true);
+  // 使用 React Query 获取预测数据
+  const {
+    data: analysisData,
+    isLoading: loading,
+    error: queryError,
+    refetch
+  } = useQuery({
+    queryKey: ['predict', 'comprehensive-analysis', predictionParams],
+    queryFn: () => predictApi.analyze({
+      type: 'comprehensive-analysis',
+      monthsToAnalyze: predictionParams.monthsToAnalyze,
+      predictionMonths: predictionParams.predictionMonths
+    }),
+  });
 
-      const response = await fetch('/api/predict', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'comprehensive-analysis',
-          monthsToAnalyze: predictionParams.monthsToAnalyze,
-          predictionMonths: predictionParams.predictionMonths
-        })
-      });
+  // 从 query 结果中提取数据
+  const predictionData = analysisData?.spendingPrediction || null;
+  const anomalyData = analysisData?.anomalyDetection || null;
+  const budgetData = analysisData?.budgetRecommendation || null;
+  const error = queryError ? (queryError instanceof Error ? queryError.message : '获取预测数据失败') : null;
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || '预测请求失败');
-      }
-
-      const result = await response.json();
-
-      setPredictionData(result.spendingPrediction);
-      setAnomalyData(result.anomalyDetection);
-      setBudgetData(result.budgetRecommendation);
-
-      // 同时获取历史数据用于图表展示
-      try {
-        const historicalResponse = await fetch('/api/predict', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            type: 'spending-prediction',
-            monthsToAnalyze: 6,
-            predictionMonths: 0 // 只要历史数据
-          })
-        });
-
-        if (historicalResponse.ok) {
-          const historicalResult = await historicalResponse.json();
-          // 这里我们可以使用历史数据，但为了简化，我们先使用现有的数据结构
-        }
-      } catch (histError) {
-        // 历史数据获取失败时使用默认数据
-      }
-
-  
-    } catch (error: unknown) {
-      console.error('❌ 预测数据获取失败:', error);
-      setError(getErrorMessage(error) || '获取预测数据失败');
-    } finally {
-      setLoading(false);
-      onLoadingChange?.(false);
-    }
-  }, [onLoadingChange]);
-
-  // 初始化加载
-  useEffect(() => {
-    fetchPredictionData();
-  }, [fetchPredictionData]);
+  // 通知父组件加载状态变化
+  React.useEffect(() => {
+    onLoadingChange?.(loading);
+  }, [loading, onLoadingChange]);
 
   // 刷新功能
   const handleRefresh = useCallback(async () => {
     setRefreshStatus('refreshing');
-    await fetchPredictionData();
+    await refetch();
     setRefreshStatus('success');
     setTimeout(() => setRefreshStatus('idle'), 2000);
-  }, [fetchPredictionData]);
+  }, [refetch]);
 
   // 处理用户反馈提交
   const handleFeedbackSubmit = useCallback(async () => {

@@ -8,7 +8,6 @@ import { CategoryChip } from '@/components/CategoryChip';
 import { DateInput } from '@/components/features/input/DateInput';
 import { useCategories } from '@/contexts/CategoryContext';
 import { formatCurrency } from '@/lib/utils/format';
-import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2, Store, ChevronDown, ChevronUp, FileText } from 'lucide-react';
 import { EmptyState } from '@/components/EmptyState';
 import Link from 'next/link';
@@ -16,25 +15,9 @@ import { MerchantInput, SubcategorySelect } from '@/components/features/input/Me
 import { enhancedDataSync } from '@/lib/core/EnhancedDataSync';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { formatDateToLocal } from '@/lib/utils/date';
-
-// 支付方式类型定义
-interface PaymentMethod {
-  id: string;
-  name: string;
-  type: string;
-  icon: string | null;
-  color: string | null;
-  is_default: boolean;
-  is_active: boolean;
-}
-
-// API 调用函数
-async function fetchPaymentMethods(): Promise<PaymentMethod[]> {
-  const response = await fetch('/api/payment-methods');
-  if (!response.ok) throw new Error('获取支付方式失败');
-  const { data } = await response.json();
-  return data;
-}
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { paymentMethodsApi, PaymentMethod } from '@/lib/api/services/payment-methods';
+import { transactionsApi } from '@/lib/api/services/transactions';
 
 type Transaction = {
   id: string;
@@ -59,6 +42,7 @@ export function TransactionGroupedList({
   initialTransactions,
   className
 }: TransactionGroupedListProps) {
+  const queryClient = useQueryClient();
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   const { categories } = useCategories();
 
@@ -66,7 +50,6 @@ export function TransactionGroupedList({
   useEffect(() => {
     setTransactions(initialTransactions);
   }, [initialTransactions]);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [recentlyDeleted, setRecentlyDeleted] = useState<Transaction | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -75,20 +58,72 @@ export function TransactionGroupedList({
   const [showEditToast, setShowEditToast] = useState(false);
   const [showDeleteToast, setShowDeleteToast] = useState(false);
   const [showUndoToast, setShowUndoToast] = useState(false);
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
 
-  // 加载支付方式列表
-  useEffect(() => {
-    async function loadPaymentMethods() {
-      try {
-        const methods = await fetchPaymentMethods();
-        setPaymentMethods(methods);
-      } catch (err) {
-        console.error('加载支付方式失败:', err);
-      }
+  // 使用 React Query 获取支付方式
+  const { data: paymentMethodsData } = useQuery({
+    queryKey: ['payment-methods'],
+    queryFn: async () => {
+      const response = await paymentMethodsApi.list();
+      return Array.isArray(response) ? response : (response as unknown as { data: PaymentMethod[] }).data || [];
     }
-    loadPaymentMethods();
-  }, []);
+  });
+
+  const paymentMethods = paymentMethodsData || [];
+
+  // 更新交易的 mutation
+  const updateMutation = useMutation({
+    mutationFn: (params: { id: string; data: Partial<Transaction> }) =>
+      transactionsApi.update({ id: params.id, ...params.data }),
+    onSuccess: (result, variables) => {
+      const updatedTransaction = result || { ...form, type: 'expense' } as unknown as Transaction;
+      setTransactions((ts) => ts.map((t) => (t.id === variables.id ? { ...t, ...updatedTransaction } : t)));
+      setEditingId(null);
+      setForm({});
+      setShowEditToast(true);
+      enhancedDataSync.notifyTransactionUpdated(updatedTransaction, true);
+    },
+    onError: (err: unknown) => {
+      const errorMessage = err instanceof Error ? err.message : '更新失败';
+      setError(errorMessage);
+    }
+  });
+
+  // 删除交易的 mutation
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => transactionsApi.delete(id),
+    onSuccess: (_, id) => {
+      const transaction = transactions.find(t => t.id === id);
+      if (transaction) {
+        setRecentlyDeleted(transaction);
+        setTransactions((ts) => ts.filter((t) => t.id !== id));
+        setShowDeleteToast(true);
+        enhancedDataSync.notifyTransactionDeleted(transaction, true);
+      }
+    },
+    onError: (err: unknown) => {
+      const errorMessage = err instanceof Error ? err.message : '删除失败';
+      setError(errorMessage);
+    }
+  });
+
+  // 恢复交易的 mutation
+  const restoreMutation = useMutation({
+    mutationFn: (id: string) => transactionsApi.restore(id),
+    onSuccess: () => {
+      if (recentlyDeleted) {
+        setTransactions((ts) => [recentlyDeleted, ...ts].sort((a, b) =>
+          new Date(b.date).getTime() - new Date(a.date).getTime()
+        ));
+        setShowUndoToast(true);
+        setRecentlyDeleted(null);
+      }
+    },
+    onError: () => {
+      setError('撤销失败，请重试');
+    }
+  });
+
+  const loading = updateMutation.isPending || deleteMutation.isPending || restoreMutation.isPending;
 
   async function handleEdit(transaction: Transaction) {
     setEditingId(transaction.id);
@@ -97,43 +132,15 @@ export function TransactionGroupedList({
 
   async function saveEdit() {
     if (!editingId) return;
-    setLoading(true);
     setError('');
-    const patch = { ...form, type: 'expense' }; // 强制设置为支出类型
-    delete (patch as any).id;
+    const patch = { ...form, type: 'expense' as const }; // 强制设置为支出类型
+    delete (patch as Partial<Transaction> & { id?: string }).id;
     if (patch.amount !== undefined && !(Number(patch.amount) > 0)) {
       setError('金额必须大于 0');
-      setLoading(false);
       return;
     }
 
-    try {
-      // 使用 API 路由更新交易
-      const response = await fetch(`/api/transactions/${editingId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(patch),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        setError(errorData.message || '更新失败');
-      } else {
-        const result = await response.json();
-        const updatedTransaction = result.data || { ...form, type: 'expense' } as Transaction;
-        setTransactions((ts) => ts.map((t) => (t.id === editingId ? { ...t, ...updatedTransaction } : t)));
-        setEditingId(null);
-        setForm({});
-        setShowEditToast(true);
-
-        // 触发同步事件
-        enhancedDataSync.notifyTransactionUpdated(updatedTransaction, true);
-      }
-    } catch (err) {
-      setError('更新失败，请重试');
-    }
-
-    setLoading(false);
+    updateMutation.mutate({ id: editingId, data: patch });
   }
 
   async function handleDelete(transaction: Transaction) {
@@ -141,66 +148,13 @@ export function TransactionGroupedList({
   }
 
   async function confirmDelete(transaction: Transaction) {
-    setLoading(true);
     setError('');
-
-    try {
-      // 使用 API 路由删除交易（软删除）
-      const response = await fetch(`/api/transactions/${transaction.id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        setError(errorData.message || '删除失败');
-        setLoading(false);
-        return;
-      }
-
-      setRecentlyDeleted(transaction);
-      setTransactions((ts) => ts.filter((t) => t.id !== transaction.id));
-      setShowDeleteToast(true);
-
-      // 触发同步事件
-      enhancedDataSync.notifyTransactionDeleted(transaction, true);
-
-      // 清除缓存以确保实时更新
-      void fetch('/api/revalidate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tag: 'transactions' }),
-        cache: 'no-store'
-      }).catch(() => {});
-
-    } catch (err) {
-      setError('删除失败，请重试');
-    }
-
-    setLoading(false);
+    deleteMutation.mutate(transaction.id);
   }
 
   async function handleUndo() {
     if (!recentlyDeleted) return;
-    setLoading(true);
-
-    try {
-      // 使用 API 路由恢复交易
-      const response = await fetch(`/api/transactions/${recentlyDeleted.id}/restore`, {
-        method: 'POST',
-      });
-
-      if (response.ok) {
-        setTransactions((ts) => [recentlyDeleted, ...ts].sort((a, b) =>
-          new Date(b.date).getTime() - new Date(a.date).getTime()
-        ));
-        setShowUndoToast(true);
-      }
-    } catch (err) {
-      setError('撤销失败，请重试');
-    }
-
-    setRecentlyDeleted(null);
-    setLoading(false);
+    restoreMutation.mutate(recentlyDeleted.id);
   }
 
   // 渲染编辑表单
