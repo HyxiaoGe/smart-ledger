@@ -3,10 +3,12 @@ import { chat } from '@/lib/clients/ai/client';
 import { getPredictionData } from '@/lib/services/transactions.server';
 import { memoryCache } from '@/lib/infrastructure/cache';
 import { CACHE_TTL, CACHE_PREFIXES } from '@/lib/config/cacheConfig';
-import { aiFeedbackService } from '@/lib/services/ai';
+import { AIFeedbackService } from '@/lib/services/ai/AIFeedbackService.server';
 import { withErrorHandler, ApiError } from '@/lib/utils/apiErrorHandler';
 
 export const runtime = 'nodejs';
+
+const aiFeedbackService = AIFeedbackService.getInstance();
 
 /**
  * 支出预测API
