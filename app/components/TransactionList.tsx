@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/clients/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CategoryChip } from '@/components/CategoryChip';
@@ -33,21 +32,17 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
     if (initialRows.length === 0 && start) {
       (async () => {
         setLoading(true);
-        const isSingleDay = start === end || (end && new Date(end).getTime() - new Date(start).getTime() === 86400000);
-        let queryBuilder = supabase.from('transactions').select('*').order('date', { ascending: false });
+        const params = new URLSearchParams();
+        if (start) params.set('start_date', start);
+        if (end) params.set('end_date', end);
+        params.set('type', 'expense');
+        params.set('page_size', '50');
 
-        if (start && end) {
-          if (isSingleDay) {
-            queryBuilder = queryBuilder.eq('date', start);
-          } else {
-            queryBuilder = queryBuilder.gte('date', start).lt('date', end);
-          }
-        }
-
-        queryBuilder = queryBuilder.eq('type', 'expense').is('deleted_at', null);
-        const { data } = await queryBuilder.limit(50);
-        if (data) setRows(data as Row[]);
-        if ((data?.length || 0) < 50) setHasMore(false);
+        const response = await fetch(`/api/transactions?${params.toString()}`);
+        const result = await response.json();
+        const data = result.data || [];
+        setRows(data as Row[]);
+        if (data.length < 50) setHasMore(false);
         setLoading(false);
       })();
     }
@@ -57,25 +52,17 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
     if (initialRows.length > 0 && start) {
       (async () => {
         setLoading(true);
-        const isSingleDay = start === end || (end && new Date(end).getTime() - new Date(start).getTime() === 86400000);
+        const params = new URLSearchParams();
+        if (start) params.set('start_date', start);
+        if (end) params.set('end_date', end);
+        params.set('type', 'expense');
+        params.set('page_size', '50');
 
-        let queryBuilder = supabase.from('transactions').select('*');
-
-        if (start && end) {
-          if (isSingleDay) {
-            queryBuilder = queryBuilder.eq('date', start);
-          } else {
-            queryBuilder = queryBuilder.gte('date', start).lt('date', end);
-          }
-        }
-
-        const { data } = await queryBuilder
-          .eq('type', 'expense')
-          .is('deleted_at', null)
-          .order('date', { ascending: false })
-          .limit(50);
-        if (data) setRows(data as Row[]);
-        if ((data?.length || 0) < 50) setHasMore(false);
+        const response = await fetch(`/api/transactions?${params.toString()}`);
+        const result = await response.json();
+        const data = result.data || [];
+        setRows(data as Row[]);
+        if (data.length < 50) setHasMore(false);
         setLoading(false);
       })();
     }
@@ -101,12 +88,17 @@ export function TransactionList({ initialRows = [] as Row[], start, end }: { ini
 
   async function loadMore() {
     setLoading(true);
-    let q = supabase.from('transactions').select('*').order('date', { ascending: false });
-    if (start && end) q = q.gte('date', start).lt('date', end);
-    q = q.eq('type', 'expense').is('deleted_at', null);
-    const offset = rows.length;
-    const { data } = await q.range(offset, offset + 49);
-    const more = (data as Row[]) || [];
+    const currentPage = Math.floor(rows.length / 50) + 1;
+    const params = new URLSearchParams();
+    if (start) params.set('start_date', start);
+    if (end) params.set('end_date', end);
+    params.set('type', 'expense');
+    params.set('page', String(currentPage + 1));
+    params.set('page_size', '50');
+
+    const response = await fetch(`/api/transactions?${params.toString()}`);
+    const result = await response.json();
+    const more = (result.data || []) as Row[];
     setRows((rs) => rs.concat(more));
     if (more.length < 50) setHasMore(false);
     setLoading(false);
