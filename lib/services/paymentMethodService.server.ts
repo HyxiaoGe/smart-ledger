@@ -1,6 +1,7 @@
 /**
  * 支付方式服务 - 服务端版本
  * 使用 Repository 模式，支持 Prisma/Supabase 切换
+ * 带缓存支持，减少数据库查询
  */
 
 import { getPaymentMethodRepository } from '@/lib/infrastructure/repositories/index.server';
@@ -11,6 +12,7 @@ import type {
   CreatePaymentMethodDTO,
   UpdatePaymentMethodDTO,
 } from '@/lib/domain/repositories/IPaymentMethodRepository';
+import { CacheDecorator, memoryCache } from '@/lib/infrastructure/cache';
 
 // 重新导出类型
 export type { PaymentMethod, PaymentMethodWithStats, PaymentMethodUsageDetail };
@@ -24,20 +26,40 @@ export interface DeletePaymentMethodResult {
   transaction_count: number;
 }
 
+// 创建缓存装饰器实例
+const cacheDecorator = new CacheDecorator(memoryCache, {
+  ttl: 3600 * 1000, // 1小时缓存
+  tags: ['payment-methods'],
+  debug: false,
+});
+
+/**
+ * 失效支付方式缓存
+ */
+function invalidateCache(): void {
+  cacheDecorator.invalidateByTag('payment-methods');
+}
+
 /**
  * 获取支付方式列表（带统计信息）
  */
 export async function getPaymentMethodsWithStats(): Promise<PaymentMethodWithStats[]> {
-  const repository = getPaymentMethodRepository();
-  return repository.findAllWithStats();
+  const cacheKey = 'payment-methods:with-stats';
+  return cacheDecorator.wrap(cacheKey, () => {
+    const repository = getPaymentMethodRepository();
+    return repository.findAllWithStats();
+  });
 }
 
 /**
  * 获取所有支付方式
  */
 export async function getPaymentMethods(activeOnly = true): Promise<PaymentMethod[]> {
-  const repository = getPaymentMethodRepository();
-  return repository.findAll(activeOnly);
+  const cacheKey = `payment-methods:all:${activeOnly}`;
+  return cacheDecorator.wrap(cacheKey, () => {
+    const repository = getPaymentMethodRepository();
+    return repository.findAll(activeOnly);
+  });
 }
 
 /**
@@ -67,6 +89,7 @@ export async function addPaymentMethod(params: {
     last_4_digits: params.last4Digits,
   };
   const created = await repository.create(dto);
+  invalidateCache();
   return created.id;
 }
 
@@ -88,6 +111,7 @@ export async function updatePaymentMethod(params: {
     last_4_digits: params.last4Digits,
   };
   await repository.update(params.id, dto);
+  invalidateCache();
   return true;
 }
 
@@ -109,6 +133,7 @@ export async function deletePaymentMethod(
 
   // 删除支付方式（软删除）
   await repository.delete(id);
+  invalidateCache();
 
   return {
     success: true,
@@ -125,6 +150,7 @@ export async function deletePaymentMethod(
 export async function setDefaultPaymentMethod(id: string): Promise<boolean> {
   const repository = getPaymentMethodRepository();
   await repository.setDefault(id);
+  invalidateCache();
   return true;
 }
 
