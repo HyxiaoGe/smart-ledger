@@ -116,7 +116,7 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
       };
     }
 
-    // 查询本周交易
+    // 查询本周交易（排除固定支出，只分析用户主观消费行为）
     const transactions = await this.prisma.transactions.findMany({
       where: {
         deleted_at: null,
@@ -125,6 +125,12 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
           gte: startDate,
           lte: endDate,
         },
+        // 排除固定支出：非自动生成且无关联固定账单
+        recurring_expense_id: null,
+        OR: [
+          { is_auto_generated: false },
+          { is_auto_generated: null },
+        ],
       },
     });
 
@@ -207,6 +213,7 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
     const lastWeekEnd = new Date(endDate);
     lastWeekEnd.setDate(lastWeekEnd.getDate() - 7);
 
+    // 上周交易（同样排除固定支出，确保环比对比的一致性）
     const lastWeekTransactions = await this.prisma.transactions.findMany({
       where: {
         deleted_at: null,
@@ -215,6 +222,12 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
           gte: lastWeekStart,
           lte: lastWeekEnd,
         },
+        // 排除固定支出
+        recurring_expense_id: null,
+        OR: [
+          { is_auto_generated: false },
+          { is_auto_generated: null },
+        ],
       },
     });
 
