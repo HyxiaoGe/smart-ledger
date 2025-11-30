@@ -129,8 +129,9 @@ describe('TransactionAnalyticsService', () => {
       await service.getAIAnalysisData();
       await service.getAIAnalysisData();
 
-      // findMany is called 3 times per request (current, last, top20)
-      expect(mockRepository.findMany).toHaveBeenCalledTimes(3);
+      // findMany is called 2 times per request (current, last) - Top20 is now sorted in-app
+      // Second call uses cache, so total is 2
+      expect(mockRepository.findMany).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -213,8 +214,8 @@ describe('TransactionAnalyticsService', () => {
       await service.getPredictionData(3);
       await service.getPredictionData(3);
 
-      // Called once per month (3 months)
-      expect(mockRepository.findByDateRange).toHaveBeenCalledTimes(3);
+      // Optimized: single query for all months, second call uses cache
+      expect(mockRepository.findByDateRange).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -318,8 +319,8 @@ describe('TransactionAnalyticsService', () => {
       service.clearCache();
       await service.getAIAnalysisData();
 
-      // 6 calls total (3 per request, 2 requests)
-      expect(mockRepository.findMany).toHaveBeenCalledTimes(6);
+      // 4 calls total (2 per request after optimization, 2 requests)
+      expect(mockRepository.findMany).toHaveBeenCalledTimes(4);
     });
   });
 });
