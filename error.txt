@@ -1,4 +1,4 @@
-PS E:\TypeScriptProject\smart-ledger> npx tsc --noEmit
+PS E:\TypeScriptProject\smart-ledger> npx tsc --noEmit       
 __tests__/__factories__/transaction.ts:26:5 - error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
   Type 'null' is not assignable to type 'string | undefined'.
 
@@ -168,41 +168,6 @@ __tests__/unit/services/transaction/TransactionAnalyticsService.test.ts:43:5 - e
 43     updated_at: new Date().toISOString(),
        ~~~~~~~~~~
 
-__tests__/unit/services/transaction/TransactionAnalyticsService.test.ts:78:100 - error TS2353: Object literal may only specify known properties, and 'totalPages' does not exist in type 'PaginatedResult<Transaction>'.
-
-78         .mockResolvedValueOnce({ data: currentMonthTransactions, total: 2, page: 1, pageSize: 100, totalPages: 1 })
-                                                                                                      ~~~~~~~~~~
-
-__tests__/unit/services/transaction/TransactionAnalyticsService.test.ts:79:97 - error TS2353: Object literal may only specify known properties, and 'totalPages' does not exist in type 'PaginatedResult<Transaction>'.
-
-79         .mockResolvedValueOnce({ data: lastMonthTransactions, total: 1, page: 1, pageSize: 100, totalPages: 1 })
-                                                                                                   ~~~~~~~~~~
-
-__tests__/unit/services/transaction/TransactionAnalyticsService.test.ts:80:111 - error TS2353: Object literal may only specify known properties, and 'totalPages' does not exist in type 'PaginatedResult<Transaction>'.
-
-80         .mockResolvedValueOnce({ data: currentMonthTransactions.slice(0, 2), total: 2, page: 1, pageSize: 20, totalPages: 1 });
-                                                                                                                 ~~~~~~~~~~
-
-__tests__/unit/services/transaction/TransactionAnalyticsService.test.ts:96:9 - error TS2353: Object literal may only specify known properties, and 'totalPages' does not exist in type 'PaginatedResult<Transaction>'.
-
-96         totalPages: 0,
-           ~~~~~~~~~~
-
-__tests__/unit/services/transaction/TransactionAnalyticsService.test.ts:111:9 - error TS2353: Object literal may only specify known properties, and 'totalPages' does not exist in type 'PaginatedResult<Transaction>'.
-
-111         totalPages: 0,
-            ~~~~~~~~~~
-
-__tests__/unit/services/transaction/TransactionAnalyticsService.test.ts:126:9 - error TS2353: Object literal may only specify known properties, and 'totalPages' does not exist in type 'PaginatedResult<Transaction>'.
-
-126         totalPages: 0,
-            ~~~~~~~~~~
-
-__tests__/unit/services/transaction/TransactionAnalyticsService.test.ts:315:9 - error TS2353: Object literal may only specify known properties, and 'totalPages' does not exist in type 'PaginatedResult<Transaction>'.
-
-315         totalPages: 0,
-            ~~~~~~~~~~
-
 __tests__/unit/services/transaction/TransactionQueryService.test.ts:43:5 - error TS2353: Object literal may only specify known properties, and 'updated_at' does not exist in type 'Transaction'.
 
 43     updated_at: new Date().toISOString(),
@@ -219,8 +184,8 @@ __tests__/unit/services/transaction/TransactionSummaryService.test.ts:255:60 - e
 255       vi.mocked(mockRepository.getStats).mockResolvedValue(mockStats);
                                                                ~~~~~~~~~
 
-  types/dto/transaction.dto.ts:90:3
-    90   avgAmount: number;
+  types/dto/transaction.dto.ts:75:3
+    75   avgAmount: number;
          ~~~~~~~~~
     'avgAmount' is declared here.
 
@@ -239,195 +204,127 @@ __tests__/unit/services/transaction/TransactionSummaryService.test.ts:302:9 - er
 302         averageAmount: 0,
             ~~~~~~~~~~~~~
 
-app/api/smart-suggestions/learning/route.ts:117:9 - error TS2322: Type '{ suggestion_id: string; suggestion_type: string; content: string; confidence?: number | undefined; reason?: string | undefined; } | null' is not assignable to type 'InputJsonValue | NullableJsonNullValueInput | undefined'.
-  Type 'null' is not assignable to type 'InputJsonValue | NullableJsonNullValueInput | undefined'.
+lib/infrastructure/repositories/prisma/PrismaTransactionRepository.ts:230:7 - error TS2769: No overload matches this call.
+  Overload 1 of 3, '(callbackfn: (previousValue: PickEnumerable<TransactionsGroupByOutputType, "category"[]> & { _count: number; _sum: { amount: Decimal | null; }; }, currentValue: PickEnumerable<...> & { ...; }, currentIndex: number, array: (PickEnumerable<...> & { ...; })[]) => PickEnumerable<...> & { ...; }, initialValue: PickEnumerable<...> & { ...; }): PickEnumerable<...> & { ...; }', gave the following error.
+    Argument of type '(sum: number, item: GroupResult) => number' is not assignable to parameter of type '(previousValue: PickEnumerable<TransactionsGroupByOutputType, "category"[]> & { _count: number; _sum: { amount: Decimal | null; }; }, currentValue: PickEnumerable<...> & { ...; }, currentIndex: number, array: (PickEnumerable<...> & { ...; })[]) => PickEnumerable<...> & { ...; }'.
+      Types of parameters 'sum' and 'previousValue' are incompatible.
+        Type 'PickEnumerable<TransactionsGroupByOutputType, "category"[]> & { _count: number; _sum: { amount: Decimal | null; }; }' is not assignable to type 'number'.
+  Overload 2 of 3, '(callbackfn: (previousValue: number, currentValue: PickEnumerable<TransactionsGroupByOutputType, "category"[]> & { _count: number; _sum: { amount: Decimal | null; }; }, currentIndex: number, array: (PickEnumerable<...> & { ...; })[]) => number, initialValue: number): number', gave the following error.
+    Argument of type '(sum: number, item: GroupResult) => number' is not assignable to parameter of type '(previousValue: number, currentValue: PickEnumerable<TransactionsGroupByOutputType, "category"[]> & { _count: number; _sum: { amount: Decimal | null; }; }, currentIndex: number, array: (PickEnumerable<...> & { ...; })[]) => number'.
+      Types of parameters 'item' and 'currentValue' are incompatible.
+        Type 'PickEnumerable<TransactionsGroupByOutputType, "category"[]> & { _count: number; _sum: { amount: Decimal | null; }; }' is not assignable to type 'GroupResult'.
+          The types of '_sum.amount' are incompatible between these types.
+            Type 'Decimal | null' is not assignable to type 'number | null'.
+              Type 'Decimal' is not assignable to type 'number'.
 
-117         suggestion_data: data.suggestion_data || null,
-            ~~~~~~~~~~~~~~~
+230       (sum: number, item: GroupResult) => sum + (Number(item._sum.amount) || 0),
+          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  node_modules/.prisma/client/index.d.ts:37615:5
-    37615     suggestion_data?: NullableJsonNullValueInput | InputJsonValue
-              ~~~~~~~~~~~~~~~
-    The expected type comes from property 'suggestion_data' which is declared here on type '(Without<suggestion_learning_logsCreateInput, suggestion_learning_logsUncheckedCreateInput> & suggestion_learning_logsUncheckedCreateInput) | (Without<...> & suggestion_learning_logsCreateInput)'
 
-app/api/smart-suggestions/route.ts:213:13 - error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
-  Type 'null' is not assignable to type 'string | undefined'.
+lib/infrastructure/repositories/prisma/PrismaTransactionRepository.ts:235:12 - error TS2345: Argument of type '(item: GroupResult) => { category: string; totalAmount: number; count: number; percentage: number; }' is not assignable to parameter of type '(value: PickEnumerable<TransactionsGroupByOutputType, "category"[]> & { _count: number; _sum: { amount: Decimal | null; }; }, index: number, array: (PickEnumerable<...> & { ...; })[]) => { ...; }'.
+  Types of parameters 'item' and 'value' are incompatible.
+    Type 'PickEnumerable<TransactionsGroupByOutputType, "category"[]> & { _count: number; _sum: { amount: Decimal | null; }; }' is not assignable to type 'GroupResult'.
+      The types of '_sum.amount' are incompatible between these types.
+        Type 'Decimal | null' is not assignable to type 'number | null'.
+          Type 'Decimal' is not assignable to type 'number'.
 
-213             category: note.category_affinity,
-                ~~~~~~~~
-
-app/api/smart-suggestions/route.ts:287:13 - error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
-  Type 'null' is not assignable to type 'string | undefined'.
-
-287             category: note.category_affinity,
-                ~~~~~~~~
-
-lib/domain/noteContext.ts:48:5 - error TS2322: Type '"night"' is not assignable to type '"work_hours" | "after_work" | "weekend" | "holiday" | undefined'.
-
-48     work_period = 'night';
-       ~~~~~~~~~~~
-
-lib/services/aiFeedbackServiceDB.ts:52:56 - error TS2551: Property 'feedbackType' does not exist on type 'Partial<AIFeedbackInsert>'. Did you mean 'feedback_type'?
-
-52     return collectAIFeedback(featureType, feedbackData.feedbackType || 'rating', {
-                                                          ~~~~~~~~~~~~
-
-lib/services/aiFeedbackServiceDB.ts:52:82 - error TS2554: Expected 2 arguments, but got 3.
-
- 52     return collectAIFeedback(featureType, feedbackData.feedbackType || 'rating', {
-                                                                                     ~
- 53       rating: feedbackData.rating,
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+235       .map((item: GroupResult) => ({
+               ~~~~~~~~~~~~~~~~~~~~~~~~~
+236         category: item.category,
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ...
- 60       priority: feedbackData.priority
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 61     });
-    ~~~~~
+241           : 0,
+    ~~~~~~~~~~~~~~
+242       }))
+    ~~~~~~~~
 
-lib/services/aiFeedbackServiceDB.ts:54:32 - error TS2551: Property 'isPositive' does not exist on type 'Partial<AIFeedbackInsert>'. Did you mean 'is_positive'?
+lib/infrastructure/repositories/prisma/PrismaTransactionRepository.ts:239:21 - error TS2365: Operator '>' cannot be applied to types 'PickEnumerable<TransactionsGroupByOutputType, "category"[]> & { _count: number; _sum: { amount: Decimal | null; }; }' and 'number'. 
 
-54       isPositive: feedbackData.isPositive,
-                                  ~~~~~~~~~~
+239         percentage: totalAmount > 0
+                        ~~~~~~~~~~~~~~~
 
-lib/services/aiFeedbackServiceDB.ts:57:32 - error TS2551: Property 'customData' does not exist on type 'Partial<AIFeedbackInsert>'. Did you mean 'custom_data'?
+lib/infrastructure/repositories/prisma/PrismaTransactionRepository.ts:240:48 - error TS2363: The right-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
 
-57       customData: feedbackData.customData,
-                                  ~~~~~~~~~~
+240           ? ((Number(item._sum.amount) || 0) / totalAmount) * 100
+                                                   ~~~~~~~~~~~
 
-lib/services/aiFeedbackServiceDB.ts:69:5 - error TS2322: Type 'AIFeedback[]' is not assignable to type 'AIFeedbackRow[]'.
-  Type 'AIFeedback' is missing the following properties from type 'AIFeedbackRow': feature_type, feedback_type
+lib/services/recurringService.server.ts:250:10 - error TS2345: Argument of type '(log: LogRow) => string | null' is not assignable to parameter of type '(value: { created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }, index: number, array: { ...; }[]) => string | null'.
+  Types of parameters 'log' and 'value' are incompatible.
+    Type '{ created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }' is missing the following properties from type 'LogRow': error_message, retry_count
 
-69     return unifiedService.getAllFeedbacks(limit, offset);
-       ~~~~~~
+250     .map((log: LogRow) => log.recurring_expense_id)
+             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-lib/services/aiFeedbackServiceDB.ts:84:27 - error TS2339: Property 'getFilteredFeedbacks' does not exist on type 'AIFeedbackServiceClient'.
+lib/services/recurringService.server.ts:253:10 - error TS2345: Argument of type '(log: LogRow) => string | null' is not assignable to parameter of type '(value: { created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }, index: number, array: { ...; }[]) => string | null'.
+  Types of parameters 'log' and 'value' are incompatible.
+    Type '{ created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }' is missing the following properties from type 'LogRow': error_message, retry_count
 
-84     return unifiedService.getFilteredFeedbacks(filters);
-                             ~~~~~~~~~~~~~~~~~~~~
+253     .map((log: LogRow) => log.generated_transaction_id)
+             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-lib/services/aiFeedbackServiceDB.ts:112:5 - error TS2322: Type 'unknown' is not assignable to type '{ totalFeedbacks: number; averageRating: number; positiveRate: number; featureStats: Record<string, { count: number; avgRating: number; positiveRate: number; }>; timeStats: { today: number; thisWeek: number; thisMonth: number; }; recentFeedbacks: AIFeedbackRow[]; sentimentAnalysis: { ...; }; }'.
+lib/services/recurringService.server.ts:279:19 - error TS2345: Argument of type '(log: LogRow) => { id: string; recurring_expense_id: string | null; generation_date: string; generated_transaction_id: string | null; status: string; reason: string | null; created_at: 
+string; recurring_expense: { ...; } | null; transaction: { ...; } | null; }' is not assignable to parameter of type '(value: { created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }, index: number, array: { ...; }[]) => { ...; }'.
+  Types of parameters 'log' and 'value' are incompatible.
+    Type '{ created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }' is missing the following properties from type 'LogRow': error_message, retry_count
 
-112     return getAIFeedbackStats();
-        ~~~~~~
+279   return logs.map((log: LogRow) => {
+                      ~~~~~~~~~~~~~~~~~~
 
-lib/services/aiFeedbackServiceDB.ts:124:27 - error TS2551: Property 'updateFeedbackStatus' does not exist on type 'AIFeedbackServiceClient'. Did you mean 'getFeedbackStats'?
+lib/services/recurringService.server.ts:328:36 - error TS2769: No overload matches this call.
+  Overload 1 of 2, '(predicate: (value: { created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }, index: number, array: { ...; }[]) => 
+value is { ...; }, thisArg?: any): { ...; }[]', gave the following error.
+    Argument of type '(d: { status: string; }) => boolean' is not assignable to parameter of type '(value: { created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }, index: number, array: { ...; }[]) => value is { ...; }'.
+      Types of parameters 'd' and 'value' are incompatible.
+        Type '{ created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }' is not assignable to type '{ status: string; }'.
+          Types of property 'status' are incompatible.
+            Type 'string | null' is not assignable to type 'string'.
+              Type 'null' is not assignable to type 'string'.
+  Overload 2 of 2, '(predicate: (value: { created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }, index: number, array: { ...; }[]) => 
+unknown, thisArg?: any): { ...; }[]', gave the following error.
+    Argument of type '(d: { status: string; }) => boolean' is not assignable to parameter of type '(value: { created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }, index: number, array: { ...; }[]) => unknown'.
+      Types of parameters 'd' and 'value' are incompatible.
+        Type '{ created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }' is not assignable to type '{ status: string; }'.
+          Types of property 'status' are incompatible.
+            Type 'string | null' is not assignable to type 'string'.
+              Type 'null' is not assignable to type 'string'.
 
-124     return unifiedService.updateFeedbackStatus(feedbackId, status, adminNotes);
-                              ~~~~~~~~~~~~~~~~~~~~
-
-  lib/services/ai/index.ts:49:9
-    49   async getFeedbackStats(
-               ~~~~~~~~~~~~~~~~
-    'getFeedbackStats' is declared here.
-
-lib/services/aiFeedbackServiceDB.ts:132:27 - error TS2339: Property 'deleteFeedback' does not exist on type 'AIFeedbackServiceClient'.
-
-132     return unifiedService.deleteFeedback(feedbackId);
-                              ~~~~~~~~~~~~~~
-
-lib/services/aiFeedbackServiceDB.ts:140:27 - error TS2339: Property 'exportFeedbacks' does not exist on type 'AIFeedbackServiceClient'.
-
-140     return unifiedService.exportFeedbacks(format);
-                              ~~~~~~~~~~~~~~~
-
-lib/services/aiFeedbackServiceDB.ts:156:27 - error TS2339: Property 'getTemplatesByFeature' does not exist on type 'AIFeedbackServiceClient'.
-
-156     return unifiedService.getTemplatesByFeature(featureType);
-                              ~~~~~~~~~~~~~~~~~~~~~
-
-lib/services/aiFeedbackServiceDB.ts:176:5 - error TS2322: Type 'void' is not assignable to type 'string'.
-
-176     return logAIRequest(
-        ~~~~~~
-
-lib/services/aiFeedbackServiceDB.ts:178:7 - error TS2554: Expected 1 arguments, but got 11.
-
-178       modelName,
-          ~~~~~~~~~~
-179       featureType,
-    ~~~~~~~~~~~~~~~~~~
-...
-186       status,
-    ~~~~~~~~~~~~~
-187       errorMessage
-    ~~~~~~~~~~~~~~~~~~
-
-lib/services/aiFeedbackServiceDB.ts:196:27 - error TS2339: Property 'getPerformanceStats' does not exist on type 'AIFeedbackServiceClient'.
-
-196     return unifiedService.getPerformanceStats(dateRange);
-                              ~~~~~~~~~~~~~~~~~~~
-
-lib/services/aiPrediction.server.ts:362:35 - error TS7006: Parameter 'transaction' implicitly has an 'any' type.
-
-362       similarTransactions.forEach(transaction => {
-                                      ~~~~~~~~~~~
-
-lib/services/aiPrediction.server.ts:433:36 - error TS7006: Parameter 'transaction' implicitly has an 'any' type.
-
-433       categoryTransactions.forEach(transaction => {
-                                       ~~~~~~~~~~~
-
-lib/services/cacheManager.ts:52:7 - error TS2353: Object literal may only specify known properties, and 'priority' does not exist in type 'Omit<CacheInvalidationRule, "priority">'.
-
-52       priority: 1
-         ~~~~~~~~
-
-lib/services/cacheManager.ts:68:7 - error TS2353: Object literal may only specify known properties, and 'priority' does not exist in type 'Omit<CacheInvalidationRule, "priority">'.
-
-68       priority: 2
-         ~~~~~~~~
-
-lib/services/cacheManager.ts:84:7 - error TS2353: Object literal may only specify known properties, and 'priority' does not exist in type 'Omit<CacheInvalidationRule, "priority">'.
-
-84       priority: 3
-         ~~~~~~~~
-
-lib/services/cacheManager.ts:98:7 - error TS2353: Object literal may only specify known properties, and 'priority' does not exist in type 'Omit<CacheInvalidationRule, "priority">'.
-
-98       priority: 4
-         ~~~~~~~~
-
-lib/services/cacheManager.ts:114:7 - error TS2353: Object literal may only specify known properties, and 'priority' does not exist in type 'Omit<CacheInvalidationRule, "priority">'.
-
-114       priority: 5
-          ~~~~~~~~
-
-lib/services/categoryService.ts:6:10 - error TS2724: '"@/lib/infrastructure/repositories"' has no exported member named 'categoryRepository'. Did you mean 'getCategoryRepository'?
-
-6 import { categoryRepository } from '@/lib/infrastructure/repositories';
-           ~~~~~~~~~~~~~~~~~~
-
-  lib/infrastructure/repositories/index.server.ts:134:14
-    134 export const getCategoryRepository = () => ServerRepositoryFactory.getCategoryRepository();
-                     ~~~~~~~~~~~~~~~~~~~~~
-    'getCategoryRepository' is declared here.
-
-types/index.ts:15:1 - error TS2308: Module './common' has already exported a member named 'PaginatedResult'. Consider explicitly re-exporting to resolve the ambiguity.
-
-   ~~~~~~~~~~~~~~~~~~~~~~
-
-types/index.ts:15:1 - error TS2308: Module './common' has already exported a member named 'PaginationOptions'. Consider explicitly re-exporting to resolve the ambiguity.
-
-15 export * from './dto';
-   ~~~~~~~~~~~~~~~~~~~~~~
+328   const successCount = logs.filter((d: { status: string }) => d.status === 'success').length;
+                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-Found 67 errors in 15 files.
+lib/services/recurringService.server.ts:329:35 - error TS2769: No overload matches this call.
+  Overload 1 of 2, '(predicate: (value: { created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }, index: number, array: { ...; }[]) => 
+value is { ...; }, thisArg?: any): { ...; }[]', gave the following error.
+    Argument of type '(d: { status: string; }) => boolean' is not assignable to parameter of type '(value: { created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }, index: number, array: { ...; }[]) => value is { ...; }'.
+      Types of parameters 'd' and 'value' are incompatible.
+        Type '{ created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }' is not assignable to type '{ status: string; }'.
+          Types of property 'status' are incompatible.
+            Type 'string | null' is not assignable to type 'string'.
+              Type 'null' is not assignable to type 'string'.
+  Overload 2 of 2, '(predicate: (value: { created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }, index: number, array: { ...; }[]) => 
+unknown, thisArg?: any): { ...; }[]', gave the following error.
+    Argument of type '(d: { status: string; }) => boolean' is not assignable to parameter of type '(value: { created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }, index: number, array: { ...; }[]) => unknown'.
+      Types of parameters 'd' and 'value' are incompatible.
+        Type '{ created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }' is not assignable to type '{ status: string; }'.
+          Types of property 'status' are incompatible.
+            Type 'string | null' is not assignable to type 'string'.
+              Type 'null' is not assignable to type 'string'.
+
+329   const failedCount = logs.filter((d: { status: string }) => d.status === 'failed').length;
+                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+Found 41 errors in 9 files.
 
 Errors  Files
      4  __tests__/__factories__/transaction.ts:26
      6  __tests__/unit/errors/errorHandler.test.ts:62
     12  __tests__/unit/services/categoryService.test.ts:87
      3  __tests__/unit/services/smartSuggestions.test.ts:93
-     8  __tests__/unit/services/transaction/TransactionAnalyticsService.test.ts:43
+     1  __tests__/unit/services/transaction/TransactionAnalyticsService.test.ts:43
      1  __tests__/unit/services/transaction/TransactionQueryService.test.ts:43
      5  __tests__/unit/services/transaction/TransactionSummaryService.test.ts:43
-     1  app/api/smart-suggestions/learning/route.ts:117
-     2  app/api/smart-suggestions/route.ts:213
-     1  lib/domain/noteContext.ts:48
-    14  lib/services/aiFeedbackServiceDB.ts:52
-     2  lib/services/aiPrediction.server.ts:362
-     5  lib/services/cacheManager.ts:52
-     1  lib/services/categoryService.ts:6
-     2  types/index.ts:15
-PS E:\TypeScriptProject\smart-ledger>
+     4  lib/infrastructure/repositories/prisma/PrismaTransactionRepository.ts:230
+     5  lib/services/recurringService.server.ts:250
+PS E:\TypeScriptProject\smart-ledger> 
