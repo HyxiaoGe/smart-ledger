@@ -2,54 +2,35 @@
 // 交易分组列表组件（客户端支持编辑和删除）
 import { useState, useEffect } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { CategoryChip } from '@/components/CategoryChip';
-import { DateInput } from '@/components/features/input/DateInput';
-import { useCategories } from '@/contexts/CategoryContext';
-import { formatCurrency } from '@/lib/utils/format';
-import { Edit, Trash2, Store, ChevronDown, ChevronUp, FileText } from 'lucide-react';
 import { EmptyState } from '@/components/EmptyState';
-import Link from 'next/link';
-import { MerchantInput, SubcategorySelect } from '@/components/features/input/MerchantInput';
-import { enhancedDataSync } from '@/lib/core/EnhancedDataSync';
 import { ProgressToast } from '@/components/shared/ProgressToast';
-import { formatDateToLocal } from '@/lib/utils/date';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { FileText } from 'lucide-react';
+import Link from 'next/link';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { paymentMethodsApi, PaymentMethod } from '@/lib/api/services/payment-methods';
 import { transactionsApi } from '@/lib/api/services/transactions';
-
-type Transaction = {
-  id: string;
-  type: 'income' | 'expense';
-  category: string;
-  amount: number;
-  currency?: string;
-  note?: string;
-  date: string;
-  merchant?: string;
-  subcategory?: string;
-  product?: string;
-  payment_method?: string;
-};
-
-interface TransactionGroupedListProps {
-  initialTransactions: Transaction[];
-  className?: string;
-}
+import { enhancedDataSync } from '@/lib/core/EnhancedDataSync';
+import {
+  Transaction,
+  TransactionGroupedListProps,
+  buildHierarchicalData,
+} from './types';
+import {
+  ConfirmDeleteDialog,
+  DateGroupRow,
+} from './components';
 
 export function TransactionGroupedList({
   initialTransactions,
   className
 }: TransactionGroupedListProps) {
-  const queryClient = useQueryClient();
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
-  const { categories } = useCategories();
 
   // 当 initialTransactions 发生变化时更新本地状态
   useEffect(() => {
     setTransactions(initialTransactions);
   }, [initialTransactions]);
+
   const [error, setError] = useState<string>('');
   const [recentlyDeleted, setRecentlyDeleted] = useState<Transaction | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -58,6 +39,11 @@ export function TransactionGroupedList({
   const [showEditToast, setShowEditToast] = useState(false);
   const [showDeleteToast, setShowDeleteToast] = useState(false);
   const [showUndoToast, setShowUndoToast] = useState(false);
+
+  // 折叠状态管理
+  const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [expandedMerchants, setExpandedMerchants] = useState<Set<string>>(new Set());
 
   // 使用 React Query 获取支付方式
   const { data: paymentMethodsData } = useQuery({
@@ -125,240 +111,45 @@ export function TransactionGroupedList({
 
   const loading = updateMutation.isPending || deleteMutation.isPending || restoreMutation.isPending;
 
-  async function handleEdit(transaction: Transaction) {
+  // 事件处理函数
+  function handleEdit(transaction: Transaction) {
     setEditingId(transaction.id);
     setForm({ ...transaction });
   }
 
-  async function saveEdit() {
+  function saveEdit() {
     if (!editingId) return;
     setError('');
-    const patch = { ...form, type: 'expense' as const }; // 强制设置为支出类型
+    const patch = { ...form, type: 'expense' as const };
     delete (patch as Partial<Transaction> & { id?: string }).id;
     if (patch.amount !== undefined && !(Number(patch.amount) > 0)) {
       setError('金额必须大于 0');
       return;
     }
-
     updateMutation.mutate({ id: editingId, data: patch });
   }
 
-  async function handleDelete(transaction: Transaction) {
+  function cancelEdit() {
+    setEditingId(null);
+    setForm({});
+  }
+
+  function handleDelete(transaction: Transaction) {
     setConfirmRow(transaction);
   }
 
-  async function confirmDelete(transaction: Transaction) {
+  function confirmDelete(transaction: Transaction) {
     setError('');
+    setConfirmRow(null);
     deleteMutation.mutate(transaction.id);
   }
 
-  async function handleUndo() {
+  function handleUndo() {
     if (!recentlyDeleted) return;
     restoreMutation.mutate(recentlyDeleted.id);
   }
 
-  // 渲染编辑表单
-  function renderEditForm(transaction: Transaction) {
-    return (
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">日期</label>
-            <DateInput
-              selected={new Date((form.date as string) || transaction.date)}
-              onSelect={(date) => setForm((f) => ({ ...f, date: date ? formatDateToLocal(date) : undefined }))}
-              placeholder="选择日期"
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">类型</label>
-            <div className="h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 text-sm flex items-center text-red-600 dark:text-red-400">
-              支出
-            </div>
-            <input type="hidden" name="type" value="expense" />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">分类</label>
-            <select
-              className="h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 text-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
-              value={(form.category as string) || transaction.category}
-              onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-            >
-              {categories.map((c) => (
-                <option key={c.key} value={c.key}>
-                  {c.icon ? `${c.icon} ` : ''}{c.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">金额</label>
-            <Input
-              type="number"
-              inputMode="decimal"
-              value={String(form.amount ?? transaction.amount ?? '')}
-              onChange={(e) => setForm((f) => ({ ...f, amount: parseFloat(e.target.value) || 0 }))}
-              className="h-10"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">币种</label>
-            <select
-              className="h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 text-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
-              value={form.currency as string || transaction.currency || 'CNY'}
-              onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value }))}
-            >
-              <option value="CNY">CNY</option>
-              <option value="USD">USD</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">支付方式</label>
-            <select
-              className="h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 text-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
-              value={form.payment_method as string || transaction.payment_method || ''}
-              onChange={(e) => setForm((f) => ({ ...f, payment_method: e.target.value }))}
-            >
-              <option value="">未设置</option>
-              {paymentMethods.map((pm) => (
-                <option key={pm.id} value={pm.id}>
-                  {pm.name}{pm.is_default ? ' (默认)' : ''}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">备注</label>
-            <Input
-              value={(form.note as string) || transaction.note || ''}
-              onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
-              placeholder="请输入备注信息"
-              className="h-10"
-            />
-          </div>
-        </div>
-
-        {/* 商家信息编辑区域 */}
-        <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4">
-          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-            <Store className="h-4 w-4" />
-            <span className="font-medium">商家信息</span>
-            <span className="text-xs text-gray-400 dark:text-gray-400">（可选）</span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">商家/品牌</label>
-              <MerchantInput
-                value={(form.merchant as string) ?? transaction.merchant ?? ''}
-                onChange={(value) => setForm((f) => ({ ...f, merchant: value }))}
-                placeholder="如：瑞幸咖啡、地铁"
-                category={(form.category as string) || transaction.category}
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">子分类</label>
-              <SubcategorySelect
-                category={(form.category as string) || transaction.category}
-                value={(form.subcategory as string) ?? transaction.subcategory ?? ''}
-                onChange={(value) => setForm((f) => ({ ...f, subcategory: value }))}
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">具体产品/服务</label>
-            <Input
-              value={(form.product as string) ?? transaction.product ?? ''}
-              onChange={(e) => setForm((f) => ({ ...f, product: e.target.value }))}
-              placeholder="如：生椰拿铁、地铁票"
-              className="h-10"
-            />
-          </div>
-        </div>
-
-        <div className="flex justify-end gap-3 pt-2 border-t">
-          <Button
-            variant="outline"
-            onClick={() => { setEditingId(null); setForm({}); }}
-            className="min-w-[80px]"
-          >
-            取消
-          </Button>
-          <Button
-            onClick={saveEdit}
-            disabled={loading}
-            className="min-w-[80px] bg-blue-600 hover:bg-blue-700"
-          >
-            {loading ? '保存中...' : '保存'}
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // 构建分层数据结构
-  const buildHierarchicalData = (transactions: Transaction[]) => {
-    const dateGroups: Record<string, {
-      date: string;
-      total: number;
-      categories: Record<string, {
-        category: string;
-        total: number;
-        merchants: Record<string, {
-          merchant: string;
-          total: number;
-          items: Transaction[];
-        }>;
-      }>;
-    }> = {};
-
-    for (const transaction of transactions) {
-      const date = transaction.date;
-      const category = transaction.category || 'other';
-      // 优先使用merchant，其次使用note，最后使用"无备注"
-      const merchant = transaction.merchant || transaction.note || '无备注';
-      const amount = Number(transaction.amount || 0);
-
-      // 初始化日期分组
-      if (!dateGroups[date]) {
-        dateGroups[date] = { date, total: 0, categories: {} };
-      }
-      dateGroups[date].total += amount;
-
-      // 初始化分类分组
-      if (!dateGroups[date].categories[category]) {
-        dateGroups[date].categories[category] = { category, total: 0, merchants: {} };
-      }
-      dateGroups[date].categories[category].total += amount;
-
-      // 初始化商家分组
-      if (!dateGroups[date].categories[category].merchants[merchant]) {
-        dateGroups[date].categories[category].merchants[merchant] = { merchant, total: 0, items: [] };
-      }
-      dateGroups[date].categories[category].merchants[merchant].total += amount;
-      dateGroups[date].categories[category].merchants[merchant].items.push(transaction);
-    }
-
-    return dateGroups;
-  };
-
-  const hierarchicalData = buildHierarchicalData(transactions);
-  const sortedDates = Object.keys(hierarchicalData).sort((a, b) =>
-    new Date(b).getTime() - new Date(a).getTime()
-  );
-
-  // 折叠状态管理
-  const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
-  const [expandedMerchants, setExpandedMerchants] = useState<Set<string>>(new Set());
-
+  // 折叠切换函数
   const toggleDate = (date: string) => {
     const newSet = new Set(expandedDates);
     if (newSet.has(date)) {
@@ -389,8 +180,15 @@ export function TransactionGroupedList({
     setExpandedMerchants(newSet);
   };
 
+  // 构建分层数据
+  const hierarchicalData = buildHierarchicalData(transactions);
+  const sortedDates = Object.keys(hierarchicalData).sort((a, b) =>
+    new Date(b).getTime() - new Date(a).getTime()
+  );
+
   return (
     <>
+      {/* Toast 通知 */}
       {showEditToast && (
         <ProgressToast
           message="账单修改成功！"
@@ -414,274 +212,86 @@ export function TransactionGroupedList({
       )}
 
       <div className={className}>
-      {error && (
-        <div className="mb-4">
-          <Alert variant="destructive">
-            <AlertTitle>操作失败</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        </div>
-      )}
-
-      {recentlyDeleted && (
-        <div className="mb-4">
-          <Alert>
-            <AlertTitle>删除成功</AlertTitle>
-            <AlertDescription className="flex items-center justify-between">
-              <span>已删除一条记录。</span>
-              <button
-                onClick={handleUndo}
-                disabled={loading}
-                className="text-sm underline hover:no-underline disabled:opacity-50"
-              >
-                撤销
-              </button>
-            </AlertDescription>
-          </Alert>
-        </div>
-      )}
-
-      {confirmRow && (
-        <div className="fixed inset-0 z-50 bg-black/40 dark:bg-black/60 flex items-center justify-center p-4" onMouseDown={(e) => { if (e.target === e.currentTarget) setConfirmRow(null); }}>
-          <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm w-full max-w-sm z-50" role="dialog" aria-modal="true" onMouseDown={(e) => e.stopPropagation()}>
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700 font-semibold">确认删除</div>
-            <div className="p-4 text-sm text-gray-600 dark:text-gray-300">确定要删除这条记录吗？删除后可在短时间内"撤销"。</div>
-            <div className="p-4 flex justify-end gap-2 border-t border-gray-200 dark:border-gray-700">
-              <Button variant="secondary" onClick={() => setConfirmRow(null)}>取消</Button>
-              <Button variant="destructive" onClick={async () => { const row = confirmRow; setConfirmRow(null); if (row) await confirmDelete(row); }}>确认删除</Button>
-            </div>
+        {/* 错误提示 */}
+        {error && (
+          <div className="mb-4">
+            <Alert variant="destructive">
+              <AlertTitle>操作失败</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* 分层树形展示 */}
-      <div className="space-y-6">
-        {sortedDates.map(date => {
-          const dateData = hierarchicalData[date];
-          const isDateExpanded = expandedDates.has(date);
+        {/* 撤销提示 */}
+        {recentlyDeleted && (
+          <div className="mb-4">
+            <Alert>
+              <AlertTitle>删除成功</AlertTitle>
+              <AlertDescription className="flex items-center justify-between">
+                <span>已删除一条记录。</span>
+                <button
+                  onClick={handleUndo}
+                  disabled={loading}
+                  className="text-sm underline hover:no-underline disabled:opacity-50"
+                >
+                  撤销
+                </button>
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
 
-          return (
-            <div key={date} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-              {/* 日期层 */}
-              <button
-                onClick={() => toggleDate(date)}
-                className="w-full p-4 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-between"
-              >
-                <div className="flex items-center gap-3">
-                  {isDateExpanded ? (
-                    <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                  ) : (
-                    <ChevronUp className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                  )}
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                    {new Date(date + 'T00:00:00').toLocaleDateString('zh-CN', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </h3>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    共 {Object.values(dateData.categories).reduce((sum, cat) =>
-                      sum + Object.values(cat.merchants).reduce((s, m) => s + m.items.length, 0), 0)} 笔
-                  </span>
-                </div>
-                <div className="font-semibold text-red-600 dark:text-red-400">
-                  -{formatCurrency(dateData.total, 'CNY')}
-                </div>
-              </button>
-
-              {/* 分类层 */}
-              {isDateExpanded && (
-                <div className="bg-white dark:bg-gray-900">
-                  {Object.values(dateData.categories)
-                    .sort((a, b) => b.total - a.total)
-                    .map(categoryData => {
-                      const categoryKey = `${date}-${categoryData.category}`;
-                      const isCategoryExpanded = expandedCategories.has(categoryKey);
-
-                      return (
-                        <div key={categoryKey} className="border-t border-gray-100 dark:border-gray-700">
-                          <button
-                            onClick={() => toggleCategory(categoryKey)}
-                            className="w-full p-3 pl-8 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center justify-between"
-                          >
-                            <div className="flex items-center gap-3">
-                              {isCategoryExpanded ? (
-                                <ChevronDown className="h-3 w-3 text-gray-400 dark:text-gray-400" />
-                              ) : (
-                                <ChevronUp className="h-3 w-3 text-gray-400 dark:text-gray-400" />
-                              )}
-                              <CategoryChip category={categoryData.category} />
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {Object.keys(categoryData.merchants).length}个商家
-                              </span>
-                            </div>
-                            <div className="font-medium text-sm text-gray-900 dark:text-gray-100">
-                              {formatCurrency(categoryData.total, 'CNY')}
-                            </div>
-                          </button>
-
-                          {/* 商家层 */}
-                          {isCategoryExpanded && (
-                            <div>
-                              {Object.values(categoryData.merchants)
-                                .sort((a, b) => b.total - a.total)
-                                .map(merchantData => {
-                                  const merchantKey = `${categoryKey}-${merchantData.merchant}`;
-                                  const isMerchantExpanded = expandedMerchants.has(merchantKey);
-
-                                  return (
-                                    <div key={merchantKey}>
-                                      {editingId === merchantData.items[0].id && merchantData.items.length === 1 ? (
-                                        // 单笔交易编辑状态
-                                        <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border-t border-blue-200 dark:border-blue-800">
-                                          {renderEditForm(merchantData.items[0])}
-                                        </div>
-                                      ) : (
-                                        // 商家行（统一样式）
-                                        <div className="w-full p-2 pl-16 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center justify-between group border-t border-gray-100 dark:border-gray-700">
-                                          <div
-                                            className="flex items-center gap-2 flex-1 cursor-pointer"
-                                            onClick={() => merchantData.items.length > 1 && toggleMerchant(merchantKey)}
-                                          >
-                                            {merchantData.items.length > 1 && (
-                                              isMerchantExpanded ? (
-                                                <ChevronDown className="h-3 w-3 text-gray-400 dark:text-gray-400" />
-                                              ) : (
-                                                <ChevronUp className="h-3 w-3 text-gray-400 dark:text-gray-400" />
-                                              )
-                                            )}
-                                            {merchantData.items.length === 1 && (
-                                              <div className="w-3" />
-                                            )}
-                                            <Store className="h-3 w-3 text-blue-600 dark:text-blue-400" />
-                                            <span className="text-sm text-gray-900 dark:text-gray-100">{merchantData.merchant}</span>
-                                            {merchantData.items.length > 1 && (
-                                              <span className="text-xs text-gray-400 dark:text-gray-400">
-                                                {merchantData.items.length}笔
-                                              </span>
-                                            )}
-                                          </div>
-                                          <div className="flex items-center gap-2">
-                                            <div className="text-sm font-medium">
-                                              {formatCurrency(merchantData.total, 'CNY')}
-                                            </div>
-                                            {/* 单笔交易：右侧显示编辑/删除图标 */}
-                                            {merchantData.items.length === 1 && (
-                                              <div className="opacity-0 group-hover:opacity-100 flex gap-1">
-                                                <Button
-                                                  variant="ghost"
-                                                  size="sm"
-                                                  onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleEdit(merchantData.items[0]);
-                                                  }}
-                                                  disabled={loading}
-                                                  className="h-6 w-6 p-0 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950"
-                                                >
-                                                  <Edit className="h-3 w-3" />
-                                                </Button>
-                                                <Button
-                                                  variant="ghost"
-                                                  size="sm"
-                                                  onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleDelete(merchantData.items[0]);
-                                                  }}
-                                                  disabled={loading}
-                                                  className="h-6 w-6 p-0 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950"
-                                                >
-                                                  <Trash2 className="h-3 w-3" />
-                                                </Button>
-                                              </div>
-                                            )}
-                                          </div>
-                                        </div>
-                                      )}
-
-                                      {/* 产品/交易明细层 */}
-                                      {isMerchantExpanded && merchantData.items.length > 1 && (
-                                        <div className="bg-gray-50 dark:bg-gray-800">
-                                          {merchantData.items.map(item => (
-                                            <div key={item.id}>
-                                              {editingId === item.id ? (
-                                                <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border-t border-blue-200 dark:border-blue-800">
-                                                  {renderEditForm(item)}
-                                                </div>
-                                              ) : (
-                                                <div className="p-2 pl-24 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-between group border-t border-gray-100 dark:border-gray-700">
-                                                  <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
-                                                    <div className="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-600" />
-                                                    <span>{item.product || item.note || '无备注'}</span>
-                                                  </div>
-                                                  <div className="flex items-center gap-2">
-                                                    <div className="text-xs font-medium text-gray-900 dark:text-gray-100">
-                                                      {formatCurrency(Number(item.amount || 0), 'CNY')}
-                                                    </div>
-                                                    <div className="opacity-0 group-hover:opacity-100 flex gap-1">
-                                                      <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={(e) => {
-                                                          e.stopPropagation();
-                                                          handleEdit(item);
-                                                        }}
-                                                        disabled={loading}
-                                                        className="h-6 w-6 p-0 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950"
-                                                      >
-                                                        <Edit className="h-3 w-3" />
-                                                      </Button>
-                                                      <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={(e) => {
-                                                          e.stopPropagation();
-                                                          handleDelete(item);
-                                                        }}
-                                                        disabled={loading}
-                                                        className="h-6 w-6 p-0 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950"
-                                                      >
-                                                        <Trash2 className="h-3 w-3" />
-                                                      </Button>
-                                                    </div>
-                                                  </div>
-                                                </div>
-                                              )}
-                                            </div>
-                                          ))}
-                                        </div>
-                                      )}
-                                    </div>
-                                  );
-                                })}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                </div>
-              )}
-            </div>
-          );
-        })}
-
-        {transactions.length === 0 && (
-          <EmptyState
-            icon={FileText}
-            title="暂无账单记录"
-            description="点击下方按钮开始记录您的第一笔支出"
-            action={
-              <Link
-                href="/add"
-                className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-              >
-                添加账单
-              </Link>
-            }
+        {/* 删除确认对话框 */}
+        {confirmRow && (
+          <ConfirmDeleteDialog
+            transaction={confirmRow}
+            onConfirm={confirmDelete}
+            onCancel={() => setConfirmRow(null)}
           />
         )}
+
+        {/* 分层树形展示 */}
+        <div className="space-y-6">
+          {sortedDates.map((date) => (
+            <DateGroupRow
+              key={date}
+              dateData={hierarchicalData[date]}
+              date={date}
+              isExpanded={expandedDates.has(date)}
+              onToggle={() => toggleDate(date)}
+              expandedCategories={expandedCategories}
+              onToggleCategory={toggleCategory}
+              expandedMerchants={expandedMerchants}
+              onToggleMerchant={toggleMerchant}
+              editingId={editingId}
+              form={form}
+              setForm={setForm}
+              onEdit={handleEdit}
+              onSaveEdit={saveEdit}
+              onCancelEdit={cancelEdit}
+              onDelete={handleDelete}
+              loading={loading}
+              paymentMethods={paymentMethods}
+            />
+          ))}
+
+          {transactions.length === 0 && (
+            <EmptyState
+              icon={FileText}
+              title="暂无账单记录"
+              description="点击下方按钮开始记录您的第一笔支出"
+              action={
+                <Link
+                  href="/add"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  添加账单
+                </Link>
+              }
+            />
+          )}
+        </div>
       </div>
-    </div>
     </>
   );
 }
