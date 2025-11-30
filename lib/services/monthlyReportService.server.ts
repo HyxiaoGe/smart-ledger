@@ -104,6 +104,8 @@ const CATEGORY_MAP: Record<string, string> = {
   medical: '医疗',
   education: '教育',
   subscription: '订阅',
+  rent: '房租',
+  utilities: '水电费',
   other: '其他',
 };
 

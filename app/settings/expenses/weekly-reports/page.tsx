@@ -50,14 +50,16 @@ function getWeekDescription(date: string): string {
   return `${year}年第${weekNumber}周`;
 }
 
-function formatCurrency(amount: number): string {
+function formatCurrency(amount: number | null | undefined): string {
+  if (amount == null) return '0.00';
   return amount.toLocaleString('zh-CN', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
 }
 
-function formatPercentage(value: number): string {
+function formatPercentage(value: number | null | undefined): string {
+  if (value == null) return '+0.0%';
   const sign = value > 0 ? '+' : '';
   return `${sign}${value.toFixed(1)}%`;
 }
