@@ -21,7 +21,6 @@
       "@/components/*": ["components/*", "app/components/*"],
       "@/hooks/*": ["hooks/*"],
       "@/contexts/*": ["contexts/*"],
-      "@/generated/prisma/client": ["node_modules/@prisma/client"],
       "@/generated/*": ["generated/*"]
     },
     "plugins": [
