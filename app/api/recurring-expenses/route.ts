@@ -15,13 +15,14 @@ const createRecurringExpenseSchema = z.object({
   }),
   frequency_config: z.record(z.string(), z.any()),
   start_date: commonSchemas.date,
+  end_date: z.string().nullable().optional().default(null),
   note: z.string().optional(),
   currency: commonSchemas.currency.optional().default('CNY'),
   payment_method: z.string().optional(),
   is_active: z.boolean().optional().default(true)
 });
 
-export const GET = withErrorHandler(async (_request: NextRequest) => {
+export const GET = withErrorHandler(async () => {
   const expenses = await recurringExpenseService.getRecurringExpenses();
   return NextResponse.json(expenses);
 });

@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { useCategories } from '@/contexts/CategoryContext';
 import { TrendingUp, BarChart3, ChevronDown, ChevronUp, Store } from 'lucide-react';
 import type { ChartTooltipProps, ChartLegendProps, LegendPayloadItem } from '@/types/ui/chart';
-import type { TransactionRow } from '@/types/database';
+import type { TransactionRow } from '@/types/domain/transaction';
 
 interface CategoryStatisticsProps {
   transactions: TransactionRow[];
@@ -153,7 +153,8 @@ export function CategoryStatistics({ transactions }: CategoryStatisticsProps) {
   const CustomTooltip = ({ active, payload }: ChartTooltipProps) => {
     if (!active || !payload?.length) return null;
 
-    const data = payload[0].payload;
+    const data = payload[0]?.payload as { category: string; value: number; percentage: number; count: number } | undefined;
+    if (!data) return null;
     const info = getCategoryInfo(data.category);
 
     return (

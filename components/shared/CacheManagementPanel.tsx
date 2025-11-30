@@ -83,8 +83,11 @@ export function CacheManagementPanel({ show = false, onClose }: CacheManagementP
     URL.revokeObjectURL(url);
   };
 
+  // Derive status from healthStatus
+  const status = healthStatus.healthy ? 'healthy' : (healthStatus.issues.length > 2 ? 'error' : 'warning');
+
   const getHealthStatusIcon = () => {
-    switch (healthStatus.status) {
+    switch (status) {
       case 'healthy':
         return <CheckCircle className="h-4 w-4 text-green-500" />;
       case 'warning':
@@ -97,7 +100,7 @@ export function CacheManagementPanel({ show = false, onClose }: CacheManagementP
   };
 
   const getHealthStatusColor = () => {
-    switch (healthStatus.status) {
+    switch (status) {
       case 'healthy':
         return 'bg-green-50 border-green-200';
       case 'warning':
@@ -130,8 +133,8 @@ export function CacheManagementPanel({ show = false, onClose }: CacheManagementP
             <div className="flex items-center space-x-2">
               {getHealthStatusIcon()}
               <AlertDescription>
-                <strong>缓存状态:</strong> {healthStatus.status === 'healthy' ? '健康' :
-                healthStatus.status === 'warning' ? '警告' : '错误'}
+                <strong>缓存状态:</strong> {status === 'healthy' ? '健康' :
+                status === 'warning' ? '警告' : '错误'}
                 {healthStatus.issues.length > 0 && (
                   <ul className="mt-2 text-sm">
                     {healthStatus.issues.map((issue, index) => (
@@ -148,7 +151,7 @@ export function CacheManagementPanel({ show = false, onClose }: CacheManagementP
             <Card>
               <CardContent className="p-4 text-center">
                 <Activity className="h-8 w-8 mx-auto mb-2 text-blue-500" />
-                <div className="text-2xl font-bold">{cacheStats.totalRequests}</div>
+                <div className="text-2xl font-bold">{cacheStats.hits + cacheStats.misses}</div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">总请求</div>
               </CardContent>
             </Card>
@@ -172,52 +175,33 @@ export function CacheManagementPanel({ show = false, onClose }: CacheManagementP
             <Card>
               <CardContent className="p-4 text-center">
                 <RefreshCw className="h-8 w-8 mx-auto mb-2 text-purple-500" />
-                <div className="text-2xl font-bold">
-                  {Math.round((Date.now() - cacheStats.lastCleanup) / 1000 / 60)}m
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-300">上次清理</div>
+                <div className="text-2xl font-bold">{cacheStats.size}</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">缓存条目</div>
               </CardContent>
             </Card>
           </div>
 
-          {/* 缓存配置信息 */}
+          {/* 缓存详情信息 */}
           {showDebugInfo && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">缓存配置</CardTitle>
+                <CardTitle className="text-lg">缓存详情</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  {Object.entries(cacheStats.configs).map(([type, config]) => (
-                    <div key={type} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                      <span className="font-medium">{type}</span>
-                      <div className="flex space-x-4 text-sm text-gray-600 dark:text-gray-300">
-                        <span>TTL: {Math.round(config.ttl / 1000 / 60)}m</span>
-                        <span>Max: {config.maxSize}</span>
-                        <Badge variant="outline">{config.version}</Badge>
-                      </div>
-                    </div>
-                  ))}
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between p-2 bg-gray-50 rounded">
+                    <span className="font-medium">命中次数</span>
+                    <span>{cacheStats.hits}</span>
+                  </div>
+                  <div className="flex justify-between p-2 bg-gray-50 rounded">
+                    <span className="font-medium">未命中次数</span>
+                    <span>{cacheStats.misses}</span>
+                  </div>
+                  <div className="flex justify-between p-2 bg-gray-50 rounded">
+                    <span className="font-medium">命中率</span>
+                    <span>{(cacheStats.hitRate * 100).toFixed(1)}%</span>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* 推荐建议 */}
-          {healthStatus.recommendations.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">优化建议</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2">
-                  {healthStatus.recommendations.map((recommendation, index) => (
-                    <li key={index} className="flex items-start space-x-2">
-                      <Info className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm">{recommendation}</span>
-                    </li>
-                  ))}
-                </ul>
               </CardContent>
             </Card>
           )}

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import type { Route } from 'next';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
 import NProgress from 'nprogress';
@@ -31,7 +32,7 @@ export function BackNavigation({
 
   return (
     <div className={`mb-6 ${className}`}>
-      <Link href={href} prefetch={true} onClick={handleClick}>
+      <Link href={href as Route} prefetch={true} onClick={handleClick}>
         <Button
           variant="ghost"
           className={`group flex items-center gap-2 ${variants[variant]}`}

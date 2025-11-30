@@ -187,7 +187,7 @@ export function useSmartNoteInput({
 
       // 记录用户忽略了所有建议
       if (enableLearning && lastParamsRef.current && suggestions.length > 0) {
-        const suggestionIds = suggestions.map(s => 'id' in s ? s.id : `legacy-${s.id}`);
+        const suggestionIds = suggestions.map(s => s.id);
         void smartSuggestionsService.recordSuggestionIgnored({
           suggestion_ids: suggestionIds,
           context: lastParamsRef.current!

@@ -11,7 +11,7 @@ interface CacheInvalidationRule {
   id: string;
   name: string;
   condition: (context: CacheContext) => boolean;
-  action: () => void;
+  action: (context: CacheContext) => void;
   priority: number; // 优先级，数字越小优先级越高
 }
 
@@ -45,7 +45,7 @@ class CacheManager {
       id: 'new_transaction',
       name: '新增交易时失效缓存',
       condition: (context) => !!context.newTransaction,
-      action: () => {
+      action: (_ctx) => {
         predictionCache.invalidateCache();
         console.log('🔄 新增交易，预测缓存已失效');
       },
@@ -60,7 +60,7 @@ class CacheManager {
         const cachedData = this.getCachedTransactionCount();
         return cachedData !== null && cachedData !== context.transactionCount;
       },
-      action: () => {
+      action: (_ctx) => {
         predictionCache.invalidateCache();
         this.updateCachedTransactionCount();
         console.log('📊 交易数量变化，预测缓存已失效');
@@ -76,9 +76,9 @@ class CacheManager {
         const cachedMonth = localStorage.getItem(STORAGE_KEYS.PREDICTION_CACHE_MONTH);
         return cachedMonth !== context.currentMonth;
       },
-      action: () => {
+      action: (ctx) => {
         predictionCache.invalidateCache();
-        localStorage.setItem(STORAGE_KEYS.PREDICTION_CACHE_MONTH, context.currentMonth);
+        localStorage.setItem(STORAGE_KEYS.PREDICTION_CACHE_MONTH, ctx.currentMonth);
         console.log('📅 跨月更新，预测缓存已失效');
       },
       priority: 3
@@ -88,10 +88,10 @@ class CacheManager {
     this.addRule({
       id: 'cache_expired',
       name: '缓存过期时失效',
-      condition: (context) => {
+      condition: () => {
         return !predictionCache.isCacheValid();
       },
-      action: () => {
+      action: (_ctx) => {
         predictionCache.invalidateCache();
         console.log('⏰ 缓存已过期，自动清理');
       },
@@ -102,11 +102,11 @@ class CacheManager {
     this.addRule({
       id: 'periodic_cleanup',
       name: '定期清理缓存',
-      condition: (context) => {
+      condition: () => {
         const now = Date.now();
         return (now - this.lastInvalidationTime) > CACHE_CLEANUP.FORCE_CLEANUP_AGE;
       },
-      action: () => {
+      action: (_ctx) => {
         predictionCache.invalidateCache();
         this.lastInvalidationTime = Date.now();
         console.log('🧹 定期清理缓存');
@@ -140,7 +140,7 @@ class CacheManager {
       try {
         if (rule.condition(context)) {
           console.log(`🔍 触发缓存规则: ${rule.name}`);
-          rule.action();
+          rule.action(context);
           invalidated = true;
           break; // 执行第一个匹配的规则后停止
         }

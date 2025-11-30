@@ -113,7 +113,9 @@ export function NoteInput({
     [activeIndex, handleChoose, showSuggestions, suggestions]
   );
 
-  useEffect(() => () => debounceRef.current && clearTimeout(debounceRef.current), []);
+  useEffect(() => () => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+  }, []);
 
   return (
     <div ref={containerRef} className={`relative ${className}`}>

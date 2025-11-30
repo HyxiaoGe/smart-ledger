@@ -10,7 +10,6 @@ import { getMonthlyBudgetStatus, getCurrentYearMonth } from '@/lib/services/budg
 import { TabsRangePicker } from '@/components/shared/TabsRangePicker';
 import { CollapsibleTransactionList } from '@/components/features/transactions/TransactionList/CollapsibleList';
 import { SkeletonBlock, SkeletonGrid } from '@/components/shared/Skeletons';
-import { AIAnalysisPanel } from '@/components/features/ai-analysis/AIAnalysisPanel';
 import { AIAnalysisButton } from '@/components/features/ai-analysis/AIAnalysisButton';
 
 const SummaryModule = dynamic(

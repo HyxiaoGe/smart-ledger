@@ -89,7 +89,7 @@ export function AIAnalysisPanel({
         const dataHash = JSON.stringify(aiData.currentMonthTop20).substring(0, 50);
         const cacheKey = `ai_analysis_${month}_${dataHash}`;
 
-        const cached = memoryCache.get<string>(cacheKey);
+        const cached = memoryCache.get(cacheKey) as string | undefined;
         if (cached) {
           console.log('✅ 从缓存加载AI分析结果');
           setAiSummary(cached);

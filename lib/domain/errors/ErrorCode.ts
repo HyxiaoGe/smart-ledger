@@ -54,6 +54,9 @@ export enum ErrorCode {
   INTERNAL_ERROR = 'INTERNAL_ERROR',
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
   CONFIGURATION_ERROR = 'CONFIGURATION_ERROR',
+
+  // ==================== 客户端存储错误 ====================
+  STORAGE_QUOTA_EXCEEDED = 'STORAGE_QUOTA_EXCEEDED',
 }
 
 /**
@@ -107,6 +110,9 @@ export const ErrorCodeToHttpStatus: Record<ErrorCode, number> = {
   [ErrorCode.INTERNAL_ERROR]: 500,
   [ErrorCode.UNKNOWN_ERROR]: 500,
   [ErrorCode.CONFIGURATION_ERROR]: 500,
+
+  // 客户端存储错误 - 507
+  [ErrorCode.STORAGE_QUOTA_EXCEEDED]: 507,
 };
 
 /**
@@ -160,4 +166,7 @@ export const ErrorCodeToMessage: Record<ErrorCode, string> = {
   [ErrorCode.INTERNAL_ERROR]: '服务器内部错误',
   [ErrorCode.UNKNOWN_ERROR]: '未知错误',
   [ErrorCode.CONFIGURATION_ERROR]: '配置错误',
+
+  // 客户端存储错误
+  [ErrorCode.STORAGE_QUOTA_EXCEEDED]: '存储空间不足',
 };

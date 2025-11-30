@@ -2,12 +2,12 @@
  * 今日固定账单生成统计 API
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getTodayGenerationStats } from '@/lib/services/recurringService.server';
 
 export const runtime = 'nodejs';
 
-export async function GET(_req: NextRequest) {
+export async function GET() {
   try {
     const stats = await getTodayGenerationStats();
 

@@ -13,7 +13,7 @@ export const runtime = 'nodejs';
 /**
  * GET - 获取日志统计信息
  */
-export const GET = withErrorHandler(async (_request: NextRequest) => {
+export const GET = withErrorHandler(async () => {
   const repository = getSystemLogRepository();
 
   // 获取基础统计数据

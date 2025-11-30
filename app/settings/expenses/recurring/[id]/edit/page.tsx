@@ -346,7 +346,7 @@ export default function EditRecurringExpensePage() {
                       开始日期 *
                     </label>
                     <DateInput
-                      selected={formData.start_date}
+                      selected={formData.start_date ?? undefined}
                       onSelect={(date) => handleDateChange('start_date', date)}
                       placeholder="选择开始日期"
                       className="w-full"
@@ -364,7 +364,7 @@ export default function EditRecurringExpensePage() {
                       结束日期（可选）
                     </label>
                     <DateInput
-                      selected={formData.end_date}
+                      selected={formData.end_date ?? undefined}
                       onSelect={(date) => handleDateChange('end_date', date)}
                       placeholder="选择结束日期（可选）"
                       className="w-full"

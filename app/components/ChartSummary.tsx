@@ -19,7 +19,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { formatCurrency } from '@/lib/utils/format';
 import { useCategories } from '@/contexts/CategoryContext';
 import { useMemo } from 'react';
-import { BarChart3, PieChart as PieChartIcon } from 'lucide-react';
+import { PieChart as PieChartIcon } from 'lucide-react';
 import type { TooltipPayloadItem } from '@/types/ui/chart';
 
 interface CategoryMeta {

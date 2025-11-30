@@ -347,9 +347,9 @@ export function AIFeedbackTrigger({
   useEffect(() => {
     if (!showTrigger || triggered) return;
 
-    const timer = setTimeout(() => {
+    const timer = setTimeout(async () => {
       // 检查是否可以收集反馈
-      const feedbacks = aiFeedbackService.getAllFeedbacks();
+      const feedbacks = await aiFeedbackService.getAllFeedbacks();
       const recentFeedbacks = feedbacks.filter(f => {
         const feedbackTime = new Date(f.timestamp);
         const now = new Date();

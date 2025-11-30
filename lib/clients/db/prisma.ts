@@ -2,12 +2,13 @@
  * Prisma 客户端单例
  * 提供 PostgreSQL 数据库访问
  */
+import { PrismaClient as PrismaClientType } from '@prisma/client';
 const { PrismaClient } = require('@prisma/client');
 
 // 声明全局变量用于开发环境热重载时保持单例
 declare global {
   // eslint-disable-next-line no-var
-  var prisma: PrismaClient | undefined;
+  var prisma: PrismaClientType | undefined;
 }
 
 /**
@@ -15,7 +16,7 @@ declare global {
  * - 生产环境：每次创建新实例
  * - 开发环境：使用全局变量保持单例，避免热重载时创建多个连接
  */
-function createPrismaClient(): PrismaClient {
+function createPrismaClient(): PrismaClientType {
   return new PrismaClient({
     log: process.env.NODE_ENV === 'development'
       ? ['query', 'error', 'warn']

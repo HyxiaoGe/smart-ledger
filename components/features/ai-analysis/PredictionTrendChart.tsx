@@ -123,10 +123,21 @@ export function PredictionTrendChart({
     });
   }, [predictionData]);
 
+  // 图表数据项类型
+  interface ChartDataItem {
+    type?: string;
+    totalAmount?: number;
+    confidence?: number;
+    upperBound?: number;
+    lowerBound?: number;
+  }
+
   // 自定义Tooltip
   const CustomTooltip = ({ active, payload, label }: ChartTooltipProps) => {
     if (active && payload && payload.length) {
-      const data = payload[0].payload;
+      const rawData = payload[0]?.payload;
+      if (!rawData) return null;
+      const data = rawData as ChartDataItem;
       const isPrediction = data.type === 'prediction';
 
       return (
@@ -136,7 +147,7 @@ export function PredictionTrendChart({
             <p className="text-sm">
               <span className="text-gray-600 dark:text-gray-300">总支出：</span>
               <span className={`font-medium ${isPrediction ? 'text-blue-600' : 'text-gray-900'}`}>
-                ¥{data.totalAmount?.toFixed(0) || data.totalAmount?.toFixed(0)}
+                ¥{data.totalAmount?.toFixed(0) || 0}
               </span>
             </p>
             {isPrediction && data.confidence && (
@@ -273,7 +284,10 @@ export function PredictionTrendChart({
                 const color = categoryColors[category];
 
                 // 检查这个类别在数据中是否存在
-                const hasData = categoryData.some(item => item[categoryName] > 0);
+                const hasData = categoryData.some(item => {
+                  const value = item[categoryName];
+                  return typeof value === 'number' && value > 0;
+                });
 
                 if (!hasData) return null;
 

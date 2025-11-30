@@ -78,3 +78,17 @@ export interface NoteAnalytics {
   confidence_score: number; // 分析置信度
   updated_at: string;
 }
+
+// 交易记录行（数据库查询结果）
+export type TransactionRow = {
+  id: string;
+  type: string;
+  category: string | null;
+  amount: number;
+  date: Date | string;
+  note: string | null;
+  currency: string;
+  merchant: string | null;
+  subcategory: string | null;
+  product: string | null;
+};

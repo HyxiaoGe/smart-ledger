@@ -259,7 +259,7 @@ export default function WeeklyReportsPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  平均 ¥{formatCurrency(latestReport.average_transaction)}/笔
+                  平均 ¥{formatCurrency(latestReport.average_transaction ?? 0)}/笔
                 </p>
               </CardContent>
             </Card>

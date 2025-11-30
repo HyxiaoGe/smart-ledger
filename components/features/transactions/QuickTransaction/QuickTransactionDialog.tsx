@@ -278,7 +278,7 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
               <Button
                 variant="outline"
                 size="sm"
-                onClick={fetchSuggestions}
+                onClick={() => fetchSuggestions()}
                 disabled={loading}
                 className="text-gray-500 dark:text-gray-400 hover:text-gray-700"
               >

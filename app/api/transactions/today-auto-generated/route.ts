@@ -1,38 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { executeQuery, getPrismaClient } from '@/lib/clients/db';
-import { withErrorHandler, ApiError } from '@/lib/utils/apiErrorHandler';
+import { NextResponse } from 'next/server';
+import { getPrismaClient } from '@/lib/clients/db';
+import { withErrorHandler } from '@/lib/utils/apiErrorHandler';
 
-export const GET = withErrorHandler(async (request: NextRequest) => {
+export const GET = withErrorHandler(async () => {
   const today = new Date().toISOString().split('T')[0];
 
   // 查询今天自动生成的交易记录数量
-  const count = await executeQuery(
-    // Supabase 查询
-    async () => {
-      const supabase = getSupabaseClient();
-      const { count, error } = await supabase
-        .from('transactions')
-        .select('*', { count: 'exact', head: true })
-        .eq('date', today)
-        .eq('is_auto_generated', true);
-
-      if (error) {
-        throw new ApiError('查询今日自动生成记录失败', 500);
-      }
-      return count || 0;
+  const prisma = getPrismaClient();
+  const count = await prisma.transactions.count({
+    where: {
+      date: today,
+      is_auto_generated: true,
+      deleted_at: null,
     },
-    // Prisma 查询
-    async () => {
-      const prisma = getPrismaClient();
-      return await prisma.transactions.count({
-        where: {
-          date: today,
-          is_auto_generated: true,
-          deleted_at: null,
-        },
-      });
-    }
-  );
+  });
 
   return NextResponse.json({
     date: today,

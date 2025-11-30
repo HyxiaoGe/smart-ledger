@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import type { Route } from 'next';
 import { SUPPORTED_CURRENCIES } from '@/lib/config/config';
 
 type CurrencySelectProps = {
@@ -21,7 +22,7 @@ export function CurrencySelect({ value, month, range }: CurrencySelectProps) {
     params.set('currency', next);
     if (month) params.set('month', month);
     if (range) params.set('range', range);
-    router.push(`${pathname}?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}` as Route);
   };
 
   return (
