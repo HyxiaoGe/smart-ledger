@@ -15,6 +15,7 @@ const JOB_FUNCTION_MAP: Record<string, string> = {
   'refresh-budget-suggestions-daily': 'refresh_budget_suggestions',
   'generate-weekly-report': 'generate_weekly_report',
   'cleanup-old-logs': 'cleanup_old_logs',
+  'refresh-materialized-views': 'refresh_materialized_views'
 };
 
 /**

@@ -282,6 +282,11 @@ export function getJobDescription(jobName: string): { title: string; description
       description: '清理超过30天的日志记录',
       category: 'ai'
     },
+    'refresh-materialized-views': {
+      title: '刷新物化视图',
+      description: '每小时刷新统计物化视图（月度汇总、分类统计等）',
+      category: 'ai'
+    }
   };
 
   return descriptions[jobName] || {
