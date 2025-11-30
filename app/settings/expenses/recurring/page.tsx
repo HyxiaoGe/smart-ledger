@@ -7,22 +7,16 @@ import { Button } from '@/components/ui/button';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { PageSkeleton } from '@/components/shared/PageSkeleton';
 import { useAutoGenerateRecurring } from '@/hooks/useAutoGenerateRecurring';
-import {
-  Calendar,
-  Plus,
-  Wallet,
-  Clock,
-  DollarSign,
-  Pause,
-  Play,
-  Edit,
-  Trash2,
-  History,
-  Zap,
-  Settings2
-} from 'lucide-react';
+import { Calendar, Plus, DollarSign, History, Zap } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { recurringExpensesApi, RecurringExpense } from '@/lib/api/services/recurring-expenses';
+import {
+  StatsCards,
+  RecurringExpenseCard,
+  FeatureDescription,
+  PauseConfirmDialog,
+  DeleteConfirmDialog,
+} from './components';
 
 export default function RecurringExpensesPage() {
   const queryClient = useQueryClient();
@@ -43,7 +37,6 @@ export default function RecurringExpensesPage() {
   });
 
   const error = fetchError ? '获取固定支出列表失败' : null;
-
   const recurringExpenses = recurringExpensesData || [];
 
   // 使用状态展示 Hook
@@ -63,23 +56,6 @@ export default function RecurringExpensesPage() {
       setShowToast(true);
     }
   });
-
-  const handleGenerateExpenses = () => {
-    generateMutation.mutate();
-  };
-
-  const generating = generateMutation.isPending;
-
-  // 切换启用/禁用状态
-  const toggleActiveStatus = (expense: RecurringExpense) => {
-    if (expense.is_active) {
-      // 如果是启用状态，需要确认才暂停
-      setConfirmPause(expense);
-    } else {
-      // 如果是暂停状态，直接启用
-      performToggleActive(expense.id, false);
-    }
-  };
 
   // 更新状态 mutation
   const updateMutation = useMutation({
@@ -112,45 +88,23 @@ export default function RecurringExpensesPage() {
     }
   });
 
-  // 执行状态切换
-  const performToggleActive = (id: string, _showPauseConfirm: boolean) => {
-    const currentExpense = recurringExpenses.find(e => e.id === id);
-    if (!currentExpense) return;
-
-    updateMutation.mutate({ id, is_active: !currentExpense.is_active });
+  // 切换启用/禁用状态
+  const toggleActiveStatus = (expense: RecurringExpense) => {
+    if (expense.is_active) {
+      setConfirmPause(expense);
+    } else {
+      updateMutation.mutate({ id: expense.id, is_active: true });
+    }
   };
 
   // 确认暂停
   const confirmPauseExpense = (expense: RecurringExpense) => {
-    performToggleActive(expense.id, true);
-  };
-
-  // 删除固定支出
-  const deleteExpense = (expense: RecurringExpense) => {
-    setConfirmDelete(expense);
+    updateMutation.mutate({ id: expense.id, is_active: false });
   };
 
   // 确认删除
   const confirmDeleteExpense = (expense: RecurringExpense) => {
     deleteMutation.mutate(expense.id);
-  };
-
-  const frequencyLabels = {
-    daily: '每日',
-    weekly: '每周',
-    monthly: '每月'
-  };
-
-  
-  const categoryIcons = {
-    rent: '🏠',
-    transport: '🚇',
-    sport: '💪',
-    food: '🍽️',
-    subscription: '📱',
-    entertainment: '🎮',
-    utilities: '💡',
-    other: '💰'
   };
 
   if (loading) {
@@ -179,7 +133,6 @@ export default function RecurringExpensesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* 主内容区域 */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 返回导航 */}
         <div className="mb-6">
@@ -204,14 +157,14 @@ export default function RecurringExpensesPage() {
               </Button>
             </Link>
             <Button
-              onClick={handleGenerateExpenses}
-              disabled={generating}
+              onClick={() => generateMutation.mutate()}
+              disabled={generateMutation.isPending}
               variant="outline"
               className="group"
               title="手动触发生成今日固定账单（正常情况下每天00:01自动执行）"
             >
               <Zap className="h-4 w-4 mr-2 group-hover:text-yellow-500 transition-colors" />
-              {generating ? '生成中...' : '手动触发生成'}
+              {generateMutation.isPending ? '生成中...' : '手动触发生成'}
             </Button>
             <Link href="/settings/expenses/recurring/add">
               <Button className="bg-blue-600 hover:bg-blue-700">
@@ -223,131 +176,10 @@ export default function RecurringExpensesPage() {
         </div>
 
         {/* 统计概览 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {/* 本月生成统计卡片 */}
-          <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-blue-600 to-blue-700 text-white">
-            <div className="absolute top-0 right-0 -mt-4 -mr-4 opacity-10">
-              <Wallet className="h-32 w-32" />
-            </div>
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                  <Wallet className="h-6 w-6 text-white" />
-                </div>
-                <div className="text-right">
-                  <div className="text-3xl font-bold">
-                    {recurringExpenses.filter(e => {
-                      if (!e.is_active || !e.last_generated) return false;
-                      const lastGenerated = new Date(e.last_generated);
-                      const now = new Date();
-                      return lastGenerated.getMonth() === now.getMonth() &&
-                             lastGenerated.getFullYear() === now.getFullYear();
-                    }).length}
-                  </div>
-                  <div className="text-sm text-blue-100 mt-1">
-                    个本月已生成
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-blue-100">
-                  {recurringExpenses.filter(e => e.is_active).length} 个活跃项目
-                </div>
-                <div className="text-xs bg-white/20 px-2 py-1 rounded-full backdrop-blur-sm">
-                  自动化管理
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 明日自动生成卡片 */}
-          <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-amber-500 to-orange-600 text-white">
-            <div className="absolute top-0 right-0 -mt-4 -mr-4 opacity-10">
-              <Calendar className="h-32 w-32" />
-            </div>
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                  <Calendar className="h-6 w-6 text-white" />
-                </div>
-                <div className="text-right">
-                  <div className="text-3xl font-bold">
-                    {(() => {
-                      const tomorrow = new Date();
-                      tomorrow.setDate(tomorrow.getDate() + 1);
-                      const tomorrowStr = tomorrow.toISOString().split('T')[0];
-                      const dayOfWeek = tomorrow.getDay();
-
-                      return recurringExpenses.filter(e => {
-                        if (!e.is_active) return false;
-
-                        if (e.next_generate !== tomorrowStr) return false;
-
-                        switch (e.frequency) {
-                          case 'daily':
-                            return true;
-                          case 'weekly':
-                            return e.frequency_config.days_of_week?.includes(dayOfWeek);
-                          case 'monthly':
-                            return e.frequency_config.day_of_month === tomorrow.getDate();
-                          default:
-                            return false;
-                        }
-                      }).length;
-                    })()}
-                  </div>
-                  <div className="text-sm text-amber-100 mt-1">
-                    个明日生成
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-amber-100">
-                  明日自动生成
-                </div>
-                <div className="text-xs bg-white/20 px-2 py-1 rounded-full backdrop-blur-sm">
-                  预计
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 已生成记录卡片 */}
-          <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-emerald-500 to-green-600 text-white">
-            <div className="absolute top-0 right-0 -mt-4 -mr-4 opacity-10">
-              <History className="h-32 w-32" />
-            </div>
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                  <History className="h-6 w-6 text-white" />
-                </div>
-                <div className="text-right">
-                  <div className="text-3xl font-bold">
-                    {recurringExpenses.filter(e => getExpenseGenerationStatus(e).status === 'generated').length}
-                  </div>
-                  <div className="text-sm text-emerald-100 mt-1">
-                    个今日已生成
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-emerald-100">
-                  今日自动生成记录
-                </div>
-                <div className="text-xs bg-white/20 px-2 py-1 rounded-full backdrop-blur-sm">
-                  已完成
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <StatsCards
+          expenses={recurringExpenses}
+          getExpenseGenerationStatus={getExpenseGenerationStatus}
+        />
 
         {/* 固定支出列表 */}
         <Card className="border-0 shadow-lg bg-white dark:bg-gray-800">
@@ -376,7 +208,9 @@ export default function RecurringExpensesPage() {
                 <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 dark:bg-blue-900 rounded-full mb-6">
                   <Calendar className="h-10 w-10 text-blue-600 dark:text-blue-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">还没有设置固定支出</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                  还没有设置固定支出
+                </h3>
                 <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
                   设置固定支出后，系统会自动生成定期账单，让记账更轻松高效
                 </p>
@@ -390,120 +224,13 @@ export default function RecurringExpensesPage() {
             ) : (
               <div className="space-y-4">
                 {recurringExpenses.map((expense) => (
-                  <div
+                  <RecurringExpenseCard
                     key={expense.id}
-                    className={`group relative overflow-hidden rounded-xl border-2 transition-all duration-200 hover:shadow-md ${
-                      expense.is_active
-                        ? 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-blue-300 dark:hover:border-blue-600'
-                        : 'border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-850 hover:border-gray-300 dark:hover:border-gray-600'
-                    }`}
-                  >
-                    {/* 状态指示条 */}
-                    <div className={`absolute left-0 top-0 bottom-0 w-1 ${
-                      expense.is_active ? 'bg-green-500' : 'bg-gray-400'
-                    }`}></div>
-
-                    <div className="p-6 pl-8">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          {/* 类别图标 */}
-                          <div className={`relative p-3 rounded-xl transition-transform group-hover:scale-110 ${
-                            expense.is_active
-                              ? 'bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 shadow-sm'
-                              : 'bg-gray-100 dark:bg-gray-700'
-                          }`}>
-                            <div className="text-2xl">
-                              {categoryIcons[expense.category as keyof typeof categoryIcons] || '💰'}
-                            </div>
-                            {expense.is_active && (
-                              <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 dark:bg-green-400 rounded-full border-2 border-white dark:border-gray-800"></div>
-                            )}
-                          </div>
-
-                          {/* 详细信息 */}
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-3">
-                              <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">{expense.name}</h3>
-                              {expense.is_active ? (
-                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300">
-                                  <div className="w-1.5 h-1.5 bg-green-500 dark:bg-green-400 rounded-full mr-1.5 animate-pulse"></div>
-                                  活跃
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
-                                  <Pause className="h-3 w-3 mr-1" />
-                                  暂停
-                                </span>
-                              )}
-                            </div>
-
-                            {/* 金额和频率 */}
-                            <div className="flex items-center gap-4">
-                              <div className="flex items-center gap-1 text-2xl font-bold text-gray-900 dark:text-gray-100">
-                                <span className="text-lg">¥</span>
-                                <span>{expense.amount.toFixed(0)}</span>
-                                <span className="text-sm text-gray-500 dark:text-gray-400 font-normal">.{(expense.amount % 1).toFixed(2).slice(2)}</span>
-                              </div>
-                              <div className="text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
-                                {frequencyLabels[expense.frequency]}
-                                {expense.frequency === 'monthly' && expense.frequency_config.day_of_month &&
-                                  ` · 每月${expense.frequency_config.day_of_month}号`
-                                }
-                                {expense.frequency === 'weekly' && expense.frequency_config.days_of_week &&
-                                  ` · 周${expense.frequency_config.days_of_week.map((d: number) => ['日','一','二','三','四','五','六'][d]).join('、')}`
-                                }
-                              </div>
-                            </div>
-
-                            {/* 时间信息 */}
-                            <div className="flex items-center gap-6 text-xs">
-                              <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
-                                <Calendar className="h-3 w-3" />
-                                开始: {expense.start_date}
-                              </span>
-                              <span className={`flex items-center gap-1 px-2 py-1 rounded-full border ${getExpenseGenerationStatus(expense).bgColor} ${getExpenseGenerationStatus(expense).borderColor} ${getExpenseGenerationStatus(expense).color} font-medium`}>
-                                {getExpenseGenerationStatus(expense).status === 'generated' && <History className="h-3 w-3" />}
-                                {getExpenseGenerationStatus(expense).status === 'pending' && <Clock className="h-3 w-3" />}
-                                {getExpenseGenerationStatus(expense).status === 'scheduled' && <Clock className="h-3 w-3" />}
-                                {getExpenseGenerationStatus(expense).text}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* 操作按钮 */}
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant={expense.is_active ? "outline" : "default"}
-                            size="sm"
-                            onClick={() => toggleActiveStatus(expense)}
-                            className={expense.is_active ? "hover:bg-orange-50 dark:hover:bg-orange-950 hover:border-orange-300 dark:hover:border-orange-700 hover:text-orange-700 dark:hover:text-orange-300" : "bg-green-600 hover:bg-green-700"}
-                          >
-                            {expense.is_active ? (
-                              <><Pause className="h-4 w-4 mr-1" /> 暂停</>
-                            ) : (
-                              <><Play className="h-4 w-4 mr-1" /> 启用</>
-                            )}
-                          </Button>
-
-                          <Link href={`/settings/expenses/recurring/${expense.id}/edit`}>
-                            <Button variant="outline" size="sm" className="hover:bg-blue-50 dark:hover:bg-blue-950 dark:bg-blue-950 hover:border-blue-300 dark:border-blue-700 hover:text-blue-700 dark:text-blue-300">
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          </Link>
-
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => deleteExpense(expense)}
-                            className="hover:bg-red-50 dark:bg-red-950 hover:border-red-300 hover:text-red-700"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                    expense={expense}
+                    generationStatus={getExpenseGenerationStatus(expense)}
+                    onToggleActive={() => toggleActiveStatus(expense)}
+                    onDelete={() => setConfirmDelete(expense)}
+                  />
                 ))}
               </div>
             )}
@@ -511,122 +238,24 @@ export default function RecurringExpensesPage() {
         </Card>
 
         {/* 功能说明 */}
-        <div className="mt-8 p-6 bg-gradient-to-br from-blue-50 dark:from-blue-950 via-white dark:via-gray-900 to-purple-50 dark:to-purple-950 rounded-2xl border border-blue-100 dark:border-blue-800">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-              <Settings2 className="h-5 w-5 text-blue-600" />
-            </div>
-            <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">功能说明</h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center flex-shrink-0">
-                <div className="w-2 h-2 bg-green-50 dark:bg-green-950 rounded-full"></div>
-              </div>
-              <div>
-                <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">自动生成</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-300">在指定时间自动创建交易记录</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Pause className="h-4 w-4 text-blue-600" />
-              </div>
-              <div>
-                <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">灵活控制</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-300">随时暂停或启用固定支出</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Calendar className="h-4 w-4 text-purple-600" />
-              </div>
-              <div>
-                <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">智能防重</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-300">避免重复生成同一天记录</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Clock className="h-4 w-4 text-orange-600" />
-              </div>
-              <div>
-                <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">多种频率</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-300">支持每日、每周、每月等设置</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <FeatureDescription />
 
         {/* 暂停确认对话框 */}
         {confirmPause && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md mx-4">
-              <div className="p-4 border-b dark:border-gray-700">
-                <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">确认暂停</h3>
-              </div>
-              <div className="p-4">
-                <p className="text-gray-600 dark:text-gray-300 mb-2">
-                  确定要暂停固定支出 "{confirmPause.name}" 吗？
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  暂停后将停止自动生成该支出记录，您可以随时重新启用。
-                </p>
-                {confirmPause.next_generate && (
-                  <p className="text-sm text-blue-600 mt-2">
-                    下次生成时间：{confirmPause.next_generate}
-                  </p>
-                )}
-              </div>
-              <div className="p-4 border-t dark:border-gray-700 flex justify-end gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => setConfirmPause(null)}
-                >
-                  取消
-                </Button>
-                <Button
-                  variant="default"
-                  onClick={() => confirmPauseExpense(confirmPause)}
-                >
-                  确认暂停
-                </Button>
-              </div>
-            </div>
-          </div>
+          <PauseConfirmDialog
+            expense={confirmPause}
+            onConfirm={() => confirmPauseExpense(confirmPause)}
+            onCancel={() => setConfirmPause(null)}
+          />
         )}
 
         {/* 删除确认对话框 */}
         {confirmDelete && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md mx-4">
-              <div className="p-4 border-b dark:border-gray-700">
-                <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">确认删除</h3>
-              </div>
-              <div className="p-4">
-                <p className="text-gray-600 dark:text-gray-300 mb-2">
-                  确定要删除固定支出 "{confirmDelete.name}" 吗？
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  删除后将停止生成该支出记录，此操作不可撤销。
-                </p>
-              </div>
-              <div className="p-4 border-t dark:border-gray-700 flex justify-end gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => setConfirmDelete(null)}
-                >
-                  取消
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() => confirmDeleteExpense(confirmDelete)}
-                >
-                  确认删除
-                </Button>
-              </div>
-            </div>
-          </div>
+          <DeleteConfirmDialog
+            expense={confirmDelete}
+            onConfirm={() => confirmDeleteExpense(confirmDelete)}
+            onCancel={() => setConfirmDelete(null)}
+          />
         )}
 
         {/* Toast提示 */}
