@@ -136,11 +136,11 @@ export class PrismaAIFeedbackRepository implements IAIFeedbackRepository {
     });
 
     const total = feedbacks.length;
-    const positive = feedbacks.filter((f) => f.is_positive === true).length;
-    const negative = feedbacks.filter((f) => f.is_positive === false).length;
-    const ratings = feedbacks.filter((f) => f.rating != null).map((f) => f.rating as number);
+    const positive = feedbacks.filter((f: { is_positive: boolean | null }) => f.is_positive === true).length;
+    const negative = feedbacks.filter((f: { is_positive: boolean | null }) => f.is_positive === false).length;
+    const ratings = feedbacks.filter((f: { rating: number | null }) => f.rating != null).map((f: { rating: number | null }) => f.rating as number);
     const avgRating = ratings.length > 0
-      ? ratings.reduce((sum, r) => sum + r, 0) / ratings.length
+      ? ratings.reduce((sum: number, r: number) => sum + r, 0) / ratings.length
       : 0;
 
     const now = new Date();
@@ -153,9 +153,9 @@ export class PrismaAIFeedbackRepository implements IAIFeedbackRepository {
       averageRating: Math.round(avgRating * 100) / 100,
       positiveRate: total > 0 ? positive / total : 0,
       timeStats: {
-        today: feedbacks.filter((f) => f.timestamp?.toISOString().slice(0, 10) === today).length,
-        thisWeek: feedbacks.filter((f) => f.timestamp && f.timestamp.toISOString() >= weekAgo).length,
-        thisMonth: feedbacks.filter((f) => f.timestamp && f.timestamp.toISOString() >= monthAgo).length,
+        today: feedbacks.filter((f: { timestamp: Date | null }) => f.timestamp?.toISOString().slice(0, 10) === today).length,
+        thisWeek: feedbacks.filter((f: { timestamp: Date | null }) => f.timestamp && f.timestamp.toISOString() >= weekAgo).length,
+        thisMonth: feedbacks.filter((f: { timestamp: Date | null }) => f.timestamp && f.timestamp.toISOString() >= monthAgo).length,
       },
       sentimentAnalysis: {
         positive,
@@ -225,10 +225,10 @@ export class PrismaAIFeedbackRepository implements IAIFeedbackRepository {
     });
 
     const stats = data.map(this.mapPerformanceStatToEntity);
-    const totalCost = stats.reduce((sum, stat) => sum + stat.estimated_cost, 0);
-    const totalTokens = stats.reduce((sum, stat) => sum + stat.total_tokens, 0);
+    const totalCost = stats.reduce((sum: number, stat: AIPerformanceStat) => sum + stat.estimated_cost, 0);
+    const totalTokens = stats.reduce((sum: number, stat: AIPerformanceStat) => sum + stat.total_tokens, 0);
     const avgResponseTime = stats.length > 0
-      ? stats.reduce((sum, stat) => sum + (stat.avg_response_time_ms || 0), 0) / stats.length
+      ? stats.reduce((sum: number, stat: AIPerformanceStat) => sum + (stat.avg_response_time_ms || 0), 0) / stats.length
       : 0;
 
     return {

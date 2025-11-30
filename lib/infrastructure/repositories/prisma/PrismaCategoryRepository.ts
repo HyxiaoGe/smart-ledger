@@ -88,16 +88,16 @@ export class PrismaCategoryRepository implements ICategoryRepository {
     // 应用过滤器
     if (filter?.type) {
       categories = categories.filter(
-        (c) => c.type === filter.type || c.type === 'both'
+        (c: CategoryWithStats) => c.type === filter.type || c.type === 'both'
       );
     }
 
     if (filter?.is_active !== undefined) {
-      categories = categories.filter((c) => c.is_active === filter.is_active);
+      categories = categories.filter((c: CategoryWithStats) => c.is_active === filter.is_active);
     }
 
     if (filter?.is_system !== undefined) {
-      categories = categories.filter((c) => c.is_system === filter.is_system);
+      categories = categories.filter((c: CategoryWithStats) => c.is_system === filter.is_system);
     }
 
     return categories;
@@ -232,7 +232,7 @@ export class PrismaCategoryRepository implements ICategoryRepository {
       },
     });
 
-    return data.map((row) => ({
+    return data.map((row: { key: string; label: string; category_key: string }) => ({
       key: row.key,
       label: row.label,
       category_key: row.category_key,
