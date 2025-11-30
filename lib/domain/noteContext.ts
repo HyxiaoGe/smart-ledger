@@ -45,7 +45,7 @@ export function generateTimeContext(date: Date = new Date()): TimeContext {
   } else {
     time_category = 'night';
     meal_period = 'snack';
-    work_period = 'night';
+    work_period = undefined; // 深夜时段不属于任何工作时段分类
   }
 
   // 生成标签

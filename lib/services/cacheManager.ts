@@ -49,8 +49,7 @@ class CacheManager {
         predictionCache.invalidateCache();
         console.log('🔄 新增交易，预测缓存已失效');
       },
-      priority: 1
-    });
+    }, 1);
 
     // 规则2：交易数量变化时失效
     this.addRule({
@@ -65,8 +64,7 @@ class CacheManager {
         this.updateCachedTransactionCount();
         console.log('📊 交易数量变化，预测缓存已失效');
       },
-      priority: 2
-    });
+    }, 2);
 
     // 规则3：跨月时失效
     this.addRule({
@@ -81,8 +79,7 @@ class CacheManager {
         localStorage.setItem(STORAGE_KEYS.PREDICTION_CACHE_MONTH, ctx.currentMonth);
         console.log('📅 跨月更新，预测缓存已失效');
       },
-      priority: 3
-    });
+    }, 3);
 
     // 规则4：缓存过期时失效
     this.addRule({
@@ -95,8 +92,7 @@ class CacheManager {
         predictionCache.invalidateCache();
         console.log('⏰ 缓存已过期，自动清理');
       },
-      priority: 4
-    });
+    }, 4);
 
     // 规则5：定期清理（超过配置时间强制清理）
     this.addRule({
@@ -111,8 +107,7 @@ class CacheManager {
         this.lastInvalidationTime = Date.now();
         console.log('🧹 定期清理缓存');
       },
-      priority: 5
-    });
+    }, 5);
   }
 
   /**

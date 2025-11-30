@@ -62,24 +62,9 @@ export interface TransactionSortOptions {
   order: 'asc' | 'desc';
 }
 
-/**
- * 分页选项
- */
-export interface PaginationOptions {
-  page: number;
-  pageSize: number;
-}
-
-/**
- * 分页结果
- */
-export interface PaginatedResult<T> {
-  data: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-  hasMore: boolean;
-}
+// PaginationOptions 和 PaginatedResult 从 common 导入
+// 避免重复导出
+export type { PaginationOptions, PaginatedResult } from '../common';
 
 /**
  * 交易统计结果

@@ -114,7 +114,7 @@ async function storeLearningData(data: LearningData) {
         event_type: data.event_type,
         timestamp: data.timestamp ? new Date(data.timestamp) : new Date(),
         context: data.context || {},
-        suggestion_data: data.suggestion_data || null,
+        suggestion_data: data.suggestion_data ?? undefined,
         ignored_suggestions: data.ignored_suggestions || [],
         final_input: data.final_input,
         learning_outcome: data.learning_outcome

@@ -3,7 +3,7 @@
  * 提供分类相关的业务逻辑，使用 Repository 模式访问数据
  */
 
-import { categoryRepository } from '@/lib/infrastructure/repositories';
+import { getCategoryRepository } from '@/lib/infrastructure/repositories';
 import type { ICategoryRepository } from '@/lib/domain/repositories/ICategoryRepository';
 import type {
   Category,
@@ -151,7 +151,7 @@ class CategoryService {
 }
 
 // 创建单例服务实例
-const categoryService = new CategoryService(categoryRepository);
+const categoryService = new CategoryService(getCategoryRepository());
 
 // 导出服务方法（保持向后兼容的函数式 API）
 export const getCategoriesWithStats = (filter?: CategoryQueryFilter) =>

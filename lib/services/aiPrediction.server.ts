@@ -359,7 +359,7 @@ export class AIPredictionServiceServer {
       // 统计各类别出现频率
       const categoryFrequency: Record<string, { count: number; totalAmount: number; examples: string[] }> = {};
 
-      similarTransactions.forEach(transaction => {
+      similarTransactions.forEach((transaction: { category: string; amount: unknown; note: string | null }) => {
         if (!categoryFrequency[transaction.category]) {
           categoryFrequency[transaction.category] = { count: 0, totalAmount: 0, examples: [] };
         }
@@ -430,7 +430,7 @@ export class AIPredictionServiceServer {
       const amountFrequency: Record<string, number> = {};
       const amounts: number[] = [];
 
-      categoryTransactions.forEach(transaction => {
+      categoryTransactions.forEach((transaction: { amount: unknown; note: string | null; date: Date }) => {
         const roundedAmount = Math.round(Number(transaction.amount) * 100) / 100;
         amountFrequency[roundedAmount] = (amountFrequency[roundedAmount] || 0) + 1;
         amounts.push(Number(transaction.amount));
