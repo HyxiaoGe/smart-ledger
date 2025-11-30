@@ -2,7 +2,7 @@
  * Prisma 系统日志仓储实现
  */
 
-import type { PrismaClient, Prisma } from '@/generated/prisma/client';
+import type { PrismaClient, Prisma } from '@prisma/client';
 import type {
   ISystemLogRepository,
   SystemLog,

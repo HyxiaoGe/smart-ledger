@@ -3,7 +3,7 @@
  * 实现 ICommonNoteRepository 接口，提供基于 Prisma 的常用备注数据访问
  */
 
-import type { PrismaClient, Prisma } from '@/generated/prisma/client';
+import type { PrismaClient, Prisma } from '@prisma/client';
 import type { CommonNote } from '@/types/domain/transaction';
 import type { ICommonNoteRepository } from '@/lib/domain/repositories/ICommonNoteRepository';
 import type {

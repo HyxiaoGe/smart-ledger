@@ -2,7 +2,7 @@
  * Prisma 固定支出仓储实现
  */
 
-import type { PrismaClient } from '@/generated/prisma/client';
+import type { PrismaClient } from '@prisma/client';
 import type {
   IRecurringExpenseRepository,
   RecurringExpense,
