@@ -123,9 +123,10 @@ export class PrismaMonthlyReportRepository implements IMonthlyReportRepository {
 
   async generate(year: number, month: number): Promise<MonthlyReportGenerationResult> {
     // 计算本月日期范围
+    // 使用 lt 下月1号 而不是 lte 月末，避免时间戳导致的边界问题
     const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0); // 月末
-    const daysInMonth = endDate.getDate();
+    const nextMonthStart = new Date(year, month, 1);
+    const daysInMonth = new Date(year, month, 0).getDate();
 
     // 检查是否已存在
     const exists = await this.existsForMonth(year, month);
@@ -137,7 +138,7 @@ export class PrismaMonthlyReportRepository implements IMonthlyReportRepository {
         type: 'expense',
         date: {
           gte: startDate,
-          lte: endDate,
+          lt: nextMonthStart,
         },
       },
     });
@@ -269,8 +270,9 @@ export class PrismaMonthlyReportRepository implements IMonthlyReportRepository {
       .sort((a, b) => b.amount - a.amount);
 
     // 计算环比变化（上月数据）
+    // 同样使用 lt 避免时间戳边界问题
     const lastMonthStart = new Date(year, month - 2, 1);
-    const lastMonthEnd = new Date(year, month - 1, 0);
+    const thisMonthStart = new Date(year, month - 1, 1);
 
     const lastMonthTransactions = await this.prisma.transactions.findMany({
       where: {
@@ -278,7 +280,7 @@ export class PrismaMonthlyReportRepository implements IMonthlyReportRepository {
         type: 'expense',
         date: {
           gte: lastMonthStart,
-          lte: lastMonthEnd,
+          lt: thisMonthStart,
         },
       },
     });
