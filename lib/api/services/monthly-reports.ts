@@ -28,6 +28,7 @@ export interface FixedExpenseItem {
   name: string;
   category: string;
   amount: number;
+  count: number;
   recurring_expense_id: string | null;
 }
 

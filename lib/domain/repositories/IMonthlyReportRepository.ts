@@ -27,6 +27,7 @@ export interface FixedExpenseItem {
   name: string;
   category: string;
   amount: number;
+  count: number;  // 交易笔数（聚合后）
   recurring_expense_id: string | null;
 }
 

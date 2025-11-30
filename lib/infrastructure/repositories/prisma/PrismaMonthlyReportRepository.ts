@@ -202,13 +202,30 @@ export class PrismaMonthlyReportRepository implements IMonthlyReportRepository {
       }))
       .sort((a, b) => b.amount - a.amount);
 
-    // 固定支出明细
-    const fixedExpensesBreakdown: FixedExpenseItem[] = fixedTransactions.map((t: TransactionRow) => ({
-      name: t.note || t.category,
-      category: t.category,
-      amount: Number(t.amount),
-      recurring_expense_id: t.recurring_expense_id,
-    }));
+    // 固定支出明细（按 recurring_expense_id 或名称聚合）
+    const fixedExpenseMap = new Map<string, { name: string; category: string; amount: number; count: number; recurring_expense_id: string | null }>();
+    fixedTransactions.forEach((t: TransactionRow) => {
+      // 使用 recurring_expense_id 作为聚合键，如果没有则使用 name
+      const key = t.recurring_expense_id || `manual_${t.note || t.category}`;
+      const name = t.note || t.category;
+      const existing = fixedExpenseMap.get(key);
+
+      if (existing) {
+        existing.amount += Number(t.amount);
+        existing.count += 1;
+      } else {
+        fixedExpenseMap.set(key, {
+          name,
+          category: t.category,
+          amount: Number(t.amount),
+          count: 1,
+          recurring_expense_id: t.recurring_expense_id,
+        });
+      }
+    });
+
+    const fixedExpensesBreakdown: FixedExpenseItem[] = Array.from(fixedExpenseMap.values())
+      .sort((a, b) => b.amount - a.amount);
 
     // 商家统计
     const merchantMap = new Map<string, { amount: number; count: number }>();

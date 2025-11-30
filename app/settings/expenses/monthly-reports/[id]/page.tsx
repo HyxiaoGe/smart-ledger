@@ -149,7 +149,7 @@ export default function MonthlyReportDetailPage() {
   // 获取支付方式列表用于ID到名称的映射
   const { data: paymentMethods } = useQuery({
     queryKey: ['payment-methods'],
-    queryFn: () => paymentMethodsApi.getAll(),
+    queryFn: () => paymentMethodsApi.list(),
   });
 
   // 创建支付方式ID到名称的映射
@@ -461,6 +461,11 @@ export default function MonthlyReportDetailPage() {
                         <div className="font-semibold text-orange-600 dark:text-orange-400">
                           ¥{formatCurrency(item.amount)}
                         </div>
+                        {item.count > 1 && (
+                          <div className="text-xs text-orange-500 dark:text-orange-500">
+                            {item.count}笔交易
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
