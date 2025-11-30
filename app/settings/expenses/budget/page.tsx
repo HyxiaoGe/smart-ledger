@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { useQuery, useQueries } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ProgressToast } from '@/components/shared/ProgressToast';
@@ -12,7 +12,7 @@ import {
   formatMonth,
   getProgressBarColor,
 } from '@/lib/services/budgetService.server';
-import { budgetsApi, type BudgetSuggestion, type TotalBudgetSummary, type BudgetPrediction } from '@/lib/api/services/budgets';
+import { budgetsApi, type BudgetSuggestion, type TotalBudgetSummary } from '@/lib/api/services/budgets';
 import { categoriesApi } from '@/lib/api/services/categories';
 import type { Category } from '@/types/dto/category.dto';
 import {
@@ -45,38 +45,11 @@ export default function BudgetPage() {
     queryFn: () => categoriesApi.list(),
   });
 
-  // 获取预算建议
+  // 获取预算建议（已包含实时计算的当月支出数据）
   const { data: suggestions = [], isLoading: suggestionsLoading } = useQuery({
     queryKey: ['budget-suggestions', year, month],
     queryFn: () => budgetsApi.getSuggestions({ year, month }),
   });
-
-  // 批量获取预测数据
-  const predictionQueries = useQueries({
-    queries: suggestions.map((suggestion) => ({
-      queryKey: ['budget-prediction', suggestion.categoryKey, year, month, suggestion.suggestedAmount],
-      queryFn: () => budgetsApi.predict({
-        categoryKey: suggestion.categoryKey,
-        year,
-        month,
-        budgetAmount: suggestion.suggestedAmount,
-        currency: 'CNY',
-      }),
-      enabled: !!suggestion.categoryKey,
-    })),
-  });
-
-  // 构建预测数据 Map
-  const predictions = useMemo(() => {
-    const map = new Map<string, BudgetPrediction>();
-    suggestions.forEach((suggestion, index) => {
-      const query = predictionQueries[index];
-      if (query?.data) {
-        map.set(suggestion.categoryKey, query.data);
-      }
-    });
-    return map;
-  }, [suggestions, predictionQueries]);
 
   // 过滤活跃分类
   const categories = useMemo(() =>
