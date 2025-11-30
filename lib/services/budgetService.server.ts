@@ -197,7 +197,8 @@ async function getMonthlyBudgetStatusInternal(
   const categories = await prisma.categories.findMany({
     where: { is_active: true },
   });
-  const categoryMap = new Map(categories.map(c => [c.key, c]));
+  type CategoryInfo = { key: string; label: string; icon: string | null; color: string | null };
+  const categoryMap = new Map<string, CategoryInfo>(categories.map((c: CategoryInfo) => [c.key, c]));
 
   // 3. 计算本月日期范围
   const startDate = new Date(year, month - 1, 1);
@@ -537,7 +538,8 @@ export async function getBudgetSuggestions(
     spendingByCategory[tx.category] = (spendingByCategory[tx.category] || 0) + Number(tx.amount);
   }
 
-  return data.map(row => {
+  type SuggestionRow = { category_key: string | null; suggested_amount: unknown; confidence_level: string; reason: string; historical_avg: unknown; historical_months: number | null; trend_direction: string | null; calculated_at: Date | null };
+  return data.map((row: SuggestionRow) => {
     const categoryKey = row.category_key || '';
     // 使用实时计算的当月支出
     const currentMonthSpending = spendingByCategory[categoryKey] || 0;
@@ -621,7 +623,7 @@ export async function refreshBudgetSuggestions(
     where: { year, month },
     select: { id: true, category_key: true },
   });
-  const existingMap = new Map(existingSuggestions.map(s => [s.category_key, s.id]));
+  const existingMap = new Map(existingSuggestions.map((s: { id: string; category_key: string | null }) => [s.category_key, s.id]));
 
   let count = 0;
   const currentMonthKey = `${year}-${month}`;

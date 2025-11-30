@@ -140,7 +140,7 @@ export class PrismaSystemLogRepository implements ISystemLogRepository {
       fatal: 0,
     };
 
-    byLevelResult.forEach((item) => {
+    byLevelResult.forEach((item: { level: string; _count: number }) => {
       byLevel[item.level as LogLevel] = item._count;
     });
 
@@ -161,7 +161,7 @@ export class PrismaSystemLogRepository implements ISystemLogRepository {
       data_sync: 0,
     };
 
-    byCategoryResult.forEach((item) => {
+    byCategoryResult.forEach((item: { category: string; _count: number }) => {
       byCategory[item.category as LogCategory] = item._count;
     });
 

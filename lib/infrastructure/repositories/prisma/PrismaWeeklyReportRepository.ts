@@ -136,13 +136,14 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
     }
 
     // 计算统计数据
-    const totalExpenses = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
+    type TransactionRow = { category: string; merchant: string | null; payment_method: string | null; amount: unknown };
+    const totalExpenses = transactions.reduce((sum: number, t: TransactionRow) => sum + Number(t.amount), 0);
     const transactionCount = transactions.length;
     const avgTransaction = totalExpenses / transactionCount;
 
     // 分类统计
     const categoryMap = new Map<string, { amount: number; count: number }>();
-    transactions.forEach((t) => {
+    transactions.forEach((t: TransactionRow) => {
       const existing = categoryMap.get(t.category) || { amount: 0, count: 0 };
       categoryMap.set(t.category, {
         amount: existing.amount + Number(t.amount),
@@ -161,7 +162,7 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
 
     // 商家统计
     const merchantMap = new Map<string, { amount: number; count: number }>();
-    transactions.forEach((t) => {
+    transactions.forEach((t: TransactionRow) => {
       if (t.merchant) {
         const existing = merchantMap.get(t.merchant) || { amount: 0, count: 0 };
         merchantMap.set(t.merchant, {
@@ -182,7 +183,7 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
 
     // 支付方式统计
     const paymentMap = new Map<string, { amount: number; count: number }>();
-    transactions.forEach((t) => {
+    transactions.forEach((t: TransactionRow) => {
       const method = t.payment_method || '未指定';
       const existing = paymentMap.get(method) || { amount: 0, count: 0 };
       paymentMap.set(method, {
@@ -217,7 +218,7 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
       },
     });
 
-    const lastWeekTotal = lastWeekTransactions.reduce((sum, t) => sum + Number(t.amount), 0);
+    const lastWeekTotal = lastWeekTransactions.reduce((sum: number, t: { amount: unknown }) => sum + Number(t.amount), 0);
     const weekOverWeekChange = totalExpenses - lastWeekTotal;
     const weekOverWeekPercentage = lastWeekTotal > 0
       ? ((totalExpenses - lastWeekTotal) / lastWeekTotal) * 100

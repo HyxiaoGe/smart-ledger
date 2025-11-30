@@ -46,14 +46,15 @@ export class PrismaPaymentMethodRepository implements IPaymentMethodRepository {
       _max: { date: true },
     });
 
-    const statsMap = new Map(
-      stats.map((s) => [
+    type PaymentStat = { count: number; lastUsed: Date | null };
+    const statsMap = new Map<string | null, PaymentStat>(
+      stats.map((s: { payment_method: string | null; _count: number; _max: { date: Date | null } }) => [
         s.payment_method,
         { count: s._count, lastUsed: s._max.date },
       ])
     );
 
-    return paymentMethods.map((pm) => {
+    return paymentMethods.map((pm: { id: string; name: string; [key: string]: unknown }) => {
       const stat = statsMap.get(pm.id) || statsMap.get(pm.name);
       return {
         ...this.mapToEntity(pm),

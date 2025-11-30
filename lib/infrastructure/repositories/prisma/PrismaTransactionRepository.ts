@@ -73,6 +73,7 @@ export class PrismaTransactionRepository implements ITransactionRepository {
       total,
       page,
       pageSize,
+      totalPages: Math.ceil(total / pageSize),
       hasMore: total > page * pageSize,
     };
   }
@@ -224,13 +225,14 @@ export class PrismaTransactionRepository implements ITransactionRepository {
     });
 
     // 计算总金额用于百分比
+    type GroupResult = { category: string; _sum: { amount: number | null }; _count: number };
     const totalAmount = result.reduce(
-      (sum, item) => sum + (Number(item._sum.amount) || 0),
+      (sum: number, item: GroupResult) => sum + (Number(item._sum.amount) || 0),
       0
     );
 
     return result
-      .map((item) => ({
+      .map((item: GroupResult) => ({
         category: item.category,
         totalAmount: Number(item._sum.amount) || 0,
         count: item._count,
@@ -238,7 +240,7 @@ export class PrismaTransactionRepository implements ITransactionRepository {
           ? ((Number(item._sum.amount) || 0) / totalAmount) * 100
           : 0,
       }))
-      .sort((a, b) => b.totalAmount - a.totalAmount);
+      .sort((a: CategoryStats, b: CategoryStats) => b.totalAmount - a.totalAmount);
   }
 
   /**

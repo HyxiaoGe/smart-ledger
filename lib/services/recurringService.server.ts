@@ -245,12 +245,13 @@ export async function getGenerationHistory(limit = 20): Promise<GenerationHistor
   }
 
   // 收集所有需要查询的 ID
+  type LogRow = { id: string; recurring_expense_id: string | null; generated_transaction_id: string | null; generation_date: Date; status: string; reason: string | null; error_message: string | null; retry_count: number; created_at: Date };
   const expenseIds = logs
-    .map(log => log.recurring_expense_id)
-    .filter((id): id is string => id !== null);
+    .map((log: LogRow) => log.recurring_expense_id)
+    .filter((id: string | null): id is string => id !== null);
   const transactionIds = logs
-    .map(log => log.generated_transaction_id)
-    .filter((id): id is string => id !== null);
+    .map((log: LogRow) => log.generated_transaction_id)
+    .filter((id: string | null): id is string => id !== null);
 
   // 批量查询关联数据（2 次查询代替 N*2 次）
   const [expenses, transactions] = await Promise.all([
@@ -271,11 +272,11 @@ export async function getGenerationHistory(limit = 20): Promise<GenerationHistor
   // 构建查找映射（显式类型以帮助推断）
   type ExpenseInfo = { id: string; name: string; amount: unknown; category: string };
   type TransactionInfo = { id: string; amount: unknown; note: string | null; date: Date };
-  const expenseMap = new Map<string, ExpenseInfo>(expenses.map(e => [e.id, e as ExpenseInfo]));
-  const transactionMap = new Map<string, TransactionInfo>(transactions.map(t => [t.id, t as TransactionInfo]));
+  const expenseMap = new Map<string, ExpenseInfo>(expenses.map((e: ExpenseInfo) => [e.id, e]));
+  const transactionMap = new Map<string, TransactionInfo>(transactions.map((t: TransactionInfo) => [t.id, t]));
 
   // 组装结果
-  return logs.map(log => {
+  return logs.map((log: LogRow) => {
     const expense = log.recurring_expense_id ? expenseMap.get(log.recurring_expense_id) : null;
     const tx = log.generated_transaction_id ? transactionMap.get(log.generated_transaction_id) : null;
 
@@ -324,8 +325,8 @@ export async function getTodayGenerationStats(): Promise<GenerationStats> {
     },
   });
 
-  const successCount = logs.filter(d => d.status === 'success').length;
-  const failedCount = logs.filter(d => d.status === 'failed').length;
+  const successCount = logs.filter((d: { status: string }) => d.status === 'success').length;
+  const failedCount = logs.filter((d: { status: string }) => d.status === 'failed').length;
 
   return {
     total: logs.length,
@@ -354,7 +355,8 @@ export async function getPendingRecurringExpenses(): Promise<any[]> {
     orderBy: { next_generate: 'asc' },
   });
 
-  return expenses.map(e => ({
+  type ExpenseRow = { id: string; name: string; amount: unknown; category: string; frequency: string; next_generate: Date | null; last_generated: Date | null };
+  return expenses.map((e: ExpenseRow) => ({
     id: e.id,
     name: e.name,
     amount: Number(e.amount),
