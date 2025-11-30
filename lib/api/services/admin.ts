@@ -89,15 +89,6 @@ export interface LogListResponse {
 }
 
 /**
- * API 响应包装器
- */
-interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
-
-/**
  * Admin API 服务
  */
 export const adminApi = {
@@ -133,7 +124,6 @@ export const adminApi = {
 
   /**
    * 获取日志列表
-   * 注意：由于 apiClient 会自动解包 data 字段，这里需要直接使用 fetch
    */
   async getLogs(params: LogListParams): Promise<LogListResponse> {
     const query = buildQueryString(
@@ -141,31 +131,17 @@ export const adminApi = {
         Object.entries(params).filter(([, v]) => v !== '' && v !== undefined)
       )
     );
-
-    // 直接使用 fetch，避免 apiClient 自动解包 data
-    const response = await fetch(`/api/admin/logs${query}`);
-    const json = await response.json();
-
-    if (!json.success) {
-      throw new Error(json.error || '加载日志失败');
-    }
+    const response = await apiClient.get<LogListResponse>(`/api/admin/logs${query}`);
     return {
-      data: json.data || [],
-      pagination: json.pagination || { page: 1, page_size: 10, total: 0, total_pages: 0 },
+      data: response.data || [],
+      pagination: response.pagination || { page: 1, page_size: 10, total: 0, total_pages: 0 },
     };
   },
 
   /**
    * 获取日志统计
-   * 注意：由于 apiClient 会自动解包 data 字段，这里需要直接使用 fetch
    */
   async getLogStats(): Promise<LogStats> {
-    const response = await fetch('/api/admin/logs/stats');
-    const json = await response.json();
-
-    if (!json.success) {
-      throw new Error(json.error || '获取统计信息失败');
-    }
-    return json.data;
+    return apiClient.get<LogStats>('/api/admin/logs/stats');
   },
 };

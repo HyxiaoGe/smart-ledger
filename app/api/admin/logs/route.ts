@@ -77,16 +77,18 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     }
   );
 
+  // 把 pagination 放入 data 中，让 apiClient 自动解包后仍能获取完整结构
   return NextResponse.json({
-    success: true,
-    data: result.data,
-    pagination: {
-      page: result.pagination.page,
-      page_size: result.pagination.pageSize,
-      total: result.pagination.total,
-      total_pages: result.pagination.totalPages,
-      has_next: result.pagination.hasNext,
-      has_prev: result.pagination.hasPrev,
+    data: {
+      data: result.data,
+      pagination: {
+        page: result.pagination.page,
+        page_size: result.pagination.pageSize,
+        total: result.pagination.total,
+        total_pages: result.pagination.totalPages,
+        has_next: result.pagination.hasNext,
+        has_prev: result.pagination.hasPrev,
+      },
     },
   });
 });
