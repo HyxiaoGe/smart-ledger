@@ -11,6 +11,7 @@ import type { ICategoryRepository } from '@/lib/domain/repositories/ICategoryRep
 import type { IPaymentMethodRepository } from '@/lib/domain/repositories/IPaymentMethodRepository';
 import type { IRecurringExpenseRepository } from '@/lib/domain/repositories/IRecurringExpenseRepository';
 import type { IWeeklyReportRepository } from '@/lib/domain/repositories/IWeeklyReportRepository';
+import type { IMonthlyReportRepository } from '@/lib/domain/repositories/IMonthlyReportRepository';
 import type { IAIFeedbackRepository } from '@/lib/domain/repositories/IAIFeedbackRepository';
 import type { ISystemLogRepository } from '@/lib/domain/repositories/ISystemLogRepository';
 
@@ -26,6 +27,7 @@ class ServerRepositoryFactory {
   private static paymentMethodRepository: IPaymentMethodRepository;
   private static recurringExpenseRepository: IRecurringExpenseRepository;
   private static weeklyReportRepository: IWeeklyReportRepository;
+  private static monthlyReportRepository: IMonthlyReportRepository;
   private static aiFeedbackRepository: IAIFeedbackRepository;
   private static systemLogRepository: ISystemLogRepository;
 
@@ -92,6 +94,15 @@ class ServerRepositoryFactory {
     return this.weeklyReportRepository;
   }
 
+  static getMonthlyReportRepository(): IMonthlyReportRepository {
+    if (!this.monthlyReportRepository) {
+      const { prisma } = require('@/lib/clients/db/prisma');
+      const { PrismaMonthlyReportRepository } = require('./prisma/PrismaMonthlyReportRepository');
+      this.monthlyReportRepository = new PrismaMonthlyReportRepository(prisma);
+    }
+    return this.monthlyReportRepository;
+  }
+
   static getAIFeedbackRepository(): IAIFeedbackRepository {
     if (!this.aiFeedbackRepository) {
       const { prisma } = require('@/lib/clients/db/prisma');
@@ -118,6 +129,7 @@ class ServerRepositoryFactory {
     this.paymentMethodRepository = null as any;
     this.recurringExpenseRepository = null as any;
     this.weeklyReportRepository = null as any;
+    this.monthlyReportRepository = null as any;
     this.aiFeedbackRepository = null as any;
     this.systemLogRepository = null as any;
   }
@@ -135,6 +147,7 @@ export const getCategoryRepository = () => ServerRepositoryFactory.getCategoryRe
 export const getPaymentMethodRepository = () => ServerRepositoryFactory.getPaymentMethodRepository();
 export const getRecurringExpenseRepository = () => ServerRepositoryFactory.getRecurringExpenseRepository();
 export const getWeeklyReportRepository = () => ServerRepositoryFactory.getWeeklyReportRepository();
+export const getMonthlyReportRepository = () => ServerRepositoryFactory.getMonthlyReportRepository();
 export const getAIFeedbackRepository = () => ServerRepositoryFactory.getAIFeedbackRepository();
 export const getSystemLogRepository = () => ServerRepositoryFactory.getSystemLogRepository();
 export const resetRepositories = () => ServerRepositoryFactory.reset();

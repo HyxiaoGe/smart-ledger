@@ -491,3 +491,42 @@ model weekly_reports {
   @@index([week_start_date, week_end_date]) // 日期范围查询
   @@index([generated_at])                   // 按生成时间查询
 }
+
+model monthly_reports {
+  id                         BigInt    @id @default(autoincrement())
+  user_id                    String?   @db.Uuid
+  year                       Int
+  month                      Int
+  // 总支出（包含固定支出）
+  total_expenses             Decimal   @default(0) @db.Decimal
+  // 固定支出金额
+  fixed_expenses             Decimal   @default(0) @db.Decimal
+  // 可变支出金额（日常消费）
+  variable_expenses          Decimal   @default(0) @db.Decimal
+  transaction_count          Int       @default(0)
+  fixed_transaction_count    Int       @default(0)
+  variable_transaction_count Int       @default(0)
+  average_transaction        Decimal?  @db.Decimal
+  average_daily_expense      Decimal?  @db.Decimal
+  // 分类统计（JSON数组）
+  category_breakdown         Json?     @default("[]")
+  // 固定支出明细
+  fixed_expenses_breakdown   Json?     @default("[]")
+  top_merchants              Json?     @default("[]")
+  payment_method_stats       Json?     @default("[]")
+  // 环比变化
+  month_over_month_change    Decimal?  @default(0) @db.Decimal
+  month_over_month_percentage Decimal? @default(0) @db.Decimal
+  // AI 分析洞察
+  ai_insights                String?
+  generated_at               DateTime? @default(now()) @db.Timestamptz(6)
+  generation_type            String?   @default("manual") @db.VarChar
+  created_at                 DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at                 DateTime? @default(now()) @db.Timestamptz(6)
+
+  // 性能优化索引
+  @@unique([year, month])                   // 每月只有一份报告
+  @@index([year])                           // 按年查询
+  @@index([year, month])                    // 按年月查询
+  @@index([generated_at])                   // 按生成时间查询
+}

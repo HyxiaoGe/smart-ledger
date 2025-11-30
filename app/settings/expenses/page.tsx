@@ -13,7 +13,8 @@ import {
   CreditCard,
   Tag,
   ChevronLeft,
-  BarChart3
+  BarChart3,
+  FileText
 } from 'lucide-react';
 
 export default function ExpensesSettingsPage() {
@@ -56,12 +57,21 @@ export default function ExpensesSettingsPage() {
     },
     {
       title: '每周消费报告',
-      description: '查看每周自动生成的消费分析报告，洞察消费趋势和习惯',
+      description: '查看每周消费分析报告，专注于日常可控消费的趋势分析',
       icon: BarChart3,
       href: '/settings/expenses/weekly-reports',
       status: 'available',
-      badge: 'NEW',
+      badge: '可控消费',
       badgeColor: 'purple'
+    },
+    {
+      title: '月度财务报告',
+      description: '查看月度完整财务报告，包含固定支出和日常消费的全面分析',
+      icon: FileText,
+      href: '/settings/expenses/monthly-reports',
+      status: 'available',
+      badge: 'NEW',
+      badgeColor: 'green'
     }
   ];
 
