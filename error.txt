@@ -1,330 +1,414 @@
-PS E:\TypeScriptProject\smart-ledger> npx tsc --noEmit       
-__tests__/__factories__/transaction.ts:26:5 - error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
-  Type 'null' is not assignable to type 'string | undefined'.
+PS E:\TypeScriptProject\smart-ledger> npx tsc --noEmit
+PS E:\TypeScriptProject\smart-ledger> npx tsc --noEmit
+PS E:\TypeScriptProject\smart-ledger> npx tsc --noEmit
+PS E:\TypeScriptProject\smart-ledger> npm run build   
 
-26     payment_method: faker.helpers.arrayElement([...PAYMENT_METHODS, null]),
-       ~~~~~~~~~~~~~~
+> smart-ledger@0.1.0 build
+> next build
 
-  types/domain/transaction.ts:16:3
-    16   payment_method?: string; // 支付方式 ID，关联到 payment_methods 表
-         ~~~~~~~~~~~~~~
-    The expected type comes from property 'payment_method' which is declared here on type 'Transaction'
+  ▲ Next.js 14.2.33
+  - Environments: .env.local, .env 
+  - Experiments (use with caution):
+    · typedRoutes
 
-__tests__/__factories__/transaction.ts:27:5 - error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
-  Type 'null' is not assignable to type 'string | undefined'.
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Skipping linting
+ ✓ Checking validity of types    
+ ✓ Collecting page data    
+   Generating static pages (0/58)  [    ] ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/404". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:16417)
+    at c (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:27400)
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\7250.js:1:8117)
+    at nj (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
 
-27     merchant: faker.helpers.maybe(() => faker.company.name(), { probability: 0.5 }) ?? null,
-       ~~~~~~~~
+Error occurred prerendering page "/_not-found". Read more: https://nextjs.org/docs/messages/prerender-error
 
-  types/domain/transaction.ts:18:3
-    18   merchant?: string; // 商家/品牌名称（如：瑞幸咖啡、地铁、美团）
-         ~~~~~~~~
-    The expected type comes from property 'merchant' which is declared here on type 'Transaction'
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/settings/data". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:16417)
+    at c (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:27400)
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\7250.js:1:8117)
+    at nj (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
 
-__tests__/__factories__/transaction.ts:28:5 - error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+Error occurred prerendering page "/settings/data". Read more: https://nextjs.org/docs/messages/prerender-error
 
-28     subcategory: null,
-       ~~~~~~~~~~~
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/settings/expenses/categories". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:16417)
+    at c (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:27400)
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\7250.js:1:8117)
+    at nj (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
 
-  types/domain/transaction.ts:19:3
-    19   subcategory?: string; // 子分类（如：coffee、subway、takeout）
-         ~~~~~~~~~~~
-    The expected type comes from property 'subcategory' which is declared here on type 'Transaction'
+Error occurred prerendering page "/settings/expenses/categories". Read more: https://nextjs.org/docs/messages/prerender-error
 
-__tests__/__factories__/transaction.ts:29:5 - error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/settings/expenses". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:16417)
+    at c (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:27400)
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\7250.js:1:8117)
+    at nj (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
 
-29     product: null,
-       ~~~~~~~
+Error occurred prerendering page "/settings/expenses". Read more: https://nextjs.org/docs/messages/prerender-error
 
-  types/domain/transaction.ts:20:3
-    20   product?: string; // 具体产品/服务（如：生椰拿铁、地铁票、午餐外卖）
-         ~~~~~~~
-    The expected type comes from property 'product' which is declared here on type 'Transaction'
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/settings/expenses/payment-methods". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:16417)
+    at c (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:27400)
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\7250.js:1:8117)
+    at nj (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
 
-__tests__/unit/errors/errorHandler.test.ts:62:11 - error TS2353: Object literal may only specify known properties, and 'received' does not exist in type '$ZodIssueInvalidType<unknown>'.
+Error occurred prerendering page "/settings/expenses/payment-methods". Read more: https://nextjs.org/docs/messages/prerender-error
 
-62           received: 'number',
-             ~~~~~~~~
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/settings/expenses/recurring/add". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:16417)
+    at c (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:27400)
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\7250.js:1:8117)
+    at nj (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
 
-__tests__/unit/errors/errorHandler.test.ts:83:11 - error TS2353: Object literal may only specify known properties, and 'received' does not exist in type '$ZodIssueInvalidType<unknown>'.
+Error occurred prerendering page "/settings/expenses/recurring/add". Read more: https://nextjs.org/docs/messages/prerender-error
 
-83           received: 'number',
-             ~~~~~~~~
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/quick". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:16417)
+    at c (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:27400)
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\7250.js:1:8117)
+    at nj (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
 
-__tests__/unit/errors/errorHandler.test.ts:99:11 - error TS2353: Object literal may only specify known properties, and 'received' does not exist in type '$ZodIssueInvalidType<unknown>'.
+Error occurred prerendering page "/quick". Read more: https://nextjs.org/docs/messages/prerender-error
 
-99           received: 'number',
-             ~~~~~~~~
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/settings/expenses/budget". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:16417)
+    at c (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:27400)
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\7250.js:1:8117)
+    at nj (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
 
-__tests__/unit/errors/errorHandler.test.ts:115:11 - error TS2353: Object literal may only specify known properties, and 'received' does not exist in type '$ZodIssueInvalidType<unknown>'.
+Error occurred prerendering page "/settings/expenses/budget". Read more: https://nextjs.org/docs/messages/prerender-error
 
-115           received: 'number',
-              ~~~~~~~~
+   Generating static pages (8/58)  [=   ] ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/settings/ai-analysis". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:16417)
+    at c (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:27400)
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\7250.js:1:8117)
+    at nj (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
 
-__tests__/unit/errors/errorHandler.test.ts:122:11 - error TS2353: Object literal may only specify known properties, and 'type' does not exist in type '$ZodIssueTooSmall<unknown>'.
+Error occurred prerendering page "/settings/ai-analysis". Read more: https://nextjs.org/docs/messages/prerender-error
 
-122           type: 'string',
-              ~~~~
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/settings/expenses/recurring". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:16417)
+    at c (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:27400)
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\7250.js:1:8117)
+    at nj (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
 
-__tests__/unit/errors/errorHandler.test.ts:182:11 - error TS2353: Object literal may only specify known properties, and 'received' does not exist in type '$ZodIssueInvalidType<unknown>'.
+Error occurred prerendering page "/settings/expenses/recurring". Read more: https://nextjs.org/docs/messages/prerender-error
 
-182           received: 'number',
-              ~~~~~~~~
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/settings/expenses/recurring/history". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:16417)
+    at c (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:27400)
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\7250.js:1:8117)
+    at nj (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
 
-__tests__/unit/services/categoryService.test.ts:87:3 - error TS2741: Property 'getAllSubcategoriesBatch' is missing in type '{ findAll: Mock<Procedure>; findAllWithStats: Mock<Procedure>; findById: Mock<Procedure>; findByKey: Mock<Procedure>; ... 8 more ...; updateSortOrder: Mock<...>; }' but required in type 'ICategoryRepository'.
+Error occurred prerendering page "/settings/expenses/recurring/history". Read more: https://nextjs.org/docs/messages/prerender-error
 
-87   return {
-     ~~~~~~
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/settings/notifications". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:16417)
+    at c (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:27400)
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\7250.js:1:8117)
+    at nj (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
 
-  lib/domain/repositories/ICategoryRepository.ts:83:3
-    83   getAllSubcategoriesBatch(): Promise<Record<string, Subcategory[]>>;
-         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    'getAllSubcategoriesBatch' is declared here.
+Error occurred prerendering page "/settings/notifications". Read more: https://nextjs.org/docs/messages/prerender-error
 
-__tests__/unit/services/categoryService.test.ts:116:5 - error TS2353: Object literal may only specify known properties, and 'parent_id' does not exist in type 'Category'.
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/settings/advanced/functions". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:16417)
+    at c (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:27400)
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\7250.js:1:8117)
+    at nj (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
 
-116     parent_id: null,
-        ~~~~~~~~~
+Error occurred prerendering page "/settings/advanced/functions". Read more: https://nextjs.org/docs/messages/prerender-error
 
-__tests__/unit/services/categoryService.test.ts:138:11 - error TS2353: Object literal may only specify known properties, and 'transactionCount' does not exist in type 'CategoryWithStats'.
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/settings". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:16417)
+    at c (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:27400)
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\7250.js:1:8117)
+    at nj (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
 
-138           transactionCount: 100,
-              ~~~~~~~~~~~~~~~~
+Error occurred prerendering page "/settings". Read more: https://nextjs.org/docs/messages/prerender-error
 
-__tests__/unit/services/categoryService.test.ts:259:58 - error TS2345: Argument of type '{ deleted: boolean; migratedTransactions: number; }' is not assignable to parameter of type 'DeleteCategoryResult'.
-  Type '{ deleted: boolean; migratedTransactions: number; }' is missing the following properties from type 'DeleteCategoryResult': success, message, affected_transactions
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/settings/advanced/logs". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:16417)
+    at c (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:27400)
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\7250.js:1:8117)
+    at nj (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
 
-259       vi.mocked(mockRepository.delete).mockResolvedValue(deleteResult);
-                                                             ~~~~~~~~~~~~
+Error occurred prerendering page "/settings/advanced/logs". Read more: https://nextjs.org/docs/messages/prerender-error
 
-__tests__/unit/services/categoryService.test.ts:272:58 - error TS2345: Argument of type '{ deleted: boolean; migratedTransactions: number; }' is not assignable to parameter of type 'DeleteCategoryResult'.
-  Type '{ deleted: boolean; migratedTransactions: number; }' is missing the following properties from type 'DeleteCategoryResult': success, message, affected_transactions
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/settings/advanced". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:16417)
+    at c (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:27400)
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\7250.js:1:8117)
+    at nj (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
 
-272       vi.mocked(mockRepository.delete).mockResolvedValue(deleteResult);
-                                                             ~~~~~~~~~~~~
+Error occurred prerendering page "/settings/advanced". Read more: https://nextjs.org/docs/messages/prerender-error
 
-__tests__/unit/services/categoryService.test.ts:292:66 - error TS2345: Argument of type '{ category: Category; transactionCount: number; totalAmount: number; monthlyBreakdown: { month: string; count: number; amount: number; }[]; }' is not assignable to parameter of 
-type 'CategoryUsageDetail'.
-  Type '{ category: Category; transactionCount: number; totalAmount: number; monthlyBreakdown: { month: string; count: number; amount: number; }[]; }' is missing the following properties from type 'CategoryUsageDetail': total_transactions, total_amount, avg_amount, 
-first_used, and 3 more.
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/settings/profile". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:16417)
+    at c (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:27400)
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\7250.js:1:8117)
+    at nj (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
 
-292       vi.mocked(mockRepository.getUsageDetail).mockResolvedValue(usageDetail);
-                                                                     ~~~~~~~~~~~
+Error occurred prerendering page "/settings/profile". Read more: https://nextjs.org/docs/messages/prerender-error
 
-__tests__/unit/services/categoryService.test.ts:304:11 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'Subcategory'.
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/settings/advanced/cron". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:16417)
+    at c (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:27400)
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\7250.js:1:8117)
+    at nj (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
 
-304         { id: 'sub-1', name: '午餐', count: 30 },
-              ~~
+Error occurred prerendering page "/settings/advanced/cron". Read more: https://nextjs.org/docs/messages/prerender-error
 
-__tests__/unit/services/categoryService.test.ts:305:11 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'Subcategory'.
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/settings/ai-feedback". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:16417)
+    at c (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:27400)
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\7250.js:1:8117)
+    at nj (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
 
-305         { id: 'sub-2', name: '晚餐', count: 25 },
-              ~~
+Error occurred prerendering page "/settings/ai-feedback". Read more: https://nextjs.org/docs/messages/prerender-error
 
-__tests__/unit/services/categoryService.test.ts:322:42 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'Subcategory'.
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/settings/expenses/weekly-reports". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:16417)
+    at c (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:27400)
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\7250.js:1:8117)
+    at nj (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
 
-322       const foodSubs: Subcategory[] = [{ id: 'sub-1', name: '午餐', count: 30 }];
-                                             ~~
+Error occurred prerendering page "/settings/expenses/weekly-reports". Read more: https://nextjs.org/docs/messages/prerender-error
 
-__tests__/unit/services/categoryService.test.ts:323:47 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'Subcategory'.
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/add". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:16417)
+    at c (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:27400)
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\7250.js:1:8117)
+    at nj (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
 
-323       const transportSubs: Subcategory[] = [{ id: 'sub-2', name: '地铁', count: 20 }];
-                                                  ~~
+Error occurred prerendering page "/add". Read more: https://nextjs.org/docs/messages/prerender-error
 
-__tests__/unit/services/categoryService.test.ts:340:24 - error TS2353: Object literal may only specify known properties, and 'count' does not exist in type 'MerchantSuggestion'.
+   Generating static pages (31/58)  [==  ]获取预算执行状态失败: B [Error]: Dynamic server usage: Route /api/budgets/status couldn't be rendered statically because it used `nextUrl.searchParams`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at V (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:21778)
+    at Object.get (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:29137)
+    at c (E:\TypeScriptProject\smart-ledger\.next\server\app\api\budgets\status\route.js:1:618)
+    at E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38417
+    at E:\TypeScriptProject\smart-ledger\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:7062)
+    at ContextAPI.with (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:518)
+    at NoopTracer.startActiveSpan (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:18093)
+    at ProxyTracer.startActiveSpan (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:18854)
+    at E:\TypeScriptProject\smart-ledger\node_modules\next\dist\server\lib\trace\tracer.js:122:103 {
+  description: "Route /api/budgets/status couldn't be rendered statically because it used `nextUrl.searchParams`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/records". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:16417)
+    at c (E:\TypeScriptProject\smart-ledger\.next\server\chunks\6680.js:1:27400)
+    at o (E:\TypeScriptProject\smart-ledger\.next\server\chunks\7250.js:1:8117)
+    at nj (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
 
-340         { name: '肯德基', count: 15, avgAmount: 35 },
-                           ~~~~~
+Error occurred prerendering page "/records". Read more: https://nextjs.org/docs/messages/prerender-error
 
-__tests__/unit/services/categoryService.test.ts:341:24 - error TS2353: Object literal may only specify known properties, and 'count' does not exist in type 'MerchantSuggestion'.
+获取总预算汇总失败: B [Error]: Dynamic server usage: Route /api/budgets/summary couldn't be rendered statically because it used `nextUrl.searchParams`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at V (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:21778)
+    at Object.get (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:29137)
+    at c (E:\TypeScriptProject\smart-ledger\.next\server\app\api\budgets\summary\route.js:1:619)
+    at E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38417
+    at E:\TypeScriptProject\smart-ledger\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:7062)
+    at ContextAPI.with (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:518)
+    at NoopTracer.startActiveSpan (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:18093)
+    at ProxyTracer.startActiveSpan (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:18854)
+    at E:\TypeScriptProject\smart-ledger\node_modules\next\dist\server\lib\trace\tracer.js:122:103 {
+  description: "Route /api/budgets/summary couldn't be rendered statically because it used `nextUrl.searchParams`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+prisma:error 
+Invalid `prisma.transactions.count()` invocation:
 
-341         { name: '麦当劳', count: 10, avgAmount: 30 },
-                           ~~~~~
-
-__tests__/unit/services/smartSuggestions.test.ts:93:27 - error TS2345: Argument of type '{ suggestions: { id: string; content: string; confidence: number; }[]; fallback_notes: never[]; context: {}; }' is not assignable to parameter of type 'SmartSuggestionResponse'.  Types of property 'suggestions' are incompatible.
-    Type '{ id: string; content: string; confidence: number; }[]' is not assignable to type 'SmartSuggestion[]'.
-      Type '{ id: string; content: string; confidence: number; }' is missing the following properties from type 'SmartSuggestion': type, reason, source
-
-93         cache.set(params, data);
-                             ~~~~
-
-__tests__/unit/services/smartSuggestions.test.ts:177:7 - error TS2322: Type '"smart"' is not assignable to type '"frequency" | "context" | "pattern" | "similarity"'.
-
-177       type: 'smart',
-          ~~~~
-
-  types/domain/transaction.ts:45:3
-    45   type: 'frequency' | 'context' | 'pattern' | 'similarity';
-         ~~~~
-    The expected type comes from property 'type' which is declared here on type 'SmartSuggestion'
-
-__tests__/unit/services/smartSuggestions.test.ts:189:7 - error TS2561: Object literal may only specify known properties, but 'last_used_at' does not exist in type 'CommonNote'. Did you mean to write 'last_used'?
-
-189       last_used_at: new Date().toISOString(),
+{
+  select: {
+    _count: {
+      select: {
+        _all: true
+      }
+    }
+  },
+  where: {
+    date: "2025-11-30",
           ~~~~~~~~~~~~
+    is_auto_generated: true,
+    deleted_at: null
+  }
+}
 
-__tests__/unit/services/transaction/TransactionAnalyticsService.test.ts:43:5 - error TS2353: Object literal may only specify known properties, and 'updated_at' does not exist in type 'Transaction'.
+Invalid value for argument `date`: premature end of input. Expected ISO-8601 DateTime.
+获取生成历史失败: B [Error]: Dynamic server usage: Route /api/recurring/history couldn't be rendered statically because it used `nextUrl.searchParams`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at V (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:21778)
+    at Object.get (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:29137)
+    at d (E:\TypeScriptProject\smart-ledger\.next\server\app\api\recurring\history\route.js:1:618)
+    at E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\next-server\app-route.runtime.prod.js:6:38417
+    at E:\TypeScriptProject\smart-ledger\node_modules\next\dist\server\lib\trace\tracer.js:140:36
+    at NoopContextManager.with (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:7062)
+    at ContextAPI.with (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:518)
+    at NoopTracer.startActiveSpan (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:18093)
+    at ProxyTracer.startActiveSpan (E:\TypeScriptProject\smart-ledger\node_modules\next\dist\compiled\@opentelemetry\api\index.js:1:18854)
+    at E:\TypeScriptProject\smart-ledger\node_modules\next\dist\server\lib\trace\tracer.js:122:103 {
+  description: "Route /api/recurring/history couldn't be rendered statically because it used `nextUrl.searchParams`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+ ✓ Generating static pages (58/58)
 
-43     updated_at: new Date().toISOString(),
-       ~~~~~~~~~~
-
-__tests__/unit/services/transaction/TransactionQueryService.test.ts:43:5 - error TS2353: Object literal may only specify known properties, and 'updated_at' does not exist in type 'Transaction'.
-
-43     updated_at: new Date().toISOString(),
-       ~~~~~~~~~~
-
-__tests__/unit/services/transaction/TransactionSummaryService.test.ts:43:5 - error TS2353: Object literal may only specify known properties, and 'updated_at' does not exist in type 'Transaction'.
-
-43     updated_at: new Date().toISOString(),
-       ~~~~~~~~~~
-
-__tests__/unit/services/transaction/TransactionSummaryService.test.ts:255:60 - error TS2345: Argument of type '{ totalAmount: number; count: number; averageAmount: number; maxAmount: number; minAmount: number; }' is not assignable to parameter of type 'TransactionStats'.
-  Property 'avgAmount' is missing in type '{ totalAmount: number; count: number; averageAmount: number; maxAmount: number; minAmount: number; }' but required in type 'TransactionStats'.
-
-255       vi.mocked(mockRepository.getStats).mockResolvedValue(mockStats);
-                                                               ~~~~~~~~~
-
-  types/dto/transaction.dto.ts:75:3
-    75   avgAmount: number;
-         ~~~~~~~~~
-    'avgAmount' is declared here.
-
-__tests__/unit/services/transaction/TransactionSummaryService.test.ts:266:9 - error TS2561: Object literal may only specify known properties, but 'averageAmount' does not exist in type 'TransactionStats'. Did you mean to write 'avgAmount'?
-
-266         averageAmount: 0,
-            ~~~~~~~~~~~~~
-
-__tests__/unit/services/transaction/TransactionSummaryService.test.ts:284:9 - error TS2561: Object literal may only specify known properties, but 'averageAmount' does not exist in type 'TransactionStats'. Did you mean to write 'avgAmount'?
-
-284         averageAmount: 0,
-            ~~~~~~~~~~~~~
-
-__tests__/unit/services/transaction/TransactionSummaryService.test.ts:302:9 - error TS2561: Object literal may only specify known properties, but 'averageAmount' does not exist in type 'TransactionStats'. Did you mean to write 'avgAmount'?
-
-302         averageAmount: 0,
-            ~~~~~~~~~~~~~
-
-lib/infrastructure/repositories/prisma/PrismaTransactionRepository.ts:230:7 - error TS2769: No overload matches this call.
-  Overload 1 of 3, '(callbackfn: (previousValue: PickEnumerable<TransactionsGroupByOutputType, "category"[]> & { _count: number; _sum: { amount: Decimal | null; }; }, currentValue: PickEnumerable<...> & { ...; }, currentIndex: number, array: (PickEnumerable<...> & { ...; })[]) => PickEnumerable<...> & { ...; }, initialValue: PickEnumerable<...> & { ...; }): PickEnumerable<...> & { ...; }', gave the following error.
-    Argument of type '(sum: number, item: GroupResult) => number' is not assignable to parameter of type '(previousValue: PickEnumerable<TransactionsGroupByOutputType, "category"[]> & { _count: number; _sum: { amount: Decimal | null; }; }, currentValue: PickEnumerable<...> & { ...; }, currentIndex: number, array: (PickEnumerable<...> & { ...; })[]) => PickEnumerable<...> & { ...; }'.
-      Types of parameters 'sum' and 'previousValue' are incompatible.
-        Type 'PickEnumerable<TransactionsGroupByOutputType, "category"[]> & { _count: number; _sum: { amount: Decimal | null; }; }' is not assignable to type 'number'.
-  Overload 2 of 3, '(callbackfn: (previousValue: number, currentValue: PickEnumerable<TransactionsGroupByOutputType, "category"[]> & { _count: number; _sum: { amount: Decimal | null; }; }, currentIndex: number, array: (PickEnumerable<...> & { ...; })[]) => number, initialValue: number): number', gave the following error.
-    Argument of type '(sum: number, item: GroupResult) => number' is not assignable to parameter of type '(previousValue: number, currentValue: PickEnumerable<TransactionsGroupByOutputType, "category"[]> & { _count: number; _sum: { amount: Decimal | null; }; }, currentIndex: number, array: (PickEnumerable<...> & { ...; })[]) => number'.
-      Types of parameters 'item' and 'currentValue' are incompatible.
-        Type 'PickEnumerable<TransactionsGroupByOutputType, "category"[]> & { _count: number; _sum: { amount: Decimal | null; }; }' is not assignable to type 'GroupResult'.
-          The types of '_sum.amount' are incompatible between these types.
-            Type 'Decimal | null' is not assignable to type 'number | null'.
-              Type 'Decimal' is not assignable to type 'number'.
-
-230       (sum: number, item: GroupResult) => sum + (Number(item._sum.amount) || 0),
-          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-lib/infrastructure/repositories/prisma/PrismaTransactionRepository.ts:235:12 - error TS2345: Argument of type '(item: GroupResult) => { category: string; totalAmount: number; count: number; percentage: number; }' is not assignable to parameter of type '(value: PickEnumerable<TransactionsGroupByOutputType, "category"[]> & { _count: number; _sum: { amount: Decimal | null; }; }, index: number, array: (PickEnumerable<...> & { ...; })[]) => { ...; }'.
-  Types of parameters 'item' and 'value' are incompatible.
-    Type 'PickEnumerable<TransactionsGroupByOutputType, "category"[]> & { _count: number; _sum: { amount: Decimal | null; }; }' is not assignable to type 'GroupResult'.
-      The types of '_sum.amount' are incompatible between these types.
-        Type 'Decimal | null' is not assignable to type 'number | null'.
-          Type 'Decimal' is not assignable to type 'number'.
-
-235       .map((item: GroupResult) => ({
-               ~~~~~~~~~~~~~~~~~~~~~~~~~
-236         category: item.category,
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-...
-241           : 0,
-    ~~~~~~~~~~~~~~
-242       }))
-    ~~~~~~~~
-
-lib/infrastructure/repositories/prisma/PrismaTransactionRepository.ts:239:21 - error TS2365: Operator '>' cannot be applied to types 'PickEnumerable<TransactionsGroupByOutputType, "category"[]> & { _count: number; _sum: { amount: Decimal | null; }; }' and 'number'. 
-
-239         percentage: totalAmount > 0
-                        ~~~~~~~~~~~~~~~
-
-lib/infrastructure/repositories/prisma/PrismaTransactionRepository.ts:240:48 - error TS2363: The right-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
-
-240           ? ((Number(item._sum.amount) || 0) / totalAmount) * 100
-                                                   ~~~~~~~~~~~
-
-lib/services/recurringService.server.ts:250:10 - error TS2345: Argument of type '(log: LogRow) => string | null' is not assignable to parameter of type '(value: { created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }, index: number, array: { ...; }[]) => string | null'.
-  Types of parameters 'log' and 'value' are incompatible.
-    Type '{ created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }' is missing the following properties from type 'LogRow': error_message, retry_count
-
-250     .map((log: LogRow) => log.recurring_expense_id)
-             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-lib/services/recurringService.server.ts:253:10 - error TS2345: Argument of type '(log: LogRow) => string | null' is not assignable to parameter of type '(value: { created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }, index: number, array: { ...; }[]) => string | null'.
-  Types of parameters 'log' and 'value' are incompatible.
-    Type '{ created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }' is missing the following properties from type 'LogRow': error_message, retry_count
-
-253     .map((log: LogRow) => log.generated_transaction_id)
-             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-lib/services/recurringService.server.ts:279:19 - error TS2345: Argument of type '(log: LogRow) => { id: string; recurring_expense_id: string | null; generation_date: string; generated_transaction_id: string | null; status: string; reason: string | null; created_at: 
-string; recurring_expense: { ...; } | null; transaction: { ...; } | null; }' is not assignable to parameter of type '(value: { created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }, index: number, array: { ...; }[]) => { ...; }'.
-  Types of parameters 'log' and 'value' are incompatible.
-    Type '{ created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }' is missing the following properties from type 'LogRow': error_message, retry_count
-
-279   return logs.map((log: LogRow) => {
-                      ~~~~~~~~~~~~~~~~~~
-
-lib/services/recurringService.server.ts:328:36 - error TS2769: No overload matches this call.
-  Overload 1 of 2, '(predicate: (value: { created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }, index: number, array: { ...; }[]) => 
-value is { ...; }, thisArg?: any): { ...; }[]', gave the following error.
-    Argument of type '(d: { status: string; }) => boolean' is not assignable to parameter of type '(value: { created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }, index: number, array: { ...; }[]) => value is { ...; }'.
-      Types of parameters 'd' and 'value' are incompatible.
-        Type '{ created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }' is not assignable to type '{ status: string; }'.
-          Types of property 'status' are incompatible.
-            Type 'string | null' is not assignable to type 'string'.
-              Type 'null' is not assignable to type 'string'.
-  Overload 2 of 2, '(predicate: (value: { created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }, index: number, array: { ...; }[]) => 
-unknown, thisArg?: any): { ...; }[]', gave the following error.
-    Argument of type '(d: { status: string; }) => boolean' is not assignable to parameter of type '(value: { created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }, index: number, array: { ...; }[]) => unknown'.
-      Types of parameters 'd' and 'value' are incompatible.
-        Type '{ created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }' is not assignable to type '{ status: string; }'.
-          Types of property 'status' are incompatible.
-            Type 'string | null' is not assignable to type 'string'.
-              Type 'null' is not assignable to type 'string'.
-
-328   const successCount = logs.filter((d: { status: string }) => d.status === 'success').length;
-                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-lib/services/recurringService.server.ts:329:35 - error TS2769: No overload matches this call.
-  Overload 1 of 2, '(predicate: (value: { created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }, index: number, array: { ...; }[]) => 
-value is { ...; }, thisArg?: any): { ...; }[]', gave the following error.
-    Argument of type '(d: { status: string; }) => boolean' is not assignable to parameter of type '(value: { created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }, index: number, array: { ...; }[]) => value is { ...; }'.
-      Types of parameters 'd' and 'value' are incompatible.
-        Type '{ created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }' is not assignable to type '{ status: string; }'.
-          Types of property 'status' are incompatible.
-            Type 'string | null' is not assignable to type 'string'.
-              Type 'null' is not assignable to type 'string'.
-  Overload 2 of 2, '(predicate: (value: { created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }, index: number, array: { ...; }[]) => 
-unknown, thisArg?: any): { ...; }[]', gave the following error.
-    Argument of type '(d: { status: string; }) => boolean' is not assignable to parameter of type '(value: { created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }, index: number, array: { ...; }[]) => unknown'.
-      Types of parameters 'd' and 'value' are incompatible.
-        Type '{ created_at: Date | null; id: string; recurring_expense_id: string | null; reason: string | null; generation_date: Date; generated_transaction_id: string | null; status: string | null; }' is not assignable to type '{ status: string; }'.
-          Types of property 'status' are incompatible.
-            Type 'string | null' is not assignable to type 'string'.
-              Type 'null' is not assignable to type 'string'.
-
-329   const failedCount = logs.filter((d: { status: string }) => d.status === 'failed').length;
-                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
-Found 41 errors in 9 files.
-
-Errors  Files
-     4  __tests__/__factories__/transaction.ts:26
-     6  __tests__/unit/errors/errorHandler.test.ts:62
-    12  __tests__/unit/services/categoryService.test.ts:87
-     3  __tests__/unit/services/smartSuggestions.test.ts:93
-     1  __tests__/unit/services/transaction/TransactionAnalyticsService.test.ts:43
-     1  __tests__/unit/services/transaction/TransactionQueryService.test.ts:43
-     5  __tests__/unit/services/transaction/TransactionSummaryService.test.ts:43
-     4  lib/infrastructure/repositories/prisma/PrismaTransactionRepository.ts:230
-     5  lib/services/recurringService.server.ts:250
-PS E:\TypeScriptProject\smart-ledger> 
+> Export encountered errors on following paths:
+        /_not-found/page: /_not-found
+        /add/page: /add
+        /quick/page: /quick
+        /records/page: /records
+        /settings/advanced/cron/page: /settings/advanced/cron
+        /settings/advanced/functions/page: /settings/advanced/functions
+        /settings/advanced/logs/page: /settings/advanced/logs
+        /settings/advanced/page: /settings/advanced
+        /settings/ai-analysis/page: /settings/ai-analysis
+        /settings/ai-feedback/page: /settings/ai-feedback
+        /settings/data/page: /settings/data
+        /settings/expenses/budget/page: /settings/expenses/budget
+        /settings/expenses/categories/page: /settings/expenses/categories
+        /settings/expenses/page: /settings/expenses
+        /settings/expenses/payment-methods/page: /settings/expenses/payment-methods
+        /settings/expenses/recurring/add/page: /settings/expenses/recurring/add
+        /settings/expenses/recurring/history/page: /settings/expenses/recurring/history
+        /settings/expenses/recurring/page: /settings/expenses/recurring
+        /settings/expenses/weekly-reports/page: /settings/expenses/weekly-reports
+        /settings/notifications/page: /settings/notifications
+        /settings/page: /settings
+        /settings/profile/page: /settings/profile
+PS E:\TypeScriptProject\smart-ledger>
