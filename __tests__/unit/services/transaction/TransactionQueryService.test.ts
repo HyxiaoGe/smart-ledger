@@ -167,7 +167,7 @@ describe('TransactionQueryService', () => {
       const result = await service.listByRange(undefined, 'today');
 
       expect(result.rows).toEqual(mockTransactions);
-      expect(result.monthLabel).toBe('今日');
+      expect(result.monthLabel).toBe('今天');
     });
 
     it('should return transactions for yesterday range', async () => {
@@ -177,7 +177,7 @@ describe('TransactionQueryService', () => {
       const result = await service.listByRange(undefined, 'yesterday');
 
       expect(result.rows).toEqual(mockTransactions);
-      expect(result.monthLabel).toBe('昨日');
+      expect(result.monthLabel).toBe('昨天');
     });
 
     it('should return transactions for month range', async () => {
@@ -199,7 +199,8 @@ describe('TransactionQueryService', () => {
       const result = await service.listByRange(undefined, 'custom', '2024-06-01', '2024-06-15');
 
       expect(result.rows).toEqual(mockTransactions);
-      expect(result.monthLabel).toContain('2024-06-01');
+      // 自定义范围格式为 'MM-DD ~ MM-DD'
+      expect(result.monthLabel).toBe('06-01 ~ 06-15');
     });
 
     it('should default to current month when no arguments', async () => {

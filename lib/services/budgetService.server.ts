@@ -323,6 +323,7 @@ export async function getMonthlyActualExpense(
 /**
  * 获取总预算汇总
  * 优化：复用 getMonthlyBudgetStatus 的结果，避免重复查询
+ * 修复：即使没有设置总预算，也应返回实际支出数据
  */
 export async function getTotalBudgetSummary(
   year: number,
@@ -337,7 +338,13 @@ export async function getTotalBudgetSummary(
   const categoryStatuses = budgetStatuses.filter(b => b.category_key !== null);
 
   const totalBudget = totalBudgetStatus?.budget_amount || 0;
-  const totalSpent = totalBudgetStatus?.spent_amount || 0;
+
+  // 修复：如果没有总预算记录，直接查询实际支出
+  let totalSpent = totalBudgetStatus?.spent_amount || 0;
+  if (!totalBudgetStatus) {
+    totalSpent = await getMonthlyActualExpense(year, month, currency);
+  }
+
   const totalRemaining = totalBudget - totalSpent;
   const usagePercentage = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
 
