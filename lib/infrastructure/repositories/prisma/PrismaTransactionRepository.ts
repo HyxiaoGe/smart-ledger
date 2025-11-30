@@ -225,14 +225,14 @@ export class PrismaTransactionRepository implements ITransactionRepository {
     });
 
     // 计算总金额用于百分比
-    type GroupResult = { category: string; _sum: { amount: number | null }; _count: number };
     const totalAmount = result.reduce(
-      (sum: number, item: GroupResult) => sum + (Number(item._sum.amount) || 0),
+      (sum: number, item: { _sum: { amount: unknown }; _count: number }) =>
+        sum + (Number(item._sum.amount) || 0),
       0
     );
 
     return result
-      .map((item: GroupResult) => ({
+      .map((item: { category: string; _sum: { amount: unknown }; _count: number }) => ({
         category: item.category,
         totalAmount: Number(item._sum.amount) || 0,
         count: item._count,
@@ -240,7 +240,7 @@ export class PrismaTransactionRepository implements ITransactionRepository {
           ? ((Number(item._sum.amount) || 0) / totalAmount) * 100
           : 0,
       }))
-      .sort((a: CategoryStats, b: CategoryStats) => b.totalAmount - a.totalAmount);
+      .sort((a: { totalAmount: number }, b: { totalAmount: number }) => b.totalAmount - a.totalAmount);
   }
 
   /**

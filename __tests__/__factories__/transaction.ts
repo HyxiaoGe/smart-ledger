@@ -23,10 +23,10 @@ export function createMockTransaction(overrides?: Partial<Transaction>): Transac
     date: date.toISOString().slice(0, 10),
     created_at: date.toISOString(),
     currency: 'CNY' as Currency,
-    payment_method: faker.helpers.arrayElement([...PAYMENT_METHODS, null]),
-    merchant: faker.helpers.maybe(() => faker.company.name(), { probability: 0.5 }) ?? null,
-    subcategory: null,
-    product: null,
+    payment_method: faker.helpers.arrayElement([...PAYMENT_METHODS, undefined]),
+    merchant: faker.helpers.maybe(() => faker.company.name(), { probability: 0.5 }),
+    subcategory: undefined,
+    product: undefined,
     ...overrides,
   };
 }

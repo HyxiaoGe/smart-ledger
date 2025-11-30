@@ -39,6 +39,37 @@ export type GenerationStats = {
   date: string;
 };
 
+// Internal types for Prisma query results
+type LogRow = {
+  id: string;
+  recurring_expense_id: string | null;
+  generation_date: Date;
+  generated_transaction_id: string | null;
+  status: string | null;
+  reason: string | null;
+  created_at: Date | null;
+};
+
+type ExpenseRow = {
+  id: string;
+  name: string;
+  amount: unknown;
+  category: string;
+  frequency: string;
+  next_generate: Date | null;
+  last_generated: Date | null;
+  start_date: Date;
+  end_date: Date | null;
+  is_active: boolean;
+};
+
+type TransactionRow = {
+  id: string;
+  amount: unknown;
+  note: string | null;
+  date: Date;
+};
+
 /**
  * 手动触发固定账单生成
  * 检查所有符合条件的固定支出，生成对应的交易记录
@@ -245,38 +276,39 @@ export async function getGenerationHistory(limit = 20): Promise<GenerationHistor
   }
 
   // 收集所有需要查询的 ID
-  type LogRow = { id: string; recurring_expense_id: string | null; generated_transaction_id: string | null; generation_date: Date; status: string; reason: string | null; error_message: string | null; retry_count: number; created_at: Date };
-  const expenseIds = logs
+  const typedLogs = logs as LogRow[];
+  const expenseIds = typedLogs
     .map((log: LogRow) => log.recurring_expense_id)
-    .filter((id: string | null): id is string => id !== null);
-  const transactionIds = logs
+    .filter((id): id is string => id !== null);
+  const transactionIds = typedLogs
     .map((log: LogRow) => log.generated_transaction_id)
-    .filter((id: string | null): id is string => id !== null);
+    .filter((id): id is string => id !== null);
 
   // 批量查询关联数据（2 次查询代替 N*2 次）
+  type ExpenseSelect = { id: string; name: string; amount: unknown; category: string };
+  type TransactionSelect = { id: string; amount: unknown; note: string | null; date: Date };
+
   const [expenses, transactions] = await Promise.all([
     expenseIds.length > 0
       ? prisma.recurring_expenses.findMany({
           where: { id: { in: expenseIds } },
           select: { id: true, name: true, amount: true, category: true },
         })
-      : Promise.resolve([]),
+      : Promise.resolve([] as ExpenseSelect[]),
     transactionIds.length > 0
       ? prisma.transactions.findMany({
           where: { id: { in: transactionIds } },
           select: { id: true, amount: true, note: true, date: true },
         })
-      : Promise.resolve([]),
+      : Promise.resolve([] as TransactionSelect[]),
   ]);
 
-  // 构建查找映射（显式类型以帮助推断）
-  type ExpenseInfo = { id: string; name: string; amount: unknown; category: string };
-  type TransactionInfo = { id: string; amount: unknown; note: string | null; date: Date };
-  const expenseMap = new Map<string, ExpenseInfo>(expenses.map((e: ExpenseInfo) => [e.id, e]));
-  const transactionMap = new Map<string, TransactionInfo>(transactions.map((t: TransactionInfo) => [t.id, t]));
+  // 构建查找映射
+  const expenseMap = new Map((expenses as ExpenseSelect[]).map((e: ExpenseSelect) => [e.id, e]));
+  const transactionMap = new Map((transactions as TransactionSelect[]).map((t: TransactionSelect) => [t.id, t]));
 
   // 组装结果
-  return logs.map((log: LogRow) => {
+  return typedLogs.map((log: LogRow) => {
     const expense = log.recurring_expense_id ? expenseMap.get(log.recurring_expense_id) : null;
     const tx = log.generated_transaction_id ? transactionMap.get(log.generated_transaction_id) : null;
 
@@ -325,8 +357,9 @@ export async function getTodayGenerationStats(): Promise<GenerationStats> {
     },
   });
 
-  const successCount = logs.filter((d: { status: string }) => d.status === 'success').length;
-  const failedCount = logs.filter((d: { status: string }) => d.status === 'failed').length;
+  const typedLogs = logs as { status: string | null }[];
+  const successCount = typedLogs.filter((d: { status: string | null }) => d.status === 'success').length;
+  const failedCount = typedLogs.filter((d: { status: string | null }) => d.status === 'failed').length;
 
   return {
     total: logs.length,
@@ -355,8 +388,7 @@ export async function getPendingRecurringExpenses(): Promise<any[]> {
     orderBy: { next_generate: 'asc' },
   });
 
-  type ExpenseRow = { id: string; name: string; amount: unknown; category: string; frequency: string; next_generate: Date | null; last_generated: Date | null };
-  return expenses.map((e: ExpenseRow) => ({
+  return (expenses as ExpenseRow[]).map((e: ExpenseRow) => ({
     id: e.id,
     name: e.name,
     amount: Number(e.amount),

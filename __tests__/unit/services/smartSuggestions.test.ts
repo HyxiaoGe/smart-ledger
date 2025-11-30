@@ -85,7 +85,7 @@ describe('smartSuggestions', () => {
       it('should handle params with partial_input', () => {
         const params = { category: 'food', partial_input: '咖' };
         const data = {
-          suggestions: [{ id: '1', content: '咖啡', confidence: 0.9 }],
+          suggestions: [{ id: '1', content: '咖啡', confidence: 0.9, type: 'frequency' as const, reason: 'test', source: 'test' }],
           fallback_notes: [],
           context: {},
         };
@@ -174,8 +174,9 @@ describe('smartSuggestions', () => {
       id,
       content,
       confidence,
-      type: 'smart',
+      type: 'frequency',
       reason: 'Test reason',
+      source: 'test',
     });
 
     const createCommonNote = (
@@ -186,9 +187,9 @@ describe('smartSuggestions', () => {
       id,
       content,
       usage_count,
-      last_used_at: new Date().toISOString(),
-      category: 'food',
+      last_used: new Date().toISOString(),
       created_at: new Date().toISOString(),
+      is_active: true,
     });
 
     it('should prioritize high confidence suggestions', () => {

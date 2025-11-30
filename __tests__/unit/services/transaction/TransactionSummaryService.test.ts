@@ -40,7 +40,6 @@ function createMockTransaction(overrides: Partial<Transaction> = {}): Transactio
     note: 'Test transaction',
     currency: 'CNY',
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
     ...overrides,
   };
 }
@@ -248,7 +247,7 @@ describe('TransactionSummaryService', () => {
       const mockStats = {
         totalAmount: 1000,
         count: 20,
-        averageAmount: 50,
+        avgAmount: 50,
         maxAmount: 200,
         minAmount: 10,
       };
@@ -263,7 +262,7 @@ describe('TransactionSummaryService', () => {
       vi.mocked(mockRepository.getStats).mockResolvedValue({
         totalAmount: 0,
         count: 0,
-        averageAmount: 0,
+        avgAmount: 0,
         maxAmount: 0,
         minAmount: 0,
       });
@@ -281,7 +280,7 @@ describe('TransactionSummaryService', () => {
       vi.mocked(mockRepository.getStats).mockResolvedValue({
         totalAmount: 0,
         count: 0,
-        averageAmount: 0,
+        avgAmount: 0,
         maxAmount: 0,
         minAmount: 0,
       });
@@ -299,7 +298,7 @@ describe('TransactionSummaryService', () => {
       vi.mocked(mockRepository.getStats).mockResolvedValue({
         totalAmount: 0,
         count: 0,
-        averageAmount: 0,
+        avgAmount: 0,
         maxAmount: 0,
         minAmount: 0,
       });
