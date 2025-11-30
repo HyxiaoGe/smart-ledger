@@ -103,13 +103,11 @@ interface ApiResponse<T> {
 export const adminApi = {
   /**
    * 获取 Cron 任务数据
+   * 注意：apiClient 已经解包了 data 字段，直接返回即可
    */
   async getCronData(): Promise<CronDataResponse> {
-    const response = await apiClient.get<ApiResponse<CronDataResponse>>('/api/admin/cron');
-    if (!response.success) {
-      throw new Error(response.error || '获取数据失败');
-    }
-    return response.data || { jobs: [], stats: [], history: [] };
+    const response = await apiClient.get<CronDataResponse>('/api/admin/cron');
+    return response || { jobs: [], stats: [], history: [] };
   },
 
   /**
@@ -117,19 +115,20 @@ export const adminApi = {
    */
   async getCronHistory(jobId: number, limit: number = 50): Promise<CronJobRun[]> {
     const query = buildQueryString({ type: 'history', job_id: jobId.toString(), limit: limit.toString() });
-    const response = await apiClient.get<ApiResponse<CronJobRun[]>>(`/api/admin/cron${query}`);
-    if (!response.success) {
-      throw new Error(response.error || '获取执行历史失败');
-    }
-    return response.data || [];
+    const response = await apiClient.get<CronJobRun[]>(`/api/admin/cron${query}`);
+    return response || [];
   },
 
   /**
    * 手动触发 Cron 任务
    */
   async triggerCronJob(jobName: string): Promise<{ success: boolean; error?: string }> {
-    const response = await apiClient.post<ApiResponse<unknown>>('/api/admin/cron/trigger', { jobName });
-    return { success: response.success, error: response.error };
+    try {
+      await apiClient.post('/api/admin/cron/trigger', { jobName });
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : '任务执行失败' };
+    }
   },
 
   /**
