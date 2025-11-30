@@ -4,6 +4,7 @@
  */
 
 import { aiApi } from '@/lib/api/services/ai';
+import type { AIFeedback, FeedbackTemplate, AIFeatureType } from '@/types/ai-feedback';
 
 // 重新导出类型
 export type {
@@ -51,6 +52,56 @@ class AIFeedbackServiceClient {
   ): Promise<unknown> {
     const result = await aiApi.getFeedbackStats({ featureType, period });
     return result.data;
+  }
+
+  /**
+   * 获取所有反馈
+   */
+  async getAllFeedbacks(limit: number = 100, offset: number = 0): Promise<AIFeedback[]> {
+    const result = await aiApi.getAllFeedbacks({ limit, offset });
+    return result.data as AIFeedback[];
+  }
+
+  /**
+   * 获取反馈模板（客户端使用默认模板）
+   */
+  getTemplate(templateId: string): FeedbackTemplate | null {
+    // 从 templateId 中提取 featureType
+    const featureType = templateId.replace(/_rating$/, '') as AIFeatureType;
+
+    // 返回默认模板
+    return {
+      id: templateId,
+      name: `${featureType} 反馈`,
+      description: `对 ${featureType} 功能的反馈`,
+      featureType,
+      feedbackType: 'rating',
+      config: {
+        title: '您对此功能的体验如何？',
+        description: '您的反馈将帮助我们改进服务',
+        questions: [
+          {
+            id: 'rating',
+            type: 'rating',
+            label: '整体评分',
+            required: true,
+            min: 1,
+            max: 5,
+          },
+          {
+            id: 'feedback',
+            type: 'text',
+            label: '其他建议',
+            placeholder: '请输入您的建议...',
+            required: false,
+          },
+        ],
+      },
+      display: {
+        position: 'modal',
+        autoShow: false,
+      },
+    };
   }
 }
 

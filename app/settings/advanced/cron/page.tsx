@@ -1,26 +1,20 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import Link from 'next/link';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { PageSkeleton } from '@/components/shared/PageSkeleton';
 import {
   parseCronExpression,
   calculateNextRun,
   getJobDescription,
-  type CronJob,
-  type CronJobRun,
-  type CronJobStats,
 } from '@/lib/services/cronService';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { adminApi } from '@/lib/api/services/admin';
 import {
   Clock,
-  PlayCircle,
   CheckCircle2,
   XCircle,
   Activity,
@@ -36,7 +30,7 @@ import {
 
 export default function CronManagementPage() {
   const queryClient = useQueryClient();
-  const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
+  const [selectedJobId] = useState<number | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 

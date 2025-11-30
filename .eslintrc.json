@@ -6,7 +6,17 @@
       {
         "allow": ["warn", "error"]
       }
-    ]
+    ],
+    "no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_"
+      }
+    ],
+    "no-case-declarations": "warn",
+    "react/no-unescaped-entities": "warn"
   },
   "overrides": [
     {

@@ -71,7 +71,7 @@ async function handleSpendingPrediction(predictionData: any, predictionMonths: n
   })}`;
 
   // 检查缓存
-  const cached = memoryCache.get<any>(cacheKey);
+  const cached = memoryCache.get(cacheKey);
   if (cached) {
     return cached;
   }

@@ -1,5 +1,6 @@
 import React from 'react';
 import NextLink from 'next/link';
+import type { Route } from 'next';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils/helpers';
 
@@ -48,7 +49,7 @@ const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(
 
     return (
       <NextLink
-        href={href}
+        href={href as Route}
         className={cn(linkVariants({ variant, size, className }))}
         ref={ref}
         {...props}

@@ -60,7 +60,7 @@ export default function CategoriesPage() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<CategoryWithStats | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
@@ -181,7 +181,7 @@ export default function CategoriesPage() {
     });
   };
 
-  const openEditDialog = (category: Category) => {
+  const openEditDialog = (category: CategoryWithStats) => {
     setSelectedCategory(category);
     setFormLabel(category.label);
     setFormIcon(category.icon || '📁');
@@ -189,7 +189,7 @@ export default function CategoriesPage() {
     setShowEditDialog(true);
   };
 
-  const openDeleteDialog = (category: Category) => {
+  const openDeleteDialog = (category: CategoryWithStats) => {
     setSelectedCategory(category);
     setMigrateToKey('');
     setShowDeleteDialog(true);
@@ -561,7 +561,7 @@ function DeleteDialog({
   onConfirm,
   onCancel,
 }: {
-  category: Category;
+  category: CategoryWithStats;
   categories: Category[];
   migrateToKey: string;
   onMigrateChange: (value: string) => void;

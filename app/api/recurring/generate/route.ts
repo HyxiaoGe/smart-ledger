@@ -2,12 +2,12 @@
  * 手动触发固定账单生成 API
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { manualGenerateRecurring } from '@/lib/services/recurringService.server';
 
 export const runtime = 'nodejs';
 
-export async function POST(_req: NextRequest) {
+export async function POST() {
   try {
     const results = await manualGenerateRecurring();
 

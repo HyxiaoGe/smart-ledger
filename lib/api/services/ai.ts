@@ -146,4 +146,18 @@ export const aiApi = {
     const queryStr = query.toString();
     return apiClient.get<{ data: unknown }>(`/api/ai-feedback${queryStr ? `?${queryStr}` : ''}`);
   },
+
+  /**
+   * 获取所有 AI 反馈
+   */
+  getAllFeedbacks(params?: {
+    limit?: number;
+    offset?: number;
+  }): Promise<{ data: unknown }> {
+    const query = new URLSearchParams();
+    query.set('type', 'list');
+    if (params?.limit) query.set('limit', String(params.limit));
+    if (params?.offset) query.set('offset', String(params.offset));
+    return apiClient.get<{ data: unknown }>(`/api/ai-feedback?${query.toString()}`);
+  },
 };

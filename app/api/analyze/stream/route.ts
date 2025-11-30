@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { getAiConfig } from '@/lib/clients/ai/client';
-import { executeQuery, getPrismaClient } from '@/lib/clients/db';
+import { getPrismaClient } from '@/lib/clients/db';
 import { getErrorMessage } from '@/types/common';
 
 // 改为 nodejs runtime 以支持 Prisma
@@ -129,45 +129,25 @@ export async function GET(req: NextRequest) {
       const endDate = new Date(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 1);
       const end = endDate.toISOString().slice(0, 10);
 
-      rows = await executeQuery(
-        // Supabase 查询
-        async () => {
-          const supabase = getSupabaseClient();
-          const { data, error } = await supabase
-            .from('transactions')
-            .select('type, category, amount, date, currency, is_auto_generated, recurring_expense_id')
-            .is('deleted_at', null)
-            .is('is_auto_generated', false)
-            .is('recurring_expense_id', null)
-            .gte('date', start)
-            .lt('date', end)
-            .eq('currency', currency);
-          if (error) throw error;
-          return data || [];
+      const prisma = getPrismaClient();
+      rows = await prisma.transactions.findMany({
+        where: {
+          deleted_at: null,
+          is_auto_generated: false,
+          recurring_expense_id: null,
+          date: { gte: start, lt: end },
+          currency: currency,
         },
-        // Prisma 查询
-        async () => {
-          const prisma = getPrismaClient();
-          return await prisma.transactions.findMany({
-            where: {
-              deleted_at: null,
-              is_auto_generated: false,
-              recurring_expense_id: null,
-              date: { gte: start, lt: end },
-              currency: currency,
-            },
-            select: {
-              type: true,
-              category: true,
-              amount: true,
-              date: true,
-              currency: true,
-              is_auto_generated: true,
-              recurring_expense_id: true,
-            },
-          });
-        }
-      );
+        select: {
+          type: true,
+          category: true,
+          amount: true,
+          date: true,
+          currency: true,
+          is_auto_generated: true,
+          recurring_expense_id: true,
+        },
+      });
     }
 
     const { conf } = getAiConfig();

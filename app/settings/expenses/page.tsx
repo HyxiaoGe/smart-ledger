@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import type { Route } from 'next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
@@ -126,7 +127,7 @@ export default function ExpensesSettingsPage() {
                   {section.description}
                 </p>
                 {section.status === 'available' ? (
-                  <Link href={section.href}>
+                  <Link href={section.href as Route}>
                     <Button className="w-full">
                       <Settings2 className="h-4 w-4 mr-2" />
                       开始配置

@@ -209,10 +209,9 @@ async function generateContextSuggestions(params: SmartSuggestionParams): Promis
           reason: generateContextReason(note, params),
           source: '智能上下文分析',
           metadata: {
-            avg_amount: note.avg_amount ? Number(note.avg_amount) : null,
+            avg_amount: note.avg_amount ? Number(note.avg_amount) : undefined,
             category: note.category_affinity,
-            usage_count: note.usage_count,
-            time_context: time_context
+            usage_count: note.usage_count
           }
         });
       }
@@ -284,7 +283,7 @@ async function generatePatternSuggestions(params: SmartSuggestionParams): Promis
           reason: generatePatternReason(note, timeContext),
           source: '时间模式识别',
           metadata: {
-            avg_amount: note.avg_amount ? Number(note.avg_amount) : null,
+            avg_amount: note.avg_amount ? Number(note.avg_amount) : undefined,
             category: note.category_affinity,
             usage_count: note.usage_count,
             time_context: timeContext.label
@@ -371,7 +370,7 @@ async function generateSimilaritySuggestions(params: SmartSuggestionParams): Pro
         includeDeleted: false,
       },
       undefined,
-      { page: 1, limit: 20 }
+      { page: 1, pageSize: 20 }
     );
 
     if (!result.data || result.data.length === 0) {

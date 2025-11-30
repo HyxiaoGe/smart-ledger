@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import type { Route } from 'next';
 import { ChevronRight, Home } from 'lucide-react';
 import { cn } from '@/lib/utils/helpers';
 
@@ -37,7 +38,7 @@ export function Breadcrumb({ items, className, showHome = true }: BreadcrumbProp
               )}
               {item.href && !isLast ? (
                 <Link
-                  href={item.href}
+                  href={item.href as Route}
                   className={cn(
                     'flex items-center gap-1 hover:text-foreground transition-colors',
                     isHome && 'text-muted-foreground'

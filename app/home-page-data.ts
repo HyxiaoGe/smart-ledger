@@ -1,5 +1,6 @@
 import { getPrismaClient } from '@/lib/clients/db';
 import { getExtendedQuickRange, formatMonth, type ExtendedQuickRange } from '@/lib/utils/date';
+import type { TransactionRow } from '@/types/domain/transaction';
 
 type RecurringExpense = {
   id: string;
@@ -300,6 +301,9 @@ async function loadRangeData(
   };
 }
 
+// Re-export TransactionRow for consumers
+export type { TransactionRow } from '@/types/domain/transaction';
+
 /**
  * 查询交易数据
  */
@@ -309,8 +313,8 @@ async function queryTransactions(
   start: string,
   end: string,
   isSingleDay: boolean
-) {
-  const where: any = {
+): Promise<TransactionRow[]> {
+  const where: Record<string, unknown> = {
     deleted_at: null,
     currency,
   };

@@ -6,12 +6,12 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '../queryClient';
-import { budgetsApi, type BudgetStatusParams } from '../services/budgets';
+import { budgetsApi, type BudgetQueryParams } from '../services/budgets';
 
 /**
  * 获取预算执行状态
  */
-export function useBudgetStatus(params?: BudgetStatusParams) {
+export function useBudgetStatus(params?: BudgetQueryParams) {
   return useQuery({
     queryKey: queryKeys.budgets.status(params),
     queryFn: () => budgetsApi.getStatus(params),
@@ -21,7 +21,7 @@ export function useBudgetStatus(params?: BudgetStatusParams) {
 /**
  * 获取预算汇总
  */
-export function useBudgetSummary(params?: BudgetStatusParams) {
+export function useBudgetSummary(params?: BudgetQueryParams) {
   return useQuery({
     queryKey: queryKeys.budgets.summary(params),
     queryFn: () => budgetsApi.getSummary(params),

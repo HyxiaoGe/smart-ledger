@@ -306,7 +306,7 @@ export function AIPredictionPanel({
                           {getPredictionTypeLabel(prediction)}
                         </Badge>
                         {prediction.predictedCategory && (
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge variant="default" className="text-xs">
                             {prediction.predictedCategory}
                           </Badge>
                         )}
