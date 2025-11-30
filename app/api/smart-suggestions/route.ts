@@ -210,7 +210,7 @@ async function generateContextSuggestions(params: SmartSuggestionParams): Promis
           source: '智能上下文分析',
           metadata: {
             avg_amount: note.avg_amount ? Number(note.avg_amount) : undefined,
-            category: note.category_affinity,
+            category: note.category_affinity ?? undefined,
             usage_count: note.usage_count
           }
         });
@@ -284,7 +284,7 @@ async function generatePatternSuggestions(params: SmartSuggestionParams): Promis
           source: '时间模式识别',
           metadata: {
             avg_amount: note.avg_amount ? Number(note.avg_amount) : undefined,
-            category: note.category_affinity,
+            category: note.category_affinity ?? undefined,
             usage_count: note.usage_count,
             time_context: timeContext.label
           }
