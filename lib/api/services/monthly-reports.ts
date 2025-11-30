@@ -68,38 +68,31 @@ export const monthlyReportsApi = {
    * 获取所有月报告
    */
   async list(): Promise<MonthlyReport[]> {
-    const response = await apiClient.get<{ success: boolean; data: MonthlyReport[] }>('/api/monthly-reports');
-    return response.data;
+    // apiClient 会自动提取 response.data，所以直接返回结果
+    return apiClient.get<MonthlyReport[]>('/api/monthly-reports');
   },
 
   /**
    * 获取某年的月报告
    */
   async listByYear(year: number): Promise<MonthlyReport[]> {
-    const response = await apiClient.get<{ success: boolean; data: MonthlyReport[] }>(
-      `/api/monthly-reports?year=${year}`
-    );
-    return response.data;
+    return apiClient.get<MonthlyReport[]>(`/api/monthly-reports?year=${year}`);
   },
 
   /**
    * 获取特定月报告
    */
   async getByYearMonth(year: number, month: number): Promise<MonthlyReport | null> {
-    const response = await apiClient.get<{ success: boolean; data: MonthlyReport | null }>(
+    return apiClient.get<MonthlyReport | null>(
       `/api/monthly-reports?year=${year}&month=${month}`
     );
-    return response.data;
   },
 
   /**
    * 获取单个月报告
    */
   async getById(id: string): Promise<MonthlyReport> {
-    const response = await apiClient.get<{ success: boolean; data: MonthlyReport }>(
-      `/api/monthly-reports/${id}`
-    );
-    return response.data;
+    return apiClient.get<MonthlyReport>(`/api/monthly-reports/${id}`);
   },
 
   /**
