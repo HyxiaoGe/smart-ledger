@@ -3,7 +3,7 @@
  * 定义所有预算数据访问的标准接口
  */
 
-import type { Budget } from '@/lib/services/budgetService';
+import type { Budget } from '@/lib/services/budgetService.server';
 import type {
   CreateBudgetDTO,
   UpdateBudgetDTO,

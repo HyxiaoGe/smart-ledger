@@ -268,9 +268,11 @@ export async function getGenerationHistory(limit = 20): Promise<GenerationHistor
       : Promise.resolve([]),
   ]);
 
-  // 构建查找映射
-  const expenseMap = new Map(expenses.map(e => [e.id, e]));
-  const transactionMap = new Map(transactions.map(t => [t.id, t]));
+  // 构建查找映射（显式类型以帮助推断）
+  type ExpenseInfo = { id: string; name: string; amount: unknown; category: string };
+  type TransactionInfo = { id: string; amount: unknown; note: string | null; date: Date };
+  const expenseMap = new Map<string, ExpenseInfo>(expenses.map(e => [e.id, e as ExpenseInfo]));
+  const transactionMap = new Map<string, TransactionInfo>(transactions.map(t => [t.id, t as TransactionInfo]));
 
   // 组装结果
   return logs.map(log => {

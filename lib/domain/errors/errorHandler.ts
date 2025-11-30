@@ -22,7 +22,8 @@ export function generateTraceId(): string {
  * 将 Zod 错误转换为 ValidationError
  */
 export function zodErrorToValidationError(error: ZodError, traceId?: string): ValidationError {
-  let errors = error.errors;
+  // Zod v4 使用 issues，Zod v3 使用 errors
+  let errors = (error as { issues?: unknown[] }).issues ?? (error as { errors?: unknown[] }).errors;
 
   // 如果 errors 不存在，尝试从 message 中解析
   if (!errors || !Array.isArray(errors)) {

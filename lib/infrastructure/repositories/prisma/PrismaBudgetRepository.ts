@@ -4,7 +4,7 @@
  */
 
 import type { PrismaClient, Prisma } from '@/generated/prisma/client';
-import type { Budget } from '@/lib/services/budgetService';
+import type { Budget } from '@/lib/services/budgetService.server';
 import type { IBudgetRepository } from '@/lib/domain/repositories/IBudgetRepository';
 import type {
   CreateBudgetDTO,

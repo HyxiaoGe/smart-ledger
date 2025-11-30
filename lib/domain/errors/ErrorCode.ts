@@ -57,6 +57,9 @@ export enum ErrorCode {
 
   // ==================== 客户端存储错误 ====================
   STORAGE_QUOTA_EXCEEDED = 'STORAGE_QUOTA_EXCEEDED',
+
+  // ==================== 同步错误 ====================
+  SYNC_ERROR = 'SYNC_ERROR',
 }
 
 /**
@@ -113,6 +116,9 @@ export const ErrorCodeToHttpStatus: Record<ErrorCode, number> = {
 
   // 客户端存储错误 - 507
   [ErrorCode.STORAGE_QUOTA_EXCEEDED]: 507,
+
+  // 同步错误 - 500
+  [ErrorCode.SYNC_ERROR]: 500,
 };
 
 /**
@@ -169,4 +175,7 @@ export const ErrorCodeToMessage: Record<ErrorCode, string> = {
 
   // 客户端存储错误
   [ErrorCode.STORAGE_QUOTA_EXCEEDED]: '存储空间不足',
+
+  // 同步错误
+  [ErrorCode.SYNC_ERROR]: '数据同步失败',
 };
