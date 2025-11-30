@@ -1,4 +1,4 @@
-type StorageLike = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
+type StorageLike = Pick<Storage, 'getItem' | 'setItem' | 'removeItem' | 'length' | 'key'>;
 
 export const safeStorage: StorageLike | null =
   typeof window !== 'undefined' && typeof window.localStorage !== 'undefined'
