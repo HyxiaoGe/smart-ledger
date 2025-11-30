@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import type { Route } from 'next';
 import { SUPPORTED_CURRENCIES } from '@/lib/config/config';
@@ -11,7 +11,7 @@ type CurrencySelectProps = {
   range: string;
 };
 
-export function CurrencySelect({ value, month, range }: CurrencySelectProps) {
+function CurrencySelectContent({ value, month, range }: CurrencySelectProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -37,5 +37,13 @@ export function CurrencySelect({ value, month, range }: CurrencySelectProps) {
         </option>
       ))}
     </select>
+  );
+}
+
+export function CurrencySelect(props: CurrencySelectProps) {
+  return (
+    <Suspense fallback={<select className="h-9 rounded-md border border-input bg-background px-3 text-sm" disabled><option>CNY</option></select>}>
+      <CurrencySelectContent {...props} />
+    </Suspense>
   );
 }

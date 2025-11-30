@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import './globals.css';
@@ -26,7 +26,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <CategoryProvider>
               <ToastProvider>
               <GlobalErrorHandler />
-              <NavigationProgress />
+              <Suspense fallback={null}>
+                <NavigationProgress />
+              </Suspense>
               <SyncNotificationProvider />
               <header className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 shadow-sm transition-colors duration-300">
                 <div className="container flex h-16 items-center justify-between">

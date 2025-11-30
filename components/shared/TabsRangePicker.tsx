@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, Suspense } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
 import { zhCN } from "date-fns/locale";
@@ -67,7 +67,7 @@ export interface TabsRangePickerProps {
   onRangeChange?: (range: { start: Date; end: Date } | null) => void;
 }
 
-export function TabsRangePicker({ className, onRangeChange }: TabsRangePickerProps) {
+function TabsRangePickerContent({ className, onRangeChange }: TabsRangePickerProps) {
   const router = useRouter();
   const pathname = usePathname();
   const search = useSearchParams();
@@ -300,5 +300,13 @@ export function TabsRangePicker({ className, onRangeChange }: TabsRangePickerPro
         </>
       )}
     </div>
+  );
+}
+
+export function TabsRangePicker(props: TabsRangePickerProps) {
+  return (
+    <Suspense fallback={<Button variant="outline" disabled className="min-w-[100px]">加载中...</Button>}>
+      <TabsRangePickerContent {...props} />
+    </Suspense>
   );
 }
