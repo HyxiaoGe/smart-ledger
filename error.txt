@@ -1,0 +1,433 @@
+PS E:\TypeScriptProject\smart-ledger> npx tsc --noEmit
+__tests__/__factories__/transaction.ts:26:5 - error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+
+26     payment_method: faker.helpers.arrayElement([...PAYMENT_METHODS, null]),
+       ~~~~~~~~~~~~~~
+
+  types/domain/transaction.ts:16:3
+    16   payment_method?: string; // 支付方式 ID，关联到 payment_methods 表
+         ~~~~~~~~~~~~~~
+    The expected type comes from property 'payment_method' which is declared here on type 'Transaction'
+
+__tests__/__factories__/transaction.ts:27:5 - error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+
+27     merchant: faker.helpers.maybe(() => faker.company.name(), { probability: 0.5 }) ?? null,
+       ~~~~~~~~
+
+  types/domain/transaction.ts:18:3
+    18   merchant?: string; // 商家/品牌名称（如：瑞幸咖啡、地铁、美团）
+         ~~~~~~~~
+    The expected type comes from property 'merchant' which is declared here on type 'Transaction'
+
+__tests__/__factories__/transaction.ts:28:5 - error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+
+28     subcategory: null,
+       ~~~~~~~~~~~
+
+  types/domain/transaction.ts:19:3
+    19   subcategory?: string; // 子分类（如：coffee、subway、takeout）
+         ~~~~~~~~~~~
+    The expected type comes from property 'subcategory' which is declared here on type 'Transaction'
+
+__tests__/__factories__/transaction.ts:29:5 - error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+
+29     product: null,
+       ~~~~~~~
+
+  types/domain/transaction.ts:20:3
+    20   product?: string; // 具体产品/服务（如：生椰拿铁、地铁票、午餐外卖）
+         ~~~~~~~
+    The expected type comes from property 'product' which is declared here on type 'Transaction'
+
+__tests__/unit/errors/errorHandler.test.ts:62:11 - error TS2353: Object literal may only specify known properties, and 'received' does not exist in type '$ZodIssueInvalidType<unknown>'.
+
+62           received: 'number',
+             ~~~~~~~~
+
+__tests__/unit/errors/errorHandler.test.ts:83:11 - error TS2353: Object literal may only specify known properties, and 'received' does not exist in type '$ZodIssueInvalidType<unknown>'.
+
+83           received: 'number',
+             ~~~~~~~~
+
+__tests__/unit/errors/errorHandler.test.ts:99:11 - error TS2353: Object literal may only specify known properties, and 'received' does not exist in type '$ZodIssueInvalidType<unknown>'.
+
+99           received: 'number',
+             ~~~~~~~~
+
+__tests__/unit/errors/errorHandler.test.ts:115:11 - error TS2353: Object literal may only specify known properties, and 'received' does not exist in type '$ZodIssueInvalidType<unknown>'.
+
+115           received: 'number',
+              ~~~~~~~~
+
+__tests__/unit/errors/errorHandler.test.ts:122:11 - error TS2353: Object literal may only specify known properties, and 'type' does not exist in type '$ZodIssueTooSmall<unknown>'.
+
+122           type: 'string',
+              ~~~~
+
+__tests__/unit/errors/errorHandler.test.ts:182:11 - error TS2353: Object literal may only specify known properties, and 'received' does not exist in type '$ZodIssueInvalidType<unknown>'.
+
+182           received: 'number',
+              ~~~~~~~~
+
+__tests__/unit/services/categoryService.test.ts:87:3 - error TS2741: Property 'getAllSubcategoriesBatch' is missing in type '{ findAll: Mock<Procedure>; findAllWithStats: Mock<Procedure>; findById: Mock<Procedure>; findByKey: Mock<Procedure>; ... 8 more ...; updateSortOrder: Mock<...>; }' but required in type 'ICategoryRepository'.
+
+87   return {
+     ~~~~~~
+
+  lib/domain/repositories/ICategoryRepository.ts:83:3
+    83   getAllSubcategoriesBatch(): Promise<Record<string, Subcategory[]>>;
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    'getAllSubcategoriesBatch' is declared here.
+
+__tests__/unit/services/categoryService.test.ts:116:5 - error TS2353: Object literal may only specify known properties, and 'parent_id' does not exist in type 'Category'.
+
+116     parent_id: null,
+        ~~~~~~~~~
+
+__tests__/unit/services/categoryService.test.ts:138:11 - error TS2353: Object literal may only specify known properties, and 'transactionCount' does not exist in type 'CategoryWithStats'.
+
+138           transactionCount: 100,
+              ~~~~~~~~~~~~~~~~
+
+__tests__/unit/services/categoryService.test.ts:259:58 - error TS2345: Argument of type '{ deleted: boolean; migratedTransactions: number; }' is not assignable to parameter of type 'DeleteCategoryResult'.
+  Type '{ deleted: boolean; migratedTransactions: number; }' is missing the following properties from type 'DeleteCategoryResult': success, message, affected_transactions
+
+259       vi.mocked(mockRepository.delete).mockResolvedValue(deleteResult);
+                                                             ~~~~~~~~~~~~
+
+__tests__/unit/services/categoryService.test.ts:272:58 - error TS2345: Argument of type '{ deleted: boolean; migratedTransactions: number; }' is not assignable to parameter of type 'DeleteCategoryResult'.
+  Type '{ deleted: boolean; migratedTransactions: number; }' is missing the following properties from type 'DeleteCategoryResult': success, message, affected_transactions
+
+272       vi.mocked(mockRepository.delete).mockResolvedValue(deleteResult);
+                                                             ~~~~~~~~~~~~
+
+__tests__/unit/services/categoryService.test.ts:292:66 - error TS2345: Argument of type '{ category: Category; transactionCount: number; totalAmount: number; monthlyBreakdown: { month: string; count: number; amount: number; }[]; }' is not assignable to parameter of 
+type 'CategoryUsageDetail'.
+  Type '{ category: Category; transactionCount: number; totalAmount: number; monthlyBreakdown: { month: string; count: number; amount: number; }[]; }' is missing the following properties from type 'CategoryUsageDetail': total_transactions, total_amount, avg_amount, 
+first_used, and 3 more.
+
+292       vi.mocked(mockRepository.getUsageDetail).mockResolvedValue(usageDetail);
+                                                                     ~~~~~~~~~~~
+
+__tests__/unit/services/categoryService.test.ts:304:11 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'Subcategory'.
+
+304         { id: 'sub-1', name: '午餐', count: 30 },
+              ~~
+
+__tests__/unit/services/categoryService.test.ts:305:11 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'Subcategory'.
+
+305         { id: 'sub-2', name: '晚餐', count: 25 },
+              ~~
+
+__tests__/unit/services/categoryService.test.ts:322:42 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'Subcategory'.
+
+322       const foodSubs: Subcategory[] = [{ id: 'sub-1', name: '午餐', count: 30 }];
+                                             ~~
+
+__tests__/unit/services/categoryService.test.ts:323:47 - error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'Subcategory'.
+
+323       const transportSubs: Subcategory[] = [{ id: 'sub-2', name: '地铁', count: 20 }];
+                                                  ~~
+
+__tests__/unit/services/categoryService.test.ts:340:24 - error TS2353: Object literal may only specify known properties, and 'count' does not exist in type 'MerchantSuggestion'.
+
+340         { name: '肯德基', count: 15, avgAmount: 35 },
+                           ~~~~~
+
+__tests__/unit/services/categoryService.test.ts:341:24 - error TS2353: Object literal may only specify known properties, and 'count' does not exist in type 'MerchantSuggestion'.
+
+341         { name: '麦当劳', count: 10, avgAmount: 30 },
+                           ~~~~~
+
+__tests__/unit/services/smartSuggestions.test.ts:93:27 - error TS2345: Argument of type '{ suggestions: { id: string; content: string; confidence: number; }[]; fallback_notes: never[]; context: {}; }' is not assignable to parameter of type 'SmartSuggestionResponse'.  Types of property 'suggestions' are incompatible.
+    Type '{ id: string; content: string; confidence: number; }[]' is not assignable to type 'SmartSuggestion[]'.
+      Type '{ id: string; content: string; confidence: number; }' is missing the following properties from type 'SmartSuggestion': type, reason, source
+
+93         cache.set(params, data);
+                             ~~~~
+
+__tests__/unit/services/smartSuggestions.test.ts:177:7 - error TS2322: Type '"smart"' is not assignable to type '"frequency" | "context" | "pattern" | "similarity"'.
+
+177       type: 'smart',
+          ~~~~
+
+  types/domain/transaction.ts:45:3
+    45   type: 'frequency' | 'context' | 'pattern' | 'similarity';
+         ~~~~
+    The expected type comes from property 'type' which is declared here on type 'SmartSuggestion'
+
+__tests__/unit/services/smartSuggestions.test.ts:189:7 - error TS2561: Object literal may only specify known properties, but 'last_used_at' does not exist in type 'CommonNote'. Did you mean to write 'last_used'?
+
+189       last_used_at: new Date().toISOString(),
+          ~~~~~~~~~~~~
+
+__tests__/unit/services/transaction/TransactionAnalyticsService.test.ts:43:5 - error TS2353: Object literal may only specify known properties, and 'updated_at' does not exist in type 'Transaction'.
+
+43     updated_at: new Date().toISOString(),
+       ~~~~~~~~~~
+
+__tests__/unit/services/transaction/TransactionAnalyticsService.test.ts:78:100 - error TS2353: Object literal may only specify known properties, and 'totalPages' does not exist in type 'PaginatedResult<Transaction>'.
+
+78         .mockResolvedValueOnce({ data: currentMonthTransactions, total: 2, page: 1, pageSize: 100, totalPages: 1 })
+                                                                                                      ~~~~~~~~~~
+
+__tests__/unit/services/transaction/TransactionAnalyticsService.test.ts:79:97 - error TS2353: Object literal may only specify known properties, and 'totalPages' does not exist in type 'PaginatedResult<Transaction>'.
+
+79         .mockResolvedValueOnce({ data: lastMonthTransactions, total: 1, page: 1, pageSize: 100, totalPages: 1 })
+                                                                                                   ~~~~~~~~~~
+
+__tests__/unit/services/transaction/TransactionAnalyticsService.test.ts:80:111 - error TS2353: Object literal may only specify known properties, and 'totalPages' does not exist in type 'PaginatedResult<Transaction>'.
+
+80         .mockResolvedValueOnce({ data: currentMonthTransactions.slice(0, 2), total: 2, page: 1, pageSize: 20, totalPages: 1 });
+                                                                                                                 ~~~~~~~~~~
+
+__tests__/unit/services/transaction/TransactionAnalyticsService.test.ts:96:9 - error TS2353: Object literal may only specify known properties, and 'totalPages' does not exist in type 'PaginatedResult<Transaction>'.
+
+96         totalPages: 0,
+           ~~~~~~~~~~
+
+__tests__/unit/services/transaction/TransactionAnalyticsService.test.ts:111:9 - error TS2353: Object literal may only specify known properties, and 'totalPages' does not exist in type 'PaginatedResult<Transaction>'.
+
+111         totalPages: 0,
+            ~~~~~~~~~~
+
+__tests__/unit/services/transaction/TransactionAnalyticsService.test.ts:126:9 - error TS2353: Object literal may only specify known properties, and 'totalPages' does not exist in type 'PaginatedResult<Transaction>'.
+
+126         totalPages: 0,
+            ~~~~~~~~~~
+
+__tests__/unit/services/transaction/TransactionAnalyticsService.test.ts:315:9 - error TS2353: Object literal may only specify known properties, and 'totalPages' does not exist in type 'PaginatedResult<Transaction>'.
+
+315         totalPages: 0,
+            ~~~~~~~~~~
+
+__tests__/unit/services/transaction/TransactionQueryService.test.ts:43:5 - error TS2353: Object literal may only specify known properties, and 'updated_at' does not exist in type 'Transaction'.
+
+43     updated_at: new Date().toISOString(),
+       ~~~~~~~~~~
+
+__tests__/unit/services/transaction/TransactionSummaryService.test.ts:43:5 - error TS2353: Object literal may only specify known properties, and 'updated_at' does not exist in type 'Transaction'.
+
+43     updated_at: new Date().toISOString(),
+       ~~~~~~~~~~
+
+__tests__/unit/services/transaction/TransactionSummaryService.test.ts:255:60 - error TS2345: Argument of type '{ totalAmount: number; count: number; averageAmount: number; maxAmount: number; minAmount: number; }' is not assignable to parameter of type 'TransactionStats'.
+  Property 'avgAmount' is missing in type '{ totalAmount: number; count: number; averageAmount: number; maxAmount: number; minAmount: number; }' but required in type 'TransactionStats'.
+
+255       vi.mocked(mockRepository.getStats).mockResolvedValue(mockStats);
+                                                               ~~~~~~~~~
+
+  types/dto/transaction.dto.ts:90:3
+    90   avgAmount: number;
+         ~~~~~~~~~
+    'avgAmount' is declared here.
+
+__tests__/unit/services/transaction/TransactionSummaryService.test.ts:266:9 - error TS2561: Object literal may only specify known properties, but 'averageAmount' does not exist in type 'TransactionStats'. Did you mean to write 'avgAmount'?
+
+266         averageAmount: 0,
+            ~~~~~~~~~~~~~
+
+__tests__/unit/services/transaction/TransactionSummaryService.test.ts:284:9 - error TS2561: Object literal may only specify known properties, but 'averageAmount' does not exist in type 'TransactionStats'. Did you mean to write 'avgAmount'?
+
+284         averageAmount: 0,
+            ~~~~~~~~~~~~~
+
+__tests__/unit/services/transaction/TransactionSummaryService.test.ts:302:9 - error TS2561: Object literal may only specify known properties, but 'averageAmount' does not exist in type 'TransactionStats'. Did you mean to write 'avgAmount'?
+
+302         averageAmount: 0,
+            ~~~~~~~~~~~~~
+
+app/api/smart-suggestions/learning/route.ts:117:9 - error TS2322: Type '{ suggestion_id: string; suggestion_type: string; content: string; confidence?: number | undefined; reason?: string | undefined; } | null' is not assignable to type 'InputJsonValue | NullableJsonNullValueInput | undefined'.
+  Type 'null' is not assignable to type 'InputJsonValue | NullableJsonNullValueInput | undefined'.
+
+117         suggestion_data: data.suggestion_data || null,
+            ~~~~~~~~~~~~~~~
+
+  node_modules/.prisma/client/index.d.ts:37615:5
+    37615     suggestion_data?: NullableJsonNullValueInput | InputJsonValue
+              ~~~~~~~~~~~~~~~
+    The expected type comes from property 'suggestion_data' which is declared here on type '(Without<suggestion_learning_logsCreateInput, suggestion_learning_logsUncheckedCreateInput> & suggestion_learning_logsUncheckedCreateInput) | (Without<...> & suggestion_learning_logsCreateInput)'
+
+app/api/smart-suggestions/route.ts:213:13 - error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+
+213             category: note.category_affinity,
+                ~~~~~~~~
+
+app/api/smart-suggestions/route.ts:287:13 - error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+
+287             category: note.category_affinity,
+                ~~~~~~~~
+
+lib/domain/noteContext.ts:48:5 - error TS2322: Type '"night"' is not assignable to type '"work_hours" | "after_work" | "weekend" | "holiday" | undefined'.
+
+48     work_period = 'night';
+       ~~~~~~~~~~~
+
+lib/services/aiFeedbackServiceDB.ts:52:56 - error TS2551: Property 'feedbackType' does not exist on type 'Partial<AIFeedbackInsert>'. Did you mean 'feedback_type'?
+
+52     return collectAIFeedback(featureType, feedbackData.feedbackType || 'rating', {
+                                                          ~~~~~~~~~~~~
+
+lib/services/aiFeedbackServiceDB.ts:52:82 - error TS2554: Expected 2 arguments, but got 3.
+
+ 52     return collectAIFeedback(featureType, feedbackData.feedbackType || 'rating', {
+                                                                                     ~
+ 53       rating: feedbackData.rating,
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+...
+ 60       priority: feedbackData.priority
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 61     });
+    ~~~~~
+
+lib/services/aiFeedbackServiceDB.ts:54:32 - error TS2551: Property 'isPositive' does not exist on type 'Partial<AIFeedbackInsert>'. Did you mean 'is_positive'?
+
+54       isPositive: feedbackData.isPositive,
+                                  ~~~~~~~~~~
+
+lib/services/aiFeedbackServiceDB.ts:57:32 - error TS2551: Property 'customData' does not exist on type 'Partial<AIFeedbackInsert>'. Did you mean 'custom_data'?
+
+57       customData: feedbackData.customData,
+                                  ~~~~~~~~~~
+
+lib/services/aiFeedbackServiceDB.ts:69:5 - error TS2322: Type 'AIFeedback[]' is not assignable to type 'AIFeedbackRow[]'.
+  Type 'AIFeedback' is missing the following properties from type 'AIFeedbackRow': feature_type, feedback_type
+
+69     return unifiedService.getAllFeedbacks(limit, offset);
+       ~~~~~~
+
+lib/services/aiFeedbackServiceDB.ts:84:27 - error TS2339: Property 'getFilteredFeedbacks' does not exist on type 'AIFeedbackServiceClient'.
+
+84     return unifiedService.getFilteredFeedbacks(filters);
+                             ~~~~~~~~~~~~~~~~~~~~
+
+lib/services/aiFeedbackServiceDB.ts:112:5 - error TS2322: Type 'unknown' is not assignable to type '{ totalFeedbacks: number; averageRating: number; positiveRate: number; featureStats: Record<string, { count: number; avgRating: number; positiveRate: number; }>; timeStats: { today: number; thisWeek: number; thisMonth: number; }; recentFeedbacks: AIFeedbackRow[]; sentimentAnalysis: { ...; }; }'.
+
+112     return getAIFeedbackStats();
+        ~~~~~~
+
+lib/services/aiFeedbackServiceDB.ts:124:27 - error TS2551: Property 'updateFeedbackStatus' does not exist on type 'AIFeedbackServiceClient'. Did you mean 'getFeedbackStats'?
+
+124     return unifiedService.updateFeedbackStatus(feedbackId, status, adminNotes);
+                              ~~~~~~~~~~~~~~~~~~~~
+
+  lib/services/ai/index.ts:49:9
+    49   async getFeedbackStats(
+               ~~~~~~~~~~~~~~~~
+    'getFeedbackStats' is declared here.
+
+lib/services/aiFeedbackServiceDB.ts:132:27 - error TS2339: Property 'deleteFeedback' does not exist on type 'AIFeedbackServiceClient'.
+
+132     return unifiedService.deleteFeedback(feedbackId);
+                              ~~~~~~~~~~~~~~
+
+lib/services/aiFeedbackServiceDB.ts:140:27 - error TS2339: Property 'exportFeedbacks' does not exist on type 'AIFeedbackServiceClient'.
+
+140     return unifiedService.exportFeedbacks(format);
+                              ~~~~~~~~~~~~~~~
+
+lib/services/aiFeedbackServiceDB.ts:156:27 - error TS2339: Property 'getTemplatesByFeature' does not exist on type 'AIFeedbackServiceClient'.
+
+156     return unifiedService.getTemplatesByFeature(featureType);
+                              ~~~~~~~~~~~~~~~~~~~~~
+
+lib/services/aiFeedbackServiceDB.ts:176:5 - error TS2322: Type 'void' is not assignable to type 'string'.
+
+176     return logAIRequest(
+        ~~~~~~
+
+lib/services/aiFeedbackServiceDB.ts:178:7 - error TS2554: Expected 1 arguments, but got 11.
+
+178       modelName,
+          ~~~~~~~~~~
+179       featureType,
+    ~~~~~~~~~~~~~~~~~~
+...
+186       status,
+    ~~~~~~~~~~~~~
+187       errorMessage
+    ~~~~~~~~~~~~~~~~~~
+
+lib/services/aiFeedbackServiceDB.ts:196:27 - error TS2339: Property 'getPerformanceStats' does not exist on type 'AIFeedbackServiceClient'.
+
+196     return unifiedService.getPerformanceStats(dateRange);
+                              ~~~~~~~~~~~~~~~~~~~
+
+lib/services/aiPrediction.server.ts:362:35 - error TS7006: Parameter 'transaction' implicitly has an 'any' type.
+
+362       similarTransactions.forEach(transaction => {
+                                      ~~~~~~~~~~~
+
+lib/services/aiPrediction.server.ts:433:36 - error TS7006: Parameter 'transaction' implicitly has an 'any' type.
+
+433       categoryTransactions.forEach(transaction => {
+                                       ~~~~~~~~~~~
+
+lib/services/cacheManager.ts:52:7 - error TS2353: Object literal may only specify known properties, and 'priority' does not exist in type 'Omit<CacheInvalidationRule, "priority">'.
+
+52       priority: 1
+         ~~~~~~~~
+
+lib/services/cacheManager.ts:68:7 - error TS2353: Object literal may only specify known properties, and 'priority' does not exist in type 'Omit<CacheInvalidationRule, "priority">'.
+
+68       priority: 2
+         ~~~~~~~~
+
+lib/services/cacheManager.ts:84:7 - error TS2353: Object literal may only specify known properties, and 'priority' does not exist in type 'Omit<CacheInvalidationRule, "priority">'.
+
+84       priority: 3
+         ~~~~~~~~
+
+lib/services/cacheManager.ts:98:7 - error TS2353: Object literal may only specify known properties, and 'priority' does not exist in type 'Omit<CacheInvalidationRule, "priority">'.
+
+98       priority: 4
+         ~~~~~~~~
+
+lib/services/cacheManager.ts:114:7 - error TS2353: Object literal may only specify known properties, and 'priority' does not exist in type 'Omit<CacheInvalidationRule, "priority">'.
+
+114       priority: 5
+          ~~~~~~~~
+
+lib/services/categoryService.ts:6:10 - error TS2724: '"@/lib/infrastructure/repositories"' has no exported member named 'categoryRepository'. Did you mean 'getCategoryRepository'?
+
+6 import { categoryRepository } from '@/lib/infrastructure/repositories';
+           ~~~~~~~~~~~~~~~~~~
+
+  lib/infrastructure/repositories/index.server.ts:134:14
+    134 export const getCategoryRepository = () => ServerRepositoryFactory.getCategoryRepository();
+                     ~~~~~~~~~~~~~~~~~~~~~
+    'getCategoryRepository' is declared here.
+
+types/index.ts:15:1 - error TS2308: Module './common' has already exported a member named 'PaginatedResult'. Consider explicitly re-exporting to resolve the ambiguity.
+
+   ~~~~~~~~~~~~~~~~~~~~~~
+
+types/index.ts:15:1 - error TS2308: Module './common' has already exported a member named 'PaginationOptions'. Consider explicitly re-exporting to resolve the ambiguity.
+
+15 export * from './dto';
+   ~~~~~~~~~~~~~~~~~~~~~~
+
+
+Found 67 errors in 15 files.
+
+Errors  Files
+     4  __tests__/__factories__/transaction.ts:26
+     6  __tests__/unit/errors/errorHandler.test.ts:62
+    12  __tests__/unit/services/categoryService.test.ts:87
+     3  __tests__/unit/services/smartSuggestions.test.ts:93
+     8  __tests__/unit/services/transaction/TransactionAnalyticsService.test.ts:43
+     1  __tests__/unit/services/transaction/TransactionQueryService.test.ts:43
+     5  __tests__/unit/services/transaction/TransactionSummaryService.test.ts:43
+     1  app/api/smart-suggestions/learning/route.ts:117
+     2  app/api/smart-suggestions/route.ts:213
+     1  lib/domain/noteContext.ts:48
+    14  lib/services/aiFeedbackServiceDB.ts:52
+     2  lib/services/aiPrediction.server.ts:362
+     5  lib/services/cacheManager.ts:52
+     1  lib/services/categoryService.ts:6
+     2  types/index.ts:15
+PS E:\TypeScriptProject\smart-ledger>
