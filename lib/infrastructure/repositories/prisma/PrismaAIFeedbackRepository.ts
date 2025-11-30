@@ -2,7 +2,7 @@
  * Prisma AI 反馈仓储实现
  */
 
-import type { PrismaClient } from '@/generated/prisma/client';
+import type { PrismaClient } from '@prisma/client';
 import type {
   IAIFeedbackRepository,
   AIFeedback,

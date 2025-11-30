@@ -3,7 +3,7 @@
  * 实现 ICategoryRepository 接口，提供基于 Prisma 的分类数据访问
  */
 
-import type { PrismaClient, Prisma } from '@/generated/prisma/client';
+import type { PrismaClient, Prisma } from '@prisma/client';
 import type { ICategoryRepository } from '@/lib/domain/repositories/ICategoryRepository';
 import type {
   Category,

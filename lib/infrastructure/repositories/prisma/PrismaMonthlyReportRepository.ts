@@ -3,7 +3,7 @@
  * 月报告包含所有支出，区分固定支出和可变支出
  */
 
-import type { PrismaClient } from '@/generated/prisma/client';
+import type { PrismaClient } from '@prisma/client';
 import type {
   IMonthlyReportRepository,
   MonthlyReport,
