@@ -18,7 +18,8 @@ import {
   Edit,
   Trash2,
   History,
-  Zap
+  Zap,
+  Settings2
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { recurringExpensesApi, RecurringExpense } from '@/lib/api/services/recurring-expenses';
