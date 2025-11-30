@@ -489,11 +489,13 @@ export function formatMonth(year: number, month: number): string {
 
 /**
  * 获取动态预算建议
+ * 修复：实时查询当月支出，而不是使用表中的静态数据
  */
 export async function getBudgetSuggestions(
   year: number,
   month: number
 ): Promise<BudgetSuggestion[]> {
+  // 获取预算建议数据
   const data = await prisma.budget_suggestions.findMany({
     where: {
       year,
@@ -503,20 +505,61 @@ export async function getBudgetSuggestions(
     orderBy: { calculated_at: 'desc' },
   });
 
-  return data.map(row => ({
-    categoryKey: row.category_key || '',
-    suggestedAmount: Number(row.suggested_amount),
-    confidenceLevel: row.confidence_level,
-    reason: row.reason,
-    historicalAvg: Number(row.historical_avg || 0),
-    historicalMonths: row.historical_months || 0,
-    currentMonthSpending: Number(row.current_month_spending || 0),
-    currentDailyRate: Number(row.current_daily_rate || 0),
-    predictedMonthTotal: Number(row.predicted_month_total || 0),
-    trendDirection: row.trend_direction || 'unknown',
-    daysIntoMonth: row.days_into_month || 0,
-    calculatedAt: row.calculated_at?.toISOString() || new Date().toISOString(),
-  }));
+  if (data.length === 0) {
+    return [];
+  }
+
+  // 实时查询当月各分类的实际支出
+  const startDate = new Date(year, month - 1, 1);
+  const endDate = new Date(year, month, 1);
+  const now = new Date();
+  const daysIntoMonth = now.getDate();
+  const daysInMonth = new Date(year, month, 0).getDate();
+
+  const transactions = await prisma.transactions.findMany({
+    where: {
+      deleted_at: null,
+      type: 'expense',
+      date: {
+        gte: startDate,
+        lt: endDate,
+      },
+    },
+    select: {
+      category: true,
+      amount: true,
+    },
+  });
+
+  // 按分类汇总当月支出
+  const spendingByCategory: Record<string, number> = {};
+  for (const tx of transactions) {
+    spendingByCategory[tx.category] = (spendingByCategory[tx.category] || 0) + Number(tx.amount);
+  }
+
+  return data.map(row => {
+    const categoryKey = row.category_key || '';
+    // 使用实时计算的当月支出
+    const currentMonthSpending = spendingByCategory[categoryKey] || 0;
+    // 重新计算日均和预测
+    const currentDailyRate = daysIntoMonth > 0 ? currentMonthSpending / daysIntoMonth : 0;
+    const predictedMonthTotal = currentDailyRate * daysInMonth;
+
+    return {
+      categoryKey,
+      suggestedAmount: Number(row.suggested_amount),
+      confidenceLevel: row.confidence_level,
+      reason: row.reason,
+      historicalAvg: Number(row.historical_avg || 0),
+      historicalMonths: row.historical_months || 0,
+      currentMonthSpending,
+      currentDailyRate,
+      predictedMonthTotal,
+      trendDirection: row.trend_direction || 'unknown',
+      daysIntoMonth,
+      calculatedAt: row.calculated_at?.toISOString() || new Date().toISOString(),
+    };
+  });
 }
 
 /**
