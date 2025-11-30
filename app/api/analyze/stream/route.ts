@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { getAiConfig } from '@/lib/clients/ai/client';
-import { executeQuery, getPrismaClient, getSupabaseClient, getDbType } from '@/lib/clients/db';
+import { executeQuery, getPrismaClient } from '@/lib/clients/db';
 import { getErrorMessage } from '@/types/common';
 
 // 改为 nodejs runtime 以支持 Prisma

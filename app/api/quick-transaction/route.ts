@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { executeQuery, getPrismaClient, getSupabaseClient } from '@/lib/clients/db';
+import { executeQuery, getPrismaClient } from '@/lib/clients/db';
 import { revalidateTag, revalidatePath } from 'next/cache';
 import { formatDateToLocal } from '@/lib/utils/date';
 import { z } from 'zod';

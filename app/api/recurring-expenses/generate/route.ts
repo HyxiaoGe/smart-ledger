@@ -3,7 +3,7 @@ import { recurringExpenseService } from '@/lib/services/recurringExpenses.server
 import { withErrorHandler } from '@/lib/domain/errors/errorHandler';
 import { logger } from '@/lib/services/logging';
 
-export const POST = withErrorHandler(async (request: NextRequest) => {
+export const POST = withErrorHandler(async (_request: NextRequest) => {
   const result = await recurringExpenseService.generatePendingExpenses();
 
   // ✅ 记录用户操作日志（异步，不阻塞响应）

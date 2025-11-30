@@ -21,7 +21,7 @@ const createRecurringExpenseSchema = z.object({
   is_active: z.boolean().optional().default(true)
 });
 
-export const GET = withErrorHandler(async (request: NextRequest) => {
+export const GET = withErrorHandler(async (_request: NextRequest) => {
   const expenses = await recurringExpenseService.getRecurringExpenses();
   return NextResponse.json(expenses);
 });

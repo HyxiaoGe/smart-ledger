@@ -7,7 +7,7 @@ import { getTodayGenerationStats } from '@/lib/services/recurringService.server'
 
 export const runtime = 'nodejs';
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const stats = await getTodayGenerationStats();
 

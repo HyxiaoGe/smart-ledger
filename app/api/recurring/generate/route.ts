@@ -7,7 +7,7 @@ import { manualGenerateRecurring } from '@/lib/services/recurringService.server'
 
 export const runtime = 'nodejs';
 
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
     const results = await manualGenerateRecurring();
 

@@ -1,11 +1,10 @@
 "use client";
 import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import type { TransactionType, Currency } from '@/types/domain/transaction';
 import { SUPPORTED_CURRENCIES, DEFAULT_CURRENCY } from '@/lib/config/config';
 import { useCategories } from '@/contexts/CategoryContext';
 import { CategoryChip } from '@/components/CategoryChip';
-import { Input } from '@/components/ui/input';
 import { ClearableInput } from '@/components/ui/clearable-input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -360,33 +359,6 @@ export default function AddPage() {
     } catch {
       // ignore note update failures
     }
-  }
-
-  // 生成时间上下文的工具函数
-  function generateTimeContext() {
-    const now = new Date();
-    const hour = now.getHours();
-    const day = now.getDay();
-    const isWeekend = day === 0 || day === 6;
-
-    let timeContext = '';
-    if (hour >= 11 && hour < 14) {
-      timeContext = isWeekend ? '周末午餐时间' : '工作日午餐时间';
-    } else if (hour >= 17 && hour < 21) {
-      timeContext = isWeekend ? '周末晚餐时间' : '工作日晚餐时间';
-    } else if (hour >= 7 && hour < 10) {
-      timeContext = '早餐时间';
-    } else if (hour >= 9 && hour < 18 && !isWeekend) {
-      timeContext = '工作时间';
-    } else {
-      timeContext = '日常时间';
-    }
-
-    return {
-      label: timeContext,
-      hour,
-      isWeekend
-    };
   }
 
   return (
