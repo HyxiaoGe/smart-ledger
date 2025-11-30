@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, Suspense } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { format, addDays, startOfMonth, endOfMonth, subDays } from "date-fns";
 import { zhCN } from "date-fns/locale";
@@ -47,7 +47,7 @@ export interface RangePickerProps {
   onRangeChange?: (range: { start: Date; end: Date } | null) => void;
 }
 
-export function RangePicker({ className, onRangeChange }: RangePickerProps) {
+function RangePickerContent({ className, onRangeChange }: RangePickerProps) {
   const router = useRouter();
   const pathname = usePathname();
   const search = useSearchParams();
@@ -188,6 +188,50 @@ export function RangePicker({ className, onRangeChange }: RangePickerProps) {
     return option?.label || '自定义';
   }, [current]);
 
+  // 同步当前选中范围到日历组件
+  useEffect(() => {
+    if (current.key !== 'custom') {
+      // 快捷选项：根据类型设置不同的显示
+      if (current.key === 'today' || current.key === 'yesterday') {
+        // 单日选择：只选中一个日期
+        setCustomRange({
+          from: current.start,
+          to: current.start // from和to相同，表示单日选择
+        });
+      } else if (current.key === 'last7') {
+        // 近7日：显示7天范围（包含今天）
+        // current.end是明天，但我们要显示到今天
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // 设置为今天的开始时间
+        setCustomRange({
+          from: current.start,
+          to: today
+        });
+      } else if (current.key === 'month') {
+        // 当月：显示1号到今天的范围
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+        setCustomRange({
+          from: monthStart,
+          to: today
+        });
+      }
+      setCalendarMonth(current.start);
+    } else {
+      // 自定义范围：从URL参数解析
+      const startStr = search.get('start');
+      const endStr = search.get('end');
+      if (startStr && endStr) {
+        setCustomRange({
+          from: new Date(startStr),
+          to: new Date(endStr)
+        });
+        setCalendarMonth(new Date(startStr));
+      }
+    }
+  }, [current.key, current.start, current.end, search]);
+
   return (
     <div className={cn("relative", className)}>
       {/* 触发按钮 */}
@@ -316,48 +360,12 @@ export function RangePicker({ className, onRangeChange }: RangePickerProps) {
       )}
     </div>
   );
+}
 
-  // 同步当前选中范围到日历组件
-  useEffect(() => {
-    if (current.key !== 'custom') {
-      // 快捷选项：根据类型设置不同的显示
-      if (current.key === 'today' || current.key === 'yesterday') {
-        // 单日选择：只选中一个日期
-        setCustomRange({
-          from: current.start,
-          to: current.start // from和to相同，表示单日选择
-        });
-      } else if (current.key === 'last7') {
-        // 近7日：显示7天范围（包含今天）
-        // current.end是明天，但我们要显示到今天
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // 设置为今天的开始时间
-        setCustomRange({
-          from: current.start,
-          to: today
-        });
-      } else if (current.key === 'month') {
-        // 当月：显示1号到今天的范围
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-        setCustomRange({
-          from: monthStart,
-          to: today
-        });
-      }
-      setCalendarMonth(current.start);
-    } else {
-      // 自定义范围：从URL参数解析
-      const startStr = search.get('start');
-      const endStr = search.get('end');
-      if (startStr && endStr) {
-        setCustomRange({
-          from: new Date(startStr),
-          to: new Date(endStr)
-        });
-        setCalendarMonth(new Date(startStr));
-      }
-    }
-  }, [current.key, current.start, current.end, search]);
+export function RangePicker(props: RangePickerProps) {
+  return (
+    <Suspense fallback={<Button variant="outline" disabled>加载中...</Button>}>
+      <RangePickerContent {...props} />
+    </Suspense>
+  );
 }
