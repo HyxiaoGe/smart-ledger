@@ -2,8 +2,8 @@
  * Prisma 客户端单例
  * 提供 PostgreSQL 数据库访问
  */
-import { PrismaClient as PrismaClientType } from '@prisma/client';
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient } from '@/generated/prisma/client';
+type PrismaClientType = PrismaClient;
 
 // 声明全局变量用于开发环境热重载时保持单例
 declare global {
