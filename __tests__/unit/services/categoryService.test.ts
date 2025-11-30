@@ -95,6 +95,7 @@ function createMockRepository(): ICategoryRepository {
     delete: vi.fn(),
     getUsageDetail: vi.fn(),
     getSubcategories: vi.fn(),
+    getAllSubcategoriesBatch: vi.fn(),
     getFrequentMerchants: vi.fn(),
     getAllFrequentMerchants: vi.fn(),
     updateSortOrder: vi.fn(),
@@ -113,7 +114,6 @@ function createMockCategory(overrides: Partial<Category> = {}): Category {
     is_system: true,
     is_active: true,
     sort_order: 1,
-    parent_id: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     ...overrides,
@@ -135,9 +135,9 @@ describe('CategoryService', () => {
       const mockCategories: CategoryWithStats[] = [
         {
           ...createMockCategory(),
-          transactionCount: 100,
-          totalAmount: 5000,
-          lastUsedAt: new Date().toISOString(),
+          usage_count: 100,
+          total_amount: 5000,
+          last_used: new Date().toISOString(),
         },
       ];
       vi.mocked(mockRepository.findAllWithStats).mockResolvedValue(mockCategories);
@@ -253,8 +253,9 @@ describe('CategoryService', () => {
   describe('deleteCategory', () => {
     it('should delete category without migration', async () => {
       const deleteResult = {
-        deleted: true,
-        migratedTransactions: 0,
+        success: true,
+        message: '删除成功',
+        affected_transactions: 0,
       };
       vi.mocked(mockRepository.delete).mockResolvedValue(deleteResult);
 
@@ -266,8 +267,9 @@ describe('CategoryService', () => {
 
     it('should delete category with migration', async () => {
       const deleteResult = {
-        deleted: true,
-        migratedTransactions: 10,
+        success: true,
+        message: '删除成功，已迁移10条交易',
+        affected_transactions: 10,
       };
       vi.mocked(mockRepository.delete).mockResolvedValue(deleteResult);
 
@@ -281,13 +283,13 @@ describe('CategoryService', () => {
   describe('getCategoryUsageDetail', () => {
     it('should return usage details', async () => {
       const usageDetail = {
-        category: createMockCategory(),
-        transactionCount: 50,
-        totalAmount: 2500,
-        monthlyBreakdown: [
-          { month: '2024-06', count: 20, amount: 1000 },
-          { month: '2024-05', count: 30, amount: 1500 },
-        ],
+        total_transactions: 50,
+        total_amount: 2500,
+        avg_amount: 50,
+        first_used: '2024-01-01',
+        last_used: '2024-06-15',
+        this_month_count: 20,
+        this_month_amount: 1000,
       };
       vi.mocked(mockRepository.getUsageDetail).mockResolvedValue(usageDetail);
 
@@ -301,8 +303,8 @@ describe('CategoryService', () => {
   describe('getSubcategories', () => {
     it('should return subcategories for a category', async () => {
       const subcategories: Subcategory[] = [
-        { id: 'sub-1', name: '午餐', count: 30 },
-        { id: 'sub-2', name: '晚餐', count: 25 },
+        { key: 'lunch', label: '午餐', category_key: 'food' },
+        { key: 'dinner', label: '晚餐', category_key: 'food' },
       ];
       vi.mocked(mockRepository.getSubcategories).mockResolvedValue(subcategories);
 
@@ -319,8 +321,8 @@ describe('CategoryService', () => {
         createMockCategory({ key: 'food' }),
         createMockCategory({ key: 'transport', id: 'cat-2' }),
       ];
-      const foodSubs: Subcategory[] = [{ id: 'sub-1', name: '午餐', count: 30 }];
-      const transportSubs: Subcategory[] = [{ id: 'sub-2', name: '地铁', count: 20 }];
+      const foodSubs: Subcategory[] = [{ key: 'lunch', label: '午餐', category_key: 'food' }];
+      const transportSubs: Subcategory[] = [{ key: 'subway', label: '地铁', category_key: 'transport' }];
 
       vi.mocked(mockRepository.findAll).mockResolvedValue(categories);
       vi.mocked(mockRepository.getSubcategories)
@@ -337,8 +339,8 @@ describe('CategoryService', () => {
   describe('getFrequentMerchants', () => {
     it('should return frequent merchants for category', async () => {
       const merchants: MerchantSuggestion[] = [
-        { name: '肯德基', count: 15, avgAmount: 35 },
-        { name: '麦当劳', count: 10, avgAmount: 30 },
+        { name: '肯德基', category_key: 'food', usage_count: 15 },
+        { name: '麦当劳', category_key: 'food', usage_count: 10 },
       ];
       vi.mocked(mockRepository.getFrequentMerchants).mockResolvedValue(merchants);
 

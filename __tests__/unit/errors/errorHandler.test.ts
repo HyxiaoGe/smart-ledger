@@ -59,10 +59,9 @@ describe('errorHandler utilities', () => {
         {
           code: 'invalid_type',
           expected: 'string',
-          received: 'number',
           path: ['email'],
           message: 'Expected string, received number',
-        },
+        } as any,
       ]);
 
       const result = zodErrorToValidationError(zodError);
@@ -80,10 +79,9 @@ describe('errorHandler utilities', () => {
         {
           code: 'invalid_type',
           expected: 'string',
-          received: 'number',
           path: ['field'],
           message: 'Invalid',
-        },
+        } as any,
       ]);
 
       const result = zodErrorToValidationError(zodError, 'trace-123');
@@ -96,10 +94,9 @@ describe('errorHandler utilities', () => {
         {
           code: 'invalid_type',
           expected: 'string',
-          received: 'number',
           path: ['user', 'profile', 'email'],
           message: 'Invalid email',
-        },
+        } as any,
       ]);
 
       const result = zodErrorToValidationError(zodError);
@@ -112,18 +109,16 @@ describe('errorHandler utilities', () => {
         {
           code: 'invalid_type',
           expected: 'string',
-          received: 'number',
           path: ['email'],
           message: 'Invalid email',
-        },
+        } as any,
         {
           code: 'too_small',
           minimum: 1,
-          type: 'string',
           inclusive: true,
           path: ['name'],
           message: 'Name is required',
-        },
+        } as any,
       ]);
 
       const result = zodErrorToValidationError(zodError);
@@ -179,10 +174,9 @@ describe('errorHandler utilities', () => {
         {
           code: 'invalid_type',
           expected: 'string',
-          received: 'number',
           path: ['field'],
           message: 'Invalid',
-        },
+        } as any,
       ]);
 
       const result = normalizeError(zodError);

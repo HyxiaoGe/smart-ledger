@@ -40,7 +40,6 @@ function createMockTransaction(overrides: Partial<Transaction> = {}): Transactio
     note: 'Test transaction',
     currency: 'CNY',
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
     ...overrides,
   };
 }
