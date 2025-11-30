@@ -11,6 +11,8 @@ export const CATEGORY_MAP: Record<string, string> = {
   medical: '医疗',
   education: '教育',
   subscription: '订阅',
+  rent: '房租',
+  utilities: '水电费',
   other: '其他',
 };
 
@@ -72,14 +74,16 @@ export function getPaymentMethodName(method: string): string {
   return PAYMENT_METHOD_MAP[method.toLowerCase()] || method;
 }
 
-export function formatCurrency(amount: number): string {
+export function formatCurrency(amount: number | null | undefined): string {
+  if (amount == null) return '0.00';
   return amount.toLocaleString('zh-CN', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
 }
 
-export function formatPercentage(value: number): string {
+export function formatPercentage(value: number | null | undefined): string {
+  if (value == null) return '+0.0%';
   const sign = value > 0 ? '+' : '';
   return `${sign}${value.toFixed(1)}%`;
 }
