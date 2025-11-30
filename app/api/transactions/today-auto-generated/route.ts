@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { executeQuery, getPrismaClient, getSupabaseClient, getDbType } from '@/lib/clients/db';
+import { executeQuery, getPrismaClient } from '@/lib/clients/db';
 import { withErrorHandler, ApiError } from '@/lib/utils/apiErrorHandler';
 
 export const GET = withErrorHandler(async (request: NextRequest) => {
