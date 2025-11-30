@@ -1,7 +1,8 @@
 'use client';
 
-import React, { use } from 'react';
+import React from 'react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -101,12 +102,9 @@ function getPaymentMethodName(method: string): string {
   return PAYMENT_METHOD_NAMES[method.toLowerCase()] || method;
 }
 
-export default function MonthlyReportDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+export default function MonthlyReportDetailPage() {
+  const params = useParams();
+  const id = params.id as string;
 
   const { data: report, isLoading, error } = useQuery({
     queryKey: ['monthly-reports', id],
