@@ -7,3 +7,9 @@ services:
       - "3000:3000"
     env_file:
       - .env.local
+    networks:
+      - postgres_default
+
+networks:
+  postgres_default:
+    external: true
