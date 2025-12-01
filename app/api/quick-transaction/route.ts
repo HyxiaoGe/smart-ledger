@@ -34,7 +34,8 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
   const { category, amount, note, currency, date } = validation.data;
 
   const type = 'expense';
-  const transactionDate = date || formatDateToLocal(new Date());
+  // 将日期字符串转换为 Date 对象，Prisma DateTime 需要完整的 ISO-8601 格式
+  const transactionDate = date ? new Date(date) : new Date();
 
   // 创建交易记录
   const prisma = getPrismaClient();
