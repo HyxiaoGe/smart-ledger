@@ -10,6 +10,8 @@ WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+# prisma generate 只生成客户端代码，不需要真正连接数据库
+ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder"
 RUN npx prisma generate
 RUN npm run build
 
