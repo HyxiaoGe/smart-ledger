@@ -1,14 +1,10 @@
 version: '3.9'
 services:
   app:
-    image: node:20-alpine
-    working_dir: /app
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     env_file:
       - .env.local
-    volumes:
-      - .:/app
-      - /app/node_modules
-    command: sh -c "npm install && npm run dev"
-
