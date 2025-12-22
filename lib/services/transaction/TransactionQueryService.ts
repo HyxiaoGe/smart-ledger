@@ -222,9 +222,22 @@ export class TransactionQueryService {
       return this.repository.findByDateRange(dateRange.start, dateRange.end, 'expense');
     }
 
-    // 自定义范围：前端已经处理了结束日期+1，直接使用
+    // 自定义范围：需要判断是单日还是范围
     if (range === 'custom') {
-      return this.repository.findByDateRange(dateRange.start, dateRange.end, 'expense');
+      // 如果 start === end，说明是单日选择
+      if (dateRange.start === dateRange.end) {
+        // 单日查询：结束日期需要+1天（因为 repository 使用左闭右开区间）
+        const endDate = new Date(dateRange.end);
+        endDate.setDate(endDate.getDate() + 1);
+        const queryEnd = endDate.toISOString().slice(0, 10);
+        return this.repository.findByDateRange(dateRange.start, queryEnd, 'expense');
+      } else {
+        // 范围查询：结束日期需要+1天（左闭右开）
+        const endDate = new Date(dateRange.end);
+        endDate.setDate(endDate.getDate() + 1);
+        const queryEnd = endDate.toISOString().slice(0, 10);
+        return this.repository.findByDateRange(dateRange.start, queryEnd, 'expense');
+      }
     }
 
     // 其他范围（周、月、季）：使用标准的左闭右开查询

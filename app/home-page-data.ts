@@ -239,11 +239,12 @@ async function loadRangeData(
 
   // 单日范围类型列表
   const singleDayRanges = ['today', 'yesterday', 'dayBeforeYesterday'];
-  const isSingleDay = singleDayRanges.includes(rangeParam);
+  const isSingleDay = singleDayRanges.includes(rangeParam) || (rangeParam === 'custom' && rStart === rEnd);
 
   // 计算结束日期（用于查询）
   let queryEnd = rEnd;
-  if (rangeParam === 'custom') {
+  if (rangeParam === 'custom' && rStart !== rEnd) {
+    // 只有在范围查询时才给结束日期加1天
     const endDate = new Date(rEnd);
     endDate.setDate(endDate.getDate() + 1);
     queryEnd = endDate.toISOString().slice(0, 10);
@@ -284,7 +285,7 @@ async function loadRangeData(
     .sort((a, b) => b.value - a.value);
 
   // 生成 Top 10
-  const top10 = generateTop10(expenseRows, currency);
+  const top10 = generateTop10(expenseRows, currency, isSingleDay);
 
   return {
     rangeExpense,
@@ -345,7 +346,28 @@ async function queryTransactions(
 /**
  * 生成 Top 10 支出
  */
-function generateTop10(expenseRows: any[], currency: string) {
+function generateTop10(expenseRows: any[], currency: string, isSingleDay: boolean) {
+  if (isSingleDay) {
+    // 单日模式：显示实际交易记录，不合并
+    return expenseRows
+      .sort((a, b) => Number(b.amount || 0) - Number(a.amount || 0))
+      .slice(0, 10)
+      .map((transaction) => ({
+        id: transaction.id,
+        category: transaction.category || 'other',
+        amount: Number(transaction.amount || 0),
+        date: transaction.date instanceof Date
+          ? transaction.date.toISOString().slice(0, 10)
+          : String(transaction.date),
+        note: transaction.note || undefined,
+        currency,
+        merchant: transaction.merchant || undefined,
+        subcategory: transaction.subcategory || undefined,
+        product: transaction.product || undefined,
+      }));
+  }
+
+  // 范围模式：按分类合并统计
   const categoryMap = new Map<
     string,
     {

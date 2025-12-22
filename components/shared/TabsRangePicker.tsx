@@ -2,8 +2,8 @@
 
 import { useState, useCallback, useEffect, useMemo, Suspense } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { format } from "date-fns";
 import { zhCN } from "date-fns/locale";
+import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, addMonths, addQuarters, getWeek, getQuarter } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CalendarIcon, ChevronDown } from "lucide-react";
@@ -15,6 +15,143 @@ import {
   formatDateToLocal,
   type ExtendedQuickRange,
 } from "@/lib/utils/date";
+
+// 周选择器组件
+function WeekPicker({ onSelect }: { onSelect: (_range: { start: string; end: string }) => void }) {
+  const weeks = useMemo(() => {
+    const result = [];
+    const today = new Date();
+    // 显示最近12周
+    for (let i = 0; i < 12; i++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i * 7);
+      const weekStart = startOfWeek(date, { weekStartsOn: 1 }); // 周一开始
+      const weekEnd = endOfWeek(date, { weekStartsOn: 1 });
+      const weekNum = getWeek(date, { weekStartsOn: 1 });
+      result.push({
+        weekNum,
+        start: weekStart,
+        end: weekEnd,
+        label: `第${weekNum}周 (${weekStart.getMonth() + 1}/${weekStart.getDate()} - ${weekEnd.getMonth() + 1}/${weekEnd.getDate()})`,
+      });
+    }
+    return result;
+  }, []);
+
+  return (
+    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 max-h-[300px] overflow-y-auto">
+      <div className="space-y-2">
+        {weeks.map((week, index) => (
+          <Button
+            key={index}
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              onSelect({
+                start: formatDateToLocal(week.start),
+                end: formatDateToLocal(week.end),
+              });
+            }}
+            className="w-full justify-start text-left hover:bg-blue-50 dark:hover:bg-blue-950"
+          >
+            {week.label}
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// 月份选择器组件
+function MonthPicker({ onSelect }: { onSelect: (_range: { start: string; end: string }) => void }) {
+  const months = useMemo(() => {
+    const result = [];
+    const today = new Date();
+    // 显示最近12个月
+    for (let i = 0; i < 12; i++) {
+      const date = addMonths(today, -i);
+      const monthStart = startOfMonth(date);
+      const monthEnd = endOfMonth(date);
+      result.push({
+        year: date.getFullYear(),
+        month: date.getMonth() + 1,
+        start: monthStart,
+        end: monthEnd,
+        label: `${date.getFullYear()}年${date.getMonth() + 1}月`,
+      });
+    }
+    return result;
+  }, []);
+
+  return (
+    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 max-h-[300px] overflow-y-auto">
+      <div className="space-y-2">
+        {months.map((month, index) => (
+          <Button
+            key={index}
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              onSelect({
+                start: formatDateToLocal(month.start),
+                end: formatDateToLocal(month.end),
+              });
+            }}
+            className="w-full justify-start text-left hover:bg-blue-50 dark:hover:bg-blue-950"
+          >
+            {month.label}
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// 季度选择器组件
+function QuarterPicker({ onSelect }: { onSelect: (_range: { start: string; end: string }) => void }) {
+  const quarters = useMemo(() => {
+    const result = [];
+    const today = new Date();
+    // 显示最近8个季度
+    for (let i = 0; i < 8; i++) {
+      const date = addQuarters(today, -i);
+      const quarterStart = startOfQuarter(date);
+      const quarterEnd = endOfQuarter(date);
+      const quarterNum = getQuarter(date);
+      result.push({
+        year: date.getFullYear(),
+        quarter: quarterNum,
+        start: quarterStart,
+        end: quarterEnd,
+        label: `${date.getFullYear()}年 Q${quarterNum}`,
+      });
+    }
+    return result;
+  }, []);
+
+  return (
+    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 max-h-[300px] overflow-y-auto">
+      <div className="space-y-2">
+        {quarters.map((quarter, index) => (
+          <Button
+            key={index}
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              onSelect({
+                start: formatDateToLocal(quarter.start),
+                end: formatDateToLocal(quarter.end),
+              });
+            }}
+            className="w-full justify-start text-left hover:bg-blue-50 dark:hover:bg-blue-950"
+          >
+            {quarter.label}
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 // Tab 类型定义
 type TabType = "day" | "week" | "month" | "quarter";
@@ -54,17 +191,17 @@ const TAB_LABELS: Record<TabType, string> = {
 };
 
 // 根据范围 key 找到对应的 tab
-function getTabFromRange(range: ExtendedQuickRange): TabType {
-  if (["today", "yesterday", "dayBeforeYesterday"].includes(range)) return "day";
-  if (["thisWeek", "lastWeek", "weekBeforeLast"].includes(range)) return "week";
-  if (["thisMonth", "lastMonth", "monthBeforeLast"].includes(range)) return "month";
-  if (["thisQuarter", "lastQuarter"].includes(range)) return "quarter";
+function getTabFromRange(_range: ExtendedQuickRange): TabType {
+  if (["today", "yesterday", "dayBeforeYesterday"].includes(_range)) return "day";
+  if (["thisWeek", "lastWeek", "weekBeforeLast"].includes(_range)) return "week";
+  if (["thisMonth", "lastMonth", "monthBeforeLast"].includes(_range)) return "month";
+  if (["thisQuarter", "lastQuarter"].includes(_range)) return "quarter";
   return "day";
 }
 
 export interface TabsRangePickerProps {
   className?: string;
-  onRangeChange?: (range: { start: Date; end: Date } | null) => void;
+  onRangeChange?: (_range: { start: Date; end: Date } | null) => void;
 }
 
 function TabsRangePickerContent({ className, onRangeChange }: TabsRangePickerProps) {
@@ -110,13 +247,13 @@ function TabsRangePickerContent({ className, onRangeChange }: TabsRangePickerPro
 
   // 更新 URL 参数
   const updateURL = useCallback(
-    (range: { start: string; end: string }, key: string) => {
+    (_range: { start: string; end: string }, key: string) => {
       const sp = new URLSearchParams(search?.toString());
 
       sp.set("range", key);
       if (key === "custom") {
-        sp.set("start", range.start);
-        sp.set("end", range.end);
+        sp.set("start", _range.start);
+        sp.set("end", _range.end);
       } else {
         sp.delete("start");
         sp.delete("end");
@@ -153,13 +290,10 @@ function TabsRangePickerContent({ className, onRangeChange }: TabsRangePickerPro
 
       const startStr = formatDateToLocal(from);
       const endStr = formatDateToLocal(to);
-      // 结束日期需要+1天，因为查询是左闭右开
-      const queryEnd = new Date(to);
-      queryEnd.setDate(queryEnd.getDate() + 1);
-      const queryEndStr = formatDateToLocal(queryEnd);
 
       setIsOpen(false);
-      updateURL({ start: startStr, end: queryEndStr }, "custom");
+      // 前端不再加1天，让后端统一处理
+      updateURL({ start: startStr, end: endStr }, "custom");
       onRangeChange?.({ start: from, end: to });
     },
     [updateURL, onRangeChange]
@@ -260,13 +394,16 @@ function TabsRangePickerContent({ className, onRangeChange }: TabsRangePickerPro
                 </div>
               </div>
 
-              {/* 自定义日期选择器（可折叠） */}
+              {/* 自定义选择器 */}
               <div className="border-t border-gray-100 dark:border-gray-700">
-                <details className="group">
+                <details className="group" open={activeTab === "day"}>
                   <summary className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 text-sm text-gray-600 dark:text-gray-400">
                     <span className="flex items-center gap-2">
                       <CalendarIcon className="h-4 w-4" />
-                      自定义日期范围
+                      {activeTab === "day" && "自定义日期"}
+                      {activeTab === "week" && "选择周"}
+                      {activeTab === "month" && "选择月份"}
+                      {activeTab === "quarter" && "选择季度"}
                     </span>
                     <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
                   </summary>
@@ -274,23 +411,64 @@ function TabsRangePickerContent({ className, onRangeChange }: TabsRangePickerPro
                     <ComponentErrorBoundary
                       fallback={
                         <div className="text-center py-4 text-sm text-gray-500">
-                          日期选择器加载失败
+                          选择器加载失败
                         </div>
                       }
                     >
-                      <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-2 overflow-x-auto">
-                        <DatePicker
-                          mode="range"
-                          selected={
-                            customRange?.from && customRange?.to
-                              ? { from: customRange.from, to: customRange.to }
-                              : undefined
-                          }
-                          onSelect={handleCustomRangeSelect}
-                          locale={zhCN}
-                          className="rdp-enhanced"
+                      {activeTab === "day" && (
+                        <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-2 overflow-x-auto">
+                          <DatePicker
+                            mode="range"
+                            selected={
+                              customRange?.from && customRange?.to
+                                ? { from: customRange.from, to: customRange.to }
+                                : undefined
+                            }
+                            onSelect={handleCustomRangeSelect}
+                            locale={zhCN}
+                            className="rdp-enhanced"
+                          />
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
+                            💡 点击同一天可选择单日，点击两个日期可选择范围
+                          </div>
+                        </div>
+                      )}
+                      {activeTab === "week" && (
+                        <WeekPicker
+                          onSelect={(weekRange) => {
+                            setIsOpen(false);
+                            updateURL({ start: weekRange.start, end: weekRange.end }, "custom");
+                            onRangeChange?.({
+                              start: new Date(weekRange.start),
+                              end: new Date(weekRange.end),
+                            });
+                          }}
                         />
-                      </div>
+                      )}
+                      {activeTab === "month" && (
+                        <MonthPicker
+                          onSelect={(monthRange) => {
+                            setIsOpen(false);
+                            updateURL({ start: monthRange.start, end: monthRange.end }, "custom");
+                            onRangeChange?.({
+                              start: new Date(monthRange.start),
+                              end: new Date(monthRange.end),
+                            });
+                          }}
+                        />
+                      )}
+                      {activeTab === "quarter" && (
+                        <QuarterPicker
+                          onSelect={(quarterRange) => {
+                            setIsOpen(false);
+                            updateURL({ start: quarterRange.start, end: quarterRange.end }, "custom");
+                            onRangeChange?.({
+                              start: new Date(quarterRange.start),
+                              end: new Date(quarterRange.end),
+                            });
+                          }}
+                        />
+                      )}
                     </ComponentErrorBoundary>
                   </div>
                 </details>
