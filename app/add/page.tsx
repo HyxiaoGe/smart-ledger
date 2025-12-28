@@ -12,7 +12,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DateInput } from '@/components/features/input/DateInput';
 import { SmartNoteInput } from '@/components/features/input/SmartNoteInput';
 import { MerchantInput, SubcategorySelect } from '@/components/features/input/MerchantInput';
-import { AIPredictionPanel } from '@/components/features/ai-analysis/AIPredictionPanel';
 import { enhancedDataSync, markTransactionsDirty } from '@/lib/core/EnhancedDataSync';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { paymentMethodsApi } from '@/lib/api/services/payment-methods';
@@ -21,29 +20,6 @@ import { commonNotesApi } from '@/lib/api/services/common-notes';
 import { aiApi } from '@/lib/api/services/ai';
 import { Clock } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-// AI 预测类型定义
-interface TransactionPrediction {
-  id: string;
-  type: 'category' | 'amount' | 'full';
-  confidence: number;
-  reason: string;
-  predictedCategory?: string;
-  predictedAmount?: number;
-  suggestedNote?: string;
-  metadata?: any;
-}
-
-interface QuickTransactionSuggestion {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  amount: number;
-  note: string;
-  confidence: number;
-  icon?: string;
-  reason: string;
-}
 import { formatDateToLocal } from '@/lib/utils/date';
 import { logger } from '@/lib/services/logging';
 import { STORAGE_KEYS } from '@/lib/config/storageKeys';
@@ -295,47 +271,7 @@ export default function AddPage() {
     }, 200) as any as number; // 200ms 延迟
   }
 
-  // 处理AI预测选择
-  const handlePredictionSelect = useCallback((prediction: TransactionPrediction | QuickTransactionSuggestion) => {
-    let updatedCategory = category;
-    let updatedAmount = parsedAmount;
-    let updatedNote = note;
-
-    if ('predictedCategory' in prediction && prediction.predictedCategory) {
-      updatedCategory = prediction.predictedCategory;
-      setCategory(updatedCategory);
-    }
-
-    if ('predictedAmount' in prediction && prediction.predictedAmount) {
-      updatedAmount = prediction.predictedAmount;
-      setAmountText(formatThousand(updatedAmount));
-    }
-
-    if ('suggestedNote' in prediction && prediction.suggestedNote) {
-      updatedNote = prediction.suggestedNote;
-      setNote(updatedNote);
-    } else if ('note' in prediction && prediction.note) {
-      updatedNote = prediction.note;
-      setNote(updatedNote);
-    }
-
-    // 如果是快速建议且有完整数据，可以自动提交
-    if ('category' in prediction && 'amount' in prediction && 'note' in prediction) {
-      const quickSuggestion = prediction as QuickTransactionSuggestion;
-      setCategory(quickSuggestion.category);
-      setAmountText(formatThousand(quickSuggestion.amount));
-      setNote(quickSuggestion.note);
-
-      // 自动聚焦到备注输入框让用户确认
-      setTimeout(() => {
-        const noteInput = document.querySelector('input[placeholder*="备注"]') as HTMLInputElement;
-        if (noteInput) {
-          noteInput.focus();
-          noteInput.select();
-        }
-      }, 100);
-    }
-  }, [category, parsedAmount, note]);
+  const recentQuickList = useMemo(() => recentTransactions.slice(0, 3), [recentTransactions]);
 
   // 重置表单
   function resetForm({ keep }: { keep: boolean }) {
@@ -805,23 +741,117 @@ export default function AddPage() {
       </Card>
       </div>
 
-      {/* 右侧：AI预测面板 */}
+      {/* 右侧：智能建议面板 */}
       <div className="lg:col-span-1">
         {showAIPrediction && (
-          <AIPredictionPanel
-            onPredictionSelect={handlePredictionSelect}
-            currentAmount={parsedAmount}
-            currentCategory={category}
-            className="sticky top-6"
-          />
+          <Card className="sticky top-6">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg">智能建议</CardTitle>
+              <p className="text-xs text-muted-foreground">基于最近 30 天的记录</p>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm">
+              <div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">常用分类</div>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  {commonCategories.map((item) => (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() => setCategory(item.key)}
+                      className={`rounded-md border px-2 py-1 text-xs text-left transition ${
+                        category === item.key
+                          ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
+                          : 'border-border hover:border-blue-400'
+                      }`}
+                    >
+                      {item.icon ? `${item.icon} ` : ''}
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">常用商户</div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {commonMerchants.length === 0 ? (
+                    <span className="text-xs text-muted-foreground">暂无</span>
+                  ) : (
+                    commonMerchants.map((item) => (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => {
+                          setMerchant(item);
+                          setShowAdvanced(true);
+                        }}
+                        className={`rounded-full border px-2 py-1 text-xs transition ${
+                          merchant === item
+                            ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
+                            : 'border-border hover:border-blue-400'
+                        }`}
+                      >
+                        {item}
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">高频金额</div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {quickAmounts.map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => setAmountText(formatThousand(item))}
+                      className={`rounded-full border px-2 py-1 text-xs transition ${
+                        Math.abs(parsedAmount - item) < 0.001
+                          ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
+                          : 'border-border hover:border-blue-400'
+                      }`}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">最近记录</div>
+                <div className="mt-2 space-y-2">
+                  {recentQuickList.length === 0 ? (
+                    <span className="text-xs text-muted-foreground">暂无</span>
+                  ) : (
+                    recentQuickList.map((tx) => (
+                      <button
+                        key={tx.id}
+                        type="button"
+                        onClick={() => applyRecentTransaction(tx)}
+                        className="w-full rounded-md border border-border px-2 py-2 text-left text-xs transition hover:border-blue-400"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="truncate">
+                            {tx.note || tx.merchant || '未填写备注'}
+                          </span>
+                          <span className="font-semibold">{formatThousand(Number(tx.amount || 0))}</span>
+                        </div>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
-        {/* AI预测开关 */}
+        {/* 智能建议开关 */}
         <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span className="text-sm text-blue-700 dark:text-blue-400">AI智能预测</span>
+              <span className="text-sm text-blue-700 dark:text-blue-400">智能建议</span>
             </div>
             <Button
               variant="ghost"
@@ -833,7 +863,7 @@ export default function AddPage() {
             </Button>
           </div>
           <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
-            基于您的历史数据智能预测分类和金额，让记账更快速
+            基于最近记录的常用分类、商户与金额建议
           </p>
         </div>
       </div>
