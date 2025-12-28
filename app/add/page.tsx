@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import type { TransactionType, Currency } from '@/types/domain/transaction';
+import type { TransactionType, Currency, Transaction } from '@/types/domain/transaction';
 import { SUPPORTED_CURRENCIES, DEFAULT_CURRENCY } from '@/lib/config/config';
 import { useCategories } from '@/contexts/CategoryContext';
 import { CategoryChip } from '@/components/CategoryChip';
@@ -19,6 +19,7 @@ import { paymentMethodsApi } from '@/lib/api/services/payment-methods';
 import { transactionsApi } from '@/lib/api/services/transactions';
 import { commonNotesApi } from '@/lib/api/services/common-notes';
 import { aiApi } from '@/lib/api/services/ai';
+import { Clock } from 'lucide-react';
 // AI 预测类型定义
 interface TransactionPrediction {
   id: string;
@@ -62,6 +63,7 @@ export default function AddPage() {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('账单保存成功！');
   const [showAIPrediction, setShowAIPrediction] = useState(true);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   // 新增：三层数据结构字段
   const [merchant, setMerchant] = useState<string>('');
@@ -88,6 +90,22 @@ export default function AddPage() {
     const n = parseFloat(v);
     return isNaN(n) ? 0 : n;
   }
+
+  const applyRecentTransaction = useCallback(
+    (tx: Transaction) => {
+      setCategory(tx.category || 'other');
+      setAmountText(formatThousand(Number(tx.amount || 0)));
+      setNote(tx.note || '');
+      setCurrency((tx.currency || DEFAULT_CURRENCY) as Currency);
+      setMerchant(tx.merchant || '');
+      setSubcategory(tx.subcategory || '');
+      setProduct(tx.product || '');
+      setPaymentMethod(tx.payment_method || '');
+      setDate(new Date());
+      setShowAdvanced(true);
+    },
+    []
+  );
 
   // 防抖提交函数
   const debouncedSubmit = useCallback(async (formData: {
@@ -325,6 +343,22 @@ export default function AddPage() {
     queryFn: () => paymentMethodsApi.list(),
   });
 
+  const { data: recentTransactionsData, isLoading: recentLoading } = useQuery({
+    queryKey: ['recent-transactions'],
+    queryFn: () =>
+      transactionsApi.list({
+        type: 'expense',
+        page_size: 5,
+        sort_by: 'created_at',
+        sort_order: 'desc',
+      }),
+  });
+
+  const recentTransactions = useMemo(() => {
+    if (!recentTransactionsData) return [];
+    return (recentTransactionsData.data || recentTransactionsData.transactions || []) as Transaction[];
+  }, [recentTransactionsData]);
+
   // 当支付方式数据加载完成时更新状态
   useEffect(() => {
     if (paymentMethodsData) {
@@ -381,6 +415,40 @@ export default function AddPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-4">
+            {recentTransactions.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between">
+                  <Label>最近记录</Label>
+                  <span className="text-xs text-muted-foreground">点击一键填充</span>
+                </div>
+                <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+                  {recentTransactions.map((tx) => (
+                    <button
+                      key={tx.id}
+                      type="button"
+                      onClick={() => applyRecentTransaction(tx)}
+                      className="min-w-[180px] rounded-md border border-border bg-background px-3 py-2 text-left text-sm shadow-sm transition hover:border-blue-400 hover:shadow"
+                    >
+                      <div className="flex items-center justify-between">
+                        <CategoryChip category={tx.category || 'other'} />
+                        <span className="font-semibold">
+                          {formatThousand(Number(tx.amount || 0))}
+                        </span>
+                      </div>
+                      <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
+                        <Clock className="h-3 w-3" />
+                        <span className="truncate">
+                          {tx.note || tx.merchant || '未填写备注'}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {recentLoading && (
+              <div className="text-xs text-muted-foreground">加载最近记录中...</div>
+            )}
             <div>
               <Label>分类 <span className="text-destructive">*</span></Label>
               <select
@@ -436,22 +504,6 @@ export default function AddPage() {
                 </select>
               </div>
               <div>
-                <Label>支付方式</Label>
-                <select
-                  className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
-                  value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                  disabled={loading}
-                >
-                  <option className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700" value="">未设置</option>
-                  {paymentMethods.map((pm) => (
-                    <option className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700" key={pm.id} value={pm.id}>
-                      {pm.name}{pm.is_default ? ' (默认)' : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
                 <Label>日期 <span className="text-destructive">*</span></Label>
                 <DateInput
                   selected={date}
@@ -462,45 +514,69 @@ export default function AddPage() {
               </div>
             </div>
 
-            {/* 新增：商家信息输入区域 */}
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4">
-              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                <span className="font-medium">商家信息</span>
-                <span className="text-xs text-gray-400 dark:text-gray-500">（可选，帮助更好地分析消费习惯）</span>
-              </div>
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+              <button
+                type="button"
+                onClick={() => setShowAdvanced((prev) => !prev)}
+                className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+              >
+                <span className="font-medium">高级信息</span>
+                <span className="text-xs text-gray-400 dark:text-gray-500">（支付方式 / 商家 / 子分类）</span>
+              </button>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label>商家/品牌</Label>
-                  <MerchantInput
-                    value={merchant}
-                    onChange={setMerchant}
-                    placeholder="如：瑞幸咖啡、地铁"
-                    disabled={loading}
-                    category={category}
-                  />
-                </div>
-                <div>
-                  <Label>子分类</Label>
-                  <SubcategorySelect
-                    category={category}
-                    value={subcategory}
-                    onChange={setSubcategory}
-                    disabled={loading}
-                  />
-                </div>
-              </div>
+              {showAdvanced && (
+                <div className="mt-4 space-y-4">
+                  <div>
+                    <Label>支付方式</Label>
+                    <select
+                      className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
+                      value={paymentMethod}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      disabled={loading}
+                    >
+                      <option className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700" value="">未设置</option>
+                      {paymentMethods.map((pm) => (
+                        <option className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700" key={pm.id} value={pm.id}>
+                          {pm.name}{pm.is_default ? ' (默认)' : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-              <div>
-                <Label>具体产品/服务</Label>
-                <ClearableInput
-                  value={product}
-                  onChange={(e) => setProduct(e.target.value)}
-                  onClear={() => setProduct('')}
-                  placeholder="如：生椰拿铁、地铁票"
-                  disabled={loading}
-                />
-              </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>商家/品牌</Label>
+                      <MerchantInput
+                        value={merchant}
+                        onChange={setMerchant}
+                        placeholder="如：瑞幸咖啡、地铁"
+                        disabled={loading}
+                        category={category}
+                      />
+                    </div>
+                    <div>
+                      <Label>子分类</Label>
+                      <SubcategorySelect
+                        category={category}
+                        value={subcategory}
+                        onChange={setSubcategory}
+                        disabled={loading}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>具体产品/服务</Label>
+                    <ClearableInput
+                      value={product}
+                      onChange={(e) => setProduct(e.target.value)}
+                      onClear={() => setProduct('')}
+                      placeholder="如：生椰拿铁、地铁票"
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             <div>
