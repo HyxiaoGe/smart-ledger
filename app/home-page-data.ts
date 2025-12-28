@@ -193,7 +193,7 @@ export async function loadPageData(
   const [rangeData, recurringData, calendarResult] = await Promise.all([
     loadRangeData(currency, rangeParam, startParam, endParam),
     loadRecurringExpenses(),
-    loadCalendarData(prisma, currency),
+    loadCalendarData(prisma, currency, resolveCalendarMonth(rangeParam, startParam, endParam)),
   ]);
 
   return {
@@ -222,7 +222,12 @@ async function loadRangeData(
   if (rangeParam === 'custom' && startParam && endParam) {
     rStart = startParam;
     rEnd = endParam;
-    rLabel = `${startParam.slice(5)} ~ ${endParam.slice(5)}`;
+    if (isFullMonthRange(startParam, endParam)) {
+      const parsed = parseLocalDate(startParam);
+      rLabel = parsed ? `${parsed.getFullYear()}年${parsed.getMonth() + 1}月` : `${startParam.slice(5)} ~ ${endParam.slice(5)}`;
+    } else {
+      rLabel = `${startParam.slice(5)} ~ ${endParam.slice(5)}`;
+    }
   } else {
     const extendedRange = getExtendedQuickRange(rangeParam as ExtendedQuickRange);
     rStart = extendedRange.start;
@@ -432,11 +437,12 @@ function generateTop10(expenseRows: any[], currency: string, isSingleDay: boolea
  */
 async function loadCalendarData(
   prisma: ReturnType<typeof getPrismaClient>,
-  currency: string
+  currency: string,
+  target?: { year: number; month: number }
 ): Promise<{ data: { date: string; amount: number; count: number }[]; year: number; month: number }> {
   const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1; // 1-12
+  const year = target?.year ?? now.getFullYear();
+  const month = target?.month ?? now.getMonth() + 1; // 1-12
 
   // 计算当月的开始和结束日期
   const firstDay = new Date(year, month - 1, 1);
@@ -480,6 +486,40 @@ async function loadCalendarData(
   }));
 
   return { data, year, month };
+}
+
+function resolveCalendarMonth(
+  rangeParam: string,
+  startParam?: string,
+  endParam?: string
+): { year: number; month: number } | undefined {
+  if (['thisMonth', 'lastMonth', 'monthBeforeLast'].includes(rangeParam)) {
+    const range = getExtendedQuickRange(rangeParam as ExtendedQuickRange);
+    const start = parseLocalDate(range.start);
+    if (start) {
+      return { year: start.getFullYear(), month: start.getMonth() + 1 };
+    }
+  }
+
+  if (rangeParam === 'custom' && startParam && endParam && isFullMonthRange(startParam, endParam)) {
+    const start = parseLocalDate(startParam);
+    if (start) {
+      return { year: start.getFullYear(), month: start.getMonth() + 1 };
+    }
+  }
+
+  return undefined;
+}
+
+function isFullMonthRange(startStr: string, endStr: string): boolean {
+  const start = parseLocalDate(startStr);
+  const end = parseLocalDate(endStr);
+  if (!start || !end) return false;
+  if (start.getFullYear() !== end.getFullYear()) return false;
+  if (start.getMonth() !== end.getMonth()) return false;
+  if (start.getDate() !== 1) return false;
+  const lastDay = new Date(start.getFullYear(), start.getMonth() + 1, 0).getDate();
+  return end.getDate() === lastDay;
 }
 
 async function loadRecurringExpenses(): Promise<RecurringExpense[]> {
