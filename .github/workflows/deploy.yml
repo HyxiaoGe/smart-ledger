@@ -16,6 +16,8 @@ jobs:
 
       - name: Run Docker Deploy
         run: |
+          cp /home/heyanxiao/project/smart-ledger/.env.local .
+
           echo "开始自动部署..."
           docker compose down
           docker compose up -d --build
