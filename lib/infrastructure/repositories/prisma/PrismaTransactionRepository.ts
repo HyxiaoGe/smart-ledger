@@ -3,7 +3,7 @@
  * 实现 ITransactionRepository 接口，提供基于 Prisma 的数据访问
  */
 
-import type { PrismaClient, Prisma } from '@prisma/client';
+import type { PrismaClient } from '@prisma/client';
 import type { Transaction, TransactionType } from '@/types/domain/transaction';
 import type { ITransactionRepository } from '@/lib/domain/repositories/ITransactionRepository';
 import type {
@@ -48,7 +48,7 @@ export class PrismaTransactionRepository implements ITransactionRepository {
     const where = this.buildWhereClause(filter);
 
     // 构建排序
-    const orderBy: Prisma.transactionsOrderByWithRelationInput = sort
+    const orderBy: Record<string, unknown> = sort
       ? { [sort.field]: sort.order }
       : { date: 'desc' };
 
@@ -137,7 +137,7 @@ export class PrismaTransactionRepository implements ITransactionRepository {
    * 更新交易
    */
   async update(id: string, transaction: UpdateTransactionDTO): Promise<Transaction> {
-    const updateData: Prisma.transactionsUpdateInput = {};
+    const updateData: Record<string, unknown> = {};
 
     if (transaction.type !== undefined) updateData.type = transaction.type;
     if (transaction.category !== undefined) updateData.category = transaction.category;
@@ -304,8 +304,8 @@ export class PrismaTransactionRepository implements ITransactionRepository {
   /**
    * 构建 Prisma where 条件
    */
-  private buildWhereClause(filter: TransactionQueryFilter): Prisma.transactionsWhereInput {
-    const where: Prisma.transactionsWhereInput = {};
+  private buildWhereClause(filter: TransactionQueryFilter): Record<string, any> {
+    const where: Record<string, any> = {};
 
     if (!filter.includeDeleted) {
       where.deleted_at = null;

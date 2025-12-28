@@ -3,7 +3,7 @@
  * 实现 IBudgetRepository 接口，提供基于 Prisma 的预算数据访问
  */
 
-import type { PrismaClient, Prisma } from '@prisma/client';
+import type { PrismaClient } from '@prisma/client';
 import type { Budget } from '@/lib/services/budgetService.server';
 import type { IBudgetRepository } from '@/lib/domain/repositories/IBudgetRepository';
 import type {
@@ -48,7 +48,7 @@ export class PrismaBudgetRepository implements IBudgetRepository {
    * 根据条件查找预算
    */
   async findMany(filter: BudgetQueryFilter): Promise<Budget[]> {
-    const where: Prisma.budgetsWhereInput = {};
+    const where: Record<string, unknown> = {};
 
     if (filter.year !== undefined) {
       where.year = filter.year;
@@ -99,7 +99,7 @@ export class PrismaBudgetRepository implements IBudgetRepository {
    * 更新预算
    */
   async update(id: string, budget: UpdateBudgetDTO): Promise<Budget> {
-    const updateData: Prisma.budgetsUpdateInput = {
+    const updateData: Record<string, unknown> = {
       updated_at: new Date(),
     };
 
@@ -128,7 +128,7 @@ export class PrismaBudgetRepository implements IBudgetRepository {
    * 检查预算是否存在
    */
   async exists(year: number, month: number, category_key?: string | null): Promise<boolean> {
-    const where: Prisma.budgetsWhereInput = {
+    const where: Record<string, unknown> = {
       year,
       month,
     };

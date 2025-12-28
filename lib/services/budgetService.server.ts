@@ -330,7 +330,7 @@ export async function getMonthlyActualExpense(
     },
   });
 
-  return transactions.reduce((sum, tx) => sum + Number(tx.amount), 0);
+  return transactions.reduce((sum: number, tx: { amount: unknown }) => sum + Number(tx.amount), 0);
 }
 
 /**
@@ -675,7 +675,9 @@ export async function refreshBudgetSuggestions(
     if (historicalData.length === 0) continue;
 
     // 计算历史平均
-    const historicalAvg = historicalData.reduce((sum, d) => sum + d.total, 0) / historicalData.length;
+    const historicalAvg =
+      historicalData.reduce((sum: number, d: { total: number }) => sum + d.total, 0) /
+      historicalData.length;
 
     // 当月支出
     const currentMonthSpending = categorySpending?.get(currentMonthKey) || 0;
@@ -685,8 +687,16 @@ export async function refreshBudgetSuggestions(
     // 计算趋势
     let trendDirection = 'stable';
     if (historicalData.length >= 2) {
-      const recentAvg = historicalData.slice(0, 3).reduce((sum, d) => sum + d.total, 0) / Math.min(3, historicalData.length);
-      const olderAvg = historicalData.slice(3).reduce((sum, d) => sum + d.total, 0) / Math.max(1, historicalData.length - 3);
+      const recentAvg =
+        historicalData
+          .slice(0, 3)
+          .reduce((sum: number, d: { total: number }) => sum + d.total, 0) /
+        Math.min(3, historicalData.length);
+      const olderAvg =
+        historicalData
+          .slice(3)
+          .reduce((sum: number, d: { total: number }) => sum + d.total, 0) /
+        Math.max(1, historicalData.length - 3);
       if (recentAvg > olderAvg * 1.1) trendDirection = 'increasing';
       else if (recentAvg < olderAvg * 0.9) trendDirection = 'decreasing';
     }
@@ -790,7 +800,10 @@ export async function predictMonthEndSpending(
       select: { amount: true },
     });
 
-    const currentSpending = transactions.reduce((sum, tx) => sum + Number(tx.amount), 0);
+    const currentSpending = transactions.reduce(
+      (sum: number, tx: { amount: unknown }) => sum + Number(tx.amount),
+      0
+    );
     const dailyRate = daysPassed > 0 ? currentSpending / daysPassed : 0;
     const predictedTotal = dailyRate * daysInMonth;
     const willExceedBudget = predictedTotal > budgetAmount;

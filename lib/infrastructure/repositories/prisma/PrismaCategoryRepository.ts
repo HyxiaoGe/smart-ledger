@@ -3,7 +3,7 @@
  * 实现 ICategoryRepository 接口，提供基于 Prisma 的分类数据访问
  */
 
-import type { PrismaClient, Prisma } from '@prisma/client';
+import type { PrismaClient } from '@prisma/client';
 import type { ICategoryRepository } from '@/lib/domain/repositories/ICategoryRepository';
 import type {
   Category,
@@ -50,7 +50,7 @@ export class PrismaCategoryRepository implements ICategoryRepository {
    * 获取所有分类
    */
   async findAll(filter?: CategoryQueryFilter): Promise<Category[]> {
-    const where: Prisma.categoriesWhereInput = {};
+    const where: Record<string, unknown> = {};
 
     if (filter?.type) {
       where.OR = [

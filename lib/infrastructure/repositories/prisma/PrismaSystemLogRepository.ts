@@ -2,7 +2,7 @@
  * Prisma 系统日志仓储实现
  */
 
-import type { PrismaClient, Prisma } from '@prisma/client';
+import type { PrismaClient } from '@prisma/client';
 import type {
   ISystemLogRepository,
   SystemLog,
@@ -74,7 +74,7 @@ export class PrismaSystemLogRepository implements ISystemLogRepository {
     const pageSize = pagination?.pageSize || 20;
     const skip = (page - 1) * pageSize;
 
-    const orderBy: Prisma.system_logsOrderByWithRelationInput = {
+    const orderBy: Record<string, unknown> = {
       [pagination?.sortBy || 'created_at']: pagination?.sortOrder || 'desc',
     };
 
@@ -196,8 +196,8 @@ export class PrismaSystemLogRepository implements ISystemLogRepository {
     return result.count;
   }
 
-  private buildWhereClause(filter?: SystemLogFilter): Prisma.system_logsWhereInput {
-    const where: Prisma.system_logsWhereInput = {};
+  private buildWhereClause(filter?: SystemLogFilter): Record<string, unknown> {
+    const where: Record<string, any> = {};
 
     if (filter?.level) {
       where.level = filter.level;

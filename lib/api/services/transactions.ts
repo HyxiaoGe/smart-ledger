@@ -16,6 +16,8 @@ export interface TransactionListParams {
   start_date?: string;
   end_date?: string;
   type?: 'income' | 'expense';
+  sort_by?: 'date' | 'amount' | 'created_at';
+  sort_order?: 'asc' | 'desc';
   page_size?: number;
   page?: number;
 }

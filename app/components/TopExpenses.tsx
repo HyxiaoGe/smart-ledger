@@ -18,17 +18,16 @@ type Item = {
 };
 
 export function TopExpenses({ items, currency }: { items: Item[]; currency: string }) {
-  const buildQuickAddUrl = (item: Item) => {
-    const params = new URLSearchParams();
-    params.set('category', item.category);
+  const buildQuickAddHref = (item: Item) => {
+    const query: Record<string, string> = { category: item.category };
     const isAggregate = item.id.endsWith('-agg');
     if (!isAggregate) {
-      if (item.amount) params.set('amount', String(item.amount));
-      if (item.note && !item.note.startsWith('共')) params.set('note', item.note);
-      if (item.merchant) params.set('merchant', item.merchant);
-      if (item.currency) params.set('currency', item.currency);
+      if (item.amount) query.amount = String(item.amount);
+      if (item.note && !item.note.startsWith('共')) query.note = item.note;
+      if (item.merchant) query.merchant = item.merchant;
+      if (item.currency) query.currency = item.currency;
     }
-    return `/add?${params.toString()}`;
+    return { pathname: '/add' as const, query };
   };
 
   if (!items || items.length === 0) {
@@ -83,7 +82,7 @@ export function TopExpenses({ items, currency }: { items: Item[]; currency: stri
             </div>
             <div className="mt-2 flex items-center justify-end">
               <Link
-                href={buildQuickAddUrl(it)}
+                href={buildQuickAddHref(it)}
                 className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
               >
                 再记一笔

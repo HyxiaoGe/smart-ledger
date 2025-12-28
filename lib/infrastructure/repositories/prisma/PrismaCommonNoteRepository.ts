@@ -3,7 +3,7 @@
  * 实现 ICommonNoteRepository 接口，提供基于 Prisma 的常用备注数据访问
  */
 
-import type { PrismaClient, Prisma } from '@prisma/client';
+import type { PrismaClient } from '@prisma/client';
 import type { CommonNote } from '@/types/domain/transaction';
 import type { ICommonNoteRepository } from '@/lib/domain/repositories/ICommonNoteRepository';
 import type {
@@ -52,7 +52,7 @@ export class PrismaCommonNoteRepository implements ICommonNoteRepository {
     sort?: CommonNoteSortOptions,
     limit?: number
   ): Promise<CommonNote[]> {
-    const where: Prisma.common_notesWhereInput = {};
+    const where: Record<string, unknown> = {};
 
     if (filter.search) {
       where.content = {
@@ -84,7 +84,7 @@ export class PrismaCommonNoteRepository implements ICommonNoteRepository {
     }
 
     // 构建排序
-    const orderBy: Prisma.common_notesOrderByWithRelationInput = sort
+    const orderBy: Record<string, unknown> = sort
       ? { [sort.field]: sort.order }
       : { usage_count: 'desc' };
 
@@ -142,7 +142,7 @@ export class PrismaCommonNoteRepository implements ICommonNoteRepository {
    * 更新备注
    */
   async update(id: string, note: UpdateCommonNoteDTO): Promise<CommonNote> {
-    const updateData: Prisma.common_notesUpdateInput = {};
+    const updateData: Record<string, unknown> = {};
 
     if (note.content !== undefined) updateData.content = note.content;
     if (note.usage_count !== undefined) updateData.usage_count = note.usage_count;
