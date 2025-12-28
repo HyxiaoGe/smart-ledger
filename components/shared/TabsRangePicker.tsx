@@ -213,6 +213,36 @@ function TabsRangePickerContent({ className, onRangeChange }: TabsRangePickerPro
   const [activeTab, setActiveTab] = useState<TabType>("day");
   const [customRange, setCustomRange] = useState<{ from?: Date; to?: Date }>();
 
+  const parseYMD = useCallback((value: string) => {
+    const parts = value.split("-");
+    if (parts.length !== 3) return null;
+    const year = Number(parts[0]);
+    const month = Number(parts[1]);
+    const day = Number(parts[2]);
+    if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) return null;
+    if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+    return { year, month, day };
+  }, []);
+
+  const formatCustomLabel = useCallback(
+    (startStr: string, endStr: string) => {
+      const start = parseYMD(startStr);
+      const end = parseYMD(endStr);
+      if (!start || !end) return `${startStr} ~ ${endStr}`;
+      if (startStr === endStr) {
+        return `${start.year}年${start.month}月${start.day}日`;
+      }
+      if (start.year === end.year) {
+        if (start.month === end.month) {
+          return `${start.month}月${start.day}日 ~ ${end.day}日`;
+        }
+        return `${start.month}月${start.day}日 ~ ${end.month}月${end.day}日`;
+      }
+      return `${start.year}年${start.month}月${start.day}日 ~ ${end.year}年${end.month}月${end.day}日`;
+    },
+    [parseYMD]
+  );
+
   // 从 URL 参数解析当前范围
   const current = useMemo(() => {
     const rangeKey = search.get("range") as ExtendedQuickRange | "custom";
@@ -244,6 +274,18 @@ function TabsRangePickerContent({ className, onRangeChange }: TabsRangePickerPro
       setActiveTab(getTabFromRange(current.key));
     }
   }, [current.key]);
+
+  // URL 自定义范围回显到日期选择器
+  useEffect(() => {
+    if (current.key !== "custom") return;
+    const start = parseYMD(current.start);
+    const end = parseYMD(current.end);
+    if (!start || !end) return;
+    setCustomRange({
+      from: new Date(start.year, start.month - 1, start.day),
+      to: new Date(end.year, end.month - 1, end.day),
+    });
+  }, [current.key, current.start, current.end, parseYMD]);
 
   // 更新 URL 参数
   const updateURL = useCallback(
@@ -302,7 +344,7 @@ function TabsRangePickerContent({ className, onRangeChange }: TabsRangePickerPro
   // 获取显示文本
   const getDisplayText = useCallback(() => {
     if (current.key === "custom") {
-      return current.label;
+      return formatCustomLabel(current.start, current.end);
     }
     // 查找选项标签
     for (const tab of Object.values(TAB_OPTIONS)) {

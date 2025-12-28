@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { ChartSummary } from './components/ChartSummary';
 import { CalendarHeatmap } from './components/CalendarHeatmap';
 import { Card, CardContent } from '@/components/ui/card';
@@ -39,6 +39,8 @@ export default function HomePageClient({
   monthLabel,
 }: HomePageClientProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const search = useSearchParams();
 
   // 固定支出（从服务端数据获取，无需客户端请求）
   const recurringExpenses = data.recurringExpenses || [];
@@ -117,6 +119,18 @@ export default function HomePageClient({
     }
   }, [data.rangeExpense, data.rangeCount, stopQueue]);
 
+  const handleCalendarDayClick = useCallback(
+    (dateStr: string) => {
+      const sp = new URLSearchParams(search?.toString());
+      sp.set('range', 'custom');
+      sp.set('start', dateStr);
+      sp.set('end', dateStr);
+      sp.delete('month');
+      router.push((pathname + '?' + sp.toString()) as any);
+    },
+    [router, pathname, search]
+  );
+
   return (
     <div className="space-y-6">
       {/* 顶部控制栏 */}
@@ -183,6 +197,7 @@ export default function HomePageClient({
           year={data.calendarYear}
           month={data.calendarMonth}
           currency={currency}
+          onDayClick={handleCalendarDayClick}
         />
       </section>
 

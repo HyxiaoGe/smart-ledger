@@ -59,6 +59,17 @@ export function formatDateToLocal(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+export function parseLocalDate(value: string): Date | null {
+  const parts = value.split('-');
+  if (parts.length !== 3) return null;
+  const year = Number(parts[0]);
+  const month = Number(parts[1]);
+  const day = Number(parts[2]);
+  if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) return null;
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+  return new Date(year, month - 1, day);
+}
+
 export function dayRange(date = new Date()) {
   const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const end = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);

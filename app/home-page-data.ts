@@ -1,5 +1,5 @@
 import { getPrismaClient } from '@/lib/clients/db';
-import { getExtendedQuickRange, formatMonth, type ExtendedQuickRange } from '@/lib/utils/date';
+import { getExtendedQuickRange, formatMonth, formatDateToLocal, parseLocalDate, type ExtendedQuickRange } from '@/lib/utils/date';
 import type { TransactionRow } from '@/types/domain/transaction';
 
 type RecurringExpense = {
@@ -247,7 +247,7 @@ async function loadRangeData(
     // 只有在范围查询时才给结束日期加1天
     const endDate = new Date(rEnd);
     endDate.setDate(endDate.getDate() + 1);
-    queryEnd = endDate.toISOString().slice(0, 10);
+    queryEnd = formatDateToLocal(endDate);
   }
 
   const prisma = getPrismaClient();
@@ -321,9 +321,12 @@ async function queryTransactions(
   };
 
   if (isSingleDay) {
-    where.date = new Date(start);
+    const parsed = parseLocalDate(start);
+    where.date = parsed ?? new Date(start);
   } else {
-    where.date = { gte: new Date(start), lt: new Date(end) };
+    const parsedStart = parseLocalDate(start) ?? new Date(start);
+    const parsedEnd = parseLocalDate(end) ?? new Date(end);
+    where.date = { gte: parsedStart, lt: parsedEnd };
   }
 
   return prisma.transactions.findMany({
@@ -357,7 +360,7 @@ function generateTop10(expenseRows: any[], currency: string, isSingleDay: boolea
         category: transaction.category || 'other',
         amount: Number(transaction.amount || 0),
         date: transaction.date instanceof Date
-          ? transaction.date.toISOString().slice(0, 10)
+          ? formatDateToLocal(transaction.date)
           : String(transaction.date),
         note: transaction.note || undefined,
         currency,
@@ -385,7 +388,7 @@ function generateTop10(expenseRows: any[], currency: string, isSingleDay: boolea
     const amount = Number(transaction.amount || 0);
     const dateStr =
       transaction.date instanceof Date
-        ? transaction.date.toISOString().slice(0, 10)
+        ? formatDateToLocal(transaction.date)
         : String(transaction.date);
 
     if (!categoryMap.has(category)) {
@@ -461,7 +464,7 @@ async function loadCalendarData(
 
   for (const row of rows) {
     const date = row.date instanceof Date ? row.date : new Date(row.date);
-    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    const dateStr = formatDateToLocal(date);
     const existing = dailyMap.get(dateStr) || { amount: 0, count: 0 };
     dailyMap.set(dateStr, {
       amount: existing.amount + Number(row.amount || 0),

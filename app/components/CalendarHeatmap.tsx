@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils/format';
+import { formatDateToLocal } from '@/lib/utils/date';
 
 interface DayData {
   date: string; // YYYY-MM-DD
@@ -19,6 +20,15 @@ interface CalendarHeatmapProps {
 }
 
 const WEEKDAY_LABELS = ['日', '一', '二', '三', '四', '五', '六'];
+
+function formatDayLabel(ymd: string): string {
+  const parts = ymd.split('-');
+  if (parts.length !== 3) return ymd;
+  const month = Number(parts[1]);
+  const day = Number(parts[2]);
+  if (!Number.isFinite(month) || !Number.isFinite(day)) return ymd;
+  return `${month}月${day}日`;
+}
 
 /**
  * 根据消费金额计算热力等级 (0-4)
@@ -137,8 +147,7 @@ export function CalendarHeatmap({
             const heatLevel = getHeatLevel(amount, maxAmount);
             const colorClass = HEAT_COLORS[heatLevel];
 
-            const isToday =
-              item.date === new Date().toISOString().slice(0, 10);
+            const isToday = item.date === formatDateToLocal(new Date());
             const isHovered = hoveredDay === item.date;
 
             return (
@@ -163,7 +172,9 @@ export function CalendarHeatmap({
                 {isHovered && (
                   <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none">
                     <div className="bg-popover text-popover-foreground rounded-md border px-3 py-2 text-xs shadow-md whitespace-nowrap">
-                      <div className="font-medium">{item.date}</div>
+                      <div className="font-medium">
+                        {item.date ? formatDayLabel(item.date) : '-'}
+                      </div>
                       {amount > 0 ? (
                         <>
                           <div>支出: {formatCurrency(amount, currency)}</div>
