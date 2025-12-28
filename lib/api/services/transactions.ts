@@ -3,7 +3,7 @@
  */
 
 import { apiClient, buildQueryString } from '../client';
-import type { Transaction } from '@/types/domain/transaction';
+import type { Transaction, Currency } from '@/types/domain/transaction';
 
 /**
  * 交易列表查询参数
@@ -16,6 +16,7 @@ export interface TransactionListParams {
   start_date?: string;
   end_date?: string;
   type?: 'income' | 'expense';
+  currency?: Currency;
   sort_by?: 'date' | 'amount' | 'created_at';
   sort_order?: 'asc' | 'desc';
   page_size?: number;

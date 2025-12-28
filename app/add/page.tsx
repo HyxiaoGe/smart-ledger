@@ -271,7 +271,6 @@ export default function AddPage() {
     }, 200) as any as number; // 200ms 延迟
   }
 
-  const recentQuickList = useMemo(() => recentTransactions.slice(0, 3), [recentTransactions]);
 
   // 重置表单
   function resetForm({ keep }: { keep: boolean }) {
@@ -329,6 +328,8 @@ export default function AddPage() {
     if (!recentTransactionsData) return [];
     return (recentTransactionsData.data || recentTransactionsData.transactions || []) as Transaction[];
   }, [recentTransactionsData]);
+
+  const recentQuickList = useMemo(() => recentTransactions.slice(0, 3), [recentTransactions]);
 
   const { data: frequentAmountData } = useQuery({
     queryKey: ['frequent-amounts', currency],
