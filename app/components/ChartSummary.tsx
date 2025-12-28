@@ -141,31 +141,7 @@ export function ChartSummary({
   }, [trend]);
 
   return (
-    <div className="space-y-4">
-      {/* 关键指标摘要 */}
-      <div className="rounded-lg border bg-muted p-3">
-        <div className="flex flex-wrap gap-6 text-sm">
-          {trendSummary && (
-            <div>
-              <div className="text-muted-foreground">峰值</div>
-              <div className="font-semibold">
-                {trendSummary.peak.name} · {formatCurrency(trendSummary.peak.expense, currency)}
-              </div>
-            </div>
-          )}
-          {trendSummary && (
-            <div>
-              <div className="text-muted-foreground">{trendSummary.activeLabel}</div>
-              <div className="font-semibold">{trendSummary.activeCount}</div>
-            </div>
-          )}
-          {!hasPie && (
-            <div className="text-muted-foreground">暂无可汇总的支出记录</div>
-          )}
-        </div>
-      </div>
-
-      <div className={`grid gap-4 ${showTrend ? 'md:grid-cols-2' : 'md:grid-cols-1'}`}>
+    <div className={`grid gap-4 ${showTrend ? 'md:grid-cols-2' : 'md:grid-cols-1'}`}>
       {/* 动态趋势图 */}
       {showTrend && (
         <Card>
@@ -320,7 +296,6 @@ export function ChartSummary({
           )}
         </CardContent>
       </Card>
-      </div>
     </div>
   );
 }

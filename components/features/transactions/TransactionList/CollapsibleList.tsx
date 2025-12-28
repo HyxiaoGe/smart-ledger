@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { TransactionGroupedList } from '@/components/features/transactions/TransactionList/GroupedList';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp, List, FileText } from 'lucide-react';
 import { EmptyState } from '@/components/EmptyState';
 import Link from 'next/link';
 import { enhancedDataSync } from '@/lib/core/EnhancedDataSync';
+import { useCategories } from '@/contexts/CategoryContext';
 
 interface Transaction {
   id: string;
@@ -34,7 +35,74 @@ export function CollapsibleTransactionList({
   className
 }: CollapsibleTransactionListProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const search = useSearchParams();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [defaultExpandedDates, setDefaultExpandedDates] = useState<Set<string> | undefined>(undefined);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const { categories } = useCategories();
+  const initRef = useRef(false);
+
+  const currentRange = search.get('range') || 'today';
+  const quickRanges = [
+    { key: 'today', label: '今天' },
+    { key: 'thisWeek', label: '本周' },
+    { key: 'thisMonth', label: '本月' },
+  ];
+
+  const commonCategories = useMemo(() => {
+    return [...categories]
+      .filter((item) => item.is_active && (item.type === 'expense' || item.type === 'both'))
+      .sort((a, b) => (b.usage_count || 0) - (a.usage_count || 0))
+      .slice(0, 6);
+  }, [categories]);
+
+  const filteredTransactions = useMemo(() => {
+    if (!activeCategory) return initialTransactions;
+    return initialTransactions.filter((item) => item.category === activeCategory);
+  }, [initialTransactions, activeCategory]);
+
+  const displayCount = activeCategory ? filteredTransactions.length : totalCount;
+
+  useEffect(() => {
+    if (initRef.current) return;
+    initRef.current = true;
+    if (typeof window === 'undefined') return;
+    const stored = window.localStorage.getItem('records:listExpanded');
+    if (stored === 'true' || stored === 'false') {
+      setIsExpanded(stored === 'true');
+      return;
+    }
+    if (totalCount <= 20) setIsExpanded(true);
+  }, [totalCount]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem('records:listExpanded', String(isExpanded));
+  }, [isExpanded]);
+
+  useEffect(() => {
+    if (!initialTransactions.length) return;
+    const sorted = [...initialTransactions].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+    setDefaultExpandedDates(new Set([sorted[0].date]));
+  }, [initialTransactions]);
+
+  useEffect(() => {
+    if (activeCategory && filteredTransactions.length === 0) {
+      setActiveCategory(null);
+    }
+  }, [activeCategory, filteredTransactions]);
+
+  const updateRange = (rangeKey: string) => {
+    const sp = new URLSearchParams(search?.toString());
+    sp.set('range', rangeKey);
+    sp.delete('start');
+    sp.delete('end');
+    sp.delete('month');
+    router.push((pathname + '?' + sp.toString()) as any);
+  };
 
   // 监听数据同步事件并刷新页面
   useEffect(() => {
@@ -64,7 +132,7 @@ export function CollapsibleTransactionList({
             账单明细
           </h3>
           <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
-            共 {totalCount} 笔
+            共 {displayCount} 笔
           </span>
         </div>
 
@@ -85,11 +153,52 @@ export function CollapsibleTransactionList({
         </Button>
       </div>
 
+      {/* 快速筛选 */}
+      {totalCount > 0 && (
+        <div className="mb-4 space-y-3">
+          <div className="flex flex-wrap gap-2">
+            {quickRanges.map((item) => (
+              <Button
+                key={item.key}
+                size="sm"
+                variant={currentRange === item.key ? 'default' : 'outline'}
+                onClick={() => updateRange(item.key)}
+              >
+                {item.label}
+              </Button>
+            ))}
+          </div>
+          {commonCategories.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                variant={!activeCategory ? 'default' : 'outline'}
+                onClick={() => setActiveCategory(null)}
+              >
+                全部
+              </Button>
+              {commonCategories.map((item) => (
+                <Button
+                  key={item.key}
+                  size="sm"
+                  variant={activeCategory === item.key ? 'default' : 'outline'}
+                  onClick={() => setActiveCategory(item.key)}
+                >
+                  {item.icon ? `${item.icon} ` : ''}
+                  {item.label}
+                </Button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* 交易列表 */}
       {isExpanded && (
         <div className="animate-in slide-in-from-top-2 duration-200">
           <TransactionGroupedList
-            initialTransactions={initialTransactions}
+            initialTransactions={filteredTransactions}
+            defaultExpandedDates={defaultExpandedDates}
           />
         </div>
       )}

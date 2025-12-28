@@ -16,6 +16,7 @@ export type Transaction = {
 export interface TransactionGroupedListProps {
   initialTransactions: Transaction[];
   className?: string;
+  defaultExpandedDates?: Set<string>;
 }
 
 // 分层数据结构类型

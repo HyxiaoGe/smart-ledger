@@ -1,6 +1,6 @@
 "use client";
 // 交易分组列表组件（客户端支持编辑和删除）
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { EmptyState } from '@/components/EmptyState';
 import { ProgressToast } from '@/components/shared/ProgressToast';
@@ -22,9 +22,11 @@ import {
 
 export function TransactionGroupedList({
   initialTransactions,
-  className
+  className,
+  defaultExpandedDates
 }: TransactionGroupedListProps) {
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
+  const initRef = useRef(false);
 
   // 当 initialTransactions 发生变化时更新本地状态
   useEffect(() => {
@@ -44,6 +46,41 @@ export function TransactionGroupedList({
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [expandedMerchants, setExpandedMerchants] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (initRef.current) return;
+    initRef.current = true;
+    if (typeof window === 'undefined') return;
+    const stored = window.localStorage.getItem('records:expanded');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored) as {
+          dates?: string[];
+          categories?: string[];
+          merchants?: string[];
+        };
+        if (parsed.dates?.length) setExpandedDates(new Set(parsed.dates));
+        if (parsed.categories?.length) setExpandedCategories(new Set(parsed.categories));
+        if (parsed.merchants?.length) setExpandedMerchants(new Set(parsed.merchants));
+        return;
+      } catch {
+        // ignore malformed storage
+      }
+    }
+    if (defaultExpandedDates) {
+      setExpandedDates(new Set(defaultExpandedDates));
+    }
+  }, [defaultExpandedDates]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const payload = JSON.stringify({
+      dates: Array.from(expandedDates),
+      categories: Array.from(expandedCategories),
+      merchants: Array.from(expandedMerchants),
+    });
+    window.localStorage.setItem('records:expanded', payload);
+  }, [expandedDates, expandedCategories, expandedMerchants]);
 
   // 使用 React Query 获取支付方式
   const { data: paymentMethodsData } = useQuery({
