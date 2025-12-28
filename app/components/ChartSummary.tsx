@@ -102,9 +102,80 @@ export function ChartSummary({
   // 判断是使用柱状图还是面积图
   // 周粒度（7个数据点）用柱状图，月/季粒度用面积图
   const useBarChart = trend.length <= 7;
+  const hasPie = pie.length > 0;
+
+  const pieSummary = useMemo(() => {
+    if (pie.length === 0) {
+      return {
+        total: 0,
+        sorted: [],
+        top3: [],
+        top3Pct: 0,
+        otherPct: 0,
+      };
+    }
+    const sorted = [...pie].sort((a, b) => b.value - a.value);
+    const total = sorted.reduce((sum, item) => sum + Number(item.value || 0), 0);
+    const top3 = sorted.slice(0, 3);
+    const top3Total = top3.reduce((sum, item) => sum + Number(item.value || 0), 0);
+    const top3Pct = total > 0 ? (top3Total / total) * 100 : 0;
+    const otherPct = total > 0 ? 100 - top3Pct : 0;
+    return { total, sorted, top3, top3Pct, otherPct };
+  }, [pie]);
+
+  const trendSummary = useMemo(() => {
+    if (trend.length === 0) return null;
+    let peak = trend[0];
+    for (const point of trend) {
+      if (point.expense > peak.expense) peak = point;
+    }
+    const activeCount = trend.filter((point) => point.expense > 0).length;
+    const activeLabel = trend.length === 3 ? '活跃月份' : '活跃天数';
+    return { peak, activeCount, activeLabel };
+  }, [trend]);
 
   return (
-    <div className={`grid gap-4 ${showTrend ? 'md:grid-cols-2' : 'md:grid-cols-1'}`}>
+    <div className="space-y-4">
+      {/* 关键指标摘要 */}
+      <div className="rounded-lg border bg-muted p-3">
+        <div className="flex flex-wrap gap-6 text-sm">
+          <div>
+            <div className="text-muted-foreground">总支出</div>
+            <div className="font-semibold">{formatCurrency(pieSummary.total, currency)}</div>
+          </div>
+          {pieSummary.sorted[0] && (
+            <div>
+              <div className="text-muted-foreground">最高分类</div>
+              <div className="font-semibold">
+                {catMeta.get(pieSummary.sorted[0].name)?.label || pieSummary.sorted[0].name}
+                {' · '}
+                {pieSummary.total > 0
+                  ? `${((pieSummary.sorted[0].value / pieSummary.total) * 100).toFixed(1)}%`
+                  : '0%'}
+              </div>
+            </div>
+          )}
+          {trendSummary && (
+            <div>
+              <div className="text-muted-foreground">峰值</div>
+              <div className="font-semibold">
+                {trendSummary.peak.name} · {formatCurrency(trendSummary.peak.expense, currency)}
+              </div>
+            </div>
+          )}
+          {trendSummary && (
+            <div>
+              <div className="text-muted-foreground">{trendSummary.activeLabel}</div>
+              <div className="font-semibold">{trendSummary.activeCount}</div>
+            </div>
+          )}
+          {!hasPie && (
+            <div className="text-muted-foreground">暂无可汇总的支出记录</div>
+          )}
+        </div>
+      </div>
+
+      <div className={`grid gap-4 ${showTrend ? 'md:grid-cols-2' : 'md:grid-cols-1'}`}>
       {/* 动态趋势图 */}
       {showTrend && (
         <Card>
@@ -174,37 +245,65 @@ export function ChartSummary({
               description="暂无可用于占比的支出记录"
             />
           ) : (
-            <div className="w-full h-[260px]">
-              <ResponsiveContainer>
-                <PieChart>
-                  <Pie
-                    data={pie}
-                    dataKey="value"
-                    nameKey="name"
-                    innerRadius={60}
-                    outerRadius={90}
-                    paddingAngle={2}
-                    stroke="#fff"
-                    strokeWidth={1}
-                  >
-                    {pie.map((entry, index) => {
-                      const meta = catMeta.get(entry.name);
-                      const color = meta?.color || COLORS[index % COLORS.length];
-                      return <Cell key={`cell-${index}`} fill={color} />;
-                    })}
-                  </Pie>
-                  <Tooltip content={<CustomTooltip currency={currency} kind="pie" catMeta={catMeta} />} />
-                  <Legend
-                    verticalAlign="bottom"
-                    height={24}
-                    formatter={(value: string) => catMeta.get(value)?.label || value}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+            <div className="flex flex-col md:flex-row md:items-center gap-4">
+              <div className="w-full md:w-2/3 h-[260px]">
+                <ResponsiveContainer>
+                  <PieChart>
+                    <Pie
+                      data={pie}
+                      dataKey="value"
+                      nameKey="name"
+                      innerRadius={60}
+                      outerRadius={90}
+                      paddingAngle={2}
+                      stroke="#fff"
+                      strokeWidth={1}
+                    >
+                      {pie.map((entry, index) => {
+                        const meta = catMeta.get(entry.name);
+                        const color = meta?.color || COLORS[index % COLORS.length];
+                        return <Cell key={`cell-${index}`} fill={color} />;
+                      })}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip currency={currency} kind="pie" catMeta={catMeta} />} />
+                    <Legend
+                      verticalAlign="bottom"
+                      height={24}
+                      formatter={(value: string) => catMeta.get(value)?.label || value}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="w-full md:w-1/3 space-y-3 text-sm">
+                <div>
+                  <div className="text-muted-foreground">Top3 占比</div>
+                  <div className="text-lg font-semibold">
+                    {pieSummary.top3Pct.toFixed(1)}%
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    其他 {pieSummary.otherPct.toFixed(1)}%
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  {pieSummary.top3.map((item, index) => (
+                    <div key={item.name} className="flex items-center justify-between">
+                      <span className="truncate">
+                        {index + 1}. {catMeta.get(item.name)?.label || item.name}
+                      </span>
+                      <span className="font-medium">
+                        {pieSummary.total > 0
+                          ? `${((item.value / pieSummary.total) * 100).toFixed(1)}%`
+                          : '0%'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
