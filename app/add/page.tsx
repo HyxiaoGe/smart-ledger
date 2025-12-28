@@ -497,25 +497,6 @@ export default function AddPage() {
             )}
             <div>
               <Label>分类 <span className="text-destructive">*</span></Label>
-              {!categoriesLoading && commonCategories.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {commonCategories.map((item) => (
-                    <button
-                      key={item.key}
-                      type="button"
-                      onClick={() => setCategory(item.key)}
-                      className={`rounded-full border px-2 py-1 text-xs transition ${
-                        category === item.key
-                          ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-                          : 'border-border text-muted-foreground hover:border-blue-400 hover:text-foreground'
-                      }`}
-                    >
-                      {item.icon ? `${item.icon} ` : ''}
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-              )}
               <select
                 className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
                 value={category}
@@ -553,18 +534,6 @@ export default function AddPage() {
                 className={amountText.trim() && invalidAmount ? 'border-destructive' : undefined}
                 disabled={loading}
               />
-              <div className="mt-2 flex flex-wrap gap-2">
-                {quickAmounts.map((item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    onClick={() => setAmountText(formatThousand(item))}
-                    className="rounded-full border border-border px-2 py-1 text-xs text-muted-foreground transition hover:border-blue-400 hover:text-foreground"
-                  >
-                    {item}
-                  </button>
-                ))}
-              </div>
               {amountText.trim() && invalidAmount && <p className="mt-1 text-sm text-destructive">金额必须大于 0</p>}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -591,38 +560,6 @@ export default function AddPage() {
                 />
               </div>
             </div>
-            {quickPaymentMethods.length > 0 && (
-              <div>
-                <Label>常用支付方式</Label>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('')}
-                    className={`rounded-full border px-2 py-1 text-xs transition ${
-                      paymentMethod === ''
-                        ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-                        : 'border-border text-muted-foreground hover:border-blue-400 hover:text-foreground'
-                    }`}
-                  >
-                    未设置
-                  </button>
-                  {quickPaymentMethods.map((pm) => (
-                    <button
-                      key={pm.id}
-                      type="button"
-                      onClick={() => setPaymentMethod(pm.id)}
-                      className={`rounded-full border px-2 py-1 text-xs transition ${
-                        paymentMethod === pm.id
-                          ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-                          : 'border-border text-muted-foreground hover:border-blue-400 hover:text-foreground'
-                      }`}
-                    >
-                      {pm.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
 
             <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
               <button
@@ -663,20 +600,6 @@ export default function AddPage() {
                         disabled={loading}
                         category={category}
                       />
-                      {commonMerchants.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {commonMerchants.map((item) => (
-                            <button
-                              key={item}
-                              type="button"
-                              onClick={() => setMerchant(item)}
-                              className="rounded-full border border-border px-2 py-1 text-xs text-muted-foreground transition hover:border-blue-400 hover:text-foreground"
-                            >
-                              {item}
-                            </button>
-                          ))}
-                        </div>
-                      )}
                     </div>
                     <div>
                       <Label>子分类</Label>
