@@ -12,6 +12,8 @@ import { CollapsibleTransactionList } from '@/components/features/transactions/T
 import { SkeletonBlock, SkeletonGrid } from '@/components/shared/Skeletons';
 import { AIAnalysisButton } from '@/components/features/ai-analysis/AIAnalysisButton';
 
+export const dynamic = 'force-dynamic';
+
 const SummaryModule = dynamic(
   () => import('@/components/MonthlyExpenseSummary').then((mod) => mod.MonthlyExpenseSummary),
   {
