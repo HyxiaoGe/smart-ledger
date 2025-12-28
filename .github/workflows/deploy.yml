@@ -1,0 +1,21 @@
+name: Deploy to Local Server
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: self-hosted  # <--- 这就是那行代码的位置
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Docker Deploy
+        run: |
+          echo "开始自动部署..."
+          docker compose down
+          docker compose up -d --build
+          docker image prune -f
+          echo "部署完成！"
