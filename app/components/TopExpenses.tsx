@@ -9,7 +9,7 @@ type Item = {
   id: string;
   category: string;
   amount: number;
-  date: string;
+  date?: string;
   note?: string;
   currency?: string;
   merchant?: string;
@@ -48,8 +48,12 @@ export function TopExpenses({ items, currency }: { items: Item[]; currency: stri
                 {formatCurrency(Number(it.amount || 0), it.currency || currency)}
               </div>
             </div>
-            <div className="mt-1 text-xs text-muted-foreground flex items-center justify-between">
-              <span>{it.date}</span>
+            <div
+              className={`mt-1 text-xs text-muted-foreground flex items-center ${
+                it.date ? 'justify-between' : 'justify-end'
+              }`}
+            >
+              {it.date ? <span>{it.date}</span> : null}
               <div className="flex items-center gap-2 max-w-[60%]">
                 {it.merchant && (
                   <div className="flex items-center gap-1 text-blue-600">

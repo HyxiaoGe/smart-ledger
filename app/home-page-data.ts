@@ -382,40 +382,24 @@ function generateTop10(expenseRows: any[], currency: string, isSingleDay: boolea
       category: string;
       total: number;
       count: number;
-      latestDate: string;
-      merchant?: string;
-      note?: string;
     }
   >();
 
   for (const transaction of expenseRows) {
     const category = transaction.category || 'other';
     const amount = Number(transaction.amount || 0);
-    const dateStr =
-      transaction.date instanceof Date
-        ? formatDateToLocal(transaction.date)
-        : String(transaction.date);
 
     if (!categoryMap.has(category)) {
       categoryMap.set(category, {
         category,
         total: 0,
         count: 0,
-        latestDate: dateStr,
-        merchant: transaction.merchant || undefined,
-        note: transaction.note || undefined,
       });
     }
 
     const categoryData = categoryMap.get(category)!;
     categoryData.total += amount;
     categoryData.count += 1;
-
-    if (dateStr > categoryData.latestDate) {
-      categoryData.latestDate = dateStr;
-      categoryData.merchant = transaction.merchant || undefined;
-      categoryData.note = transaction.note || undefined;
-    }
   }
 
   return Array.from(categoryMap.values())
@@ -425,7 +409,7 @@ function generateTop10(expenseRows: any[], currency: string, isSingleDay: boolea
       id: `${item.category}-agg`,
       category: item.category,
       amount: item.total,
-      date: item.latestDate,
+      date: undefined,
       note: `共${item.count}笔消费`,
       currency,
       merchant: undefined,
