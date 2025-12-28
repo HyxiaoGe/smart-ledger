@@ -9,7 +9,6 @@ import { TabsRangePicker } from '@/components/shared/TabsRangePicker';
 import { CurrencySelect } from '@/components/shared/CurrencySelect';
 import { TopExpenses } from '@/components/TopExpenses';
 import { HomeStats } from '@/components/features/statistics/HomeStats';
-import { HomeQuickTransaction } from '@/components/features/transactions/QuickTransaction/HomeQuickTransaction';
 import type { PageData } from './home-page-data';
 import { enhancedDataSync, consumeTransactionsDirty, peekTransactionsDirty } from '@/lib/core/EnhancedDataSync';
 import { useRefreshQueue } from '@/hooks/useTransactionsSync';
@@ -203,8 +202,6 @@ export default function HomePageClient({
         />
       </section>
 
-      {/* 快速记账悬浮按钮 */}
-      <HomeQuickTransaction />
     </div>
   );
 }

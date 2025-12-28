@@ -62,10 +62,9 @@ export function TopExpenses({ items, currency }: { items: Item[]; currency: stri
             </div>
             <div
               className={`mt-1 text-xs text-muted-foreground flex items-center ${
-                it.date ? 'justify-between' : 'justify-end'
+                'justify-end'
               }`}
             >
-              {it.date ? <span>{it.date}</span> : null}
               <div className="flex items-center gap-2 max-w-[60%]">
                 {it.merchant && (
                   <div className="flex items-center gap-1 text-blue-600">

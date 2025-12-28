@@ -145,10 +145,6 @@ export function ChartSummary({
       {/* 关键指标摘要 */}
       <div className="rounded-lg border bg-muted p-3">
         <div className="flex flex-wrap gap-6 text-sm">
-          <div>
-            <div className="text-muted-foreground">总支出</div>
-            <div className="font-semibold">{formatCurrency(pieSummary.total, currency)}</div>
-          </div>
           {trendSummary && (
             <div>
               <div className="text-muted-foreground">峰值</div>
