@@ -123,7 +123,7 @@ export default function AddPage() {
     []
   );
 
-  const quickAmounts = useMemo(() => {
+  const fallbackAmounts = useMemo(() => {
     if (currency === 'USD') return [5, 10, 20, 50];
     return [10, 15, 20, 30, 50];
   }, [currency]);
@@ -393,6 +393,45 @@ export default function AddPage() {
     if (!recentTransactionsData) return [];
     return (recentTransactionsData.data || recentTransactionsData.transactions || []) as Transaction[];
   }, [recentTransactionsData]);
+
+  const { data: frequentAmountData } = useQuery({
+    queryKey: ['frequent-amounts', currency],
+    queryFn: () => {
+      const end = new Date();
+      const start = new Date();
+      start.setDate(start.getDate() - 30);
+      return transactionsApi.list({
+        type: 'expense',
+        currency,
+        start_date: formatDateToLocal(start),
+        end_date: formatDateToLocal(end),
+        page_size: 100,
+        sort_by: 'date',
+        sort_order: 'desc',
+      });
+    },
+  });
+
+  const quickAmounts = useMemo(() => {
+    const rows =
+      (frequentAmountData?.data || frequentAmountData?.transactions || []) as Transaction[];
+    if (!rows.length) return fallbackAmounts;
+
+    const counts = new Map<number, number>();
+    for (const tx of rows) {
+      const amount = Number(tx.amount || 0);
+      if (!Number.isFinite(amount) || amount <= 0) continue;
+      const rounded = Math.round(amount * 100) / 100;
+      counts.set(rounded, (counts.get(rounded) || 0) + 1);
+    }
+
+    const sorted = Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1] || b[0] - a[0])
+      .slice(0, 5)
+      .map(([amount]) => amount);
+
+    return sorted.length ? sorted : fallbackAmounts;
+  }, [frequentAmountData, fallbackAmounts]);
 
   // 当支付方式数据加载完成时更新状态
   useEffect(() => {
