@@ -25,6 +25,7 @@ import type { TooltipPayloadItem } from '@/types/ui/chart';
 interface CategoryMeta {
   label: string;
   color: string;
+  icon: string;
 }
 
 interface ChartSummaryTooltipProps {
@@ -89,12 +90,17 @@ export function ChartSummary({
   rangeLabel: string;
   currency: string;
 }) {
-  const { categories } = useCategories();
+  const { categories, getCategoryMeta } = useCategories();
 
   // 动态构建分类元数据映射
   const catMeta = useMemo(() => {
-    return new Map(categories.map((c) => [c.key, { label: c.label, color: c.color || '#94A3B8' }]));
-  }, [categories]);
+    return new Map(
+      categories.map((c) => {
+        const meta = getCategoryMeta(c.key);
+        return [c.key, { label: meta.label, color: meta.color || '#94A3B8', icon: meta.icon }];
+      })
+    );
+  }, [categories, getCategoryMeta]);
 
   // 判断是否显示趋势图（日粒度时不显示）
   const showTrend = trend.length > 0;
@@ -274,7 +280,8 @@ export function ChartSummary({
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div className="w-full md:w-1/3 space-y-3 text-sm">
+              <div className="w-full md:w-1/3">
+                <div className="rounded-lg border bg-muted/60 p-3 space-y-3 text-sm">
                 <div>
                   <div className="text-muted-foreground">Top3 占比</div>
                   <div className="text-lg font-semibold">
@@ -286,10 +293,22 @@ export function ChartSummary({
                 </div>
                 <div className="space-y-2">
                   {pieSummary.top3.map((item, index) => (
-                    <div key={item.name} className="flex items-center justify-between">
-                      <span className="truncate">
-                        {index + 1}. {catMeta.get(item.name)?.label || item.name}
-                      </span>
+                    <div key={item.name} className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span
+                          className="flex h-6 w-6 items-center justify-center rounded-full border text-sm"
+                          style={{
+                            borderColor: catMeta.get(item.name)?.color || '#94A3B8',
+                            color: catMeta.get(item.name)?.color || '#94A3B8',
+                            backgroundColor: `${catMeta.get(item.name)?.color || '#94A3B8'}1A`,
+                          }}
+                        >
+                          {catMeta.get(item.name)?.icon || '📁'}
+                        </span>
+                        <span className="truncate">
+                          {index + 1}. {catMeta.get(item.name)?.label || item.name}
+                        </span>
+                      </div>
                       <span className="font-medium">
                         {pieSummary.total > 0
                           ? `${((item.value / pieSummary.total) * 100).toFixed(1)}%`
@@ -297,6 +316,7 @@ export function ChartSummary({
                       </span>
                     </div>
                   ))}
+                </div>
                 </div>
               </div>
             </div>
