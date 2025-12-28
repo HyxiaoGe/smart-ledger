@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getTotalBudgetSummary, getCurrentYearMonth } from '@/lib/services/budgetService.server';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
