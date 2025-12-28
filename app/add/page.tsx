@@ -20,6 +20,7 @@ import { transactionsApi } from '@/lib/api/services/transactions';
 import { commonNotesApi } from '@/lib/api/services/common-notes';
 import { aiApi } from '@/lib/api/services/ai';
 import { Clock } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 // AI 预测类型定义
 interface TransactionPrediction {
   id: string;
@@ -64,6 +65,9 @@ export default function AddPage() {
   const [toastMessage, setToastMessage] = useState('账单保存成功！');
   const [showAIPrediction, setShowAIPrediction] = useState(true);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [keepForm, setKeepForm] = useState(true);
+  const searchParams = useSearchParams();
+  const prefillAppliedRef = useRef(false);
 
   // 新增：三层数据结构字段
   const [merchant, setMerchant] = useState<string>('');
@@ -78,6 +82,7 @@ export default function AddPage() {
   const submitTimeoutRef = useRef<number | null>(null);
   const lastSubmitTimeRef = useRef<number>(0);
   const isSubmittingRef = useRef<boolean>(false); // 强制提交状态
+  const amountInputRef = useRef<HTMLInputElement | null>(null);
   const parsedAmount = useMemo(() => parseAmount(amountText), [amountText]);
   const invalidAmount = parsedAmount <= 0;
 
@@ -117,6 +122,17 @@ export default function AddPage() {
     },
     []
   );
+
+  const quickAmounts = useMemo(() => {
+    if (currency === 'USD') return [5, 10, 20, 50];
+    return [10, 15, 20, 30, 50];
+  }, [currency]);
+
+  const quickPaymentMethods = useMemo(() => {
+    if (!paymentMethods.length) return [];
+    const sorted = [...paymentMethods].sort((a, b) => Number(b.is_default) - Number(a.is_default));
+    return sorted.slice(0, 3);
+  }, [paymentMethods]);
 
   // 防抖提交函数
   const debouncedSubmit = useCallback(async (formData: {
@@ -218,7 +234,8 @@ export default function AddPage() {
 
       // 延迟重置表单，让用户看到成功提示
       setTimeout(() => {
-        resetForm();
+        resetForm({ keep: keepForm });
+        amountInputRef.current?.focus();
       }, 500);
 
     } catch (err: unknown) {
@@ -268,6 +285,7 @@ export default function AddPage() {
       setError('金额必须大于 0');
       isSubmittingRef.current = false;
       setLoading(false);
+      amountInputRef.current?.focus();
       return;
     }
 
@@ -320,7 +338,7 @@ export default function AddPage() {
   }, [category, parsedAmount, note]);
 
   // 重置表单
-  function resetForm() {
+  function resetForm({ keep }: { keep: boolean }) {
     // 清理防抖状态
     if (submitTimeoutRef.current) {
       clearTimeout(submitTimeoutRef.current);
@@ -329,17 +347,23 @@ export default function AddPage() {
     lastSubmitTimeRef.current = 0;
     isSubmittingRef.current = false;
 
-    setCategory('food');
     setAmountText('');
     setNote('');
-    setDate(new Date());
-    setCurrency(DEFAULT_CURRENCY as Currency);
+    if (!keep) {
+      setCategory('food');
+      setDate(new Date());
+      setCurrency(DEFAULT_CURRENCY as Currency);
+    }
     setError('');
 
-    // 重置为默认支付方式
-    const defaultMethod = paymentMethods.find(m => m.is_default);
-    if (defaultMethod) {
-      setPaymentMethod(defaultMethod.id);
+    if (!keep) {
+      // 重置为默认支付方式
+      const defaultMethod = paymentMethods.find(m => m.is_default);
+      if (defaultMethod) {
+        setPaymentMethod(defaultMethod.id);
+      } else {
+        setPaymentMethod('');
+      }
     }
 
     // 清空三层结构字段
@@ -380,6 +404,41 @@ export default function AddPage() {
       }
     }
   }, [paymentMethodsData, paymentMethod]);
+
+  useEffect(() => {
+    if (prefillAppliedRef.current) return;
+    if (!searchParams) return;
+
+    const categoryParam = searchParams.get('category');
+    const amountParam = searchParams.get('amount');
+    const noteParam = searchParams.get('note');
+    const currencyParam = searchParams.get('currency');
+    const merchantParam = searchParams.get('merchant');
+    const paymentParam = searchParams.get('payment_method');
+
+    if (
+      !categoryParam &&
+      !amountParam &&
+      !noteParam &&
+      !currencyParam &&
+      !merchantParam &&
+      !paymentParam
+    ) {
+      return;
+    }
+
+    if (categoryParam) setCategory(categoryParam);
+    if (amountParam && !Number.isNaN(Number(amountParam))) {
+      setAmountText(formatThousand(Number(amountParam)));
+    }
+    if (noteParam) setNote(noteParam);
+    if (currencyParam) setCurrency(currencyParam as Currency);
+    if (merchantParam) setMerchant(merchantParam);
+    if (paymentParam) setPaymentMethod(paymentParam);
+    if (merchantParam || paymentParam) setShowAdvanced(true);
+
+    prefillAppliedRef.current = true;
+  }, [searchParams]);
 
   // 组件卸载时清理
   React.useEffect(() => {
@@ -500,6 +559,7 @@ export default function AddPage() {
             <div>
               <Label>金额 <span className="text-destructive">*</span></Label>
               <ClearableInput
+                ref={amountInputRef}
                 placeholder="请输入金额"
                 value={amountText}
                 onChange={(e) => {
@@ -517,6 +577,18 @@ export default function AddPage() {
                 className={amountText.trim() && invalidAmount ? 'border-destructive' : undefined}
                 disabled={loading}
               />
+              <div className="mt-2 flex flex-wrap gap-2">
+                {quickAmounts.map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => setAmountText(formatThousand(item))}
+                    className="rounded-full border border-border px-2 py-1 text-xs text-muted-foreground transition hover:border-blue-400 hover:text-foreground"
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
               {amountText.trim() && invalidAmount && <p className="mt-1 text-sm text-destructive">金额必须大于 0</p>}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -543,6 +615,38 @@ export default function AddPage() {
                 />
               </div>
             </div>
+            {quickPaymentMethods.length > 0 && (
+              <div>
+                <Label>常用支付方式</Label>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('')}
+                    className={`rounded-full border px-2 py-1 text-xs transition ${
+                      paymentMethod === ''
+                        ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
+                        : 'border-border text-muted-foreground hover:border-blue-400 hover:text-foreground'
+                    }`}
+                  >
+                    未设置
+                  </button>
+                  {quickPaymentMethods.map((pm) => (
+                    <button
+                      key={pm.id}
+                      type="button"
+                      onClick={() => setPaymentMethod(pm.id)}
+                      className={`rounded-full border px-2 py-1 text-xs transition ${
+                        paymentMethod === pm.id
+                          ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
+                          : 'border-border text-muted-foreground hover:border-blue-400 hover:text-foreground'
+                      }`}
+                    >
+                      {pm.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
               <button
@@ -648,6 +752,14 @@ export default function AddPage() {
               >
                 {loading ? '保存中...' : '保存账单'}
               </Button>
+              <label className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                <input
+                  type="checkbox"
+                  checked={keepForm}
+                  onChange={(e) => setKeepForm(e.target.checked)}
+                />
+                保存后保留分类/日期/支付方式
+              </label>
             </div>
           </form>
         </CardContent>
