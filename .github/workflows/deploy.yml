@@ -4,9 +4,11 @@ on:
   push:
     branches: [ "main" ]
 
+  workflow_dispatch:
+
 jobs:
   deploy:
-    runs-on: self-hosted  # <--- 这就是那行代码的位置
+    runs-on: self-hosted
 
     steps:
       - name: Checkout code
