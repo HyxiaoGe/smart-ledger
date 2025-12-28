@@ -52,7 +52,7 @@ import type { PaymentMethod } from '@/lib/api/services/payment-methods';
 
 export default function AddPage() {
   const type: TransactionType = 'expense'; // 固定为支出类型
-  const { categories, isLoading: categoriesLoading } = useCategories();
+  const { categories, isLoading: categoriesLoading, getMerchantsForCategory } = useCategories();
   const [category, setCategory] = useState<string>('food');
     const [amountText, setAmountText] = useState<string>('');
   const [note, setNote] = useState<string>('');
@@ -90,6 +90,17 @@ export default function AddPage() {
     const n = parseFloat(v);
     return isNaN(n) ? 0 : n;
   }
+
+  const commonCategories = useMemo(() => {
+    return [...categories]
+      .filter((item) => item.is_active && (item.type === 'expense' || item.type === 'both'))
+      .sort((a, b) => (b.usage_count || 0) - (a.usage_count || 0))
+      .slice(0, 6);
+  }, [categories]);
+
+  const commonMerchants = useMemo(() => {
+    return getMerchantsForCategory(category).slice(0, 6);
+  }, [getMerchantsForCategory, category]);
 
   const applyRecentTransaction = useCallback(
     (tx: Transaction) => {
@@ -451,6 +462,25 @@ export default function AddPage() {
             )}
             <div>
               <Label>分类 <span className="text-destructive">*</span></Label>
+              {!categoriesLoading && commonCategories.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {commonCategories.map((item) => (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() => setCategory(item.key)}
+                      className={`rounded-full border px-2 py-1 text-xs transition ${
+                        category === item.key
+                          ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
+                          : 'border-border text-muted-foreground hover:border-blue-400 hover:text-foreground'
+                      }`}
+                    >
+                      {item.icon ? `${item.icon} ` : ''}
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              )}
               <select
                 className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
                 value={category}
@@ -553,6 +583,20 @@ export default function AddPage() {
                         disabled={loading}
                         category={category}
                       />
+                      {commonMerchants.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {commonMerchants.map((item) => (
+                            <button
+                              key={item}
+                              type="button"
+                              onClick={() => setMerchant(item)}
+                              className="rounded-full border border-border px-2 py-1 text-xs text-muted-foreground transition hover:border-blue-400 hover:text-foreground"
+                            >
+                              {item}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                     <div>
                       <Label>子分类</Label>
