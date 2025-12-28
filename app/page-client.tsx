@@ -159,6 +159,8 @@ export default function HomePageClient({
         prevRangeExpense={data.prevRangeExpense}
         prevRangeLabel={data.prevRangeLabel}
         currency={currency}
+        isSingleDay={data.isSingleDay}
+        isToday={data.isToday}
       />
 
       {/* 图表概览 */}

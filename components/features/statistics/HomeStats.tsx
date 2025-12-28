@@ -4,6 +4,7 @@
 import React, { useEffect } from 'react';
 import { useSpring, animated } from '@react-spring/web';
 import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils/helpers';
 import { SUPPORTED_CURRENCIES } from '@/lib/config/config';
 import { TrendingUp, TrendingDown, Minus, Receipt, Calendar } from 'lucide-react';
 
@@ -15,6 +16,8 @@ interface HomeStatsProps {
   prevRangeExpense: number;
   prevRangeLabel: string;
   currency: string;
+  isSingleDay?: boolean;
+  isToday?: boolean;
 }
 
 function symbolOf(code: string) {
@@ -35,9 +38,21 @@ export function HomeStats({
   prevRangeExpense,
   prevRangeLabel,
   currency,
+  isSingleDay = false,
+  isToday = false,
 }: HomeStatsProps) {
   const sym = symbolOf(currency);
   const changePercent = calculateChangePercent(rangeExpense, prevRangeExpense);
+  const showDailyAvgCard = !isSingleDay;
+  const showComparisonCard = isSingleDay && isToday;
+  const showThirdCard = showDailyAvgCard || showComparisonCard;
+  const delta = rangeExpense - prevRangeExpense;
+  const deltaText =
+    delta > 0
+      ? `+${sym}${Math.abs(delta).toFixed(2)}`
+      : delta < 0
+        ? `-${sym}${Math.abs(delta).toFixed(2)}`
+        : `${sym}0.00`;
 
   const [expenseSpring, expenseApi] = useSpring(() => ({
     value: rangeExpense,
@@ -93,7 +108,7 @@ export function HomeStats({
   };
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+    <div className={cn('grid grid-cols-1 gap-4', showThirdCard ? 'md:grid-cols-3' : 'md:grid-cols-2')}>
       {/* 支出总额卡片 */}
       <Card className="relative overflow-hidden">
         <CardContent className="pt-6">
@@ -126,21 +141,44 @@ export function HomeStats({
         </CardContent>
       </Card>
 
-      {/* 日均支出卡片 */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-2 mb-2">
-            <Calendar className="w-4 h-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">日均支出</span>
-          </div>
-          <animated.span className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-gray-100">
-            {avgSpring.value.to((v) => `${sym}${v.toFixed(2)}`)}
-          </animated.span>
-          <p className="mt-2 text-xs text-muted-foreground">
-            {rangeLabel}平均每日消费
-          </p>
-        </CardContent>
-      </Card>
+      {/* 日均支出/较昨日卡片 */}
+      {showDailyAvgCard && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 mb-2">
+              <Calendar className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">日均支出</span>
+            </div>
+            <animated.span className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-gray-100">
+              {avgSpring.value.to((v) => `${sym}${v.toFixed(2)}`)}
+            </animated.span>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {rangeLabel}平均每日消费
+            </p>
+          </CardContent>
+        </Card>
+      )}
+      {showComparisonCard && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 mb-2">
+              <Calendar className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">较昨日</span>
+            </div>
+            <div
+              className={cn(
+                'text-3xl font-semibold tracking-tight',
+                delta > 0 ? 'text-red-600' : delta < 0 ? 'text-green-600' : 'text-slate-900 dark:text-gray-100'
+              )}
+            >
+              {deltaText}
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              昨日支出 {sym}{prevRangeExpense.toFixed(2)}
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

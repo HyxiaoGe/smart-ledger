@@ -27,6 +27,8 @@ export type PageData = {
   rangeDailyAvg: number;
   rangeLabel: string;
   rangeRows: any[];
+  isSingleDay: boolean;
+  isToday: boolean;
 
   // 环比数据（上一周期）
   prevRangeExpense: number;
@@ -271,6 +273,8 @@ async function loadRangeData(
   const rangeCount = expenseRows.length;
   const daysInRange = getDaysInRange(rStart, rEnd);
   const rangeDailyAvg = daysInRange > 0 ? rangeExpense / daysInRange : 0;
+  const todayStr = formatDateToLocal(new Date());
+  const isToday = isSingleDay && rStart === todayStr;
 
   // 计算上一周期统计
   const prevExpenseRows = prevRows.filter((r) => r.type === 'expense');
@@ -299,6 +303,8 @@ async function loadRangeData(
     rangeDailyAvg,
     rangeLabel: rLabel,
     rangeRows: currentRows,
+    isSingleDay,
+    isToday,
     prevRangeExpense,
     prevRangeLabel: prevRange.label,
     trend,
