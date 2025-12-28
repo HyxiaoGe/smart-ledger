@@ -149,18 +149,6 @@ export function ChartSummary({
             <div className="text-muted-foreground">总支出</div>
             <div className="font-semibold">{formatCurrency(pieSummary.total, currency)}</div>
           </div>
-          {pieSummary.sorted[0] && (
-            <div>
-              <div className="text-muted-foreground">最高分类</div>
-              <div className="font-semibold">
-                {catMeta.get(pieSummary.sorted[0].name)?.label || pieSummary.sorted[0].name}
-                {' · '}
-                {pieSummary.total > 0
-                  ? `${((pieSummary.sorted[0].value / pieSummary.total) * 100).toFixed(1)}%`
-                  : '0%'}
-              </div>
-            </div>
-          )}
           {trendSummary && (
             <div>
               <div className="text-muted-foreground">峰值</div>
@@ -262,8 +250,10 @@ export function ChartSummary({
                       innerRadius={60}
                       outerRadius={90}
                       paddingAngle={2}
-                      stroke="#fff"
-                      strokeWidth={1}
+                      stroke="transparent"
+                      strokeWidth={0}
+                      activeIndex={-1}
+                      activeShape={null as any}
                     >
                       {pie.map((entry, index) => {
                         const meta = catMeta.get(entry.name);
@@ -281,10 +271,10 @@ export function ChartSummary({
                 </ResponsiveContainer>
               </div>
               <div className="w-full md:w-1/3">
-                <div className="rounded-lg border bg-muted/60 p-3 space-y-3 text-sm">
+                <div className="rounded-lg border bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-950 p-4 space-y-4 text-sm">
                 <div>
-                  <div className="text-muted-foreground">Top3 占比</div>
-                  <div className="text-lg font-semibold">
+                  <div className="text-xs uppercase tracking-wide text-muted-foreground">Top3 占比</div>
+                  <div className="text-2xl font-semibold">
                     {pieSummary.top3Pct.toFixed(1)}%
                   </div>
                   <div className="text-xs text-muted-foreground">
@@ -293,7 +283,8 @@ export function ChartSummary({
                 </div>
                 <div className="space-y-2">
                   {pieSummary.top3.map((item, index) => (
-                    <div key={item.name} className="flex items-center justify-between gap-2">
+                    <div key={item.name} className="space-y-1">
+                      <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2 min-w-0">
                         <span
                           className="flex h-6 w-6 items-center justify-center rounded-full border text-sm"
@@ -314,6 +305,16 @@ export function ChartSummary({
                           ? `${((item.value / pieSummary.total) * 100).toFixed(1)}%`
                           : '0%'}
                       </span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-muted">
+                        <div
+                          className="h-1.5 rounded-full"
+                          style={{
+                            width: `${pieSummary.total > 0 ? (item.value / pieSummary.total) * 100 : 0}%`,
+                            backgroundColor: catMeta.get(item.name)?.color || '#94A3B8',
+                          }}
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>

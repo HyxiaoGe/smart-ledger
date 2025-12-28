@@ -51,8 +51,8 @@ export function TopExpenses({ items, currency }: { items: Item[]; currency: stri
   return (
     <ul className="divide-y">
       {items.map((it, idx) => (
-        <li key={it.id} className="py-2 flex items-center gap-3">
-          <div className="w-6 text-xs text-muted-foreground">#{idx + 1}</div>
+        <li key={it.id} className="py-2 flex items-start gap-3">
+          <div className="w-6 text-xs text-muted-foreground pt-1">#{idx + 1}</div>
           <div className="flex-1">
             <div className="flex items-center justify-between">
               <CategoryChip category={it.category} />
