@@ -1,4 +1,4 @@
-import dynamic from 'next/dynamic';
+import nextDynamic from 'next/dynamic';
 import { partitionExpenseTransactions } from '@/lib/domain/records';
 import {
   getCurrentMonthSummary,
@@ -14,7 +14,7 @@ import { AIAnalysisButton } from '@/components/features/ai-analysis/AIAnalysisBu
 
 export const dynamic = 'force-dynamic';
 
-const SummaryModule = dynamic(
+const SummaryModule = nextDynamic(
   () => import('@/components/MonthlyExpenseSummary').then((mod) => mod.MonthlyExpenseSummary),
   {
     loading: () => (
@@ -27,7 +27,7 @@ const SummaryModule = dynamic(
   }
 );
 
-const CategoryModule = dynamic(
+const CategoryModule = nextDynamic(
   () => import('@/components/features/statistics/CategoryStatistics').then((mod) => mod.CategoryStatistics),
   {
     loading: () => <SkeletonBlock className="h-96 rounded-xl" />
