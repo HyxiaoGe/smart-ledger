@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { getPrismaClient } from '@/lib/clients/db';
 import { withErrorHandler } from '@/lib/utils/apiErrorHandler';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 export const GET = withErrorHandler(async () => {
   const today = new Date().toISOString().split('T')[0];
 

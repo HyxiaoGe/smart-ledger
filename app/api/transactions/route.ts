@@ -12,6 +12,7 @@ import { revalidateTag } from 'next/cache';
 import type { TransactionType, Currency } from '@/types/domain/transaction';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 // POST 验证 schema - 创建交易
 const createTransactionSchema = z.object({
