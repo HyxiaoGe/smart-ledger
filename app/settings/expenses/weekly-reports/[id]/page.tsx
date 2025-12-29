@@ -126,20 +126,20 @@ export default function WeeklyReportDetailPage() {
 
         {/* Tab 切换 */}
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8">
-            <TabsTrigger value="overview" className="gap-2">
+          <TabsList className="flex w-full gap-2 overflow-x-auto mb-8">
+            <TabsTrigger value="overview" className="gap-2 whitespace-nowrap">
               <DollarSign className="h-4 w-4" />
               概览
             </TabsTrigger>
-            <TabsTrigger value="charts" className="gap-2">
+            <TabsTrigger value="charts" className="gap-2 whitespace-nowrap">
               <BarChart3 className="h-4 w-4" />
               图表
             </TabsTrigger>
-            <TabsTrigger value="merchants" className="gap-2">
+            <TabsTrigger value="merchants" className="gap-2 whitespace-nowrap">
               <Store className="h-4 w-4" />
               商家
             </TabsTrigger>
-            <TabsTrigger value="insights" className="gap-2">
+            <TabsTrigger value="insights" className="gap-2 whitespace-nowrap">
               <Lightbulb className="h-4 w-4" />
               洞察
             </TabsTrigger>

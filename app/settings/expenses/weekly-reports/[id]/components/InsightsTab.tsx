@@ -6,7 +6,7 @@ import {
   BarChart3,
   CreditCard,
   TrendingUp,
-  TrendingDown as TrendingDownIcon,
+  TrendingDown,
   Lightbulb,
   AlertCircle,
 } from 'lucide-react';
@@ -217,6 +217,8 @@ function WeekComparison({ report }: { report: WeeklyReport }) {
   const percentage = report.week_over_week_percentage;
   const isIncrease = percentage > 0;
   const volatilityLabel = Math.abs(percentage) < 10 ? '变化平稳' : Math.abs(percentage) < 30 ? '有所波动' : '波动较大';
+  const TrendIcon = isIncrease ? TrendingUp : TrendingDown;
+  const trendColor = isIncrease ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400';
 
   const getHealthComment = () => {
     if (percentage > 30) return '本周消费增长较快，建议关注支出是否合理。';
@@ -229,7 +231,7 @@ function WeekComparison({ report }: { report: WeeklyReport }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <TrendingDownIcon className="h-5 w-5 text-blue-500" />
+          <TrendIcon className={`h-5 w-5 ${trendColor}`} />
           环比对比分析
         </CardTitle>
       </CardHeader>

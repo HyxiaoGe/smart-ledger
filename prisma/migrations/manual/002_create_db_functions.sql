@@ -38,7 +38,9 @@ BEGIN
       AND date <= p_week_end
       AND type = 'expense'
       AND currency = p_currency
-      AND deleted_at IS NULL;
+      AND deleted_at IS NULL
+      AND recurring_expense_id IS NULL
+      AND (is_auto_generated = FALSE OR is_auto_generated IS NULL);
 
     -- 分类分解
     SELECT JSON_AGG(
@@ -61,6 +63,8 @@ BEGIN
           AND type = 'expense'
           AND currency = p_currency
           AND deleted_at IS NULL
+          AND recurring_expense_id IS NULL
+          AND (is_auto_generated = FALSE OR is_auto_generated IS NULL)
         GROUP BY category
     ) sub;
 
@@ -84,6 +88,8 @@ BEGIN
           AND type = 'expense'
           AND currency = p_currency
           AND deleted_at IS NULL
+          AND recurring_expense_id IS NULL
+          AND (is_auto_generated = FALSE OR is_auto_generated IS NULL)
           AND merchant IS NOT NULL
         GROUP BY merchant
         ORDER BY total DESC
@@ -111,6 +117,8 @@ BEGIN
           AND type = 'expense'
           AND currency = p_currency
           AND deleted_at IS NULL
+          AND recurring_expense_id IS NULL
+          AND (is_auto_generated = FALSE OR is_auto_generated IS NULL)
         GROUP BY payment_method
     ) sub;
 
@@ -122,7 +130,9 @@ BEGIN
       AND date < p_week_start
       AND type = 'expense'
       AND currency = p_currency
-      AND deleted_at IS NULL;
+      AND deleted_at IS NULL
+      AND recurring_expense_id IS NULL
+      AND (is_auto_generated = FALSE OR is_auto_generated IS NULL);
 
     -- 计算环比
     v_wow_change := v_total_expenses - v_prev_week_total;

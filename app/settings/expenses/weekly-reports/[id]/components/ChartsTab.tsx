@@ -31,11 +31,13 @@ function CategoryPieChart({ categoryBreakdown }: { categoryBreakdown: WeeklyRepo
     );
   }
 
-  const data = categoryBreakdown.map(cat => ({
-    name: getCategoryName(cat.category),
-    value: Number(cat.amount),
-    percentage: cat.percentage
-  }));
+  const data = [...categoryBreakdown]
+    .sort((a, b) => Number(b.amount) - Number(a.amount))
+    .map(cat => ({
+      name: getCategoryName(cat.category),
+      value: Number(cat.amount),
+      percentage: cat.percentage
+    }));
 
   return (
     <ResponsiveContainer width="100%" height={300}>
@@ -45,7 +47,9 @@ function CategoryPieChart({ categoryBreakdown }: { categoryBreakdown: WeeklyRepo
           cx="50%"
           cy="50%"
           labelLine={false}
-          label={({ name, percentage }) => `${name} ${percentage.toFixed(1)}%`}
+          label={({ name, percentage, index }) =>
+            index < 5 && percentage >= 5 ? `${name} ${percentage.toFixed(1)}%` : ''
+          }
           outerRadius={100}
           fill="#8884d8"
           dataKey="value"
@@ -78,11 +82,13 @@ function PaymentMethodPieChart({ paymentMethodStats }: { paymentMethodStats: Wee
     );
   }
 
-  const data = paymentMethodStats.map(method => ({
-    name: getPaymentMethodName(method.method),
-    value: Number(method.amount),
-    percentage: method.percentage
-  }));
+  const data = [...paymentMethodStats]
+    .sort((a, b) => Number(b.amount) - Number(a.amount))
+    .map(method => ({
+      name: getPaymentMethodName(method.method),
+      value: Number(method.amount),
+      percentage: method.percentage
+    }));
 
   return (
     <ResponsiveContainer width="100%" height={300}>
@@ -92,7 +98,9 @@ function PaymentMethodPieChart({ paymentMethodStats }: { paymentMethodStats: Wee
           cx="50%"
           cy="50%"
           labelLine={false}
-          label={({ name, percentage }) => `${name} ${percentage.toFixed(1)}%`}
+          label={({ name, percentage, index }) =>
+            index < 5 && percentage >= 5 ? `${name} ${percentage.toFixed(1)}%` : ''
+          }
           innerRadius={60}
           outerRadius={100}
           fill="#8884d8"
@@ -143,7 +151,11 @@ function MerchantBarChart({ topMerchants }: { topMerchants: WeeklyReport['top_me
         <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
         <XAxis
           type="number"
-          tickFormatter={(value) => `¥${(value / 1000).toFixed(1)}k`}
+          tickFormatter={(value) =>
+            Math.abs(value) >= 1000
+              ? `¥${(value / 1000).toFixed(1)}k`
+              : `¥${value}`
+          }
           tick={{ fill: 'currentColor' }}
         />
         <YAxis

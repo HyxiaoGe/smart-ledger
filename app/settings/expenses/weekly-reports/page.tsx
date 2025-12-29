@@ -75,6 +75,22 @@ import {
 
 type FilterType = 'all' | 'thisWeek' | 'thisMonth' | 'lastMonth';
 
+function getStartOfDay(date: Date) {
+  const next = new Date(date);
+  next.setHours(0, 0, 0, 0);
+  return next;
+}
+
+function getEndOfDay(date: Date) {
+  const next = new Date(date);
+  next.setHours(23, 59, 59, 999);
+  return next;
+}
+
+function isDateRangeOverlap(startA: Date, endA: Date, startB: Date, endB: Date) {
+  return startA <= endB && endA >= startB;
+}
+
 export default function WeeklyReportsPage() {
   const [filter, setFilter] = useState<FilterType>('all');
   const { showToast } = useToast();
@@ -119,28 +135,34 @@ export default function WeeklyReportsPage() {
 
     const now = new Date();
     return reports.filter(report => {
-      const reportDate = new Date(report.week_start_date);
+      const reportWeekStart = getStartOfDay(new Date(report.week_start_date));
+      const reportWeekEnd = getEndOfDay(new Date(report.week_end_date));
 
       switch (filter) {
         case 'thisWeek': {
           const weekStart = new Date(now);
           weekStart.setDate(now.getDate() - now.getDay() + 1); // 本周一
-          return reportDate >= weekStart;
+          const weekEnd = new Date(weekStart);
+          weekEnd.setDate(weekStart.getDate() + 6);
+          return isDateRangeOverlap(reportWeekStart, reportWeekEnd, getStartOfDay(weekStart), getEndOfDay(weekEnd));
         }
         case 'thisMonth': {
-          const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-          return reportDate >= monthStart && reportDate < now;
+          const monthStart = getStartOfDay(new Date(now.getFullYear(), now.getMonth(), 1));
+          const monthEnd = getEndOfDay(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+          return isDateRangeOverlap(reportWeekStart, reportWeekEnd, monthStart, monthEnd);
         }
         case 'lastMonth': {
-          const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-          const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 1);
-          return reportDate >= lastMonthStart && reportDate < lastMonthEnd;
+          const lastMonthStart = getStartOfDay(new Date(now.getFullYear(), now.getMonth() - 1, 1));
+          const lastMonthEnd = getEndOfDay(new Date(now.getFullYear(), now.getMonth(), 0));
+          return isDateRangeOverlap(reportWeekStart, reportWeekEnd, lastMonthStart, lastMonthEnd);
         }
         default:
           return true;
       }
     });
   }, [filter, reports]);
+
+  const trendSource = filter === 'all' ? reports : filteredReports;
 
   function handleGenerateReport() {
     generateMutation.mutate();
@@ -327,18 +349,20 @@ export default function WeeklyReportsPage() {
         )}
 
         {/* 消费趋势图 */}
-        {reports.length > 0 && (
+        {trendSource.length > 0 && (
           <Card className="mb-8">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <BarChart3 className="h-5 w-5 text-purple-500" />
-                <CardTitle>消费趋势</CardTitle>
+                <CardTitle>
+                  {filter === 'all' ? '消费趋势（最近8周）' : '消费趋势（筛选范围内最近8周）'}
+                </CardTitle>
               </div>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart
-                  data={reports.slice(0, 8).reverse().map(report => ({
+                  data={trendSource.slice(0, 8).reverse().map(report => ({
                     name: getWeekDescription(report.week_start_date).replace('第', ''),
                     amount: Number(report.total_expenses),
                     count: report.transaction_count
@@ -354,7 +378,11 @@ export default function WeeklyReportsPage() {
                   <YAxis
                     className="text-xs"
                     tick={{ fill: 'currentColor' }}
-                    tickFormatter={(value) => `¥${(value / 1000).toFixed(1)}k`}
+                    tickFormatter={(value) =>
+                      Math.abs(value) >= 1000
+                        ? `¥${(value / 1000).toFixed(1)}k`
+                        : `¥${value}`
+                    }
                   />
                   <Tooltip
                     contentStyle={{
