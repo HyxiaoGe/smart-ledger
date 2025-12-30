@@ -51,6 +51,11 @@ function formatPercentage(value: number): string {
   return `${sign}${value.toFixed(1)}%`;
 }
 
+function getSharePercent(value: number, total: number): string {
+  if (total <= 0) return '0.0%';
+  return `${((value / total) * 100).toFixed(1)}%`;
+}
+
 type FilterType = 'all' | 'thisYear' | 'lastYear';
 
 export default function MonthlyReportsPage() {
@@ -104,7 +109,9 @@ export default function MonthlyReportsPage() {
       return a.month - b.month;
     })
     .map((report) => ({
-      name: `${report.month}月`,
+      name: filter === 'all'
+        ? `${report.year}年${report.month}月`
+        : `${report.month}月`,
       总支出: report.total_expenses,
       固定支出: report.fixed_expenses,
       可变支出: report.variable_expenses,
@@ -232,7 +239,7 @@ export default function MonthlyReportsPage() {
                     ¥{formatCurrency(latestReport.fixed_expenses)}
                   </div>
                   <div className="text-xs text-orange-600 dark:text-orange-400 mt-1">
-                    占比 {((latestReport.fixed_expenses / latestReport.total_expenses) * 100).toFixed(1)}%
+                    占比 {getSharePercent(latestReport.fixed_expenses, latestReport.total_expenses)}
                   </div>
                 </div>
 
@@ -245,25 +252,28 @@ export default function MonthlyReportsPage() {
                     ¥{formatCurrency(latestReport.variable_expenses)}
                   </div>
                   <div className="text-xs text-green-600 dark:text-green-400 mt-1">
-                    占比 {((latestReport.variable_expenses / latestReport.total_expenses) * 100).toFixed(1)}%
+                    占比 {getSharePercent(latestReport.variable_expenses, latestReport.total_expenses)}
                   </div>
                 </div>
 
                 <div className="bg-blue-50 dark:bg-blue-950 rounded-lg p-4">
                   <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-1">
-                    {latestReport.month_over_month_percentage && latestReport.month_over_month_percentage > 0 ? (
+                    {latestReport.month_over_month_percentage != null && latestReport.month_over_month_percentage > 0 && (
                       <TrendingUp className="h-4 w-4" />
-                    ) : (
+                    )}
+                    {latestReport.month_over_month_percentage != null && latestReport.month_over_month_percentage < 0 && (
                       <TrendingDown className="h-4 w-4" />
                     )}
                     <span className="text-sm">环比变化</span>
                   </div>
                   <div className={`text-xl font-bold ${
-                    latestReport.month_over_month_percentage && latestReport.month_over_month_percentage > 0
+                    latestReport.month_over_month_percentage != null && latestReport.month_over_month_percentage > 0
                       ? 'text-red-600 dark:text-red-400'
-                      : 'text-green-600 dark:text-green-400'
+                      : latestReport.month_over_month_percentage != null && latestReport.month_over_month_percentage < 0
+                        ? 'text-green-600 dark:text-green-400'
+                        : 'text-gray-600 dark:text-gray-300'
                   }`}>
-                    {latestReport.month_over_month_percentage
+                    {latestReport.month_over_month_percentage != null
                       ? formatPercentage(latestReport.month_over_month_percentage)
                       : '-'}
                   </div>
