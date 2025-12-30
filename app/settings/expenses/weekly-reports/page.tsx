@@ -139,13 +139,6 @@ export default function WeeklyReportsPage() {
       const reportWeekEnd = getEndOfDay(new Date(report.week_end_date));
 
       switch (filter) {
-        case 'thisWeek': {
-          const weekStart = new Date(now);
-          weekStart.setDate(now.getDate() - now.getDay() + 1); // 本周一
-          const weekEnd = new Date(weekStart);
-          weekEnd.setDate(weekStart.getDate() + 6);
-          return isDateRangeOverlap(reportWeekStart, reportWeekEnd, getStartOfDay(weekStart), getEndOfDay(weekEnd));
-        }
         case 'thisMonth': {
           const monthStart = getStartOfDay(new Date(now.getFullYear(), now.getMonth(), 1));
           const monthEnd = getEndOfDay(new Date(now.getFullYear(), now.getMonth() + 1, 0));
@@ -209,7 +202,6 @@ export default function WeeklyReportsPage() {
           <div className="flex gap-2">
             {[
               { value: 'all' as FilterType, label: '全部' },
-              { value: 'thisWeek' as FilterType, label: '本周' },
               { value: 'thisMonth' as FilterType, label: '本月' },
               { value: 'lastMonth' as FilterType, label: '上月' }
             ].map(item => (
