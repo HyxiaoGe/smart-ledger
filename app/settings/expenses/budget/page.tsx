@@ -25,7 +25,8 @@ import {
   ChevronDown,
   ChevronUp,
   PiggyBank,
-  Pencil
+  Pencil,
+  Info
 } from 'lucide-react';
 
 export default function BudgetPage() {
@@ -44,6 +45,7 @@ export default function BudgetPage() {
   const {
     data: summary,
     isLoading: summaryLoading,
+    isFetching: summaryFetching,
     error: summaryError
   } = useQuery({
     queryKey: ['budget-summary', year, month],
@@ -51,13 +53,21 @@ export default function BudgetPage() {
   });
 
   // 获取分类列表
-  const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
+  const {
+    data: categoriesData,
+    isLoading: categoriesLoading,
+    isFetching: categoriesFetching
+  } = useQuery({
     queryKey: ['categories'],
     queryFn: () => categoriesApi.list()
   });
 
   // 获取预算建议（已包含实时计算的当月支出数据）
-  const { data: suggestions = [], isLoading: suggestionsLoading } = useQuery({
+  const {
+    data: suggestions = [],
+    isLoading: suggestionsLoading,
+    isFetching: suggestionsFetching
+  } = useQuery({
     queryKey: ['budget-suggestions', year, month],
     queryFn: () => budgetsApi.getSuggestions({ year, month })
   });
@@ -76,6 +86,7 @@ export default function BudgetPage() {
   }, [summaryError, showToast]);
 
   const loading = summaryLoading || categoriesLoading || suggestionsLoading;
+  const refreshing = summaryFetching || categoriesFetching || suggestionsFetching;
   const totalBudget = summary?.total_budget || 0;
   const totalSpent = summary?.total_spent || 0;
   const totalRemaining = summary?.total_remaining || 0;
@@ -147,7 +158,7 @@ export default function BudgetPage() {
     }
   });
 
-  if (loading) {
+  if (loading || refreshing) {
     return <PageSkeleton stats={4} listItems={0} />;
   }
 
@@ -191,7 +202,12 @@ export default function BudgetPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <div className="text-sm text-blue-100 mb-1">总预算</div>
+                  <div className="flex items-center gap-1 text-sm text-blue-100 mb-1">
+                    <span>总预算</span>
+                    <span title="当月总预算（含固定与非固定支出）" className="inline-flex">
+                      <Info className="h-3 w-3 text-blue-100/80" />
+                    </span>
+                  </div>
                   <div className="text-3xl font-bold">¥{totalBudget.toLocaleString()}</div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -215,7 +231,12 @@ export default function BudgetPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm text-gray-600 mb-1">已支出</div>
+                  <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
+                    <span>已支出</span>
+                    <span title="当月已发生支出（含固定与非固定支出）" className="inline-flex">
+                      <Info className="h-3 w-3 text-gray-400" />
+                    </span>
+                  </div>
                   <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                     ¥{totalSpent.toLocaleString()}
                   </div>
@@ -231,7 +252,12 @@ export default function BudgetPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm text-gray-600 mb-1">剩余</div>
+                  <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
+                    <span>剩余</span>
+                    <span title="总预算 - 已支出" className="inline-flex">
+                      <Info className="h-3 w-3 text-gray-400" />
+                    </span>
+                  </div>
                   <div className="text-2xl font-bold text-green-600">
                     ¥{totalRemaining.toLocaleString()}
                   </div>
@@ -247,7 +273,12 @@ export default function BudgetPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm text-gray-600 mb-1">日均可用</div>
+                  <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
+                    <span>日均可用</span>
+                    <span title="剩余预算 / 剩余天数" className="inline-flex">
+                      <Info className="h-3 w-3 text-gray-400" />
+                    </span>
+                  </div>
                   <div className="text-2xl font-bold text-blue-600">
                     ¥{dailyAvailable.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                   </div>
@@ -402,6 +433,25 @@ export default function BudgetPage() {
                       : 0;
 
                   const isExpanded = expandedSuggestions.has(suggestion.categoryKey);
+                  const usageBadge =
+                    usageRatio > 1
+                      ? {
+                          label: '已超支',
+                          className: 'bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-200'
+                        }
+                      : usageRatio >= 0.8
+                        ? {
+                            label: '接近上限',
+                            className:
+                              'bg-orange-50 text-orange-700 dark:bg-orange-900/40 dark:text-orange-200'
+                          }
+                        : usageRatio <= 0.3
+                          ? {
+                              label: '余量充足',
+                              className:
+                                'bg-green-50 text-green-700 dark:bg-green-900/40 dark:text-green-200'
+                            }
+                          : null;
 
                   return (
                     <div
@@ -456,9 +506,18 @@ export default function BudgetPage() {
                         <div className="space-y-1">
                           <div className="flex items-center justify-between text-sm">
                             <span className="text-gray-600 dark:text-gray-300">使用率</span>
-                            <span className="font-semibold text-gray-900 dark:text-gray-100">
-                              {Math.min(100, usagePercent).toFixed(1)}%
-                            </span>
+                            <div className="flex items-center gap-2">
+                              {usageBadge && (
+                                <span
+                                  className={`px-2 py-0.5 text-xs rounded-full ${usageBadge.className}`}
+                                >
+                                  {usageBadge.label}
+                                </span>
+                              )}
+                              <span className="font-semibold text-gray-900 dark:text-gray-100">
+                                {Math.min(100, usagePercent).toFixed(1)}%
+                              </span>
+                            </div>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div
