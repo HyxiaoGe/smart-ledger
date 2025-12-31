@@ -68,9 +68,9 @@ export interface IRecurringExpenseRepository {
   findActive(): Promise<RecurringExpense[]>;
 
   /**
-   * 获取待生成的固定支出（next_generate <= today）
+   * 获取待生成的固定支出
    */
-  findPendingGeneration(today: string): Promise<RecurringExpense[]>;
+  findPendingGeneration(today: string, includeOverdue?: boolean): Promise<RecurringExpense[]>;
 
   /**
    * 创建固定支出

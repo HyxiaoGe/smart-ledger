@@ -4,7 +4,9 @@ import { withErrorHandler } from '@/lib/domain/errors/errorHandler';
 import { logger } from '@/lib/services/logging';
 
 export const POST = withErrorHandler(async () => {
-  const result = await recurringExpenseService.generatePendingExpenses();
+  const result = await recurringExpenseService.generatePendingExpenses({
+    includeOverdue: false,
+  });
 
   // ✅ 记录用户操作日志（异步，不阻塞响应）
   void logger.logUserAction({

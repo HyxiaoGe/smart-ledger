@@ -87,14 +87,15 @@ export class RecurringExpenseService {
   /**
    * 手动触发生成固定支出
    */
-  async generatePendingExpenses(): Promise<{ generated: number; errors: string[] }> {
+  async generatePendingExpenses(options?: { includeOverdue?: boolean }): Promise<{ generated: number; errors: string[] }> {
     const today = new Date().toISOString().split('T')[0];
     const errors: string[] = [];
     let generated = 0;
+    const includeOverdue = options?.includeOverdue ?? false;
 
     try {
       const repository = getRecurringExpenseRepository();
-      const pendingExpenses = await repository.findPendingGeneration(today);
+      const pendingExpenses = await repository.findPendingGeneration(today, includeOverdue);
 
       if (!pendingExpenses || pendingExpenses.length === 0) {
         return { generated, errors };

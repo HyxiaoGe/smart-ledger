@@ -35,11 +35,17 @@ export class PrismaRecurringExpenseRepository implements IRecurringExpenseReposi
     return data.map(this.mapToEntity);
   }
 
-  async findPendingGeneration(today: string): Promise<RecurringExpense[]> {
+  async findPendingGeneration(today: string, includeOverdue: boolean = true): Promise<RecurringExpense[]> {
+    const todayDate = new Date(today);
     const data = await this.prisma.recurring_expenses.findMany({
       where: {
         is_active: true,
-        next_generate: { lte: new Date(today) },
+        start_date: { lte: todayDate },
+        OR: [
+          { end_date: null },
+          { end_date: { gte: todayDate } },
+        ],
+        next_generate: includeOverdue ? { lte: todayDate } : todayDate,
       },
     });
     return data.map(this.mapToEntity);
