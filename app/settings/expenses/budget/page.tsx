@@ -198,7 +198,7 @@ export default function BudgetPage() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="border-white/40 text-white hover:bg-white/10"
+                    className="border-white/30 bg-white/15 text-white hover:bg-white/25"
                     onClick={() => setEditingTotalBudget(true)}
                   >
                     <Pencil className="h-4 w-4" />
