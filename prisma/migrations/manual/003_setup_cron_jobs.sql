@@ -63,8 +63,8 @@ BEGIN
         -- 建议金额：历史平均 * 1.1（留10%余量）
         ROUND(COALESCE(AVG(monthly_total), 0) * 1.1, 2),
         CASE
-            WHEN COUNT(*) >= 6 THEN 'high'
-            WHEN COUNT(*) >= 3 THEN 'medium'
+            WHEN COUNT(*) >= 4 THEN 'high'
+            WHEN COUNT(*) >= 2 THEN 'medium'
             ELSE 'low'
         END,
         '基于过去 ' || COUNT(*) || ' 个月的历史数据',
