@@ -7,6 +7,7 @@ import {
   getRecurringExpenseRepository,
   getTransactionRepository,
 } from '@/lib/infrastructure/repositories/index.server';
+import { getPrismaClient } from '@/lib/clients/db';
 import type {
   RecurringExpense,
   CreateRecurringExpenseDTO,
@@ -55,11 +56,55 @@ function extractHolidayDates(payload: any): Set<string> {
   return dates;
 }
 
+async function loadHolidayDatesFromDb(year: number): Promise<Set<string>> {
+  try {
+    const prisma = getPrismaClient();
+    const start = new Date(`${year}-01-01`);
+    const end = new Date(`${year}-12-31`);
+    const rows = await prisma.holidays.findMany({
+      where: {
+        date: { gte: start, lte: end },
+        is_holiday: true,
+      },
+      select: { date: true },
+    });
+    return new Set(rows.map((row) => row.date.toISOString().split('T')[0]));
+  } catch (error) {
+    console.warn('Failed to load holiday data from DB:', error);
+    return new Set();
+  }
+}
+
+async function saveHolidayDatesToDb(year: number, dates: Set<string>): Promise<void> {
+  if (dates.size === 0) return;
+  try {
+    const prisma = getPrismaClient();
+    const rows = Array.from(dates).map((dateStr) => ({
+      date: new Date(dateStr),
+      name: null,
+      is_holiday: true,
+      source: 'timor.tech',
+    }));
+    await prisma.holidays.createMany({
+      data: rows,
+      skipDuplicates: true,
+    });
+  } catch (error) {
+    console.warn('Failed to save holiday data to DB:', error);
+  }
+}
+
 async function fetchHolidayDates(year: number): Promise<Set<string>> {
   const cached = holidayCache.get(year);
   const now = Date.now();
   if (cached && now - cached.fetchedAt < HOLIDAY_CACHE_TTL_MS) {
     return cached.dates;
+  }
+
+  const dbDates = await loadHolidayDatesFromDb(year);
+  if (dbDates.size > 0) {
+    holidayCache.set(year, { dates: dbDates, fetchedAt: now });
+    return dbDates;
   }
 
   try {
@@ -77,6 +122,7 @@ async function fetchHolidayDates(year: number): Promise<Set<string>> {
 
     const payload = await response.json();
     const dates = extractHolidayDates(payload);
+    await saveHolidayDatesToDb(year, dates);
     holidayCache.set(year, { dates, fetchedAt: now });
     return dates;
   } catch (error) {

@@ -318,6 +318,17 @@ model recurring_expenses {
   @@index([category])                       // 按分类查询
 }
 
+model holidays {
+  date       DateTime @id @db.Date
+  name       String?
+  is_holiday Boolean  @default(true)
+  source     String?  @db.VarChar
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([is_holiday])
+}
+
 model recurring_generation_logs {
   id                       String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   recurring_expense_id     String?   @db.Uuid
