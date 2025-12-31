@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -57,17 +57,23 @@ export default function BudgetPage() {
     [categoriesData]
   );
 
-  // 显示错误提示
-  if (summaryError && !showToast) {
-    setToastMessage('❌ 获取数据失败');
-    setShowToast(true);
-  }
+  useEffect(() => {
+    if (summaryError && !showToast) {
+      setToastMessage('❌ 获取数据失败');
+      setShowToast(true);
+    }
+  }, [summaryError, showToast]);
 
   const loading = summaryLoading || categoriesLoading || suggestionsLoading;
   const totalBudget = summary?.total_budget || 0;
   const totalSpent = summary?.total_spent || 0;
   const totalRemaining = summary?.total_remaining || 0;
   const usagePercentage = summary?.usage_percentage || 0;
+
+  const getUsagePercent = (spending: number, budget: number) => {
+    if (!budget || budget <= 0) return 0;
+    return (spending / budget) * 100;
+  };
 
   if (loading) {
     return <PageSkeleton stats={4} listItems={0} />;
@@ -238,6 +244,11 @@ export default function BudgetPage() {
                   trendIcon === '↓' ? 'text-green-500' :
                   'text-gray-500';
 
+                const usagePercent = getUsagePercent(suggestion.currentMonthSpending, suggestion.suggestedAmount);
+                const usageRatio = suggestion.suggestedAmount > 0
+                  ? suggestion.currentMonthSpending / suggestion.suggestedAmount
+                  : 0;
+
                 return (
                   <div
                     key={suggestion.categoryKey}
@@ -289,18 +300,18 @@ export default function BudgetPage() {
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-gray-600 dark:text-gray-300">使用率</span>
                           <span className="font-semibold text-gray-900 dark:text-gray-100">
-                            {Math.min(100, (suggestion.currentMonthSpending / suggestion.suggestedAmount) * 100).toFixed(1)}%
+                            {Math.min(100, usagePercent).toFixed(1)}%
                           </span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div
                             className={`h-2 rounded-full transition-all ${
-                              (suggestion.currentMonthSpending / suggestion.suggestedAmount) > 1 ? 'bg-red-500' :
-                              (suggestion.currentMonthSpending / suggestion.suggestedAmount) >= 0.8 ? 'bg-orange-500' :
-                              (suggestion.currentMonthSpending / suggestion.suggestedAmount) >= 0.5 ? 'bg-blue-500' :
+                              usageRatio > 1 ? 'bg-red-500' :
+                              usageRatio >= 0.8 ? 'bg-orange-500' :
+                              usageRatio >= 0.5 ? 'bg-blue-500' :
                               'bg-green-500'
                             }`}
-                            style={{ width: `${Math.min(100, (suggestion.currentMonthSpending / suggestion.suggestedAmount) * 100)}%` }}
+                            style={{ width: `${Math.min(100, usagePercent)}%` }}
                           />
                         </div>
                       </div>
@@ -340,4 +351,3 @@ export default function BudgetPage() {
     </div>
   );
 }
-

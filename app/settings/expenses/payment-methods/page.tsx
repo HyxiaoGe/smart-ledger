@@ -134,14 +134,22 @@ export default function PaymentMethodsPage() {
         </div>
 
         {/* 页面标题 */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
-            <CreditCard className="h-7 w-7 text-blue-600" />
-            支付方式管理
-          </h2>
-          <p className="text-gray-600 dark:text-gray-300">
-            管理您的支付账户，让记账更加便捷准确
-          </p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
+              <CreditCard className="h-7 w-7 text-blue-600" />
+              支付方式管理
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300">
+              管理您的支付账户，让记账更加便捷准确
+            </p>
+          </div>
+          <Button
+            onClick={() => setShowAddDialog(true)}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            添加支付方式
+          </Button>
         </div>
 
         {/* 统计卡片 */}
@@ -154,7 +162,17 @@ export default function PaymentMethodsPage() {
           </CardHeader>
           <CardContent>
             {paymentMethods.length === 0 ? (
-              <EmptyState />
+              <div className="space-y-6">
+                <EmptyState />
+                <div className="flex justify-center">
+                  <Button
+                    onClick={() => setShowAddDialog(true)}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    添加支付方式
+                  </Button>
+                </div>
+              </div>
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {paymentMethods.map((method) => (
