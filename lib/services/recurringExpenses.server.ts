@@ -27,22 +27,22 @@ function extractHolidayDates(payload: any): Set<string> {
 
   const addFromObject = (obj: Record<string, any>) => {
     for (const [key, value] of Object.entries(obj)) {
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) continue;
       if (value && typeof value === 'object') {
-        if ('holiday' in value && value.holiday === true) {
-          dates.add(key);
-          continue;
-        }
-        if ('isHoliday' in value && value.isHoliday === true) {
-          dates.add(key);
-          continue;
-        }
-        if ('type' in value && value.type === 'holiday') {
-          dates.add(key);
+        const dateValue = typeof value.date === 'string' ? value.date : null;
+        const resolvedDate = dateValue && /^\d{4}-\d{2}-\d{2}$/.test(dateValue) ? dateValue : null;
+        const isHoliday =
+          ('holiday' in value && value.holiday === true) ||
+          ('isHoliday' in value && value.isHoliday === true) ||
+          ('type' in value && value.type === 'holiday');
+        if (resolvedDate && isHoliday) {
+          dates.add(resolvedDate);
           continue;
         }
       }
-      dates.add(key);
+
+      if (/^\d{4}-\d{2}-\d{2}$/.test(key)) {
+        dates.add(key);
+      }
     }
   };
 
