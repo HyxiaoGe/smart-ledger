@@ -67,6 +67,7 @@ export class PrismaRecurringExpenseRepository implements IRecurringExpenseReposi
         frequency_config: data.frequency_config as any,
         start_date: new Date(data.start_date),
         end_date: data.end_date ? new Date(data.end_date) : null,
+        skip_holidays: data.skip_holidays ?? false,
         is_active: data.is_active ?? true,
         next_generate: new Date(nextGenerate),
       },
@@ -87,6 +88,7 @@ export class PrismaRecurringExpenseRepository implements IRecurringExpenseReposi
     if (data.frequency_config !== undefined) updateData.frequency_config = data.frequency_config;
     if (data.start_date !== undefined) updateData.start_date = new Date(data.start_date);
     if (data.end_date !== undefined) updateData.end_date = data.end_date ? new Date(data.end_date) : null;
+    if (data.skip_holidays !== undefined) updateData.skip_holidays = data.skip_holidays;
     if (data.is_active !== undefined) updateData.is_active = data.is_active;
     if (data.last_generated !== undefined) updateData.last_generated = new Date(data.last_generated);
     if (data.next_generate !== undefined) updateData.next_generate = new Date(data.next_generate);
@@ -212,6 +214,7 @@ export class PrismaRecurringExpenseRepository implements IRecurringExpenseReposi
       end_date: row.end_date instanceof Date
         ? row.end_date.toISOString().split('T')[0]
         : row.end_date,
+      skip_holidays: row.skip_holidays ?? false,
       is_active: row.is_active ?? true,
       last_generated: row.last_generated instanceof Date
         ? row.last_generated.toISOString().split('T')[0]

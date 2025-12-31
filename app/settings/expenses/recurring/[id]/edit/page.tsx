@@ -39,6 +39,7 @@ export default function EditRecurringExpensePage() {
     frequency_config: { day_of_month?: number; days_of_week?: number[] };
     start_date: Date | null;
     end_date: Date | null;
+    skip_holidays: boolean;
   }>({
     name: '',
     amount: '',
@@ -46,7 +47,8 @@ export default function EditRecurringExpensePage() {
     frequency: 'monthly',
     frequency_config: { day_of_month: 1 },
     start_date: null,
-    end_date: null
+    end_date: null,
+    skip_holidays: false
   });
 
   const categoryOptions = [
@@ -85,7 +87,8 @@ export default function EditRecurringExpensePage() {
         frequency: expenseData.frequency,
         frequency_config: expenseData.frequency_config || { day_of_month: 1 },
         start_date: expenseData.start_date ? new Date(expenseData.start_date) : null,
-        end_date: expenseData.end_date ? new Date(expenseData.end_date) : null
+        end_date: expenseData.end_date ? new Date(expenseData.end_date) : null,
+        skip_holidays: expenseData.skip_holidays ?? false
       });
     }
   }, [expenseData]);
@@ -159,6 +162,7 @@ export default function EditRecurringExpensePage() {
       frequency_config: formData.frequency_config,
       start_date: formData.start_date ? formData.start_date.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
       end_date: formData.end_date ? formData.end_date.toISOString().split('T')[0] : null,
+      skip_holidays: formData.skip_holidays,
     });
   };
 
@@ -504,6 +508,21 @@ export default function EditRecurringExpensePage() {
                       </div>
                     </div>
                   )}
+
+                  <div className="border-t dark:border-gray-700 border-purple-200 dark:border-purple-800 pt-6">
+                    <label className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
+                      <input
+                        type="checkbox"
+                        checked={formData.skip_holidays}
+                        onChange={(e) => handleInputChange('skip_holidays', e.target.checked)}
+                        className="h-4 w-4 text-purple-600 focus:ring-purple-500"
+                      />
+                      节假日不生成（适用于通勤类支出）
+                    </label>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                      仅在法定节假日跳过生成，不影响周末设置。
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
 

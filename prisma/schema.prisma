@@ -304,6 +304,7 @@ model recurring_expenses {
   frequency_config Json
   start_date       DateTime  @db.Date
   end_date         DateTime? @db.Date
+  skip_holidays    Boolean?  @default(false)
   is_active        Boolean?  @default(true)
   last_generated   DateTime? @db.Date
   next_generate    DateTime? @db.Date

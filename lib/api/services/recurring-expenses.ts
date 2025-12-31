@@ -28,6 +28,7 @@ export interface RecurringExpense {
   start_date: string;
   end_date?: string;
   note?: string;
+  skip_holidays?: boolean;
   is_active: boolean;
   last_generated?: string;
   last_generated_at?: string;
@@ -51,6 +52,7 @@ export interface CreateRecurringExpenseParams {
   start_date: string;
   end_date?: string | null;
   note?: string;
+  skip_holidays?: boolean;
   is_active?: boolean;
 }
 

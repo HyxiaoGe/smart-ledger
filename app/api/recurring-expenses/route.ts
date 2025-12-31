@@ -19,6 +19,7 @@ const createRecurringExpenseSchema = z.object({
   note: z.string().optional(),
   currency: commonSchemas.currency.optional().default('CNY'),
   payment_method: z.string().optional(),
+  skip_holidays: z.boolean().optional().default(false),
   is_active: z.boolean().optional().default(true)
 });
 

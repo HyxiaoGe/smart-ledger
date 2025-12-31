@@ -17,6 +17,82 @@ import type {
 // 重新导出类型
 export type { RecurringExpense, FrequencyConfig };
 
+const HOLIDAY_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
+const holidayCache = new Map<number, { dates: Set<string>; fetchedAt: number }>();
+
+function extractHolidayDates(payload: any): Set<string> {
+  const dates = new Set<string>();
+  if (!payload || typeof payload !== 'object') return dates;
+
+  const addFromObject = (obj: Record<string, any>) => {
+    for (const [key, value] of Object.entries(obj)) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) continue;
+      if (value && typeof value === 'object') {
+        if ('holiday' in value && value.holiday === true) {
+          dates.add(key);
+          continue;
+        }
+        if ('isHoliday' in value && value.isHoliday === true) {
+          dates.add(key);
+          continue;
+        }
+        if ('type' in value && value.type === 'holiday') {
+          dates.add(key);
+          continue;
+        }
+      }
+      dates.add(key);
+    }
+  };
+
+  if (payload.holiday && typeof payload.holiday === 'object') {
+    addFromObject(payload.holiday);
+  }
+  if (payload.data && typeof payload.data === 'object') {
+    addFromObject(payload.data);
+  }
+
+  return dates;
+}
+
+async function fetchHolidayDates(year: number): Promise<Set<string>> {
+  const cached = holidayCache.get(year);
+  const now = Date.now();
+  if (cached && now - cached.fetchedAt < HOLIDAY_CACHE_TTL_MS) {
+    return cached.dates;
+  }
+
+  try {
+    const response = await fetch(`https://timor.tech/api/holiday/year/${year}`, {
+      headers: {
+        'User-Agent': 'smart-ledger/1.0',
+        'Accept': 'application/json',
+      },
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      throw new Error(`Holiday API error: ${response.status}`);
+    }
+
+    const payload = await response.json();
+    const dates = extractHolidayDates(payload);
+    holidayCache.set(year, { dates, fetchedAt: now });
+    return dates;
+  } catch (error) {
+    console.warn('Failed to fetch holiday data:', error);
+    return new Set();
+  }
+}
+
+async function isHolidayDate(dateStr: string): Promise<boolean> {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false;
+  const year = Number(dateStr.slice(0, 4));
+  if (!Number.isFinite(year)) return false;
+  const dates = await fetchHolidayDates(year);
+  return dates.has(dateStr);
+}
+
 export class RecurringExpenseService {
   /**
    * 创建固定支出
@@ -33,6 +109,7 @@ export class RecurringExpenseService {
       frequency_config: data.frequency_config,
       start_date: data.start_date,
       end_date: data.end_date || undefined,
+      skip_holidays: data.skip_holidays,
       is_active: data.is_active,
     };
     return repository.create(dto);
@@ -63,6 +140,7 @@ export class RecurringExpenseService {
     if (data.frequency_config !== undefined) dto.frequency_config = data.frequency_config;
     if (data.start_date !== undefined) dto.start_date = data.start_date;
     if (data.end_date !== undefined) dto.end_date = data.end_date;
+    if (data.skip_holidays !== undefined) dto.skip_holidays = data.skip_holidays;
     if (data.is_active !== undefined) dto.is_active = data.is_active;
 
     return repository.update(id, dto);
@@ -131,6 +209,28 @@ export class RecurringExpenseService {
     if (hasGenerated) {
       console.log(`固定支出 "${expense.name}" 今天已生成，跳过`);
       return;
+    }
+
+    if (expense.skip_holidays) {
+      const holiday = await isHolidayDate(today);
+      if (holiday) {
+        const nextGenerate = await this.calculateNextDateSkippingHolidays(
+          expense.frequency,
+          expense.frequency_config,
+          today,
+        );
+        await recurringRepo.update(expense.id, {
+          next_generate: nextGenerate,
+        });
+        await recurringRepo.logGeneration(
+          expense.id,
+          today,
+          null,
+          'skipped',
+          'holiday'
+        );
+        return;
+      }
     }
 
     // 生成交易记录
@@ -214,6 +314,20 @@ export class RecurringExpenseService {
     }
 
     return nextDate.toISOString().split('T')[0];
+  }
+
+  private async calculateNextDateSkippingHolidays(
+    frequency: string,
+    config: FrequencyConfig,
+    currentDate: string
+  ): Promise<string> {
+    let nextDate = this.calculateNextDateAfterGeneration(frequency, config, currentDate);
+    let guard = 0;
+    while (guard < 31 && await isHolidayDate(nextDate)) {
+      nextDate = this.calculateNextDateAfterGeneration(frequency, config, nextDate);
+      guard += 1;
+    }
+    return nextDate;
   }
 }
 

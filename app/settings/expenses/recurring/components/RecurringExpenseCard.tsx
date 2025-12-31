@@ -107,6 +107,11 @@ export function RecurringExpenseCard({
                     ` · 周${expense.frequency_config.days_of_week.map((d: number) => ['日','一','二','三','四','五','六'][d]).join('、')}`
                   }
                 </div>
+                {expense.skip_holidays && (
+                  <div className="text-xs text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950 px-2 py-1 rounded-full border border-orange-200 dark:border-orange-800">
+                    节假日跳过
+                  </div>
+                )}
               </div>
 
               {/* 时间信息 */}

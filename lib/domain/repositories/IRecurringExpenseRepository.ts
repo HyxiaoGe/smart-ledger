@@ -12,6 +12,7 @@ export interface RecurringExpense {
   frequency_config: FrequencyConfig;
   start_date: string;
   end_date: string | null;
+  skip_holidays: boolean;
   is_active: boolean;
   last_generated: string | null;
   next_generate: string | null;
@@ -32,6 +33,7 @@ export interface CreateRecurringExpenseDTO {
   frequency_config: FrequencyConfig;
   start_date: string;
   end_date?: string;
+  skip_holidays?: boolean;
   is_active?: boolean;
 }
 
@@ -43,6 +45,7 @@ export interface UpdateRecurringExpenseDTO {
   frequency_config?: FrequencyConfig;
   start_date?: string;
   end_date?: string | null;
+  skip_holidays?: boolean;
   is_active?: boolean;
   last_generated?: string;
   next_generate?: string;
