@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ProgressToast } from '@/components/shared/ProgressToast';
@@ -24,7 +24,10 @@ import {
   Calendar,
   ChevronDown,
   ChevronUp,
-  PiggyBank
+  PiggyBank,
+  Pencil,
+  Check,
+  X
 } from 'lucide-react';
 
 export default function BudgetPage() {
@@ -35,6 +38,9 @@ export default function BudgetPage() {
   const [suggestionFilter, setSuggestionFilter] = useState<'all' | 'over' | 'near' | 'low'>('all');
   const [suggestionSort, setSuggestionSort] = useState<'usage' | 'risk' | 'amount'>('usage');
   const [expandedSuggestions, setExpandedSuggestions] = useState<Set<string>>(new Set());
+  const [editingTotalBudget, setEditingTotalBudget] = useState(false);
+  const [totalBudgetDraft, setTotalBudgetDraft] = useState('');
+  const queryClient = useQueryClient();
 
   // 获取预算汇总
   const {
@@ -86,6 +92,12 @@ export default function BudgetPage() {
     return (spending / budget) * 100;
   };
 
+  useEffect(() => {
+    if (!editingTotalBudget) {
+      setTotalBudgetDraft(totalBudget > 0 ? String(totalBudget) : '');
+    }
+  }, [editingTotalBudget, totalBudget]);
+
   const filteredSuggestions = useMemo(() => {
     return suggestions
       .map((suggestion) => {
@@ -115,6 +127,27 @@ export default function BudgetPage() {
         return b.usagePercent - a.usagePercent;
       });
   }, [suggestions, suggestionFilter, suggestionSort]);
+
+  const updateTotalBudgetMutation = useMutation({
+    mutationFn: (amount: number) =>
+      budgetsApi.setBudget({
+        year,
+        month,
+        categoryKey: null,
+        amount
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['budget-summary', year, month] });
+      queryClient.invalidateQueries({ queryKey: ['budget-status', year, month] });
+      setToastMessage('✅ 总预算已更新');
+      setShowToast(true);
+      setEditingTotalBudget(false);
+    },
+    onError: () => {
+      setToastMessage('❌ 更新总预算失败');
+      setShowToast(true);
+    }
+  });
 
   if (loading) {
     return <PageSkeleton stats={4} listItems={0} />;
@@ -161,10 +194,67 @@ export default function BudgetPage() {
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <div className="text-sm text-blue-100 mb-1">总预算</div>
-                  <div className="text-3xl font-bold">¥{totalBudget.toLocaleString()}</div>
+                  {editingTotalBudget ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">¥</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={totalBudgetDraft}
+                        onChange={(event) => setTotalBudgetDraft(event.target.value)}
+                        className="w-32 rounded-md border border-white/30 bg-white/10 px-2 py-1 text-xl font-bold text-white placeholder:text-blue-100 focus:outline-none"
+                        placeholder="0"
+                      />
+                    </div>
+                  ) : (
+                    <div className="text-3xl font-bold">¥{totalBudget.toLocaleString()}</div>
+                  )}
                 </div>
-                <div className="p-3 bg-white/20 rounded-lg">
-                  <PiggyBank className="h-6 w-6" />
+                <div className="flex items-center gap-2">
+                  {editingTotalBudget ? (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-white/40 text-white hover:bg-white/10"
+                        onClick={() => {
+                          const amount = Number(totalBudgetDraft);
+                          if (Number.isNaN(amount) || amount < 0) {
+                            setToastMessage('❌ 请输入正确的总预算');
+                            setShowToast(true);
+                            return;
+                          }
+                          updateTotalBudgetMutation.mutate(amount);
+                        }}
+                        disabled={updateTotalBudgetMutation.isPending}
+                      >
+                        <Check className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-white/40 text-white hover:bg-white/10"
+                        onClick={() => setEditingTotalBudget(false)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-white/40 text-white hover:bg-white/10"
+                        onClick={() => setEditingTotalBudget(true)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <div className="p-3 bg-white/20 rounded-lg">
+                        <PiggyBank className="h-6 w-6" />
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </CardContent>

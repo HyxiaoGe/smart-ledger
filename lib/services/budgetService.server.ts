@@ -5,14 +5,13 @@
  */
 
 import { prisma } from '@/lib/clients/db/prisma';
-import { getBudgetRepository, getTransactionRepository, getCategoryRepository } from '@/lib/infrastructure/repositories/index.server';
 import { CacheDecorator, memoryCache } from '@/lib/infrastructure/cache';
 
 // 创建缓存装饰器实例
 const cacheDecorator = new CacheDecorator(memoryCache, {
   ttl: 60 * 1000, // 60秒缓存（预算数据变化较频繁）
   tags: ['budgets'],
-  debug: false,
+  debug: false
 });
 
 /**
@@ -121,15 +120,15 @@ export async function setBudget(params: {
   amount: number;
   alertThreshold?: number;
 }): Promise<string> {
-  const { year, month, categoryKey, amount, alertThreshold = 0.80 } = params;
+  const { year, month, categoryKey, amount, alertThreshold = 0.8 } = params;
 
   // 使用 upsert 实现设置或更新
   const existingBudget = await prisma.budgets.findFirst({
     where: {
       year,
       month,
-      category_key: categoryKey,
-    },
+      category_key: categoryKey
+    }
   });
 
   if (existingBudget) {
@@ -140,8 +139,8 @@ export async function setBudget(params: {
         amount,
         alert_threshold: alertThreshold,
         is_active: true,
-        updated_at: new Date(),
-      },
+        updated_at: new Date()
+      }
     });
     invalidateBudgetCache();
     return updated.id;
@@ -154,8 +153,8 @@ export async function setBudget(params: {
         category_key: categoryKey,
         amount,
         alert_threshold: alertThreshold,
-        is_active: true,
-      },
+        is_active: true
+      }
     });
     invalidateBudgetCache();
     return created.id;
@@ -165,10 +164,7 @@ export async function setBudget(params: {
 /**
  * 获取本月预算执行情况（带缓存）
  */
-export async function getMonthlyBudgetStatus(
-  year: number,
-  month: number
-): Promise<BudgetStatus[]> {
+export async function getMonthlyBudgetStatus(year: number, month: number): Promise<BudgetStatus[]> {
   const cacheKey = `budgets:status:${year}-${month}`;
   return cacheDecorator.wrap(cacheKey, () => getMonthlyBudgetStatusInternal(year, month));
 }
@@ -185,8 +181,8 @@ async function getMonthlyBudgetStatusInternal(
     where: {
       year,
       month,
-      is_active: true,
-    },
+      is_active: true
+    }
   });
 
   if (budgets.length === 0) {
@@ -195,10 +191,12 @@ async function getMonthlyBudgetStatusInternal(
 
   // 2. 获取分类信息
   const categories = await prisma.categories.findMany({
-    where: { is_active: true },
+    where: { is_active: true }
   });
   type CategoryInfo = { key: string; label: string; icon: string | null; color: string | null };
-  const categoryMap = new Map<string, CategoryInfo>(categories.map((c: CategoryInfo) => [c.key, c]));
+  const categoryMap = new Map<string, CategoryInfo>(
+    categories.map((c: CategoryInfo) => [c.key, c])
+  );
 
   // 3. 计算本月日期范围
   const startDate = new Date(year, month - 1, 1);
@@ -211,19 +209,16 @@ async function getMonthlyBudgetStatusInternal(
       type: 'expense',
       date: {
         gte: startDate,
-        lt: endDate,
+        lt: endDate
       },
       // 排除固定支出：预算应只监控用户可控的日常消费
       recurring_expense_id: null,
-      OR: [
-        { is_auto_generated: false },
-        { is_auto_generated: null },
-      ],
+      OR: [{ is_auto_generated: false }, { is_auto_generated: null }]
     },
     select: {
       category: true,
-      amount: true,
-    },
+      amount: true
+    }
   });
 
   // 按分类汇总支出
@@ -291,7 +286,7 @@ async function getMonthlyBudgetStatusInternal(
       alert_threshold: alertThreshold,
       is_over_budget: isOverBudget,
       is_near_limit: isNearLimit,
-      transaction_count: transactionCount,
+      transaction_count: transactionCount
     });
   }
 
@@ -317,17 +312,14 @@ export async function getMonthlyActualExpense(
       currency,
       date: {
         gte: startDate,
-        lt: endDate,
+        lt: endDate
       },
       recurring_expense_id: null,
-      OR: [
-        { is_auto_generated: false },
-        { is_auto_generated: null },
-      ],
+      OR: [{ is_auto_generated: false }, { is_auto_generated: null }]
     },
     select: {
-      amount: true,
-    },
+      amount: true
+    }
   });
 
   return transactions.reduce((sum: number, tx: { amount: unknown }) => sum + Number(tx.amount), 0);
@@ -347,8 +339,8 @@ export async function getTotalBudgetSummary(
   const budgetStatuses = await getMonthlyBudgetStatus(year, month);
 
   // 从状态中提取汇总数据
-  const totalBudgetStatus = budgetStatuses.find(b => b.category_key === null);
-  const categoryStatuses = budgetStatuses.filter(b => b.category_key !== null);
+  const totalBudgetStatus = budgetStatuses.find((b) => b.category_key === null);
+  const categoryStatuses = budgetStatuses.filter((b) => b.category_key !== null);
 
   const totalBudget = totalBudgetStatus?.budget_amount || 0;
 
@@ -361,8 +353,10 @@ export async function getTotalBudgetSummary(
   const totalRemaining = totalBudget - totalSpent;
   const usagePercentage = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
 
-  const overBudgetCount = categoryStatuses.filter(b => b.is_over_budget).length;
-  const nearLimitCount = categoryStatuses.filter(b => b.is_near_limit && !b.is_over_budget).length;
+  const overBudgetCount = categoryStatuses.filter((b) => b.is_over_budget).length;
+  const nearLimitCount = categoryStatuses.filter(
+    (b) => b.is_near_limit && !b.is_over_budget
+  ).length;
 
   return {
     total_budget: totalBudget,
@@ -371,7 +365,7 @@ export async function getTotalBudgetSummary(
     usage_percentage: usagePercentage,
     category_budgets_count: categoryStatuses.length,
     over_budget_count: overBudgetCount,
-    near_limit_count: nearLimitCount,
+    near_limit_count: nearLimitCount
   };
 }
 
@@ -381,7 +375,7 @@ export async function getTotalBudgetSummary(
 export async function deleteBudget(id: string): Promise<boolean> {
   try {
     await prisma.budgets.delete({
-      where: { id },
+      where: { id }
     });
     invalidateBudgetCache();
     return true;
@@ -411,7 +405,7 @@ export async function getBudgetHistory(
     const targetDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
     monthsList.push({
       year: targetDate.getFullYear(),
-      month: targetDate.getMonth() + 1,
+      month: targetDate.getMonth() + 1
     });
   }
 
@@ -420,12 +414,12 @@ export async function getBudgetHistory(
     where: {
       is_active: true,
       category_key: categoryKey,
-      OR: monthsList.map(({ year, month }) => ({ year, month })),
-    },
+      OR: monthsList.map(({ year, month }) => ({ year, month }))
+    }
   });
 
   // 构建预算映射
-  const budgetMap = new Map<string, typeof budgets[0]>();
+  const budgetMap = new Map<string, (typeof budgets)[0]>();
   for (const budget of budgets) {
     budgetMap.set(`${budget.year}-${budget.month}`, budget);
   }
@@ -436,14 +430,11 @@ export async function getBudgetHistory(
     type: 'expense',
     date: {
       gte: startDate,
-      lt: endDate,
+      lt: endDate
     },
     // 排除固定支出
     recurring_expense_id: null,
-    OR: [
-      { is_auto_generated: false },
-      { is_auto_generated: null },
-    ],
+    OR: [{ is_auto_generated: false }, { is_auto_generated: null }]
   };
 
   if (categoryKey !== null) {
@@ -454,8 +445,8 @@ export async function getBudgetHistory(
     where: whereCondition,
     select: {
       date: true,
-      amount: true,
-    },
+      amount: true
+    }
   });
 
   // 按月份汇总支出
@@ -481,7 +472,7 @@ export async function getBudgetHistory(
       month,
       budget_amount: budgetAmount,
       spent_amount: spentAmount,
-      usage_percentage: usagePercentage,
+      usage_percentage: usagePercentage
     });
   }
 
@@ -495,7 +486,7 @@ export function getCurrentYearMonth(): { year: number; month: number } {
   const now = new Date();
   return {
     year: now.getFullYear(),
-    month: now.getMonth() + 1,
+    month: now.getMonth() + 1
   };
 }
 
@@ -519,14 +510,24 @@ export async function getBudgetSuggestions(
     where: {
       year,
       month,
-      is_active: true,
+      is_active: true
     },
-    orderBy: { calculated_at: 'desc' },
+    orderBy: { calculated_at: 'desc' }
   });
 
   if (data.length === 0) {
     return [];
   }
+
+  const recurringCategories = await prisma.recurring_expenses.findMany({
+    where: {
+      is_active: true
+    },
+    select: {
+      category: true
+    }
+  });
+  const recurringCategorySet = new Set(recurringCategories.map((item) => item.category));
 
   // 实时查询当月各分类的实际支出（排除固定支出）
   const startDate = new Date(year, month - 1, 1);
@@ -541,19 +542,16 @@ export async function getBudgetSuggestions(
       type: 'expense',
       date: {
         gte: startDate,
-        lt: endDate,
+        lt: endDate
       },
       // 排除固定支出
       recurring_expense_id: null,
-      OR: [
-        { is_auto_generated: false },
-        { is_auto_generated: null },
-      ],
+      OR: [{ is_auto_generated: false }, { is_auto_generated: null }]
     },
     select: {
       category: true,
-      amount: true,
-    },
+      amount: true
+    }
   });
 
   // 按分类汇总当月支出
@@ -562,30 +560,46 @@ export async function getBudgetSuggestions(
     spendingByCategory[tx.category] = (spendingByCategory[tx.category] || 0) + Number(tx.amount);
   }
 
-  type SuggestionRow = { category_key: string | null; suggested_amount: unknown; confidence_level: string; reason: string; historical_avg: unknown; historical_months: number | null; trend_direction: string | null; calculated_at: Date | null };
-  return data.map((row: SuggestionRow) => {
-    const categoryKey = row.category_key || '';
-    // 使用实时计算的当月支出
-    const currentMonthSpending = spendingByCategory[categoryKey] || 0;
-    // 重新计算日均和预测
-    const currentDailyRate = daysIntoMonth > 0 ? currentMonthSpending / daysIntoMonth : 0;
-    const predictedMonthTotal = currentDailyRate * daysInMonth;
+  type SuggestionRow = {
+    category_key: string | null;
+    suggested_amount: unknown;
+    confidence_level: string;
+    reason: string;
+    historical_avg: unknown;
+    historical_months: number | null;
+    trend_direction: string | null;
+    calculated_at: Date | null;
+  };
+  return data
+    .map((row: SuggestionRow) => {
+      const categoryKey = row.category_key || '';
+      // 使用实时计算的当月支出
+      const currentMonthSpending = spendingByCategory[categoryKey] || 0;
+      // 重新计算日均和预测
+      const currentDailyRate = daysIntoMonth > 0 ? currentMonthSpending / daysIntoMonth : 0;
+      const predictedMonthTotal = currentDailyRate * daysInMonth;
 
-    return {
-      categoryKey,
-      suggestedAmount: Number(row.suggested_amount),
-      confidenceLevel: row.confidence_level,
-      reason: row.reason,
-      historicalAvg: Number(row.historical_avg || 0),
-      historicalMonths: row.historical_months || 0,
-      currentMonthSpending,
-      currentDailyRate,
-      predictedMonthTotal,
-      trendDirection: row.trend_direction || 'unknown',
-      daysIntoMonth,
-      calculatedAt: row.calculated_at?.toISOString() || new Date().toISOString(),
-    };
-  });
+      return {
+        categoryKey,
+        suggestedAmount: Number(row.suggested_amount),
+        confidenceLevel: row.confidence_level,
+        reason: row.reason,
+        historicalAvg: Number(row.historical_avg || 0),
+        historicalMonths: row.historical_months || 0,
+        currentMonthSpending,
+        currentDailyRate,
+        predictedMonthTotal,
+        trendDirection: row.trend_direction || 'unknown',
+        daysIntoMonth,
+        calculatedAt: row.calculated_at?.toISOString() || new Date().toISOString()
+      };
+    })
+    .filter((suggestion) => {
+      if (!recurringCategorySet.has(suggestion.categoryKey)) {
+        return true;
+      }
+      return suggestion.currentMonthSpending > 0 || suggestion.predictedMonthTotal > 0;
+    });
 }
 
 /**
@@ -593,17 +607,14 @@ export async function getBudgetSuggestions(
  * 基于历史数据计算每个分类的建议预算
  * 优化：原来 N*7 次查询 → 2次批量查询
  */
-export async function refreshBudgetSuggestions(
-  year: number,
-  month: number
-): Promise<number> {
+export async function refreshBudgetSuggestions(year: number, month: number): Promise<number> {
   const now = new Date();
   const daysIntoMonth = now.getDate();
   const daysInMonth = new Date(year, month, 0).getDate();
 
   // 获取所有分类
   const categories = await prisma.categories.findMany({
-    where: { is_active: true, type: 'expense' },
+    where: { is_active: true, type: 'expense' }
   });
 
   if (categories.length === 0) return 0;
@@ -619,20 +630,17 @@ export async function refreshBudgetSuggestions(
       type: 'expense',
       date: {
         gte: historicalStartDate,
-        lt: currentMonthEnd,
+        lt: currentMonthEnd
       },
       // 排除固定支出：预算建议基于可控消费的历史数据
       recurring_expense_id: null,
-      OR: [
-        { is_auto_generated: false },
-        { is_auto_generated: null },
-      ],
+      OR: [{ is_auto_generated: false }, { is_auto_generated: null }]
     },
     select: {
       category: true,
       amount: true,
-      date: true,
-    },
+      date: true
+    }
   });
 
   // 按分类和月份汇总
@@ -651,9 +659,14 @@ export async function refreshBudgetSuggestions(
   // 获取现有建议（用于 upsert）
   const existingSuggestions = await prisma.budget_suggestions.findMany({
     where: { year, month },
-    select: { id: true, category_key: true },
+    select: { id: true, category_key: true }
   });
-  const existingMap = new Map(existingSuggestions.map((s: { id: string; category_key: string | null }) => [s.category_key, s.id]));
+  const existingMap = new Map(
+    existingSuggestions.map((s: { id: string; category_key: string | null }) => [
+      s.category_key,
+      s.id
+    ])
+  );
 
   let count = 0;
   const currentMonthKey = `${year}-${month}`;
@@ -688,14 +701,10 @@ export async function refreshBudgetSuggestions(
     let trendDirection = 'stable';
     if (historicalData.length >= 2) {
       const recentAvg =
-        historicalData
-          .slice(0, 3)
-          .reduce((sum: number, d: { total: number }) => sum + d.total, 0) /
+        historicalData.slice(0, 3).reduce((sum: number, d: { total: number }) => sum + d.total, 0) /
         Math.min(3, historicalData.length);
       const olderAvg =
-        historicalData
-          .slice(3)
-          .reduce((sum: number, d: { total: number }) => sum + d.total, 0) /
+        historicalData.slice(3).reduce((sum: number, d: { total: number }) => sum + d.total, 0) /
         Math.max(1, historicalData.length - 3);
       if (recentAvg > olderAvg * 1.1) trendDirection = 'increasing';
       else if (recentAvg < olderAvg * 0.9) trendDirection = 'decreasing';
@@ -703,7 +712,8 @@ export async function refreshBudgetSuggestions(
 
     // 计算建议金额和置信度
     const suggestedAmount = Math.max(predictedMonthTotal, historicalAvg) * 1.1;
-    const confidenceLevel = historicalData.length >= 4 ? 'high' : historicalData.length >= 2 ? 'medium' : 'low';
+    const confidenceLevel =
+      historicalData.length >= 4 ? 'high' : historicalData.length >= 2 ? 'medium' : 'low';
     const reason = `基于过去${historicalData.length}个月平均支出¥${historicalAvg.toFixed(0)}，本月预计¥${predictedMonthTotal.toFixed(0)}`;
 
     // Upsert 建议
@@ -723,8 +733,8 @@ export async function refreshBudgetSuggestions(
           trend_direction: trendDirection,
           days_into_month: daysIntoMonth,
           calculated_at: now,
-          is_active: true,
-        },
+          is_active: true
+        }
       });
     } else {
       await prisma.budget_suggestions.create({
@@ -743,8 +753,8 @@ export async function refreshBudgetSuggestions(
           trend_direction: trendDirection,
           days_into_month: daysIntoMonth,
           calculated_at: now,
-          is_active: true,
-        },
+          is_active: true
+        }
       });
     }
 
@@ -780,14 +790,11 @@ export async function predictMonthEndSpending(
       currency,
       date: {
         gte: startDate,
-        lt: endDate,
+        lt: endDate
       },
       // 排除固定支出
       recurring_expense_id: null,
-      OR: [
-        { is_auto_generated: false },
-        { is_auto_generated: null },
-      ],
+      OR: [{ is_auto_generated: false }, { is_auto_generated: null }]
     };
 
     // 如果不是总预算，添加分类筛选
@@ -797,7 +804,7 @@ export async function predictMonthEndSpending(
 
     const transactions = await prisma.transactions.findMany({
       where: whereCondition,
-      select: { amount: true },
+      select: { amount: true }
     });
 
     const currentSpending = transactions.reduce(
@@ -816,7 +823,7 @@ export async function predictMonthEndSpending(
       days_passed: daysPassed,
       days_remaining: daysRemaining,
       will_exceed_budget: willExceedBudget,
-      predicted_overage: predictedOverage,
+      predicted_overage: predictedOverage
     };
   } catch (error) {
     console.error('预测月底支出失败:', error);
@@ -838,7 +845,7 @@ export function getBudgetStatusLabel(status: BudgetStatus): {
       label: '超支',
       color: 'text-red-700',
       bgColor: 'bg-red-50',
-      icon: '⚠️',
+      icon: '⚠️'
     };
   }
 
@@ -847,7 +854,7 @@ export function getBudgetStatusLabel(status: BudgetStatus): {
       label: '接近上限',
       color: 'text-orange-700',
       bgColor: 'bg-orange-50',
-      icon: '⚡',
+      icon: '⚡'
     };
   }
 
@@ -856,7 +863,7 @@ export function getBudgetStatusLabel(status: BudgetStatus): {
       label: '进行中',
       color: 'text-blue-700',
       bgColor: 'bg-blue-50',
-      icon: '📊',
+      icon: '📊'
     };
   }
 
@@ -864,7 +871,7 @@ export function getBudgetStatusLabel(status: BudgetStatus): {
     label: '充足',
     color: 'text-green-700',
     bgColor: 'bg-green-50',
-    icon: '✅',
+    icon: '✅'
   };
 }
 

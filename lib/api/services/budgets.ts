@@ -67,6 +67,14 @@ export interface BudgetPredictParams {
   currency?: string;
 }
 
+export interface BudgetUpsertParams {
+  year: number;
+  month: number;
+  categoryKey: string | null;
+  amount: number;
+  alertThreshold?: number;
+}
+
 /**
  * 预算预测结果
  */
@@ -114,4 +122,11 @@ export const budgetsApi = {
   predict(params: BudgetPredictParams): Promise<BudgetPrediction> {
     return apiClient.post<BudgetPrediction>('/api/budgets/predict', params);
   },
+
+  /**
+   * 设置或更新预算
+   */
+  setBudget(params: BudgetUpsertParams): Promise<{ success: boolean; id: string }> {
+    return apiClient.post<{ success: boolean; id: string }>('/api/budgets', params);
+  }
 };
