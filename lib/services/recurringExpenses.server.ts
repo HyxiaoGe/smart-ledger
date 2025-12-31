@@ -19,30 +19,29 @@ import type {
 export type { RecurringExpense, FrequencyConfig };
 
 const HOLIDAY_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
-const holidayCache = new Map<number, { dates: Set<string>; fetchedAt: number }>();
+const holidayCache = new Map<number, { map: Map<string, boolean>; fetchedAt: number }>();
 
-function extractHolidayDates(payload: any): Set<string> {
-  const dates = new Set<string>();
-  if (!payload || typeof payload !== 'object') return dates;
+function extractHolidayEntries(
+  payload: any
+): Array<{ date: string; isHoliday: boolean; name?: string | null }> {
+  const entries: Array<{ date: string; isHoliday: boolean; name?: string | null }> = [];
+  if (!payload || typeof payload !== 'object') return entries;
 
   const addFromObject = (obj: Record<string, any>) => {
-    for (const [key, value] of Object.entries(obj)) {
-      if (value && typeof value === 'object') {
-        const dateValue = typeof value.date === 'string' ? value.date : null;
-        const resolvedDate = dateValue && /^\d{4}-\d{2}-\d{2}$/.test(dateValue) ? dateValue : null;
-        const isHoliday =
-          ('holiday' in value && value.holiday === true) ||
-          ('isHoliday' in value && value.isHoliday === true) ||
-          ('type' in value && value.type === 'holiday');
-        if (resolvedDate && isHoliday) {
-          dates.add(resolvedDate);
-          continue;
-        }
-      }
-
-      if (/^\d{4}-\d{2}-\d{2}$/.test(key)) {
-        dates.add(key);
-      }
+    for (const value of Object.values(obj)) {
+      if (!value || typeof value !== 'object') continue;
+      const dateValue = typeof value.date === 'string' ? value.date : null;
+      const resolvedDate = dateValue && /^\d{4}-\d{2}-\d{2}$/.test(dateValue) ? dateValue : null;
+      if (!resolvedDate) continue;
+      const isHoliday =
+        ('holiday' in value && value.holiday === true) ||
+        ('isHoliday' in value && value.isHoliday === true) ||
+        ('type' in value && value.type === 'holiday');
+      entries.push({
+        date: resolvedDate,
+        isHoliday,
+        name: typeof value.name === 'string' ? value.name : null
+      });
     }
   };
 
@@ -53,36 +52,41 @@ function extractHolidayDates(payload: any): Set<string> {
     addFromObject(payload.data);
   }
 
-  return dates;
+  return entries;
 }
 
-async function loadHolidayDatesFromDb(year: number): Promise<Set<string>> {
+async function loadHolidayMapFromDb(year: number): Promise<Map<string, boolean>> {
   try {
     const prisma = getPrismaClient();
     const start = new Date(`${year}-01-01`);
     const end = new Date(`${year}-12-31`);
     const rows = await prisma.holidays.findMany({
       where: {
-        date: { gte: start, lte: end },
-        is_holiday: true
+        date: { gte: start, lte: end }
       },
-      select: { date: true }
+      select: { date: true, is_holiday: true }
     });
-    return new Set(rows.map((row: { date: Date }) => row.date.toISOString().split('T')[0]));
+    const map = new Map<string, boolean>();
+    rows.forEach((row: { date: Date; is_holiday: boolean }) => {
+      map.set(row.date.toISOString().split('T')[0], row.is_holiday);
+    });
+    return map;
   } catch (error) {
     console.warn('Failed to load holiday data from DB:', error);
-    return new Set();
+    return new Map();
   }
 }
 
-async function saveHolidayDatesToDb(year: number, dates: Set<string>): Promise<void> {
-  if (dates.size === 0) return;
+async function saveHolidayEntriesToDb(
+  entries: Array<{ date: string; isHoliday: boolean; name?: string | null }>
+): Promise<void> {
+  if (entries.length === 0) return;
   try {
     const prisma = getPrismaClient();
-    const rows = Array.from(dates).map((dateStr) => ({
-      date: new Date(dateStr),
-      name: null,
-      is_holiday: true,
+    const rows = entries.map((entry) => ({
+      date: new Date(entry.date),
+      name: entry.name ?? null,
+      is_holiday: entry.isHoliday,
       source: 'timor.tech'
     }));
     await prisma.holidays.createMany({
@@ -94,17 +98,17 @@ async function saveHolidayDatesToDb(year: number, dates: Set<string>): Promise<v
   }
 }
 
-async function fetchHolidayDates(year: number): Promise<Set<string>> {
+async function fetchHolidayMap(year: number): Promise<Map<string, boolean>> {
   const cached = holidayCache.get(year);
   const now = Date.now();
   if (cached && now - cached.fetchedAt < HOLIDAY_CACHE_TTL_MS) {
-    return cached.dates;
+    return cached.map;
   }
 
-  const dbDates = await loadHolidayDatesFromDb(year);
-  if (dbDates.size > 0) {
-    holidayCache.set(year, { dates: dbDates, fetchedAt: now });
-    return dbDates;
+  const dbMap = await loadHolidayMapFromDb(year);
+  if (dbMap.size > 0) {
+    holidayCache.set(year, { map: dbMap, fetchedAt: now });
+    return dbMap;
   }
 
   try {
@@ -121,17 +125,19 @@ async function fetchHolidayDates(year: number): Promise<Set<string>> {
     }
 
     const payload = await response.json();
-    const dates = extractHolidayDates(payload);
-    await saveHolidayDatesToDb(year, dates);
-    holidayCache.set(year, { dates, fetchedAt: now });
-    return dates;
+    const entries = extractHolidayEntries(payload);
+    await saveHolidayEntriesToDb(entries);
+    const map = new Map<string, boolean>();
+    entries.forEach((entry) => map.set(entry.date, entry.isHoliday));
+    holidayCache.set(year, { map, fetchedAt: now });
+    return map;
   } catch (error) {
     console.warn('Failed to fetch holiday data:', error);
-    return new Set();
+    return new Map();
   }
 }
 
-async function forceFetchHolidayDates(year: number): Promise<Set<string>> {
+async function forceFetchHolidayMap(year: number): Promise<Map<string, boolean>> {
   const response = await fetch(`https://timor.tech/api/holiday/year/${year}`, {
     headers: {
       'User-Agent': 'smart-ledger/1.0',
@@ -145,18 +151,33 @@ async function forceFetchHolidayDates(year: number): Promise<Set<string>> {
   }
 
   const payload = await response.json();
-  const dates = extractHolidayDates(payload);
-  await saveHolidayDatesToDb(year, dates);
-  holidayCache.set(year, { dates, fetchedAt: Date.now() });
-  return dates;
+  const entries = extractHolidayEntries(payload);
+  await saveHolidayEntriesToDb(entries);
+  const map = new Map<string, boolean>();
+  entries.forEach((entry) => map.set(entry.date, entry.isHoliday));
+  holidayCache.set(year, { map, fetchedAt: Date.now() });
+  return map;
 }
 
 async function isHolidayDate(dateStr: string): Promise<boolean> {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false;
   const year = Number(dateStr.slice(0, 4));
   if (!Number.isFinite(year)) return false;
-  const dates = await fetchHolidayDates(year);
-  return dates.has(dateStr);
+  const map = await fetchHolidayMap(year);
+  return map.get(dateStr) === true;
+}
+
+async function isWorkingDay(dateStr: string): Promise<boolean> {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false;
+  const year = Number(dateStr.slice(0, 4));
+  if (!Number.isFinite(year)) return false;
+  const map = await fetchHolidayMap(year);
+  if (map.has(dateStr)) {
+    return map.get(dateStr) === false;
+  }
+  const date = new Date(dateStr);
+  const day = date.getDay();
+  return day >= 1 && day <= 5;
 }
 
 export class RecurringExpenseService {
@@ -382,9 +403,30 @@ export class RecurringExpenseService {
     config: FrequencyConfig,
     currentDate: string
   ): Promise<string> {
-    let nextDate = this.calculateNextDateAfterGeneration(frequency, config, currentDate);
     let guard = 0;
-    while (guard < 31 && (await isHolidayDate(nextDate))) {
+    let nextDate = this.calculateNextDateAfterGeneration(frequency, config, currentDate);
+    const isWorkdaySchedule =
+      frequency === 'weekly' &&
+      Array.isArray(config.days_of_week) &&
+      config.days_of_week.length === 5 &&
+      config.days_of_week.every((day) => day >= 1 && day <= 5);
+
+    if (isWorkdaySchedule) {
+      nextDate = currentDate;
+      while (guard < 62) {
+        const candidate = new Date(nextDate);
+        candidate.setDate(candidate.getDate() + 1);
+        const candidateStr = candidate.toISOString().split('T')[0];
+        if (await isWorkingDay(candidateStr)) {
+          return candidateStr;
+        }
+        nextDate = candidateStr;
+        guard += 1;
+      }
+      return this.calculateNextDateAfterGeneration(frequency, config, currentDate);
+    }
+
+    while (guard < 62 && (await isHolidayDate(nextDate))) {
       nextDate = this.calculateNextDateAfterGeneration(frequency, config, nextDate);
       guard += 1;
     }
@@ -396,6 +438,6 @@ export class RecurringExpenseService {
 export const recurringExpenseService = new RecurringExpenseService();
 
 export async function syncHolidayYear(year: number): Promise<{ year: number; count: number }> {
-  const dates = await forceFetchHolidayDates(year);
-  return { year, count: dates.size };
+  const map = await forceFetchHolidayMap(year);
+  return { year, count: map.size };
 }
