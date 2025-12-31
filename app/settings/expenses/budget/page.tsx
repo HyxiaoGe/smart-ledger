@@ -25,9 +25,7 @@ import {
   ChevronDown,
   ChevronUp,
   PiggyBank,
-  Pencil,
-  Check,
-  X
+  Pencil
 } from 'lucide-react';
 
 export default function BudgetPage() {
@@ -194,67 +192,20 @@ export default function BudgetPage() {
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <div className="text-sm text-blue-100 mb-1">总预算</div>
-                  {editingTotalBudget ? (
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">¥</span>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={totalBudgetDraft}
-                        onChange={(event) => setTotalBudgetDraft(event.target.value)}
-                        className="w-32 rounded-md border border-white/30 bg-white/10 px-2 py-1 text-xl font-bold text-white placeholder:text-blue-100 focus:outline-none"
-                        placeholder="0"
-                      />
-                    </div>
-                  ) : (
-                    <div className="text-3xl font-bold">¥{totalBudget.toLocaleString()}</div>
-                  )}
+                  <div className="text-3xl font-bold">¥{totalBudget.toLocaleString()}</div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {editingTotalBudget ? (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-white/40 text-white hover:bg-white/10"
-                        onClick={() => {
-                          const amount = Number(totalBudgetDraft);
-                          if (Number.isNaN(amount) || amount < 0) {
-                            setToastMessage('❌ 请输入正确的总预算');
-                            setShowToast(true);
-                            return;
-                          }
-                          updateTotalBudgetMutation.mutate(amount);
-                        }}
-                        disabled={updateTotalBudgetMutation.isPending}
-                      >
-                        <Check className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-white/40 text-white hover:bg-white/10"
-                        onClick={() => setEditingTotalBudget(false)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-white/40 text-white hover:bg-white/10"
-                        onClick={() => setEditingTotalBudget(true)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <div className="p-3 bg-white/20 rounded-lg">
-                        <PiggyBank className="h-6 w-6" />
-                      </div>
-                    </>
-                  )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-white/40 text-white hover:bg-white/10"
+                    onClick={() => setEditingTotalBudget(true)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <div className="p-3 bg-white/20 rounded-lg">
+                    <PiggyBank className="h-6 w-6" />
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -571,6 +522,52 @@ export default function BudgetPage() {
         {/* Toast提示 */}
         {showToast && <ProgressToast message={toastMessage} onClose={() => setShowToast(false)} />}
       </div>
+
+      {editingTotalBudget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-lg bg-white dark:bg-gray-800 shadow-xl">
+            <div className="border-b border-gray-200 dark:border-gray-700 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                设置本月总预算
+              </h3>
+            </div>
+            <div className="p-6 space-y-4">
+              <label className="text-sm text-gray-600 dark:text-gray-300">预算金额</label>
+              <div className="flex items-center gap-2">
+                <span className="text-lg text-gray-500">¥</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={totalBudgetDraft}
+                  onChange={(event) => setTotalBudgetDraft(event.target.value)}
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-lg text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="输入本月总预算"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 border-t border-gray-200 dark:border-gray-700 p-6">
+              <Button variant="outline" onClick={() => setEditingTotalBudget(false)}>
+                取消
+              </Button>
+              <Button
+                onClick={() => {
+                  const amount = Number(totalBudgetDraft);
+                  if (Number.isNaN(amount) || amount < 0) {
+                    setToastMessage('❌ 请输入正确的总预算');
+                    setShowToast(true);
+                    return;
+                  }
+                  updateTotalBudgetMutation.mutate(amount);
+                }}
+                disabled={updateTotalBudgetMutation.isPending}
+              >
+                {updateTotalBudgetMutation.isPending ? '保存中...' : '保存'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
