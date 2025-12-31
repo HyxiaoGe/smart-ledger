@@ -10,9 +10,9 @@ import { PageSkeleton } from '@/components/shared/PageSkeleton';
 import {
   getCurrentYearMonth,
   formatMonth,
-  getProgressBarColor,
+  getProgressBarColor
 } from '@/lib/services/budgetService.server';
-import { budgetsApi, type BudgetSuggestion, type TotalBudgetSummary } from '@/lib/api/services/budgets';
+import { budgetsApi } from '@/lib/api/services/budgets';
 import { categoriesApi } from '@/lib/api/services/categories';
 import type { Category } from '@/types/dto/category.dto';
 import {
@@ -24,7 +24,7 @@ import {
   Calendar,
   ChevronDown,
   ChevronUp,
-  PiggyBank,
+  PiggyBank
 } from 'lucide-react';
 
 export default function BudgetPage() {
@@ -32,28 +32,35 @@ export default function BudgetPage() {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [isSuggestionsExpanded, setIsSuggestionsExpanded] = useState(true);
+  const [suggestionFilter, setSuggestionFilter] = useState<'all' | 'over' | 'near' | 'low'>('all');
+  const [suggestionSort, setSuggestionSort] = useState<'usage' | 'risk' | 'amount'>('usage');
+  const [expandedSuggestions, setExpandedSuggestions] = useState<Set<string>>(new Set());
 
   // 获取预算汇总
-  const { data: summary, isLoading: summaryLoading, error: summaryError } = useQuery({
+  const {
+    data: summary,
+    isLoading: summaryLoading,
+    error: summaryError
+  } = useQuery({
     queryKey: ['budget-summary', year, month],
-    queryFn: () => budgetsApi.getSummary({ year, month, currency: 'CNY' }),
+    queryFn: () => budgetsApi.getSummary({ year, month, currency: 'CNY' })
   });
 
   // 获取分类列表
   const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
     queryKey: ['categories'],
-    queryFn: () => categoriesApi.list(),
+    queryFn: () => categoriesApi.list()
   });
 
   // 获取预算建议（已包含实时计算的当月支出数据）
   const { data: suggestions = [], isLoading: suggestionsLoading } = useQuery({
     queryKey: ['budget-suggestions', year, month],
-    queryFn: () => budgetsApi.getSuggestions({ year, month }),
+    queryFn: () => budgetsApi.getSuggestions({ year, month })
   });
 
   // 过滤活跃分类
-  const categories = useMemo(() =>
-    (categoriesData || []).filter(c => c.is_active) as Category[],
+  const categories = useMemo(
+    () => (categoriesData || []).filter((c) => c.is_active) as Category[],
     [categoriesData]
   );
 
@@ -69,11 +76,45 @@ export default function BudgetPage() {
   const totalSpent = summary?.total_spent || 0;
   const totalRemaining = summary?.total_remaining || 0;
   const usagePercentage = summary?.usage_percentage || 0;
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const daysIntoMonth = new Date().getDate();
+  const remainingDays = Math.max(1, daysInMonth - daysIntoMonth + 1);
+  const dailyAvailable = totalRemaining > 0 ? totalRemaining / remainingDays : 0;
 
   const getUsagePercent = (spending: number, budget: number) => {
     if (!budget || budget <= 0) return 0;
     return (spending / budget) * 100;
   };
+
+  const filteredSuggestions = useMemo(() => {
+    return suggestions
+      .map((suggestion) => {
+        const usagePercent = getUsagePercent(
+          suggestion.currentMonthSpending,
+          suggestion.suggestedAmount
+        );
+        const riskRatio =
+          suggestion.suggestedAmount > 0
+            ? suggestion.predictedMonthTotal / suggestion.suggestedAmount
+            : 0;
+        return { suggestion, usagePercent, riskRatio };
+      })
+      .filter(({ usagePercent }) => {
+        if (suggestionFilter === 'over') return usagePercent > 100;
+        if (suggestionFilter === 'near') return usagePercent >= 80 && usagePercent <= 100;
+        if (suggestionFilter === 'low') return usagePercent < 50;
+        return true;
+      })
+      .sort((a, b) => {
+        if (suggestionSort === 'amount') {
+          return b.suggestion.suggestedAmount - a.suggestion.suggestedAmount;
+        }
+        if (suggestionSort === 'risk') {
+          return b.riskRatio - a.riskRatio;
+        }
+        return b.usagePercent - a.usagePercent;
+      });
+  }, [suggestions, suggestionFilter, suggestionSort]);
 
   if (loading) {
     return <PageSkeleton stats={4} listItems={0} />;
@@ -85,7 +126,10 @@ export default function BudgetPage() {
         {/* 返回导航 */}
         <div className="mb-6">
           <Link href="/settings/expenses">
-            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 dark:text-gray-100">
+            <Button
+              variant="ghost"
+              className="text-gray-600 hover:text-gray-900 dark:text-gray-100"
+            >
               <ChevronLeft className="h-4 w-4 mr-2" />
               返回消费配置
             </Button>
@@ -95,19 +139,23 @@ export default function BudgetPage() {
         {/* 页面标题和月份 */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">月度预算设置</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+              月度预算设置
+            </h2>
             <p className="text-gray-600 dark:text-gray-300">管理您的月度预算，控制支出更轻松</p>
           </div>
           <div className="flex items-center gap-3">
             <div className="px-4 py-2 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
               <Calendar className="inline h-4 w-4 mr-2 text-blue-600" />
-              <span className="font-semibold text-blue-900 dark:text-blue-100">{formatMonth(year, month)}</span>
+              <span className="font-semibold text-blue-900 dark:text-blue-100">
+                {formatMonth(year, month)}
+              </span>
             </div>
           </div>
         </div>
 
         {/* 总预算汇总卡片 */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-4">
@@ -156,12 +204,33 @@ export default function BudgetPage() {
 
           <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
             <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">日均可用</div>
+                  <div className="text-2xl font-bold text-blue-600">
+                    ¥{dailyAvailable.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  </div>
+                </div>
+                <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                  <Calendar className="h-6 w-6 text-blue-600" />
+                </div>
+              </div>
+              <div className="text-xs text-gray-500 mt-2">剩余 {remainingDays} 天</div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
+            <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-2">
                 <div>
                   <div className="text-sm text-gray-600 mb-1">使用率</div>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{usagePercentage.toFixed(1)}%</div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    {usagePercentage.toFixed(1)}%
+                  </div>
                 </div>
-                <div className={`p-3 rounded-lg ${usagePercentage > 100 ? 'bg-red-50 dark:bg-red-950' : usagePercentage >= 80 ? 'bg-orange-50 dark:bg-orange-950' : 'bg-green-50 dark:bg-green-950'}`}>
+                <div
+                  className={`p-3 rounded-lg ${usagePercentage > 100 ? 'bg-red-50 dark:bg-red-950' : usagePercentage >= 80 ? 'bg-orange-50 dark:bg-orange-950' : 'bg-green-50 dark:bg-green-950'}`}
+                >
                   {usagePercentage > 100 ? (
                     <AlertCircle className="h-6 w-6 text-red-600" />
                   ) : usagePercentage >= 80 ? (
@@ -201,7 +270,10 @@ export default function BudgetPage() {
         {/* 智能预算建议 */}
         {suggestions.length > 0 && (
           <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950 dark:to-blue-950 mb-8">
-            <CardHeader className="cursor-pointer" onClick={() => setIsSuggestionsExpanded(!isSuggestionsExpanded)}>
+            <CardHeader
+              className="cursor-pointer"
+              onClick={() => setIsSuggestionsExpanded(!isSuggestionsExpanded)}
+            >
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2 text-purple-900 dark:text-purple-100">
                   <span>💡</span>
@@ -219,134 +291,195 @@ export default function BudgetPage() {
             </CardHeader>
             {isSuggestionsExpanded && (
               <CardContent className="space-y-3">
-              {suggestions.map((suggestion) => {
-                const category = categories.find(c => c.key === suggestion.categoryKey);
-                if (!category) return null;
+                <div className="flex flex-wrap items-center gap-2">
+                  {[
+                    { value: 'all' as const, label: '全部' },
+                    { value: 'over' as const, label: '超支' },
+                    { value: 'near' as const, label: '接近上限' },
+                    { value: 'low' as const, label: '低使用' }
+                  ].map((item) => (
+                    <Button
+                      key={item.value}
+                      size="sm"
+                      variant={suggestionFilter === item.value ? 'default' : 'outline'}
+                      onClick={() => setSuggestionFilter(item.value)}
+                    >
+                      {item.label}
+                    </Button>
+                  ))}
+                  <div className="ml-auto flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                    <span>排序</span>
+                    <select
+                      value={suggestionSort}
+                      onChange={(event) =>
+                        setSuggestionSort(event.target.value as typeof suggestionSort)
+                      }
+                      className="px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg text-sm"
+                    >
+                      <option value="usage">使用率</option>
+                      <option value="risk">预测风险</option>
+                      <option value="amount">建议金额</option>
+                    </select>
+                  </div>
+                </div>
+                {filteredSuggestions.map(({ suggestion, usagePercent }) => {
+                  const category = categories.find((c) => c.key === suggestion.categoryKey);
+                  if (!category) return null;
 
-                const confidenceColor =
-                  suggestion.confidenceLevel === 'high' ? 'text-orange-600 bg-orange-100 dark:bg-orange-900' :
-                  suggestion.confidenceLevel === 'medium' ? 'text-blue-600 bg-blue-100 dark:bg-blue-900' :
-                  'text-gray-600 bg-gray-100 dark:bg-gray-700';
+                  const confidenceColor =
+                    suggestion.confidenceLevel === 'high'
+                      ? 'text-orange-600 bg-orange-100 dark:bg-orange-900'
+                      : suggestion.confidenceLevel === 'medium'
+                        ? 'text-blue-600 bg-blue-100 dark:bg-blue-900'
+                        : 'text-gray-600 bg-gray-100 dark:bg-gray-700';
 
-                const confidenceLabel =
-                  suggestion.confidenceLevel === 'high' ? '高' :
-                  suggestion.confidenceLevel === 'medium' ? '中' :
-                  '低';
+                  const confidenceLabel =
+                    suggestion.confidenceLevel === 'high'
+                      ? '高'
+                      : suggestion.confidenceLevel === 'medium'
+                        ? '中'
+                        : '低';
 
-                // 计算趋势图标
-                const trendIcon =
-                  suggestion.predictedMonthTotal > suggestion.historicalAvg * 1.1 ? '↑' :
-                  suggestion.predictedMonthTotal < suggestion.historicalAvg * 0.9 ? '↓' :
-                  '~';
+                  // 计算趋势图标
+                  const trendIcon =
+                    suggestion.predictedMonthTotal > suggestion.historicalAvg * 1.1
+                      ? '↑'
+                      : suggestion.predictedMonthTotal < suggestion.historicalAvg * 0.9
+                        ? '↓'
+                        : '~';
 
-                const trendColor =
-                  trendIcon === '↑' ? 'text-red-500' :
-                  trendIcon === '↓' ? 'text-green-500' :
-                  'text-gray-500';
+                  const trendColor =
+                    trendIcon === '↑'
+                      ? 'text-red-500'
+                      : trendIcon === '↓'
+                        ? 'text-green-500'
+                        : 'text-gray-500';
 
-                const usagePercent = getUsagePercent(suggestion.currentMonthSpending, suggestion.suggestedAmount);
-                const usageRatio = suggestion.suggestedAmount > 0
-                  ? suggestion.currentMonthSpending / suggestion.suggestedAmount
-                  : 0;
+                  const usageRatio =
+                    suggestion.suggestedAmount > 0
+                      ? suggestion.currentMonthSpending / suggestion.suggestedAmount
+                      : 0;
 
-                return (
-                  <div
-                    key={suggestion.categoryKey}
-                    className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-purple-200 dark:border-purple-800"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="text-2xl">{category.icon}</div>
-                        <div>
-                          <div className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                            {category.label}
-                          </div>
-                          {/* AI建议预算 - 恢复原来的格式 */}
-                          <div className="mb-3">
-                            <div className="flex items-center gap-3 text-sm">
-                              <div className="flex items-center gap-1">
-                                <span className="text-purple-600 dark:text-purple-400">💡</span>
-                                <span className="text-gray-500 dark:text-gray-400">建议:</span>
+                  const isExpanded = expandedSuggestions.has(suggestion.categoryKey);
+
+                  return (
+                    <div
+                      key={suggestion.categoryKey}
+                      className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-purple-200 dark:border-purple-800"
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="text-2xl">{category.icon}</div>
+                          <div>
+                            <div className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                              {category.label}
+                            </div>
+                            {/* AI建议预算 - 恢复原来的格式 */}
+                            <div className="mb-3">
+                              <div className="flex items-center gap-3 text-sm">
+                                <div className="flex items-center gap-1">
+                                  <span className="text-purple-600 dark:text-purple-400">💡</span>
+                                  <span className="text-gray-500 dark:text-gray-400">建议:</span>
+                                </div>
+                                <span className="font-bold text-purple-700 dark:text-purple-300 text-base">
+                                  ¥{suggestion.suggestedAmount.toLocaleString()}
+                                </span>
                               </div>
-                              <span className="font-bold text-purple-700 dark:text-purple-300 text-base">
-                                ¥{suggestion.suggestedAmount.toLocaleString()}
-                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        {/* 可信度标签放在右侧 */}
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">可信度:</span>
+                          <div className="relative group">
+                            <span
+                              className={`text-xs px-2 py-1 rounded-full ${confidenceColor} cursor-help`}
+                            >
+                              {confidenceLabel}
+                            </span>
+                            {/* Tooltip 解释 */}
+                            <div className="absolute right-0 bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
+                              {confidenceLabel === '高'
+                                ? '基于充足的历史数据，预测准确度很高'
+                                : confidenceLabel === '中'
+                                  ? '基于一定的历史数据，预测准确度一般'
+                                  : '历史数据不足，预测准确度较低'}
                             </div>
                           </div>
                         </div>
                       </div>
-                      {/* 可信度标签放在右侧 */}
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500 dark:text-gray-400">可信度:</span>
-                        <div className="relative group">
-                          <span className={`text-xs px-2 py-1 rounded-full ${confidenceColor} cursor-help`}>
-                            {confidenceLabel}
-                          </span>
-                          {/* Tooltip 解释 */}
-                          <div className="absolute right-0 bottom-full mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
-                            {confidenceLabel === '高' ? '基于充足的历史数据，预测准确度很高' :
-                             confidenceLabel === '中' ? '基于一定的历史数据，预测准确度一般' :
-                             '历史数据不足，预测准确度较低'}
+
+                      {/* 进度条和使用情况 */}
+                      <div className="mb-3">
+                        {/* 使用率 */}
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-gray-600 dark:text-gray-300">使用率</span>
+                            <span className="font-semibold text-gray-900 dark:text-gray-100">
+                              {Math.min(100, usagePercent).toFixed(1)}%
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                              className={`h-2 rounded-full transition-all ${
+                                usageRatio > 1
+                                  ? 'bg-red-500'
+                                  : usageRatio >= 0.8
+                                    ? 'bg-orange-500'
+                                    : usageRatio >= 0.5
+                                      ? 'bg-blue-500'
+                                      : 'bg-green-500'
+                              }`}
+                              style={{ width: `${Math.min(100, usagePercent)}%` }}
+                            />
                           </div>
                         </div>
                       </div>
-                    </div>
-
-                    
-                    {/* 进度条和使用情况 */}
-                    <div className="mb-3">
-                      {/* 使用率 */}
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600 dark:text-gray-300">使用率</span>
-                          <span className="font-semibold text-gray-900 dark:text-gray-100">
-                            {Math.min(100, usagePercent).toFixed(1)}%
-                          </span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className={`h-2 rounded-full transition-all ${
-                              usageRatio > 1 ? 'bg-red-500' :
-                              usageRatio >= 0.8 ? 'bg-orange-500' :
-                              usageRatio >= 0.5 ? 'bg-blue-500' :
-                              'bg-green-500'
-                            }`}
-                            style={{ width: `${Math.min(100, usagePercent)}%` }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    {/* 参考数据 - 紧凑单行显示 */}
-                    <div className="flex justify-between items-center pt-2 mt-2 border-t border-gray-200 dark:border-gray-600 text-xs text-gray-500 dark:text-gray-400">
-                      <div className="flex items-center gap-4">
-                        <span>📅 历史平均: ¥{suggestion.historicalAvg.toLocaleString()}</span>
+                      <div className="flex items-center justify-between pt-2 mt-2 border-t border-gray-200 dark:border-gray-600 text-xs text-gray-500 dark:text-gray-400">
                         <span>
-                          🤖 {suggestion.reason.split('**').join('')}
+                          🔮 当月预测支出: ¥{suggestion.predictedMonthTotal.toLocaleString()}
                         </span>
-                        <span>💰 当月已支出: ¥{suggestion.currentMonthSpending.toLocaleString()}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setExpandedSuggestions((prev) => {
+                              const next = new Set(prev);
+                              if (next.has(suggestion.categoryKey)) {
+                                next.delete(suggestion.categoryKey);
+                              } else {
+                                next.add(suggestion.categoryKey);
+                              }
+                              return next;
+                            });
+                          }}
+                          className="text-purple-600 dark:text-purple-400 hover:underline"
+                        >
+                          {isExpanded ? '收起详情' : '查看详情'}
+                        </button>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <span>🔮 当月预测支出: ¥{suggestion.predictedMonthTotal.toLocaleString()}</span>
-                        <span className={`font-bold ${trendColor}`}>{trendIcon}</span>
-                      </div>
+                      {isExpanded && (
+                        <div className="mt-3 text-xs text-gray-500 dark:text-gray-400 space-y-2">
+                          <div>📅 历史平均: ¥{suggestion.historicalAvg.toLocaleString()}</div>
+                          <div>
+                            💰 当月已支出: ¥{suggestion.currentMonthSpending.toLocaleString()}
+                          </div>
+                          <div>🤖 {suggestion.reason.split('**').join('')}</div>
+                          <div className="flex items-center gap-1">
+                            <span>趋势:</span>
+                            <span className={`font-bold ${trendColor}`}>{trendIcon}</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
               </CardContent>
             )}
           </Card>
         )}
 
-        
-        
         {/* Toast提示 */}
-        {showToast && (
-          <ProgressToast
-            message={toastMessage}
-            onClose={() => setShowToast(false)}
-          />
-        )}
+        {showToast && <ProgressToast message={toastMessage} onClose={() => setShowToast(false)} />}
       </div>
     </div>
   );
