@@ -3,9 +3,11 @@ import { recurringExpenseService } from '@/lib/services/recurringExpenses.server
 import { withErrorHandler } from '@/lib/domain/errors/errorHandler';
 import { logger } from '@/lib/services/logging';
 
-export const POST = withErrorHandler(async () => {
+export const POST = withErrorHandler(async (request: Request) => {
+  const { searchParams } = new URL(request.url);
+  const includeOverdue = searchParams.get('includeOverdue') === '1';
   const result = await recurringExpenseService.generatePendingExpenses({
-    includeOverdue: false,
+    includeOverdue,
   });
 
   // ✅ 记录用户操作日志（异步，不阻塞响应）

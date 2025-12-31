@@ -103,6 +103,41 @@ export default function RecurringExpensesPage() {
     }
   });
 
+  const generateOverdueMutation = useMutation({
+    mutationFn: () => recurringExpensesApi.generate({ includeOverdue: true }),
+    onSuccess: async (data) => {
+      const count = data.count || 0;
+      if (count > 0) {
+        let detailMessage = '';
+        try {
+          const history = await recurringExpensesApi.getHistory(8);
+          const names = Array.from(
+            new Set(
+              history
+                .filter((item) => item.status !== 'failed')
+                .map((item) => item.recurring_expense?.name)
+                .filter((name): name is string => Boolean(name))
+            )
+          ).slice(0, 3);
+          if (names.length > 0) {
+            detailMessage = `：${names.join('、')}${count > names.length ? ' 等' : ''}`;
+          }
+        } catch (error) {
+          console.error('获取生成明细失败:', error);
+        }
+        setToastMessage(`✅ 已补生成 ${count} 笔${detailMessage}`);
+      } else {
+        setToastMessage('💡 没有需要补生成的固定支出');
+      }
+      setShowToast(true);
+      queryClient.invalidateQueries({ queryKey: ['recurring-expenses'] });
+    },
+    onError: () => {
+      setToastMessage('❌ 补生成失败');
+      setShowToast(true);
+    }
+  });
+
   // 更新状态 mutation
   const updateMutation = useMutation({
     mutationFn: (params: { id: string; is_active: boolean }) =>
@@ -208,6 +243,16 @@ export default function RecurringExpensesPage() {
                 查看历史
               </Button>
             </Link>
+            <Button
+              onClick={() => generateOverdueMutation.mutate()}
+              disabled={generateOverdueMutation.isPending}
+              variant="outline"
+              className="group"
+              title="补生成之前到期但未生成的固定支出"
+            >
+              <Zap className="h-4 w-4 mr-2 group-hover:text-orange-500 transition-colors" />
+              {generateOverdueMutation.isPending ? '补生成中...' : '补生成逾期'}
+            </Button>
             <Button
               onClick={() => generateMutation.mutate()}
               disabled={generateMutation.isPending}

@@ -126,8 +126,9 @@ export const recurringExpensesApi = {
   /**
    * 手动生成定期支出交易
    */
-  generate(): Promise<{ count: number }> {
-    return apiClient.post<{ count: number }>('/api/recurring-expenses/generate');
+  generate(params?: { includeOverdue?: boolean }): Promise<{ count: number }> {
+    const query = params?.includeOverdue ? '?includeOverdue=1' : '';
+    return apiClient.post<{ count: number }>(`/api/recurring-expenses/generate${query}`);
   },
 
   /**
