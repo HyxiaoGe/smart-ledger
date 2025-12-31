@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,10 +23,12 @@ import {
 
 export default function AddRecurringExpensePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [mounted, setMounted] = useState(false);
   const [activeDateInput, setActiveDateInput] = useState<string | null>(null);
+  const prefillAppliedRef = useRef(false);
   const [formData, setFormData] = useState<{
     name: string;
     amount: string;
@@ -64,11 +66,38 @@ export default function AddRecurringExpensePage() {
   // 客户端初始化
   useEffect(() => {
     setMounted(true);
+    if (prefillAppliedRef.current) return;
+
+    const name = searchParams.get('name') || '';
+    const category = searchParams.get('category') || '';
+    const amount = searchParams.get('amount') || '';
+    const frequency = searchParams.get('frequency') || '';
+    const dayOfMonth = searchParams.get('day_of_month');
+    const daysOfWeek = searchParams.get('days_of_week');
+
+    const parsedDaysOfWeek = daysOfWeek
+      ? daysOfWeek
+          .split(',')
+          .map((day) => Number(day))
+          .filter((day) => Number.isInteger(day))
+      : undefined;
+
     setFormData(prev => ({
       ...prev,
-      start_date: new Date()
+      name: name || prev.name,
+      amount: amount || prev.amount,
+      category: category || prev.category,
+      frequency: frequency || prev.frequency,
+      frequency_config: {
+        ...prev.frequency_config,
+        ...(dayOfMonth ? { day_of_month: Number(dayOfMonth) } : {}),
+        ...(parsedDaysOfWeek && parsedDaysOfWeek.length > 0 ? { days_of_week: parsedDaysOfWeek } : {}),
+      },
+      start_date: prev.start_date || new Date(),
     }));
-  }, []);
+
+    prefillAppliedRef.current = true;
+  }, [searchParams]);
 
   const categoryOptions = [
     { value: 'rent', label: '房租', icon: '🏠' },

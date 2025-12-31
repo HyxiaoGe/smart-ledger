@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,8 @@ export default function RecurringExpensesPage() {
   const [toastMessage, setToastMessage] = useState('');
   const [confirmDelete, setConfirmDelete] = useState<RecurringExpense | null>(null);
   const [confirmPause, setConfirmPause] = useState<RecurringExpense | null>(null);
+  const [filter, setFilter] = useState<'all' | 'active' | 'paused'>('all');
+  const [sortBy, setSortBy] = useState<'next' | 'amount' | 'name'>('next');
 
   // 使用 React Query 获取固定支出列表
   const {
@@ -39,15 +41,59 @@ export default function RecurringExpensesPage() {
   const error = fetchError ? '获取固定支出列表失败' : null;
   const recurringExpenses = recurringExpensesData || [];
 
+  const visibleExpenses = useMemo(() => {
+    const filtered = recurringExpenses.filter((expense) => {
+      if (filter === 'active') return expense.is_active;
+      if (filter === 'paused') return !expense.is_active;
+      return true;
+    });
+
+    const sorted = [...filtered].sort((a, b) => {
+      if (sortBy === 'amount') {
+        return b.amount - a.amount;
+      }
+      if (sortBy === 'name') {
+        return a.name.localeCompare(b.name, 'zh-CN');
+      }
+      const aDate = a.next_generate ? new Date(a.next_generate).getTime() : Number.POSITIVE_INFINITY;
+      const bDate = b.next_generate ? new Date(b.next_generate).getTime() : Number.POSITIVE_INFINITY;
+      if (aDate !== bDate) return aDate - bDate;
+      return b.amount - a.amount;
+    });
+
+    return sorted;
+  }, [filter, sortBy, recurringExpenses]);
+
   // 使用状态展示 Hook
   const { getExpenseGenerationStatus } = useAutoGenerateRecurring(recurringExpenses);
 
   // 生成固定支出 mutation
   const generateMutation = useMutation({
     mutationFn: () => recurringExpensesApi.generate(),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       const count = data.count || 0;
-      setToastMessage(count > 0 ? `✅ 成功生成 ${count} 笔` : '💡 今日无需生成');
+      if (count > 0) {
+        let detailMessage = '';
+        try {
+          const history = await recurringExpensesApi.getHistory(8);
+          const names = Array.from(
+            new Set(
+              history
+                .filter((item) => item.status !== 'failed')
+                .map((item) => item.recurring_expense?.name)
+                .filter((name): name is string => Boolean(name))
+            )
+          ).slice(0, 3);
+          if (names.length > 0) {
+            detailMessage = `：${names.join('、')}${count > names.length ? ' 等' : ''}`;
+          }
+        } catch (error) {
+          console.error('获取生成明细失败:', error);
+        }
+        setToastMessage(`✅ 成功生成 ${count} 笔${detailMessage}`);
+      } else {
+        setToastMessage('💡 今日无需生成');
+      }
       setShowToast(true);
       queryClient.invalidateQueries({ queryKey: ['recurring-expenses'] });
     },
@@ -150,6 +196,12 @@ export default function RecurringExpensesPage() {
             <p className="text-gray-600 dark:text-gray-400">设置和管理您的定期固定支出，系统将自动生成记录</p>
           </div>
           <div className="flex gap-3">
+            <Link href="/settings/expenses/recurring/add">
+              <Button className="bg-blue-600 hover:bg-blue-700">
+                <Plus className="h-4 w-4 mr-2" />
+                添加固定支出
+              </Button>
+            </Link>
             <Link href="/settings/expenses/recurring/history">
               <Button variant="outline" className="group">
                 <History className="h-4 w-4 mr-2 group-hover:text-blue-600 transition-colors" />
@@ -166,12 +218,6 @@ export default function RecurringExpensesPage() {
               <Zap className="h-4 w-4 mr-2 group-hover:text-yellow-500 transition-colors" />
               {generateMutation.isPending ? '生成中...' : '手动触发生成'}
             </Button>
-            <Link href="/settings/expenses/recurring/add">
-              <Button className="bg-blue-600 hover:bg-blue-700">
-                <Plus className="h-4 w-4 mr-2" />
-                添加固定支出
-              </Button>
-            </Link>
           </div>
         </div>
 
@@ -191,7 +237,7 @@ export default function RecurringExpensesPage() {
                 </div>
                 <span>固定支出列表</span>
                 <span className="text-sm text-gray-500 dark:text-gray-400 font-normal">
-                  ({recurringExpenses.length} 个项目)
+                  ({visibleExpenses.length} 个项目)
                 </span>
               </CardTitle>
               <div className="flex items-center gap-2">
@@ -214,24 +260,91 @@ export default function RecurringExpensesPage() {
                 <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
                   设置固定支出后，系统会自动生成定期账单，让记账更轻松高效
                 </p>
-                <Link href="/settings/expenses/recurring/add">
-                  <Button className="bg-blue-600 hover:bg-blue-700 px-6 py-3">
-                    <Plus className="h-5 w-5 mr-2" />
-                    添加第一个固定支出
-                  </Button>
-                </Link>
+                <div className="flex flex-col items-center gap-4">
+                  <Link href="/settings/expenses/recurring/add">
+                    <Button className="bg-blue-600 hover:bg-blue-700 px-6 py-3">
+                      <Plus className="h-5 w-5 mr-2" />
+                      添加第一个固定支出
+                    </Button>
+                  </Link>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-3xl">
+                    {[
+                      { name: '房租', category: 'rent', amount: 3500, frequency: 'monthly', day_of_month: 1 },
+                      { name: '水电费', category: 'utilities', amount: 300, frequency: 'monthly', day_of_month: 5 },
+                      { name: '视频会员', category: 'subscription', amount: 30, frequency: 'monthly', day_of_month: 15 },
+                    ].map((template) => {
+                      const params = new URLSearchParams({
+                        name: template.name,
+                        category: template.category,
+                        amount: String(template.amount),
+                        frequency: template.frequency,
+                        day_of_month: String(template.day_of_month),
+                      }).toString();
+                      return (
+                        <Link
+                          key={template.name}
+                          href={`/settings/expenses/recurring/add?${params}`}
+                          className="block"
+                        >
+                          <div className="border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-3 text-left hover:border-blue-300 hover:shadow-sm transition-all">
+                            <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">{template.name}</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              ¥{template.amount} · 每月{template.day_of_month}号
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="space-y-4">
-                {recurringExpenses.map((expense) => (
-                  <RecurringExpenseCard
-                    key={expense.id}
-                    expense={expense}
-                    generationStatus={getExpenseGenerationStatus(expense)}
-                    onToggleActive={() => toggleActiveStatus(expense)}
-                    onDelete={() => setConfirmDelete(expense)}
-                  />
-                ))}
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {[
+                      { value: 'all', label: '全部' },
+                      { value: 'active', label: '仅活跃' },
+                      { value: 'paused', label: '已暂停' },
+                    ].map((item) => (
+                      <Button
+                        key={item.value}
+                        size="sm"
+                        variant={filter === item.value ? 'default' : 'outline'}
+                        onClick={() => setFilter(item.value as typeof filter)}
+                      >
+                        {item.label}
+                      </Button>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                    <span>排序</span>
+                    <select
+                      value={sortBy}
+                      onChange={(event) => setSortBy(event.target.value as typeof sortBy)}
+                      className="px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg text-sm"
+                    >
+                      <option value="next">下次生成优先</option>
+                      <option value="amount">金额从高到低</option>
+                      <option value="name">名称 A-Z</option>
+                    </select>
+                  </div>
+                </div>
+                {visibleExpenses.length === 0 ? (
+                  <div className="text-center py-10 text-gray-500 dark:text-gray-400">
+                    当前筛选下没有固定支出
+                  </div>
+                ) : (
+                  visibleExpenses.map((expense) => (
+                    <RecurringExpenseCard
+                      key={expense.id}
+                      expense={expense}
+                      generationStatus={getExpenseGenerationStatus(expense)}
+                      onToggleActive={() => toggleActiveStatus(expense)}
+                      onDelete={() => setConfirmDelete(expense)}
+                    />
+                  ))
+                )}
               </div>
             )}
           </CardContent>

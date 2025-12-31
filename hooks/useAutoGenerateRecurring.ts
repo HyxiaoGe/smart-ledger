@@ -23,7 +23,7 @@ export function useAutoGenerateRecurring(recurringExpenses: any[]) {
 
     return {
       status: 'scheduled',
-      text: `下次: ${expense.next_generate || '未设置'}`,
+      text: '待生成',
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
       borderColor: 'border-blue-200'

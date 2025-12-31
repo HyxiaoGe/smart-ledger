@@ -21,12 +21,25 @@ interface RecurringExpenseCardProps {
   onDelete: () => void;
 }
 
+function formatDateLabel(dateStr?: string) {
+  if (!dateStr) return null;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return dateStr;
+  }
+  const date = new Date(dateStr);
+  if (Number.isNaN(date.getTime())) return dateStr;
+  return date.toLocaleDateString('zh-CN');
+}
+
 export function RecurringExpenseCard({
   expense,
   generationStatus,
   onToggleActive,
   onDelete,
 }: RecurringExpenseCardProps) {
+  const lastGenerated = expense.last_generated || expense.last_generated_at;
+  const nextGenerate = expense.next_generate;
+
   return (
     <div
       className={`group relative overflow-hidden rounded-xl border-2 transition-all duration-200 hover:shadow-md ${
@@ -109,6 +122,23 @@ export function RecurringExpenseCard({
                   {generationStatus.text}
                 </span>
               </div>
+
+              {(lastGenerated || nextGenerate) && (
+                <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                  {lastGenerated && (
+                    <span className="flex items-center gap-1">
+                      <History className="h-3 w-3" />
+                      最近生成: {formatDateLabel(lastGenerated)}
+                    </span>
+                  )}
+                  {nextGenerate && (
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      下次生成: {formatDateLabel(nextGenerate)}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
