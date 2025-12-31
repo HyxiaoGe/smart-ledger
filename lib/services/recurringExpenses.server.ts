@@ -131,6 +131,26 @@ async function fetchHolidayDates(year: number): Promise<Set<string>> {
   }
 }
 
+async function forceFetchHolidayDates(year: number): Promise<Set<string>> {
+  const response = await fetch(`https://timor.tech/api/holiday/year/${year}`, {
+    headers: {
+      'User-Agent': 'smart-ledger/1.0',
+      'Accept': 'application/json',
+    },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Holiday API error: ${response.status}`);
+  }
+
+  const payload = await response.json();
+  const dates = extractHolidayDates(payload);
+  await saveHolidayDatesToDb(year, dates);
+  holidayCache.set(year, { dates, fetchedAt: Date.now() });
+  return dates;
+}
+
 async function isHolidayDate(dateStr: string): Promise<boolean> {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false;
   const year = Number(dateStr.slice(0, 4));
@@ -379,3 +399,8 @@ export class RecurringExpenseService {
 
 // 导出单例实例
 export const recurringExpenseService = new RecurringExpenseService();
+
+export async function syncHolidayYear(year: number): Promise<{ year: number; count: number }> {
+  const dates = await forceFetchHolidayDates(year);
+  return { year, count: dates.size };
+}

@@ -10,6 +10,7 @@ import { useAutoGenerateRecurring } from '@/hooks/useAutoGenerateRecurring';
 import { Calendar, Plus, DollarSign, History, Zap } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { recurringExpensesApi, RecurringExpense } from '@/lib/api/services/recurring-expenses';
+import { holidaysApi } from '@/lib/api/services/holidays';
 import {
   StatsCards,
   RecurringExpenseCard,
@@ -26,6 +27,7 @@ export default function RecurringExpensesPage() {
   const [confirmPause, setConfirmPause] = useState<RecurringExpense | null>(null);
   const [filter, setFilter] = useState<'all' | 'active' | 'paused'>('all');
   const [sortBy, setSortBy] = useState<'next' | 'amount' | 'name'>('next');
+  const [holidayYear, setHolidayYear] = useState(new Date().getFullYear());
 
   // 使用 React Query 获取固定支出列表
   const {
@@ -138,6 +140,18 @@ export default function RecurringExpensesPage() {
     }
   });
 
+  const syncHolidayMutation = useMutation({
+    mutationFn: (year: number) => holidaysApi.sync(year),
+    onSuccess: (data) => {
+      setToastMessage(`✅ 已同步 ${data.year} 年节假日（${data.count} 天）`);
+      setShowToast(true);
+    },
+    onError: () => {
+      setToastMessage('❌ 节假日同步失败');
+      setShowToast(true);
+    }
+  });
+
   // 更新状态 mutation
   const updateMutation = useMutation({
     mutationFn: (params: { id: string; is_active: boolean }) =>
@@ -243,6 +257,31 @@ export default function RecurringExpensesPage() {
                 查看历史
               </Button>
             </Link>
+            <div className="flex items-center gap-2">
+              <select
+                value={holidayYear}
+                onChange={(event) => setHolidayYear(Number(event.target.value))}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg text-sm"
+              >
+                {[0, 1].map((offset) => {
+                  const year = new Date().getFullYear() + offset;
+                  return (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  );
+                })}
+              </select>
+              <Button
+                onClick={() => syncHolidayMutation.mutate(holidayYear)}
+                disabled={syncHolidayMutation.isPending}
+                variant="outline"
+                className="group"
+                title="同步节假日数据，用于节假日跳过生成"
+              >
+                {syncHolidayMutation.isPending ? '同步中...' : '节假日同步'}
+              </Button>
+            </div>
             <Button
               onClick={() => generateOverdueMutation.mutate()}
               disabled={generateOverdueMutation.isPending}
