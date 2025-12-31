@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "prepare": "husky",
     "commit": "node scripts/commit.js",
     "create-ai-tables": "tsx scripts/create-ai-tables.ts",
     "db:migrate": "tsx scripts/create-ai-tables.ts",
@@ -59,13 +60,24 @@
     "class-variance-authority": "^0.7.0",
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.5",
+    "husky": "^9.1.6",
     "jsdom": "^27.2.0",
     "postcss": "^8.4.38",
     "prettier": "^3.3.3",
+    "lint-staged": "^15.2.10",
     "tailwindcss": "^3.4.10",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.4.5",
     "vitest": "^4.0.14",
     "vitest-mock-extended": "^3.1.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "prettier --write",
+      "eslint --max-warnings=0"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
   }
 }

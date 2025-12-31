@@ -5,14 +5,14 @@
 
 import {
   getRecurringExpenseRepository,
-  getTransactionRepository,
+  getTransactionRepository
 } from '@/lib/infrastructure/repositories/index.server';
 import { getPrismaClient } from '@/lib/clients/db';
 import type {
   RecurringExpense,
   CreateRecurringExpenseDTO,
   UpdateRecurringExpenseDTO,
-  FrequencyConfig,
+  FrequencyConfig
 } from '@/lib/domain/repositories/IRecurringExpenseRepository';
 
 // 重新导出类型
@@ -64,11 +64,11 @@ async function loadHolidayDatesFromDb(year: number): Promise<Set<string>> {
     const rows = await prisma.holidays.findMany({
       where: {
         date: { gte: start, lte: end },
-        is_holiday: true,
+        is_holiday: true
       },
-      select: { date: true },
+      select: { date: true }
     });
-    return new Set(rows.map((row) => row.date.toISOString().split('T')[0]));
+    return new Set(rows.map((row: { date: Date }) => row.date.toISOString().split('T')[0]));
   } catch (error) {
     console.warn('Failed to load holiday data from DB:', error);
     return new Set();
@@ -83,11 +83,11 @@ async function saveHolidayDatesToDb(year: number, dates: Set<string>): Promise<v
       date: new Date(dateStr),
       name: null,
       is_holiday: true,
-      source: 'timor.tech',
+      source: 'timor.tech'
     }));
     await prisma.holidays.createMany({
       data: rows,
-      skipDuplicates: true,
+      skipDuplicates: true
     });
   } catch (error) {
     console.warn('Failed to save holiday data to DB:', error);
@@ -111,9 +111,9 @@ async function fetchHolidayDates(year: number): Promise<Set<string>> {
     const response = await fetch(`https://timor.tech/api/holiday/year/${year}`, {
       headers: {
         'User-Agent': 'smart-ledger/1.0',
-        'Accept': 'application/json',
+        Accept: 'application/json'
       },
-      cache: 'no-store',
+      cache: 'no-store'
     });
 
     if (!response.ok) {
@@ -135,9 +135,9 @@ async function forceFetchHolidayDates(year: number): Promise<Set<string>> {
   const response = await fetch(`https://timor.tech/api/holiday/year/${year}`, {
     headers: {
       'User-Agent': 'smart-ledger/1.0',
-      'Accept': 'application/json',
+      Accept: 'application/json'
     },
-    cache: 'no-store',
+    cache: 'no-store'
   });
 
   if (!response.ok) {
@@ -164,7 +164,10 @@ export class RecurringExpenseService {
    * 创建固定支出
    */
   async createRecurringExpense(
-    data: Omit<RecurringExpense, 'id' | 'last_generated' | 'next_generate' | 'created_at' | 'updated_at'>
+    data: Omit<
+      RecurringExpense,
+      'id' | 'last_generated' | 'next_generate' | 'created_at' | 'updated_at'
+    >
   ): Promise<RecurringExpense> {
     const repository = getRecurringExpenseRepository();
     const dto: CreateRecurringExpenseDTO = {
@@ -176,7 +179,7 @@ export class RecurringExpenseService {
       start_date: data.start_date,
       end_date: data.end_date || undefined,
       skip_holidays: data.skip_holidays,
-      is_active: data.is_active,
+      is_active: data.is_active
     };
     return repository.create(dto);
   }
@@ -231,7 +234,9 @@ export class RecurringExpenseService {
   /**
    * 手动触发生成固定支出
    */
-  async generatePendingExpenses(options?: { includeOverdue?: boolean }): Promise<{ generated: number; errors: string[] }> {
+  async generatePendingExpenses(options?: {
+    includeOverdue?: boolean;
+  }): Promise<{ generated: number; errors: string[] }> {
     const today = new Date().toISOString().split('T')[0];
     const errors: string[] = [];
     let generated = 0;
@@ -273,7 +278,6 @@ export class RecurringExpenseService {
     // 检查今天是否已经生成过（避免重复）
     const hasGenerated = await recurringRepo.hasGeneratedToday(expense.id, today);
     if (hasGenerated) {
-      console.log(`固定支出 "${expense.name}" 今天已生成，跳过`);
       return;
     }
 
@@ -283,18 +287,12 @@ export class RecurringExpenseService {
         const nextGenerate = await this.calculateNextDateSkippingHolidays(
           expense.frequency,
           expense.frequency_config,
-          today,
+          today
         );
         await recurringRepo.update(expense.id, {
-          next_generate: nextGenerate,
+          next_generate: nextGenerate
         });
-        await recurringRepo.logGeneration(
-          expense.id,
-          today,
-          null,
-          'skipped',
-          'holiday'
-        );
+        await recurringRepo.logGeneration(expense.id, today, null, 'skipped', 'holiday');
         return;
       }
     }
@@ -306,7 +304,7 @@ export class RecurringExpenseService {
       amount: expense.amount,
       note: `[自动生成] ${expense.name}`,
       date: today,
-      currency: 'CNY',
+      currency: 'CNY'
     });
 
     // 计算下次生成时间
@@ -319,16 +317,11 @@ export class RecurringExpenseService {
     // 更新固定支出的生成时间和下次生成时间
     await recurringRepo.update(expense.id, {
       last_generated: today,
-      next_generate: nextGenerate,
+      next_generate: nextGenerate
     });
 
     // 记录生成日志
-    await recurringRepo.logGeneration(
-      expense.id,
-      today,
-      transaction.id,
-      'success'
-    );
+    await recurringRepo.logGeneration(expense.id, today, transaction.id, 'success');
   }
 
   /**
@@ -347,7 +340,7 @@ export class RecurringExpenseService {
         nextDate.setDate(nextDate.getDate() + 1);
         break;
 
-      case 'weekly':
+      case 'weekly': {
         if (config.days_of_week && config.days_of_week.length > 0) {
           let attempts = 0;
           while (attempts < 7) {
@@ -361,8 +354,9 @@ export class RecurringExpenseService {
           nextDate.setDate(nextDate.getDate() + 7);
         }
         break;
+      }
 
-      case 'monthly':
+      case 'monthly': {
         const targetDay = config.day_of_month || current.getDate();
         nextDate.setMonth(nextDate.getMonth() + 1);
 
@@ -377,6 +371,7 @@ export class RecurringExpenseService {
           nextDate.setDate(targetDay);
         }
         break;
+      }
     }
 
     return nextDate.toISOString().split('T')[0];
@@ -389,7 +384,7 @@ export class RecurringExpenseService {
   ): Promise<string> {
     let nextDate = this.calculateNextDateAfterGeneration(frequency, config, currentDate);
     let guard = 0;
-    while (guard < 31 && await isHolidayDate(nextDate)) {
+    while (guard < 31 && (await isHolidayDate(nextDate))) {
       nextDate = this.calculateNextDateAfterGeneration(frequency, config, nextDate);
       guard += 1;
     }
