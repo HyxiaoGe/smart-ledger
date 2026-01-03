@@ -61,25 +61,25 @@ export function TopExpenses({ items, currency }: { items: Item[]; currency: stri
               </div>
             </div>
             <div
-              className={`mt-1 text-xs text-muted-foreground flex items-center ${
-                'justify-end'
+              className={`mt-1 flex items-center text-xs text-muted-foreground ${
+                it.merchant || it.note ? 'justify-between' : 'justify-end'
               }`}
             >
-              <div className="flex items-center gap-2 max-w-[60%]">
-                {it.merchant && (
-                  <div className="flex items-center gap-1 text-blue-600">
-                    <Store className="h-3 w-3" />
-                    <span className="font-medium">{it.merchant}</span>
-                  </div>
-                )}
-                {it.note && (
-                  <span className="truncate" title={it.note}>
-                    {it.note}
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className="mt-2 flex items-center justify-end">
+              {it.merchant || it.note ? (
+                <div className="flex items-center gap-2 max-w-[70%]">
+                  {it.merchant && (
+                    <div className="flex items-center gap-1 text-blue-600">
+                      <Store className="h-3 w-3" />
+                      <span className="font-medium">{it.merchant}</span>
+                    </div>
+                  )}
+                  {it.note && (
+                    <span className="truncate" title={it.note}>
+                      {it.note}
+                    </span>
+                  )}
+                </div>
+              ) : null}
               <Link
                 href={buildQuickAddHref(it)}
                 className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
