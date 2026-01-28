@@ -16,7 +16,6 @@ import { enhancedDataSync, markTransactionsDirty } from '@/lib/core/EnhancedData
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { paymentMethodsApi } from '@/lib/api/services/payment-methods';
 import { transactionsApi } from '@/lib/api/services/transactions';
-import { commonNotesApi } from '@/lib/api/services/common-notes';
 import { aiApi } from '@/lib/api/services/ai';
 import { Clock } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
@@ -114,6 +113,7 @@ export default function AddPage() {
     async (formData: {
       amt: number;
       category: string;
+      categoryLabel: string;
       note: string;
       date: Date;
       currency: Currency;
@@ -160,12 +160,22 @@ export default function AddPage() {
           }
         });
 
-        // 显示Toast成功提示（带进度条），包含日期信息
+        // 显示Toast成功提示（带进度条），包含金额和分类信息
         const formattedDate = formData.date.toLocaleDateString('zh-CN', {
           year: 'numeric',
           month: '2-digit',
           day: '2-digit'
         });
+
+        // 使用传入的分类显示名称
+        const categoryLabel = formData.categoryLabel;
+
+        // 格式化金额显示
+        const amountDisplay = formData.amt.toLocaleString(undefined, {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 2
+        });
+        const currencySymbol = formData.currency === 'USD' ? '$' : '¥';
 
         // 检查是否添加的是历史日期
         const today = new Date();
@@ -175,9 +185,11 @@ export default function AddPage() {
 
         if (addedDate.getTime() < today.getTime()) {
           // 历史日期 - 提示用户需要切换月份查看
-          setToastMessage(`账单已保存到 ${formattedDate}！切换到对应月份查看`);
+          setToastMessage(
+            `${categoryLabel} ${currencySymbol}${amountDisplay} 已保存到 ${formattedDate}`
+          );
         } else {
-          setToastMessage('账单保存成功！');
+          setToastMessage(`${categoryLabel} ${currencySymbol}${amountDisplay} 保存成功`);
         }
 
         setShowToast(true);
@@ -201,11 +213,9 @@ export default function AddPage() {
           console.error('缓存刷新失败:', err);
         });
 
-        // 更新常用备注（带错误日志）
+        // 清除常用备注本地缓存（API 层已更新数据库，这里只清缓存）
         if (formData.note && formData.note.trim()) {
-          updateCommonNote(formData.note.trim(), formData.amt).catch((err) => {
-            console.error('更新常用备注失败:', err);
-          });
+          localStorage.removeItem(STORAGE_KEYS.COMMON_NOTES_CACHE);
         }
 
         // 延迟重置表单，让用户看到成功提示
@@ -265,11 +275,15 @@ export default function AddPage() {
       return;
     }
 
+    // 获取分类显示名称
+    const categoryLabel = categories.find((c) => c.key === category)?.label || category;
+
     // 使用防抖提交
     submitTimeoutRef.current = setTimeout(() => {
       debouncedSubmit({
         amt,
         category,
+        categoryLabel,
         note,
         date,
         currency,
@@ -343,7 +357,21 @@ export default function AddPage() {
     ) as Transaction[];
   }, [recentTransactionsData]);
 
-  const recentQuickList = useMemo(() => recentTransactions.slice(0, 3), [recentTransactions]);
+  // 去重后的最近记录（基于 category + amount + note/merchant 组合）
+  const recentQuickList = useMemo(() => {
+    const seen = new Set<string>();
+    const deduplicated: Transaction[] = [];
+    for (const tx of recentTransactions) {
+      // 生成去重键：分类 + 金额（保留两位小数）+ 备注或商户
+      const key = `${tx.category}|${Number(tx.amount || 0).toFixed(2)}|${tx.note || tx.merchant || ''}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        deduplicated.push(tx);
+        if (deduplicated.length >= 3) break;
+      }
+    }
+    return deduplicated;
+  }, [recentTransactions]);
 
   const { data: frequentAmountData } = useQuery({
     queryKey: ['frequent-amounts', currency],
@@ -444,20 +472,6 @@ export default function AddPage() {
       isSubmittingRef.current = false;
     };
   }, []);
-
-  // 异步更新常用备注
-  async function updateCommonNote(noteContent: string, amount: number) {
-    try {
-      await commonNotesApi.upsert({
-        content: noteContent,
-        amount: amount
-      });
-      // 清除本地缓存，强制下次重新获取最新数据
-      localStorage.removeItem(STORAGE_KEYS.COMMON_NOTES_CACHE);
-    } catch {
-      // ignore note update failures
-    }
-  }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

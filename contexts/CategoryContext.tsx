@@ -13,13 +13,9 @@ import React, {
   useEffect,
   useCallback,
   useMemo,
-  type ReactNode,
+  type ReactNode
 } from 'react';
-import type {
-  CategoryWithStats,
-  Subcategory,
-  MerchantSuggestion,
-} from '@/types/dto/category.dto';
+import type { CategoryWithStats, Subcategory, MerchantSuggestion } from '@/types/dto/category.dto';
 import { readJSON, writeJSON } from '@/lib/utils/storage';
 import { categoriesApi } from '@/lib/api/services/categories';
 
@@ -27,7 +23,7 @@ import { categoriesApi } from '@/lib/api/services/categories';
 const CATEGORIES_CACHE_KEY = 'categories-cache';
 const MERCHANTS_CACHE_KEY = 'merchants-cache';
 const SUBCATEGORIES_CACHE_KEY = 'subcategories-cache';
-const CACHE_TTL = 5 * 60 * 1000; // 5 分钟
+const CACHE_TTL = 30 * 60 * 1000; // 30 分钟（分类数据变化不频繁）
 
 /**
  * 简化的分类信息（用于替代 PRESET_CATEGORIES）
@@ -55,12 +51,12 @@ interface CategoryContextValue {
 
   // 方法
   refresh: () => Promise<void>;
-  getCategoryMeta: (key: string) => CategoryMeta;
-  getCategoryLabel: (key: string) => string;
-  getCategoryIcon: (key: string) => string;
-  getCategoryColor: (key: string) => string;
-  getSubcategoriesForCategory: (categoryKey: string) => Subcategory[];
-  getMerchantsForCategory: (categoryKey: string) => string[];
+  getCategoryMeta: (_key: string) => CategoryMeta;
+  getCategoryLabel: (_key: string) => string;
+  getCategoryIcon: (_key: string) => string;
+  getCategoryColor: (_key: string) => string;
+  getSubcategoriesForCategory: (_categoryKey: string) => Subcategory[];
+  getMerchantsForCategory: (_categoryKey: string) => string[];
 }
 
 /**
@@ -70,7 +66,7 @@ const DEFAULT_CATEGORY_META: CategoryMeta = {
   key: 'other',
   label: '其他',
   icon: '📁',
-  color: '#6B7280',
+  color: '#6B7280'
 };
 
 /**
@@ -146,7 +142,7 @@ export function CategoryProvider({ children }: { children: ReactNode }) {
       const [categoriesData, subcategoriesData, merchantsData] = await Promise.all([
         categoriesApi.list({ is_active: true }),
         categoriesApi.getAllSubcategories(),
-        categoriesApi.getMerchants(10),
+        categoriesApi.getMerchants(10)
       ]);
 
       // 更新状态
@@ -211,7 +207,7 @@ export function CategoryProvider({ children }: { children: ReactNode }) {
         key: category.key,
         label: category.label,
         icon: category.icon || '📁',
-        color: category.color || '#6B7280',
+        color: category.color || '#6B7280'
       };
     },
     [categoryMap]
@@ -284,7 +280,7 @@ export function CategoryProvider({ children }: { children: ReactNode }) {
       getCategoryIcon,
       getCategoryColor,
       getSubcategoriesForCategory,
-      getMerchantsForCategory,
+      getMerchantsForCategory
     }),
     [
       categories,
@@ -299,15 +295,11 @@ export function CategoryProvider({ children }: { children: ReactNode }) {
       getCategoryIcon,
       getCategoryColor,
       getSubcategoriesForCategory,
-      getMerchantsForCategory,
+      getMerchantsForCategory
     ]
   );
 
-  return (
-    <CategoryContext.Provider value={contextValue}>
-      {children}
-    </CategoryContext.Provider>
-  );
+  return <CategoryContext.Provider value={contextValue}>{children}</CategoryContext.Provider>;
 }
 
 /**

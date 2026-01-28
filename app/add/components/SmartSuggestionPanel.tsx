@@ -2,16 +2,16 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { formatThousand } from '@/lib/utils/format';
+import { formatAmount } from '@/lib/utils/format';
 import type { Transaction } from '@/types/domain/transaction';
-import type { CategoryInfo } from '@/lib/services/categoryService';
+import type { Category } from '@/lib/services/categoryService';
 
 interface SmartSuggestionPanelProps {
   // 显示/隐藏状态
   showPanel: boolean;
   onTogglePanel: () => void;
   // 分类相关
-  commonCategories: CategoryInfo[];
+  commonCategories: Category[];
   selectedCategory: string;
   onSelectCategory: (_key: string) => void;
   // 商户相关
@@ -136,7 +136,7 @@ export function SmartSuggestionPanel({
                       <div className="flex items-center justify-between">
                         <span className="truncate">{tx.note || tx.merchant || '未填写备注'}</span>
                         <span className="font-semibold">
-                          {formatThousand(Number(tx.amount || 0))}
+                          {formatAmount(Number(tx.amount || 0))}
                         </span>
                       </div>
                     </button>
