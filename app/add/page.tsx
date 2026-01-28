@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { TransactionType, Currency, Transaction } from '@/types/domain/transaction';
@@ -31,7 +31,7 @@ export default function AddPage() {
   const type: TransactionType = 'expense'; // 固定为支出类型
   const { categories, isLoading: categoriesLoading, getMerchantsForCategory } = useCategories();
   const [category, setCategory] = useState<string>('food');
-    const [amountText, setAmountText] = useState<string>('');
+  const [amountText, setAmountText] = useState<string>('');
   const [note, setNote] = useState<string>('');
   const [date, setDate] = useState<Date>(new Date());
   const [currency, setCurrency] = useState<Currency>(DEFAULT_CURRENCY as Currency);
@@ -83,150 +83,150 @@ export default function AddPage() {
     return getMerchantsForCategory(category).slice(0, 6);
   }, [getMerchantsForCategory, category]);
 
-  const applyRecentTransaction = useCallback(
-    (tx: Transaction) => {
-      setCategory(tx.category || 'other');
-      setAmountText(formatThousand(Number(tx.amount || 0)));
-      setNote(tx.note || '');
-      setCurrency((tx.currency || DEFAULT_CURRENCY) as Currency);
-      setMerchant(tx.merchant || '');
-      setSubcategory(tx.subcategory || '');
-      setProduct(tx.product || '');
-      setPaymentMethod(tx.payment_method || '');
-      setDate(new Date());
-      setShowAdvanced(true);
-    },
-    []
-  );
+  const applyRecentTransaction = useCallback((tx: Transaction) => {
+    setCategory(tx.category || 'other');
+    setAmountText(formatThousand(Number(tx.amount || 0)));
+    setNote(tx.note || '');
+    setCurrency((tx.currency || DEFAULT_CURRENCY) as Currency);
+    setMerchant(tx.merchant || '');
+    setSubcategory(tx.subcategory || '');
+    setProduct(tx.product || '');
+    setPaymentMethod(tx.payment_method || '');
+    setDate(new Date());
+    setShowAdvanced(true);
+  }, []);
 
   const fallbackAmounts = useMemo(() => {
     if (currency === 'USD') return [5, 10, 20, 50];
     return [10, 15, 20, 30, 50];
   }, [currency]);
 
-  const quickPaymentMethods = useMemo(() => {
+  // 快速支付方式列表（预留功能，暂未使用）
+  const _quickPaymentMethods = useMemo(() => {
     if (!paymentMethods.length) return [];
     const sorted = [...paymentMethods].sort((a, b) => Number(b.is_default) - Number(a.is_default));
     return sorted.slice(0, 3);
   }, [paymentMethods]);
 
-  // 防抖提交函数
-  const debouncedSubmit = useCallback(async (formData: {
-    amt: number;
-    category: string;
-    note: string;
-    date: Date;
-    currency: Currency;
-    paymentMethod?: string;
-    merchant?: string;
-    subcategory?: string;
-    product?: string;
-  }) => {
-    setLoading(true);
-    setError('');
+  // 防抖提交函数（依赖数组为空是故意的，避免函数重建）
+  const debouncedSubmit = useCallback(
+    async (formData: {
+      amt: number;
+      category: string;
+      note: string;
+      date: Date;
+      currency: Currency;
+      paymentMethod?: string;
+      merchant?: string;
+      subcategory?: string;
+      product?: string;
+    }) => {
+      setLoading(true);
+      setError('');
 
-    try {
-      // 使用本地时区格式化日期，避免时区问题
-      const dateStr = formatDateToLocal(formData.date);
+      try {
+        // 使用本地时区格式化日期，避免时区问题
+        const dateStr = formatDateToLocal(formData.date);
 
-      // 使用 API 服务创建交易
-      const result = await transactionsApi.create({
-        type,
-        category: formData.category,
-        amount: formData.amt,
-        note: formData.note,
-        date: dateStr,
-        currency: formData.currency,
-        payment_method: formData.paymentMethod || null,
-        merchant: formData.merchant || null,
-        subcategory: formData.subcategory || null,
-        product: formData.product || null,
-      });
-
-      const transactionId = result.id;
-
-      // ✅ 记录用户操作日志（异步，不阻塞响应）
-      void logger.logUserAction({
-        action: 'transaction_created',
-        metadata: {
-          transaction_id: transactionId,
+        // 使用 API 服务创建交易
+        const result = await transactionsApi.create({
+          type,
           category: formData.category,
           amount: formData.amt,
+          note: formData.note,
+          date: dateStr,
           currency: formData.currency,
-          payment_method: formData.paymentMethod,
+          payment_method: formData.paymentMethod || null,
+          merchant: formData.merchant || null,
+          subcategory: formData.subcategory || null,
+          product: formData.product || null
+        });
+
+        const transactionId = result.id;
+
+        // ✅ 记录用户操作日志（异步，不阻塞响应）
+        void logger.logUserAction({
+          action: 'transaction_created',
+          metadata: {
+            transaction_id: transactionId,
+            category: formData.category,
+            amount: formData.amt,
+            currency: formData.currency,
+            payment_method: formData.paymentMethod,
+            merchant: formData.merchant,
+            subcategory: formData.subcategory,
+            note: formData.note ? formData.note.substring(0, 50) : undefined // 只记录前50字符
+          }
+        });
+
+        // 显示Toast成功提示（带进度条），包含日期信息
+        const formattedDate = formData.date.toLocaleDateString('zh-CN', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        });
+
+        // 检查是否添加的是历史日期
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const addedDate = new Date(formData.date);
+        addedDate.setHours(0, 0, 0, 0);
+
+        if (addedDate.getTime() < today.getTime()) {
+          // 历史日期 - 提示用户需要切换月份查看
+          setToastMessage(`账单已保存到 ${formattedDate}！切换到对应月份查看`);
+        } else {
+          setToastMessage('账单保存成功！');
+        }
+
+        setShowToast(true);
+
+        // 触发增强版同步事件（会自动显示 Toast 通知）
+        enhancedDataSync.notifyTransactionAdded({
+          type,
+          category: formData.category,
+          amount: formData.amt,
+          note: formData.note,
+          date: dateStr, // 使用已经格式化好的本地日期字符串
+          currency: formData.currency,
           merchant: formData.merchant,
           subcategory: formData.subcategory,
-          note: formData.note ? formData.note.substring(0, 50) : undefined, // 只记录前50字符
-        },
-      });
-
-      // 显示Toast成功提示（带进度条），包含日期信息
-      const formattedDate = formData.date.toLocaleDateString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-      });
-
-      // 检查是否添加的是历史日期
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const addedDate = new Date(formData.date);
-      addedDate.setHours(0, 0, 0, 0);
-
-      if (addedDate.getTime() < today.getTime()) {
-        // 历史日期 - 提示用户需要切换月份查看
-        setToastMessage(`账单已保存到 ${formattedDate}！切换到对应月份查看`);
-      } else {
-        setToastMessage('账单保存成功！');
-      }
-
-      setShowToast(true);
-
-      // 触发增强版同步事件（会自动显示 Toast 通知）
-      enhancedDataSync.notifyTransactionAdded({
-        type,
-        category: formData.category,
-        amount: formData.amt,
-        note: formData.note,
-        date: dateStr, // 使用已经格式化好的本地日期字符串
-        currency: formData.currency,
-        merchant: formData.merchant,
-        subcategory: formData.subcategory,
-        product: formData.product
-      });
-      markTransactionsDirty();
-
-      // 异步刷新缓存（带错误日志）
-      aiApi.revalidate('transactions').catch((err) => {
-        console.error('缓存刷新失败:', err);
-      });
-
-      // 更新常用备注（带错误日志）
-      if (formData.note && formData.note.trim()) {
-        updateCommonNote(formData.note.trim(), formData.amt).catch((err) => {
-          console.error('更新常用备注失败:', err);
+          product: formData.product
         });
+        markTransactionsDirty();
+
+        // 异步刷新缓存（带错误日志）
+        aiApi.revalidate('transactions').catch((err) => {
+          console.error('缓存刷新失败:', err);
+        });
+
+        // 更新常用备注（带错误日志）
+        if (formData.note && formData.note.trim()) {
+          updateCommonNote(formData.note.trim(), formData.amt).catch((err) => {
+            console.error('更新常用备注失败:', err);
+          });
+        }
+
+        // 延迟重置表单，让用户看到成功提示
+        setTimeout(() => {
+          resetForm({ keep: keepForm });
+          amountInputRef.current?.focus();
+        }, 500);
+      } catch (err: unknown) {
+        setError(getErrorMessage(err) || '提交失败');
+      } finally {
+        setLoading(false);
+        lastSubmitTimeRef.current = 0; // 重置时间戳，允许下次提交
+        isSubmittingRef.current = false; // 重置提交状态
       }
-
-      // 延迟重置表单，让用户看到成功提示
-      setTimeout(() => {
-        resetForm({ keep: keepForm });
-        amountInputRef.current?.focus();
-      }, 500);
-
-    } catch (err: unknown) {
-      setError(getErrorMessage(err) || '提交失败');
-    } finally {
-      setLoading(false);
-      lastSubmitTimeRef.current = 0; // 重置时间戳，允许下次提交
-      isSubmittingRef.current = false; // 重置提交状态
-    }
-  }, []);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     e.stopPropagation(); // 阻止事件冒泡
-
 
     // 强制防重复提交检查
     if (isSubmittingRef.current || loading) {
@@ -243,7 +243,6 @@ export default function AddPage() {
     isSubmittingRef.current = true;
     lastSubmitTimeRef.current = now;
     setLoading(true);
-
 
     // 清除之前的定时器
     if (submitTimeoutRef.current) {
@@ -267,10 +266,19 @@ export default function AddPage() {
 
     // 使用防抖提交
     submitTimeoutRef.current = setTimeout(() => {
-      debouncedSubmit({ amt, category, note, date, currency, paymentMethod, merchant, subcategory, product });
+      debouncedSubmit({
+        amt,
+        category,
+        note,
+        date,
+        currency,
+        paymentMethod,
+        merchant,
+        subcategory,
+        product
+      });
     }, 200) as any as number; // 200ms 延迟
   }
-
 
   // 重置表单
   function resetForm({ keep }: { keep: boolean }) {
@@ -293,7 +301,7 @@ export default function AddPage() {
 
     if (!keep) {
       // 重置为默认支付方式
-      const defaultMethod = paymentMethods.find(m => m.is_default);
+      const defaultMethod = paymentMethods.find((m) => m.is_default);
       if (defaultMethod) {
         setPaymentMethod(defaultMethod.id);
       } else {
@@ -310,7 +318,7 @@ export default function AddPage() {
   // 使用 React Query 加载支付方式列表
   const { data: paymentMethodsData } = useQuery({
     queryKey: ['payment-methods'],
-    queryFn: () => paymentMethodsApi.list(),
+    queryFn: () => paymentMethodsApi.list()
   });
 
   const { data: recentTransactionsData, isLoading: recentLoading } = useQuery({
@@ -320,13 +328,18 @@ export default function AddPage() {
         type: 'expense',
         page_size: 5,
         sort_by: 'created_at',
-        sort_order: 'desc',
-      }),
+        sort_order: 'desc'
+      })
   });
 
   const recentTransactions = useMemo(() => {
     if (!recentTransactionsData) return [];
-    return (recentTransactionsData.data || recentTransactionsData.transactions || []) as Transaction[];
+    // 兼容数组和对象两种格式（apiClient 会解包返回数组）
+    return (
+      Array.isArray(recentTransactionsData)
+        ? recentTransactionsData
+        : recentTransactionsData.data || recentTransactionsData.transactions || []
+    ) as Transaction[];
   }, [recentTransactionsData]);
 
   const recentQuickList = useMemo(() => recentTransactions.slice(0, 3), [recentTransactions]);
@@ -344,14 +357,18 @@ export default function AddPage() {
         end_date: formatDateToLocal(end),
         page_size: 100,
         sort_by: 'date',
-        sort_order: 'desc',
+        sort_order: 'desc'
       });
-    },
+    }
   });
 
   const quickAmounts = useMemo(() => {
-    const rows =
-      (frequentAmountData?.data || frequentAmountData?.transactions || []) as Transaction[];
+    // 兼容数组和对象两种格式（apiClient 会解包返回数组）
+    const rows = (
+      Array.isArray(frequentAmountData)
+        ? frequentAmountData
+        : frequentAmountData?.data || frequentAmountData?.transactions || []
+    ) as Transaction[];
     if (!rows.length) return fallbackAmounts;
 
     const counts = new Map<number, number>();
@@ -374,7 +391,7 @@ export default function AddPage() {
   useEffect(() => {
     if (paymentMethodsData) {
       setPaymentMethods(paymentMethodsData);
-      const defaultMethod = paymentMethodsData.find(m => m.is_default);
+      const defaultMethod = paymentMethodsData.find((m) => m.is_default);
       if (defaultMethod && !paymentMethod) {
         setPaymentMethod(defaultMethod.id);
       }
@@ -432,7 +449,7 @@ export default function AddPage() {
     try {
       await commonNotesApi.upsert({
         content: noteContent,
-        amount: amount,
+        amount: amount
       });
       // 清除本地缓存，强制下次重新获取最新数据
       localStorage.removeItem(STORAGE_KEYS.COMMON_NOTES_CACHE);
@@ -456,213 +473,240 @@ export default function AddPage() {
       {/* 左侧：添加账单表单 */}
       <div className="lg:col-span-2">
         <Card>
-        <CardHeader>
-          <CardTitle>添加账单</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={onSubmit} className="space-y-4">
-            {recentTransactions.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between">
-                  <Label>最近记录</Label>
-                  <span className="text-xs text-muted-foreground">点击一键填充</span>
-                </div>
-                <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
-                  {recentTransactions.map((tx) => (
-                    <button
-                      key={tx.id}
-                      type="button"
-                      onClick={() => applyRecentTransaction(tx)}
-                      className="min-w-[180px] rounded-md border border-border bg-background px-3 py-2 text-left text-sm shadow-sm transition hover:border-blue-400 hover:shadow"
-                    >
-                      <div className="flex items-center justify-between">
-                        <CategoryChip category={tx.category || 'other'} />
-                        <span className="font-semibold">
-                          {formatThousand(Number(tx.amount || 0))}
-                        </span>
-                      </div>
-                      <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        <span className="truncate">
-                          {tx.note || tx.merchant || '未填写备注'}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            {recentLoading && (
-              <div className="text-xs text-muted-foreground">加载最近记录中...</div>
-            )}
-            <div>
-              <Label>分类 <span className="text-destructive">*</span></Label>
-              <select
-                className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                disabled={loading || categoriesLoading}
-              >
-                {categories.map((c) => (
-                  <option className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700" key={c.key} value={c.key}>
-                    {c.icon ? `${c.icon} ` : ''}{c.label}
-                  </option>
-                ))}
-              </select>
-              <div className="mt-2">
-                <CategoryChip category={category} />
-              </div>
-            </div>
-            <div>
-              <Label>金额 <span className="text-destructive">*</span></Label>
-              <ClearableInput
-                ref={amountInputRef}
-                placeholder="请输入金额"
-                value={amountText}
-                onChange={(e) => {
-                  const raw = e.target.value;
-                  // 允许输入数字、小数点与逗号
-                  if (/^[0-9.,]*$/.test(raw)) setAmountText(raw);
-                }}
-                onClear={() => setAmountText('')}
-                onBlur={() => {
-                  // 只在有有效金额时格式化，空白保持空白
-                  if (amountText.trim() && parsedAmount > 0) {
-                    setAmountText(formatThousand(parsedAmount));
-                  }
-                }}
-                className={amountText.trim() && invalidAmount ? 'border-destructive' : undefined}
-                disabled={loading}
-              />
-              {amountText.trim() && invalidAmount && <p className="mt-1 text-sm text-destructive">金额必须大于 0</p>}
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <Label>币种 <span className="text-destructive">*</span></Label>
-                <select
-                  className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
-                  value={currency}
-                  onChange={(e) => setCurrency(e.target.value as Currency)}
-                  disabled={loading}
-                >
-                  {SUPPORTED_CURRENCIES.map((c) => (
-                    <option className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700" key={c.code} value={c.code as string}>{c.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <Label>日期 <span className="text-destructive">*</span></Label>
-                <DateInput
-                  selected={date}
-                  onSelect={setDate}
-                  placeholder="选择日期"
-                  disabled={loading}
-                />
-              </div>
-            </div>
-
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-              <button
-                type="button"
-                onClick={() => setShowAdvanced((prev) => !prev)}
-                className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-              >
-                <span className="font-medium">高级信息</span>
-                <span className="text-xs text-gray-400 dark:text-gray-500">（支付方式 / 商家 / 子分类）</span>
-              </button>
-
-              {showAdvanced && (
-                <div className="mt-4 space-y-4">
-                  <div>
-                    <Label>支付方式</Label>
-                    <select
-                      className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
-                      value={paymentMethod}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      disabled={loading}
-                    >
-                      <option className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700" value="">未设置</option>
-                      {paymentMethods.map((pm) => (
-                        <option className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700" key={pm.id} value={pm.id}>
-                          {pm.name}{pm.is_default ? ' (默认)' : ''}
-                        </option>
-                      ))}
-                    </select>
+          <CardHeader>
+            <CardTitle>添加账单</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={onSubmit} className="space-y-4">
+              {recentTransactions.length > 0 && (
+                <div>
+                  <div className="flex items-center justify-between">
+                    <Label>最近记录</Label>
+                    <span className="text-xs text-muted-foreground">点击一键填充</span>
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label>商家/品牌</Label>
-                      <MerchantInput
-                        value={merchant}
-                        onChange={setMerchant}
-                        placeholder="如：瑞幸咖啡、地铁"
-                        disabled={loading}
-                        category={category}
-                      />
-                    </div>
-                    <div>
-                      <Label>子分类</Label>
-                      <SubcategorySelect
-                        category={category}
-                        value={subcategory}
-                        onChange={setSubcategory}
-                        disabled={loading}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label>具体产品/服务</Label>
-                    <ClearableInput
-                      value={product}
-                      onChange={(e) => setProduct(e.target.value)}
-                      onClear={() => setProduct('')}
-                      placeholder="如：生椰拿铁、地铁票"
-                      disabled={loading}
-                    />
+                  <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+                    {recentTransactions.map((tx) => (
+                      <button
+                        key={tx.id}
+                        type="button"
+                        onClick={() => applyRecentTransaction(tx)}
+                        className="min-w-[180px] rounded-md border border-border bg-background px-3 py-2 text-left text-sm shadow-sm transition hover:border-blue-400 hover:shadow"
+                      >
+                        <div className="flex items-center justify-between">
+                          <CategoryChip category={tx.category || 'other'} />
+                          <span className="font-semibold">
+                            {formatThousand(Number(tx.amount || 0))}
+                          </span>
+                        </div>
+                        <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
+                          <Clock className="h-3 w-3" />
+                          <span className="truncate">{tx.note || tx.merchant || '未填写备注'}</span>
+                        </div>
+                      </button>
+                    ))}
                   </div>
                 </div>
               )}
-            </div>
-
-            <div>
-              <Label>备注</Label>
-              <SmartNoteInput
-                value={note}
-                onChange={setNote}
-                placeholder="选择分类和金额后，智能提示将自动显示"
-                disabled={loading}
-                category={category}
-                amount={parsedAmount}
-                currency={currency}
-                onSuggestionSelected={() => {
-                  // 这里可以添加额外的逻辑，比如统计用户使用建议的偏好
-                }}
-              />
-            </div>
-            {error && <p className="text-red-600 text-sm">{error}</p>}
-
-            <div>
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full"
-              >
-                {loading ? '保存中...' : '保存账单'}
-              </Button>
-              <label className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-                <input
-                  type="checkbox"
-                  checked={keepForm}
-                  onChange={(e) => setKeepForm(e.target.checked)}
+              {recentLoading && (
+                <div className="text-xs text-muted-foreground">加载最近记录中...</div>
+              )}
+              <div>
+                <Label>
+                  分类 <span className="text-destructive">*</span>
+                </Label>
+                <select
+                  className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  disabled={loading || categoriesLoading}
+                >
+                  {categories.map((c) => (
+                    <option
+                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      key={c.key}
+                      value={c.key}
+                    >
+                      {c.icon ? `${c.icon} ` : ''}
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="mt-2">
+                  <CategoryChip category={category} />
+                </div>
+              </div>
+              <div>
+                <Label>
+                  金额 <span className="text-destructive">*</span>
+                </Label>
+                <ClearableInput
+                  ref={amountInputRef}
+                  placeholder="请输入金额"
+                  value={amountText}
+                  onChange={(e) => {
+                    const raw = e.target.value;
+                    // 允许输入数字、小数点与逗号
+                    if (/^[0-9.,]*$/.test(raw)) setAmountText(raw);
+                  }}
+                  onClear={() => setAmountText('')}
+                  onBlur={() => {
+                    // 只在有有效金额时格式化，空白保持空白
+                    if (amountText.trim() && parsedAmount > 0) {
+                      setAmountText(formatThousand(parsedAmount));
+                    }
+                  }}
+                  className={amountText.trim() && invalidAmount ? 'border-destructive' : undefined}
+                  disabled={loading}
                 />
-                保存后保留分类/日期/支付方式
-              </label>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+                {amountText.trim() && invalidAmount && (
+                  <p className="mt-1 text-sm text-destructive">金额必须大于 0</p>
+                )}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label>
+                    币种 <span className="text-destructive">*</span>
+                  </Label>
+                  <select
+                    className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
+                    value={currency}
+                    onChange={(e) => setCurrency(e.target.value as Currency)}
+                    disabled={loading}
+                  >
+                    {SUPPORTED_CURRENCIES.map((c) => (
+                      <option
+                        className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        key={c.code}
+                        value={c.code as string}
+                      >
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <Label>
+                    日期 <span className="text-destructive">*</span>
+                  </Label>
+                  <DateInput
+                    selected={date}
+                    onSelect={setDate}
+                    placeholder="选择日期"
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowAdvanced((prev) => !prev)}
+                  className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                >
+                  <span className="font-medium">高级信息</span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500">
+                    （支付方式 / 商家 / 子分类）
+                  </span>
+                </button>
+
+                {showAdvanced && (
+                  <div className="mt-4 space-y-4">
+                    <div>
+                      <Label>支付方式</Label>
+                      <select
+                        className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
+                        value={paymentMethod}
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                        disabled={loading}
+                      >
+                        <option
+                          className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          value=""
+                        >
+                          未设置
+                        </option>
+                        {paymentMethods.map((pm) => (
+                          <option
+                            className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            key={pm.id}
+                            value={pm.id}
+                          >
+                            {pm.name}
+                            {pm.is_default ? ' (默认)' : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label>商家/品牌</Label>
+                        <MerchantInput
+                          value={merchant}
+                          onChange={setMerchant}
+                          placeholder="如：瑞幸咖啡、地铁"
+                          disabled={loading}
+                          category={category}
+                        />
+                      </div>
+                      <div>
+                        <Label>子分类</Label>
+                        <SubcategorySelect
+                          category={category}
+                          value={subcategory}
+                          onChange={setSubcategory}
+                          disabled={loading}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label>具体产品/服务</Label>
+                      <ClearableInput
+                        value={product}
+                        onChange={(e) => setProduct(e.target.value)}
+                        onClear={() => setProduct('')}
+                        placeholder="如：生椰拿铁、地铁票"
+                        disabled={loading}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <Label>备注</Label>
+                <SmartNoteInput
+                  value={note}
+                  onChange={setNote}
+                  placeholder="选择分类和金额后，智能提示将自动显示"
+                  disabled={loading}
+                  category={category}
+                  amount={parsedAmount}
+                  currency={currency}
+                  onSuggestionSelected={() => {
+                    // 这里可以添加额外的逻辑，比如统计用户使用建议的偏好
+                  }}
+                />
+              </div>
+              {error && <p className="text-red-600 text-sm">{error}</p>}
+
+              <div>
+                <Button type="submit" disabled={loading} className="w-full">
+                  {loading ? '保存中...' : '保存账单'}
+                </Button>
+                <label className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                  <input
+                    type="checkbox"
+                    checked={keepForm}
+                    onChange={(e) => setKeepForm(e.target.checked)}
+                  />
+                  保存后保留分类/日期/支付方式
+                </label>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       </div>
 
       {/* 右侧：智能建议面板 */}
@@ -675,7 +719,9 @@ export default function AddPage() {
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
               <div>
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">常用分类</div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                  常用分类
+                </div>
                 <div className="mt-2 grid grid-cols-2 gap-2">
                   {commonCategories.map((item) => (
                     <button
@@ -696,7 +742,9 @@ export default function AddPage() {
               </div>
 
               <div>
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">常用商户</div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                  常用商户
+                </div>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {commonMerchants.length === 0 ? (
                     <span className="text-xs text-muted-foreground">暂无</span>
@@ -723,7 +771,9 @@ export default function AddPage() {
               </div>
 
               <div>
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">高频金额</div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                  高频金额
+                </div>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {quickAmounts.map((item) => (
                     <button
@@ -743,7 +793,9 @@ export default function AddPage() {
               </div>
 
               <div>
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">最近记录</div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                  最近记录
+                </div>
                 <div className="mt-2 space-y-2">
                   {recentQuickList.length === 0 ? (
                     <span className="text-xs text-muted-foreground">暂无</span>
@@ -756,10 +808,10 @@ export default function AddPage() {
                         className="w-full rounded-md border border-border px-2 py-2 text-left text-xs transition hover:border-blue-400"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="truncate">
-                            {tx.note || tx.merchant || '未填写备注'}
+                          <span className="truncate">{tx.note || tx.merchant || '未填写备注'}</span>
+                          <span className="font-semibold">
+                            {formatThousand(Number(tx.amount || 0))}
                           </span>
-                          <span className="font-semibold">{formatThousand(Number(tx.amount || 0))}</span>
                         </div>
                       </button>
                     ))
