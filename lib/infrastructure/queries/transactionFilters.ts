@@ -16,7 +16,7 @@
 export const EXCLUDE_RECURRING_CONDITIONS = {
   recurring_expense_id: null,
   OR: [{ is_auto_generated: false }, { is_auto_generated: null }]
-} as const;
+};
 
 /**
  * 只查询固定支出的条件
@@ -24,7 +24,7 @@ export const EXCLUDE_RECURRING_CONDITIONS = {
  */
 export const ONLY_RECURRING_CONDITIONS = {
   OR: [{ recurring_expense_id: { not: null } }, { is_auto_generated: true }]
-} as const;
+};
 
 /**
  * 获取排除固定支出的 Prisma where 条件
