@@ -70,6 +70,33 @@ export function parseLocalDate(value: string): Date | null {
   return new Date(year, month - 1, day);
 }
 
+/**
+ * 获取指定年月的日期范围（返回 Date 对象）
+ * @param year 年份
+ * @param month 月份（1-12）
+ * @returns 月份开始日期和下月开始日期
+ */
+export function getMonthDateRange(year: number, month: number): { start: Date; end: Date } {
+  return {
+    start: new Date(year, month - 1, 1),
+    end: new Date(year, month, 1)
+  };
+}
+
+/**
+ * 获取指定年月的日期范围（返回字符串）
+ * @param year 年份
+ * @param month 月份（1-12）
+ * @returns 月份开始日期和下月开始日期的字符串表示
+ */
+export function getMonthDateRangeStr(year: number, month: number): { start: string; end: string } {
+  const { start, end } = getMonthDateRange(year, month);
+  return {
+    start: formatDateToLocal(start),
+    end: formatDateToLocal(end)
+  };
+}
+
 export function dayRange(date = new Date()) {
   const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const end = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
@@ -216,20 +243,30 @@ export function dayBeforeYesterdayRange(now = new Date()) {
  */
 export type ExtendedQuickRange =
   // 日视角
-  | 'today' | 'yesterday' | 'dayBeforeYesterday'
+  | 'today'
+  | 'yesterday'
+  | 'dayBeforeYesterday'
   // 周视角
-  | 'thisWeek' | 'lastWeek' | 'weekBeforeLast'
+  | 'thisWeek'
+  | 'lastWeek'
+  | 'weekBeforeLast'
   // 月视角
-  | 'thisMonth' | 'lastMonth' | 'monthBeforeLast'
+  | 'thisMonth'
+  | 'lastMonth'
+  | 'monthBeforeLast'
   // 季视角
-  | 'thisQuarter' | 'lastQuarter'
+  | 'thisQuarter'
+  | 'lastQuarter'
   // 自定义
   | 'custom';
 
 /**
  * 获取扩展的快捷范围
  */
-export function getExtendedQuickRange(range: ExtendedQuickRange, now = new Date()): { start: string; end: string; label: string } {
+export function getExtendedQuickRange(
+  range: ExtendedQuickRange,
+  now = new Date()
+): { start: string; end: string; label: string } {
   now.setHours(0, 0, 0, 0);
 
   switch (range) {

@@ -7,6 +7,7 @@
 import { prisma } from '@/lib/clients/db/prisma';
 import { CacheDecorator, memoryCache } from '@/lib/infrastructure/cache';
 import { EXCLUDE_RECURRING_CONDITIONS } from '@/lib/infrastructure/queries';
+import { getMonthDateRange } from '@/lib/utils/date';
 
 // 创建缓存装饰器实例
 const cacheDecorator = new CacheDecorator(memoryCache, {
@@ -200,8 +201,7 @@ async function getMonthlyBudgetStatusInternal(
   );
 
   // 3. 计算本月日期范围
-  const startDate = new Date(year, month - 1, 1);
-  const endDate = new Date(year, month, 1);
+  const { start: startDate, end: endDate } = getMonthDateRange(year, month);
 
   // 4. 获取本月所有交易的分类支出汇总（排除固定支出，预算只监控可控消费）
   const transactions = await prisma.transactions.findMany({
@@ -301,8 +301,7 @@ export async function getMonthlyActualExpense(
   month: number,
   currency: string = 'CNY'
 ): Promise<number> {
-  const startDate = new Date(year, month - 1, 1);
-  const endDate = new Date(year, month, 1);
+  const { start: startDate, end: endDate } = getMonthDateRange(year, month);
 
   // 排除固定支出，只统计可控消费
   const transactions = await prisma.transactions.findMany({
