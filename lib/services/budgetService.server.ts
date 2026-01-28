@@ -527,7 +527,9 @@ export async function getBudgetSuggestions(
       category: true
     }
   });
-  const recurringCategorySet = new Set(recurringCategories.map((item) => item.category));
+  const recurringCategorySet = new Set(
+    recurringCategories.map((item: { category: string }) => item.category)
+  );
 
   // 实时查询当月各分类的实际支出（排除固定支出）
   const startDate = new Date(year, month - 1, 1);
@@ -594,12 +596,18 @@ export async function getBudgetSuggestions(
         calculatedAt: row.calculated_at?.toISOString() || new Date().toISOString()
       };
     })
-    .filter((suggestion) => {
-      if (!recurringCategorySet.has(suggestion.categoryKey)) {
-        return true;
+    .filter(
+      (suggestion: {
+        categoryKey: string;
+        currentMonthSpending: number;
+        predictedMonthTotal: number;
+      }) => {
+        if (!recurringCategorySet.has(suggestion.categoryKey)) {
+          return true;
+        }
+        return suggestion.currentMonthSpending > 0 || suggestion.predictedMonthTotal > 0;
       }
-      return suggestion.currentMonthSpending > 0 || suggestion.predictedMonthTotal > 0;
-    });
+    );
 }
 
 /**
