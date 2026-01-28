@@ -26,6 +26,7 @@ import { STORAGE_KEYS } from '@/lib/config/storageKeys';
 import { getErrorMessage } from '@/types/common';
 
 import type { PaymentMethod } from '@/lib/api/services/payment-methods';
+import { SmartSuggestionPanel } from './components';
 
 export default function AddPage() {
   const type: TransactionType = 'expense'; // 固定为支出类型
@@ -710,139 +711,24 @@ export default function AddPage() {
       </div>
 
       {/* 右侧：智能建议面板 */}
-      <div className="lg:col-span-1">
-        {showAIPrediction && (
-          <Card className="sticky top-6">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">智能建议</CardTitle>
-              <p className="text-xs text-muted-foreground">基于最近 30 天的记录</p>
-            </CardHeader>
-            <CardContent className="space-y-4 text-sm">
-              <div>
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                  常用分类
-                </div>
-                <div className="mt-2 grid grid-cols-2 gap-2">
-                  {commonCategories.map((item) => (
-                    <button
-                      key={item.key}
-                      type="button"
-                      onClick={() => setCategory(item.key)}
-                      className={`rounded-md border px-2 py-1 text-xs text-left transition ${
-                        category === item.key
-                          ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-                          : 'border-border hover:border-blue-400'
-                      }`}
-                    >
-                      {item.icon ? `${item.icon} ` : ''}
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                  常用商户
-                </div>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {commonMerchants.length === 0 ? (
-                    <span className="text-xs text-muted-foreground">暂无</span>
-                  ) : (
-                    commonMerchants.map((item) => (
-                      <button
-                        key={item}
-                        type="button"
-                        onClick={() => {
-                          setMerchant(item);
-                          setShowAdvanced(true);
-                        }}
-                        className={`rounded-full border px-2 py-1 text-xs transition ${
-                          merchant === item
-                            ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-                            : 'border-border hover:border-blue-400'
-                        }`}
-                      >
-                        {item}
-                      </button>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                  高频金额
-                </div>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {quickAmounts.map((item) => (
-                    <button
-                      key={item}
-                      type="button"
-                      onClick={() => setAmountText(formatThousand(item))}
-                      className={`rounded-full border px-2 py-1 text-xs transition ${
-                        Math.abs(parsedAmount - item) < 0.001
-                          ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-                          : 'border-border hover:border-blue-400'
-                      }`}
-                    >
-                      {item}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                  最近记录
-                </div>
-                <div className="mt-2 space-y-2">
-                  {recentQuickList.length === 0 ? (
-                    <span className="text-xs text-muted-foreground">暂无</span>
-                  ) : (
-                    recentQuickList.map((tx) => (
-                      <button
-                        key={tx.id}
-                        type="button"
-                        onClick={() => applyRecentTransaction(tx)}
-                        className="w-full rounded-md border border-border px-2 py-2 text-left text-xs transition hover:border-blue-400"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="truncate">{tx.note || tx.merchant || '未填写备注'}</span>
-                          <span className="font-semibold">
-                            {formatThousand(Number(tx.amount || 0))}
-                          </span>
-                        </div>
-                      </button>
-                    ))
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* 智能建议开关 */}
-        <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span className="text-sm text-blue-700 dark:text-blue-400">智能建议</span>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowAIPrediction(!showAIPrediction)}
-              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 h-6 px-2"
-            >
-              {showAIPrediction ? '隐藏' : '显示'}
-            </Button>
-          </div>
-          <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
-            基于最近记录的常用分类、商户与金额建议
-          </p>
-        </div>
-      </div>
+      <SmartSuggestionPanel
+        showPanel={showAIPrediction}
+        onTogglePanel={() => setShowAIPrediction(!showAIPrediction)}
+        commonCategories={commonCategories}
+        selectedCategory={category}
+        onSelectCategory={setCategory}
+        commonMerchants={commonMerchants}
+        selectedMerchant={merchant}
+        onSelectMerchant={(m) => {
+          setMerchant(m);
+          setShowAdvanced(true);
+        }}
+        quickAmounts={quickAmounts}
+        currentAmount={parsedAmount}
+        onSelectAmount={(amount) => setAmountText(formatThousand(amount))}
+        recentTransactions={recentQuickList}
+        onApplyTransaction={applyRecentTransaction}
+      />
     </div>
   );
 }
