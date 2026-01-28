@@ -6,6 +6,7 @@
 
 import { prisma } from '@/lib/clients/db/prisma';
 import { CacheDecorator, memoryCache } from '@/lib/infrastructure/cache';
+import { EXCLUDE_RECURRING_CONDITIONS } from '@/lib/infrastructure/queries';
 
 // 创建缓存装饰器实例
 const cacheDecorator = new CacheDecorator(memoryCache, {
@@ -212,8 +213,7 @@ async function getMonthlyBudgetStatusInternal(
         lt: endDate
       },
       // 排除固定支出：预算应只监控用户可控的日常消费
-      recurring_expense_id: null,
-      OR: [{ is_auto_generated: false }, { is_auto_generated: null }]
+      ...EXCLUDE_RECURRING_CONDITIONS
     },
     select: {
       category: true,
@@ -314,8 +314,7 @@ export async function getMonthlyActualExpense(
         gte: startDate,
         lt: endDate
       },
-      recurring_expense_id: null,
-      OR: [{ is_auto_generated: false }, { is_auto_generated: null }]
+      ...EXCLUDE_RECURRING_CONDITIONS
     },
     select: {
       amount: true
@@ -433,8 +432,7 @@ export async function getBudgetHistory(
       lt: endDate
     },
     // 排除固定支出
-    recurring_expense_id: null,
-    OR: [{ is_auto_generated: false }, { is_auto_generated: null }]
+    ...EXCLUDE_RECURRING_CONDITIONS
   };
 
   if (categoryKey !== null) {
@@ -547,8 +545,7 @@ export async function getBudgetSuggestions(
         lt: endDate
       },
       // 排除固定支出
-      recurring_expense_id: null,
-      OR: [{ is_auto_generated: false }, { is_auto_generated: null }]
+      ...EXCLUDE_RECURRING_CONDITIONS
     },
     select: {
       category: true,
@@ -641,8 +638,7 @@ export async function refreshBudgetSuggestions(year: number, month: number): Pro
         lt: currentMonthEnd
       },
       // 排除固定支出：预算建议基于可控消费的历史数据
-      recurring_expense_id: null,
-      OR: [{ is_auto_generated: false }, { is_auto_generated: null }]
+      ...EXCLUDE_RECURRING_CONDITIONS
     },
     select: {
       category: true,
@@ -801,8 +797,7 @@ export async function predictMonthEndSpending(
         lt: endDate
       },
       // 排除固定支出
-      recurring_expense_id: null,
-      OR: [{ is_auto_generated: false }, { is_auto_generated: null }]
+      ...EXCLUDE_RECURRING_CONDITIONS
     };
 
     // 如果不是总预算，添加分类筛选

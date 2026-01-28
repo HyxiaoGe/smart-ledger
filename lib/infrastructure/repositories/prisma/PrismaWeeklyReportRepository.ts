@@ -10,29 +10,31 @@ import type {
   WeeklyReportGenerationResult,
   CategoryStat,
   MerchantStat,
-  PaymentMethodStat,
+  PaymentMethodStat
 } from '@/lib/domain/repositories/IWeeklyReportRepository';
+import { EXCLUDE_RECURRING_CONDITIONS } from '@/lib/infrastructure/queries';
 
 export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
+  // eslint-disable-next-line no-unused-vars
   constructor(private readonly prisma: PrismaClient) {}
 
   async findById(id: string): Promise<WeeklyReport | null> {
     const data = await this.prisma.weekly_reports.findUnique({
-      where: { id: BigInt(id) },
+      where: { id: BigInt(id) }
     });
     return data ? this.mapToEntity(data) : null;
   }
 
   async findAll(): Promise<WeeklyReport[]> {
     const data = await this.prisma.weekly_reports.findMany({
-      orderBy: { week_start_date: 'desc' },
+      orderBy: { week_start_date: 'desc' }
     });
     return data.map(this.mapToEntity);
   }
 
   async findLatest(): Promise<WeeklyReport | null> {
     const data = await this.prisma.weekly_reports.findFirst({
-      orderBy: { week_start_date: 'desc' },
+      orderBy: { week_start_date: 'desc' }
     });
     return data ? this.mapToEntity(data) : null;
   }
@@ -42,17 +44,17 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
       where: {
         week_start_date: {
           gte: new Date(startDate),
-          lte: new Date(endDate),
-        },
+          lte: new Date(endDate)
+        }
       },
-      orderBy: { week_start_date: 'desc' },
+      orderBy: { week_start_date: 'desc' }
     });
     return data.map(this.mapToEntity);
   }
 
   async existsForWeek(weekStartDate: string): Promise<boolean> {
     const count = await this.prisma.weekly_reports.count({
-      where: { week_start_date: new Date(weekStartDate) },
+      where: { week_start_date: new Date(weekStartDate) }
     });
     return count > 0;
   }
@@ -65,15 +67,15 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
         total_expenses: data.total_expenses,
         transaction_count: data.transaction_count,
         average_transaction: data.average_transaction,
-        category_breakdown: data.category_breakdown as any || [],
-        top_merchants: data.top_merchants as any || [],
-        payment_method_stats: data.payment_method_stats as any || [],
+        category_breakdown: (data.category_breakdown as any) || [],
+        top_merchants: (data.top_merchants as any) || [],
+        payment_method_stats: (data.payment_method_stats as any) || [],
         week_over_week_change: data.week_over_week_change,
         week_over_week_percentage: data.week_over_week_percentage,
         ai_insights: data.ai_insights,
         generation_type: data.generation_type || 'manual',
-        generated_at: new Date(),
-      },
+        generated_at: new Date()
+      }
     });
 
     return this.mapToEntity(result);
@@ -81,7 +83,7 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
 
   async delete(id: string): Promise<void> {
     await this.prisma.weekly_reports.delete({
-      where: { id: BigInt(id) },
+      where: { id: BigInt(id) }
     });
   }
 
@@ -112,7 +114,7 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
     if (exists) {
       return {
         success: false,
-        message: `${weekStartStr} 至 ${weekEndStr} 的周报告已存在`,
+        message: `${weekStartStr} 至 ${weekEndStr} 的周报告已存在`
       };
     }
 
@@ -123,27 +125,31 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
         type: 'expense',
         date: {
           gte: startDate,
-          lte: endDate,
+          lte: endDate
         },
         // 排除固定支出：非自动生成且无关联固定账单
-        recurring_expense_id: null,
-        OR: [
-          { is_auto_generated: false },
-          { is_auto_generated: null },
-        ],
-      },
+        ...EXCLUDE_RECURRING_CONDITIONS
+      }
     });
 
     if (transactions.length === 0) {
       return {
         success: false,
-        message: '本周没有支出记录，无法生成报告',
+        message: '本周没有支出记录，无法生成报告'
       };
     }
 
     // 计算统计数据
-    type TransactionRow = { category: string; merchant: string | null; payment_method: string | null; amount: unknown };
-    const totalExpenses = transactions.reduce((sum: number, t: TransactionRow) => sum + Number(t.amount), 0);
+    type TransactionRow = {
+      category: string;
+      merchant: string | null;
+      payment_method: string | null;
+      amount: unknown;
+    };
+    const totalExpenses = transactions.reduce(
+      (sum: number, t: TransactionRow) => sum + Number(t.amount),
+      0
+    );
     const transactionCount = transactions.length;
     const avgTransaction = totalExpenses / transactionCount;
 
@@ -153,7 +159,7 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
       const existing = categoryMap.get(t.category) || { amount: 0, count: 0 };
       categoryMap.set(t.category, {
         amount: existing.amount + Number(t.amount),
-        count: existing.count + 1,
+        count: existing.count + 1
       });
     });
 
@@ -162,7 +168,7 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
         category,
         amount: stats.amount,
         count: stats.count,
-        percentage: (stats.amount / totalExpenses) * 100,
+        percentage: (stats.amount / totalExpenses) * 100
       }))
       .sort((a, b) => b.amount - a.amount);
 
@@ -173,7 +179,7 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
         const existing = merchantMap.get(t.merchant) || { amount: 0, count: 0 };
         merchantMap.set(t.merchant, {
           amount: existing.amount + Number(t.amount),
-          count: existing.count + 1,
+          count: existing.count + 1
         });
       }
     });
@@ -182,7 +188,7 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
       .map(([merchant, stats]) => ({
         merchant,
         amount: stats.amount,
-        count: stats.count,
+        count: stats.count
       }))
       .sort((a, b) => b.amount - a.amount)
       .slice(0, 5);
@@ -194,7 +200,7 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
       const existing = paymentMap.get(method) || { amount: 0, count: 0 };
       paymentMap.set(method, {
         amount: existing.amount + Number(t.amount),
-        count: existing.count + 1,
+        count: existing.count + 1
       });
     });
 
@@ -203,7 +209,7 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
         method,
         amount: stats.amount,
         count: stats.count,
-        percentage: (stats.amount / totalExpenses) * 100,
+        percentage: (stats.amount / totalExpenses) * 100
       }))
       .sort((a, b) => b.amount - a.amount);
 
@@ -220,22 +226,20 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
         type: 'expense',
         date: {
           gte: lastWeekStart,
-          lte: lastWeekEnd,
+          lte: lastWeekEnd
         },
         // 排除固定支出
-        recurring_expense_id: null,
-        OR: [
-          { is_auto_generated: false },
-          { is_auto_generated: null },
-        ],
-      },
+        ...EXCLUDE_RECURRING_CONDITIONS
+      }
     });
 
-    const lastWeekTotal = lastWeekTransactions.reduce((sum: number, t: { amount: unknown }) => sum + Number(t.amount), 0);
+    const lastWeekTotal = lastWeekTransactions.reduce(
+      (sum: number, t: { amount: unknown }) => sum + Number(t.amount),
+      0
+    );
     const weekOverWeekChange = totalExpenses - lastWeekTotal;
-    const weekOverWeekPercentage = lastWeekTotal > 0
-      ? ((totalExpenses - lastWeekTotal) / lastWeekTotal) * 100
-      : 0;
+    const weekOverWeekPercentage =
+      lastWeekTotal > 0 ? ((totalExpenses - lastWeekTotal) / lastWeekTotal) * 100 : 0;
 
     // 创建报告
     const report = await this.create({
@@ -249,13 +253,13 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
       payment_method_stats: paymentMethodStats,
       week_over_week_change: weekOverWeekChange,
       week_over_week_percentage: weekOverWeekPercentage,
-      generation_type: 'manual',
+      generation_type: 'manual'
     });
 
     return {
       success: true,
       message: '周报告生成成功',
-      report,
+      report
     };
   }
 
@@ -263,12 +267,14 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
     return {
       id: row.id.toString(),
       user_id: row.user_id,
-      week_start_date: row.week_start_date instanceof Date
-        ? row.week_start_date.toISOString().split('T')[0]
-        : row.week_start_date,
-      week_end_date: row.week_end_date instanceof Date
-        ? row.week_end_date.toISOString().split('T')[0]
-        : row.week_end_date,
+      week_start_date:
+        row.week_start_date instanceof Date
+          ? row.week_start_date.toISOString().split('T')[0]
+          : row.week_start_date,
+      week_end_date:
+        row.week_end_date instanceof Date
+          ? row.week_end_date.toISOString().split('T')[0]
+          : row.week_end_date,
       total_expenses: Number(row.total_expenses),
       transaction_count: row.transaction_count,
       average_transaction: row.average_transaction ? Number(row.average_transaction) : null,
@@ -276,12 +282,14 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
       top_merchants: (row.top_merchants as MerchantStat[]) || [],
       payment_method_stats: (row.payment_method_stats as PaymentMethodStat[]) || [],
       week_over_week_change: row.week_over_week_change ? Number(row.week_over_week_change) : null,
-      week_over_week_percentage: row.week_over_week_percentage ? Number(row.week_over_week_percentage) : null,
+      week_over_week_percentage: row.week_over_week_percentage
+        ? Number(row.week_over_week_percentage)
+        : null,
       ai_insights: row.ai_insights,
       generated_at: row.generated_at?.toISOString() || new Date().toISOString(),
       generation_type: row.generation_type || 'auto',
       created_at: row.created_at?.toISOString() || new Date().toISOString(),
-      updated_at: row.updated_at?.toISOString() || new Date().toISOString(),
+      updated_at: row.updated_at?.toISOString() || new Date().toISOString()
     };
   }
 }
