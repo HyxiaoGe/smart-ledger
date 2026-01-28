@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { getAiConfig } from '@/lib/clients/ai/client';
 import { getPrismaClient } from '@/lib/clients/db';
 import { getErrorMessage } from '@/types/common';
+import { EXCLUDE_RECURRING_CONDITIONS } from '@/lib/infrastructure/queries';
 
 // 改为 nodejs runtime 以支持 Prisma
 export const runtime = 'nodejs';
@@ -133,10 +134,9 @@ export async function GET(req: NextRequest) {
       rows = await prisma.transactions.findMany({
         where: {
           deleted_at: null,
-          is_auto_generated: false,
-          recurring_expense_id: null,
+          ...EXCLUDE_RECURRING_CONDITIONS,
           date: { gte: start, lt: end },
-          currency: currency,
+          currency: currency
         },
         select: {
           type: true,
@@ -145,8 +145,8 @@ export async function GET(req: NextRequest) {
           date: true,
           currency: true,
           is_auto_generated: true,
-          recurring_expense_id: true,
-        },
+          recurring_expense_id: true
+        }
       });
     }
 
@@ -157,7 +157,9 @@ export async function GET(req: NextRequest) {
         start(controller) {
           const encoder = new TextEncoder();
           controller.enqueue(encoder.encode('retry: 1000\n\n'));
-          controller.enqueue(encoder.encode('data: （开发提示）未配置 AI API Key，返回占位分析结果。\n\n'));
+          controller.enqueue(
+            encoder.encode('data: （开发提示）未配置 AI API Key，返回占位分析结果。\n\n')
+          );
           controller.close();
         }
       });
@@ -248,4 +250,3 @@ export async function GET(req: NextRequest) {
     });
   }
 }
-
