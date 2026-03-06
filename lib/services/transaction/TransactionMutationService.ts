@@ -1,6 +1,6 @@
 import type { ICommonNoteRepository } from '@/lib/domain/repositories/ICommonNoteRepository';
 import type { ITransactionRepository } from '@/lib/domain/repositories/ITransactionRepository';
-import { NotFoundError } from '@/lib/domain/errors/AppError';
+import { InternalError, NotFoundError } from '@/lib/domain/errors/AppError';
 import type { Transaction } from '@/types/domain/transaction';
 import type { CreateTransactionDTO, UpdateTransactionDTO } from '@/types/dto/transaction.dto';
 
@@ -30,9 +30,16 @@ export class TransactionMutationService {
     await this.repository.softDelete(id);
   }
 
-  async restoreTransaction(id: string): Promise<void> {
+  async restoreTransaction(id: string): Promise<Transaction> {
     await this.ensureExists(id, { includeDeleted: true });
     await this.repository.restore(id);
+
+    const restoredTransaction = await this.repository.findById(id);
+    if (!restoredTransaction) {
+      throw new InternalError(`交易恢复后读取失败: ${id}`);
+    }
+
+    return restoredTransaction;
   }
 
   private async ensureExists(

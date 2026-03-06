@@ -22,12 +22,13 @@ export const POST = withErrorHandler(async (
   { params }: RouteParams
 ) => {
   const { id } = await params;
-  await restoreTransaction(id);
+  const transaction = await restoreTransaction(id);
 
   revalidateTransactions();
 
   return NextResponse.json({
     success: true,
+    data: transaction,
     message: '交易已恢复',
   });
 });

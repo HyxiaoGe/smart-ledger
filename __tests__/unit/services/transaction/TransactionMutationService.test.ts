@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TransactionMutationService } from '@/lib/services/transaction/TransactionMutationService';
 import type { ITransactionRepository } from '@/lib/domain/repositories/ITransactionRepository';
 import type { ICommonNoteRepository } from '@/lib/domain/repositories/ICommonNoteRepository';
-import { NotFoundError } from '@/lib/domain/errors/AppError';
+import { InternalError, NotFoundError } from '@/lib/domain/errors/AppError';
 import type { Transaction } from '@/types/domain/transaction';
 
 function createMockTransaction(overrides: Partial<Transaction> = {}): Transaction {
@@ -193,15 +193,19 @@ describe('TransactionMutationService', () => {
 
   describe('restoreTransaction', () => {
     it('should restore transaction with includeDeleted existence check', async () => {
+      const restoredTransaction = createMockTransaction({ id: 'deleted-id' });
       vi.mocked(mockRepository.exists).mockResolvedValue(true);
       vi.mocked(mockRepository.restore).mockResolvedValue();
+      vi.mocked(mockRepository.findById).mockResolvedValue(restoredTransaction);
 
-      await service.restoreTransaction('deleted-id');
+      const result = await service.restoreTransaction('deleted-id');
 
       expect(mockRepository.exists).toHaveBeenCalledWith('deleted-id', {
         includeDeleted: true,
       });
       expect(mockRepository.restore).toHaveBeenCalledWith('deleted-id');
+      expect(mockRepository.findById).toHaveBeenCalledWith('deleted-id');
+      expect(result).toEqual(restoredTransaction);
     });
 
     it('should throw NotFoundError when restoring missing transaction', async () => {
@@ -209,6 +213,15 @@ describe('TransactionMutationService', () => {
 
       await expect(service.restoreTransaction('missing-id')).rejects.toBeInstanceOf(NotFoundError);
       expect(mockRepository.restore).not.toHaveBeenCalled();
+    });
+
+    it('should throw InternalError when restored transaction cannot be loaded', async () => {
+      vi.mocked(mockRepository.exists).mockResolvedValue(true);
+      vi.mocked(mockRepository.restore).mockResolvedValue();
+      vi.mocked(mockRepository.findById).mockResolvedValue(null);
+
+      await expect(service.restoreTransaction('deleted-id')).rejects.toBeInstanceOf(InternalError);
+      expect(mockRepository.findById).toHaveBeenCalledWith('deleted-id');
     });
   });
 });
