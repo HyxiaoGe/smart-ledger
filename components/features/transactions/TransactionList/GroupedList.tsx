@@ -6,10 +6,13 @@ import { EmptyState } from '@/components/EmptyState';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { FileText } from 'lucide-react';
 import Link from 'next/link';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { paymentMethodsApi, PaymentMethod } from '@/lib/api/services/payment-methods';
-import { transactionsApi } from '@/lib/api/services/transactions';
-import { applyTransactionWriteEffects } from '@/lib/api/transactionWriteEffects';
+import {
+  useDeleteTransaction,
+  useRestoreTransaction,
+  useUpdateTransaction,
+} from '@/lib/api/hooks';
 import {
   Transaction,
   TransactionGroupedListProps,
@@ -25,7 +28,6 @@ export function TransactionGroupedList({
   className,
   defaultExpandedDates
 }: TransactionGroupedListProps) {
-  const queryClient = useQueryClient();
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   const initRef = useRef(false);
 
@@ -95,72 +97,51 @@ export function TransactionGroupedList({
   const paymentMethods = paymentMethodsData || [];
 
   // 更新交易的 mutation
-  const updateMutation = useMutation({
-    mutationFn: (params: { id: string; data: Partial<Transaction> }) =>
-      transactionsApi.update({ id: params.id, ...params.data }),
+  const updateMutation = useUpdateTransaction({
     onSuccess: (result, variables) => {
       const updatedTransaction = result || { ...form, type: 'expense' } as unknown as Transaction;
       setTransactions((ts) => ts.map((t) => (t.id === variables.id ? { ...t, ...updatedTransaction } : t)));
       setEditingId(null);
       setForm({});
       setShowEditToast(true);
-      applyTransactionWriteEffects({
-        action: 'update',
-        queryClient,
-        transactionId: variables.id,
-        payload: updatedTransaction,
-      });
     },
     onError: (err: unknown) => {
       const errorMessage = err instanceof Error ? err.message : '更新失败';
       setError(errorMessage);
-    }
+    },
   });
 
   // 删除交易的 mutation
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => transactionsApi.delete(id),
+  const deleteMutation = useDeleteTransaction({
     onSuccess: (_, id) => {
       const transaction = transactions.find(t => t.id === id);
       if (transaction) {
         setRecentlyDeleted(transaction);
         setTransactions((ts) => ts.filter((t) => t.id !== id));
         setShowDeleteToast(true);
-        applyTransactionWriteEffects({
-          action: 'delete',
-          queryClient,
-          transactionId: id,
-          payload: transaction,
-        });
       }
     },
     onError: (err: unknown) => {
       const errorMessage = err instanceof Error ? err.message : '删除失败';
       setError(errorMessage);
-    }
+    },
   });
 
   // 恢复交易的 mutation
-  const restoreMutation = useMutation({
-    mutationFn: (id: string) => transactionsApi.restore(id),
+  const restoreMutation = useRestoreTransaction({
     onSuccess: (restoredTransaction) => {
       if (recentlyDeleted) {
-        setTransactions((ts) => [recentlyDeleted, ...ts].sort((a, b) =>
+        const restoredRow = restoredTransaction || recentlyDeleted;
+        setTransactions((ts) => [restoredRow, ...ts].sort((a, b) =>
           new Date(b.date).getTime() - new Date(a.date).getTime()
         ));
         setShowUndoToast(true);
         setRecentlyDeleted(null);
       }
-      applyTransactionWriteEffects({
-        action: 'restore',
-        queryClient,
-        transactionId: restoredTransaction?.id,
-        payload: restoredTransaction,
-      });
     },
     onError: () => {
       setError('撤销失败，请重试');
-    }
+    },
   });
 
   const loading = updateMutation.isPending || deleteMutation.isPending || restoreMutation.isPending;
