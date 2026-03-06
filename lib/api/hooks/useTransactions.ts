@@ -9,6 +9,7 @@ import {
   useMutation,
   useQueryClient,
   type UseMutationOptions,
+  type UseQueryOptions,
 } from '@tanstack/react-query';
 import { queryKeys } from '../queryClient';
 import {
@@ -34,6 +35,11 @@ type CreateTransactionHookOptions = MutationCallbacks<Transaction, CreateTransac
   effectOptions?: TransactionWriteEffectOptions;
 };
 
+type TransactionRowsQueryOptions = Omit<
+  UseQueryOptions<Transaction[], Error, Transaction[], ReturnType<typeof queryKeys.transactions.list>>,
+  'queryKey' | 'queryFn'
+>;
+
 /**
  * 获取交易列表
  */
@@ -41,6 +47,17 @@ export function useTransactions(params?: TransactionListParams) {
   return useQuery({
     queryKey: queryKeys.transactions.list(params),
     queryFn: () => transactionsApi.list(params),
+  });
+}
+
+export function useTransactionRowsQuery(
+  params?: TransactionListParams,
+  options?: TransactionRowsQueryOptions
+) {
+  return useQuery({
+    queryKey: queryKeys.transactions.list(params),
+    queryFn: () => transactionsApi.listRows(params),
+    ...options,
   });
 }
 

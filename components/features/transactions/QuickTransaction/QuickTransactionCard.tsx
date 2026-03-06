@@ -6,9 +6,8 @@ import { ProgressToast } from '@/components/shared/ProgressToast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDateToLocal } from '@/lib/utils/date';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { useTransactionRowsQuery } from '@/lib/api/hooks';
 import { paymentMethodsApi, PaymentMethod } from '@/lib/api/services/payment-methods';
-import { transactionsApi, getTransactionRows } from '@/lib/api/services/transactions';
-import { queryKeys } from '@/lib/api/queryClient';
 import { quickTransactionApi } from '@/lib/api/services/quick-transaction';
 import type { QuickTransactionCardProps, QuickTransactionItem } from './types';
 import { QUICK_ITEMS, ITEM_KEYWORDS } from './constants';
@@ -57,26 +56,20 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
     data: todayTransactionsData,
     isLoading: loadingCategories,
     refetch: refetchTodayCategories
-  } = useQuery({
-    queryKey: queryKeys.transactions.list({
+  } = useTransactionRowsQuery(
+    {
       start_date: getTodayDateString(),
       end_date: getTodayDateString(),
       page_size: 100,
-    }),
-    queryFn: async () => {
-      const today = getTodayDateString();
-      return transactionsApi.listRows({
-        start_date: today,
-        end_date: today,
-        page_size: 100,
-      });
     },
-    enabled: open,
-  });
+    {
+      enabled: open,
+    }
+  );
 
   // 计算今日已记录的项目
   const todayItems = useMemo(() => {
-    const data = getTransactionRows(todayTransactionsData);
+    const data = todayTransactionsData || [];
     const items = new Set<string>();
 
     data.forEach((transaction: { note?: string }) => {

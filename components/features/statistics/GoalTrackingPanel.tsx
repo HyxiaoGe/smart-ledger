@@ -1,14 +1,12 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useTransactionRowsQuery } from '@/lib/api/hooks';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Target, TrendingUp, TrendingDown, ChevronDown, RefreshCw, Trophy, Flag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAllDataSyncEvents } from '@/hooks/useEnhancedDataSync';
-import { getTransactionRows, transactionsApi } from '@/lib/api/services/transactions';
-import { queryKeys } from '@/lib/api/queryClient';
 
 interface Goal {
   id: string;
@@ -52,18 +50,13 @@ export function GoalTrackingPanel({
   const endDate = `${month}-31`;
 
   // 使用 React Query 获取交易数据
-  const { data: transactionsData, isLoading: loading, refetch } = useQuery({
-    queryKey: queryKeys.transactions.list({
+  const { data: transactionsData, isLoading: loading, refetch } = useTransactionRowsQuery(
+    {
       start_date: startDate,
       end_date: endDate,
       page_size: 1000,
-    }),
-    queryFn: () => transactionsApi.list({
-      start_date: startDate,
-      end_date: endDate,
-      page_size: 1000,
-    }),
-  });
+    }
+  );
 
   // 监听数据同步事件
   useAllDataSyncEvents(() => {
@@ -74,7 +67,7 @@ export function GoalTrackingPanel({
   const data = useMemo<GoalTrackingData | null>(() => {
     if (!transactionsData) return null;
 
-    const allData = getTransactionRows(transactionsData);
+    const allData = transactionsData || [];
     const currentDate = new Date();
     const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
     const dayOfMonth = currentDate.getDate();

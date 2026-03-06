@@ -1,14 +1,12 @@
 'use client';
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CategoryChip } from '@/components/CategoryChip';
 import { useCategories } from '@/contexts/CategoryContext';
 import { formatCurrency } from '@/lib/utils/format';
 import { EmptyState } from '@/components/EmptyState';
-import { getTransactionRows, transactionsApi } from '@/lib/api/services/transactions';
-import { queryKeys } from '@/lib/api/queryClient';
+import { useTransactionRowsQuery } from '@/lib/api/hooks';
 import { FileText } from 'lucide-react';
 import Link from 'next/link';
 
@@ -42,28 +40,22 @@ export function TransactionList({
     data: transactionsData,
     isLoading: loading,
     isFetching
-  } = useQuery({
-    queryKey: queryKeys.transactions.list({
+  } = useTransactionRowsQuery(
+    {
       start_date: start,
       end_date: end,
       type: 'expense',
       page,
       page_size: 50,
-    }),
-    queryFn: () =>
-      transactionsApi.list({
-        start_date: start,
-        end_date: end,
-        type: 'expense',
-        page,
-        page_size: 50
-      }),
-    enabled: !!start,
-  });
+    },
+    {
+      enabled: !!start,
+    }
+  );
 
   // 当数据变化时更新行列表
   useEffect(() => {
-    const currentRows = getTransactionRows(transactionsData) as Row[];
+    const currentRows = (transactionsData || []) as Row[];
     if (currentRows.length > 0) {
       if (page === 1) {
         setAllRows(currentRows);
@@ -75,7 +67,7 @@ export function TransactionList({
 
   // 计算是否还有更多数据
   const hasMore = useMemo(() => {
-    const currentData = getTransactionRows(transactionsData);
+    const currentData = transactionsData || [];
     return currentData.length >= 50;
   }, [transactionsData]);
 
