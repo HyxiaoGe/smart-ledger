@@ -11,8 +11,10 @@ import {
   transactionSummaryService,
   transactionAnalyticsService,
   transactionDashboardService,
-  transactionRecordsPageService
+  transactionRecordsPageService,
+  transactionMutationService,
 } from '@/lib/services/transaction/index.server';
+import type { CreateTransactionDTO, UpdateTransactionDTO } from '@/types/dto/transaction.dto';
 
 /**
  * 根据范围查询交易列表
@@ -80,8 +82,24 @@ export async function getTransactionRecordsPageData(
     month,
     range,
     startDate,
-    endDate
+    endDate,
   });
+}
+
+export async function createTransaction(input: CreateTransactionDTO) {
+  return transactionMutationService.createTransaction(input);
+}
+
+export async function updateTransaction(id: string, input: UpdateTransactionDTO) {
+  return transactionMutationService.updateTransaction(id, input);
+}
+
+export async function deleteTransaction(id: string) {
+  return transactionMutationService.deleteTransaction(id);
+}
+
+export async function restoreTransaction(id: string) {
+  return transactionMutationService.restoreTransaction(id);
 }
 
 /**

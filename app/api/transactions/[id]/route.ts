@@ -11,6 +11,7 @@ import { validateRequest, commonSchemas } from '@/lib/utils/validation';
 import { revalidateTag } from 'next/cache';
 import { NotFoundError } from '@/lib/domain/errors/AppError';
 import type { TransactionType, Currency } from '@/types/domain/transaction';
+import { deleteTransaction, updateTransaction } from '@/lib/services/transactions.server';
 
 export const runtime = 'nodejs';
 
@@ -71,16 +72,7 @@ export const PUT = withErrorHandler(async (
   }
 
   const data = validation.data;
-  const repository = getTransactionRepository();
-
-  // 检查交易是否存在
-  const exists = await repository.exists(id);
-  if (!exists) {
-    throw new NotFoundError(`交易不存在: ${id}`);
-  }
-
-  // 更新交易
-  const transaction = await repository.update(id, {
+  const transaction = await updateTransaction(id, {
     type: data.type as TransactionType | undefined,
     category: data.category,
     amount: data.amount,
@@ -115,16 +107,7 @@ export const DELETE = withErrorHandler(async (
   { params }: RouteParams
 ) => {
   const { id } = await params;
-  const repository = getTransactionRepository();
-
-  // 检查交易是否存在
-  const exists = await repository.exists(id);
-  if (!exists) {
-    throw new NotFoundError(`交易不存在: ${id}`);
-  }
-
-  // 软删除交易
-  await repository.softDelete(id);
+  await deleteTransaction(id);
 
   // 刷新缓存
   revalidateTag('transactions');

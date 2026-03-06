@@ -3,13 +3,17 @@
  * 使用服务端 Repository 工厂
  */
 
-import { getTransactionRepository } from '@/lib/infrastructure/repositories/index.server';
+import {
+  getCommonNoteRepository,
+  getTransactionRepository,
+} from '@/lib/infrastructure/repositories/index.server';
 import { memoryCache } from '@/lib/infrastructure/cache';
 import { TransactionQueryService } from './TransactionQueryService';
 import { TransactionSummaryService } from './TransactionSummaryService';
 import { TransactionAnalyticsService } from './TransactionAnalyticsService';
 import { TransactionDashboardService } from './TransactionDashboardService';
 import { TransactionRecordsPageService } from './TransactionRecordsPageService';
+import { TransactionMutationService } from './TransactionMutationService';
 
 // 导出服务类
 export { TransactionQueryService } from './TransactionQueryService';
@@ -17,6 +21,7 @@ export { TransactionSummaryService } from './TransactionSummaryService';
 export { TransactionAnalyticsService } from './TransactionAnalyticsService';
 export { TransactionDashboardService } from './TransactionDashboardService';
 export { TransactionRecordsPageService } from './TransactionRecordsPageService';
+export { TransactionMutationService } from './TransactionMutationService';
 export type { TransactionDashboardResult } from './TransactionDashboardService';
 export type { TransactionRecordsPageData } from './TransactionRecordsPageService';
 
@@ -39,6 +44,7 @@ class TransactionServiceFactory {
   private static analyticsService: TransactionAnalyticsService;
   private static dashboardService: TransactionDashboardService;
   private static recordsPageService: TransactionRecordsPageService;
+  private static mutationService: TransactionMutationService;
 
   /**
    * 获取查询服务实例
@@ -92,6 +98,20 @@ class TransactionServiceFactory {
     return this.recordsPageService;
   }
 
+  static getMutationService(): TransactionMutationService {
+    if (!this.mutationService) {
+      this.mutationService = new TransactionMutationService(
+        this.getTransactionRepository(),
+        getCommonNoteRepository()
+      );
+    }
+    return this.mutationService;
+  }
+
+  private static getTransactionRepository() {
+    return getTransactionRepository();
+  }
+
   /**
    * 重置所有服务实例（用于测试）
    */
@@ -101,6 +121,7 @@ class TransactionServiceFactory {
     this.analyticsService = null as any;
     this.dashboardService = null as any;
     this.recordsPageService = null as any;
+    this.mutationService = null as any;
   }
 }
 
@@ -110,6 +131,7 @@ export const getSummaryService = () => TransactionServiceFactory.getSummaryServi
 export const getAnalyticsService = () => TransactionServiceFactory.getAnalyticsService();
 export const getDashboardService = () => TransactionServiceFactory.getDashboardService();
 export const getRecordsPageService = () => TransactionServiceFactory.getRecordsPageService();
+export const getMutationService = () => TransactionServiceFactory.getMutationService();
 export const resetServices = () => TransactionServiceFactory.reset();
 
 // 导出默认实例（便于直接使用）
@@ -118,6 +140,7 @@ export const transactionSummaryService = getSummaryService();
 export const transactionAnalyticsService = getAnalyticsService();
 export const transactionDashboardService = getDashboardService();
 export const transactionRecordsPageService = getRecordsPageService();
+export const transactionMutationService = getMutationService();
 
 /**
  * 清空所有 Transaction 服务的缓存

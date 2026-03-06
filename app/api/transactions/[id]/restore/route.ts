@@ -4,10 +4,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getTransactionRepository } from '@/lib/infrastructure/repositories/index.server';
 import { withErrorHandler } from '@/lib/domain/errors/errorHandler';
 import { revalidateTag } from 'next/cache';
-import { NotFoundError } from '@/lib/domain/errors/AppError';
+import { restoreTransaction } from '@/lib/services/transactions.server';
 
 export const runtime = 'nodejs';
 
@@ -23,16 +22,7 @@ export const POST = withErrorHandler(async (
   { params }: RouteParams
 ) => {
   const { id } = await params;
-  const repository = getTransactionRepository();
-
-  // 检查交易是否存在（包括已删除的）
-  const exists = await repository.exists(id);
-  if (!exists) {
-    throw new NotFoundError(`交易不存在: ${id}`);
-  }
-
-  // 恢复交易
-  await repository.restore(id);
+  await restoreTransaction(id);
 
   // 刷新缓存
   revalidateTag('transactions');

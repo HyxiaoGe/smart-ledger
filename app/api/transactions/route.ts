@@ -4,12 +4,13 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getTransactionRepository, getCommonNoteRepository } from '@/lib/infrastructure/repositories/index.server';
+import { getTransactionRepository } from '@/lib/infrastructure/repositories/index.server';
 import { withErrorHandler } from '@/lib/domain/errors/errorHandler';
 import { z } from 'zod';
 import { validateRequest, commonSchemas } from '@/lib/utils/validation';
 import { revalidateTag } from 'next/cache';
 import type { TransactionType, Currency } from '@/types/domain/transaction';
+import { createTransaction } from '@/lib/services/transactions.server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -121,10 +122,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   }
 
   const data = validation.data;
-  const repository = getTransactionRepository();
-
-  // 创建交易
-  const transaction = await repository.create({
+  const transaction = await createTransaction({
     type: data.type as TransactionType,
     category: data.category,
     amount: data.amount,
@@ -136,17 +134,6 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     subcategory: data.subcategory || undefined,
     product: data.product || undefined,
   });
-
-  // 更新常用备注（如果有备注）
-  if (data.note) {
-    try {
-      const commonNoteRepository = getCommonNoteRepository();
-      await commonNoteRepository.upsert(data.note, data.amount, data.category);
-    } catch (error) {
-      // 忽略常用备注更新失败，不影响主流程
-      console.error('更新常用备注失败:', error);
-    }
-  }
 
   // 刷新缓存
   revalidateTag('transactions');

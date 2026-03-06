@@ -90,7 +90,7 @@ export interface ITransactionRepository {
   /**
    * 检查交易是否存在
    */
-  exists(id: string): Promise<boolean>;
+  exists(id: string, options?: { includeDeleted?: boolean }): Promise<boolean>;
 
   /**
    * 获取最近的 N 条交易

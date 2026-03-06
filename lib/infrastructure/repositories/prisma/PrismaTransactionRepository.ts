@@ -274,11 +274,11 @@ export class PrismaTransactionRepository implements ITransactionRepository {
   /**
    * 检查交易是否存在
    */
-  async exists(id: string): Promise<boolean> {
+  async exists(id: string, options?: { includeDeleted?: boolean }): Promise<boolean> {
     const count = await this.prisma.transactions.count({
       where: {
         id,
-        deleted_at: null,
+        ...(options?.includeDeleted ? {} : { deleted_at: null }),
       },
     });
 
