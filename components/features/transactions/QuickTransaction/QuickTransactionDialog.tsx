@@ -1,26 +1,15 @@
 'use client';
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Zap, Clock, CheckCircle, RefreshCw, X } from 'lucide-react';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { aiApi } from '@/lib/api/services/ai';
-import { quickTransactionApi } from '@/lib/api/services/quick-transaction';
-
-// 类型定义
-interface QuickTransactionSuggestion {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  amount: number;
-  note: string;
-  confidence: number;
-  icon?: string;
-  reason: string;
-}
+import { ProgressToast } from '@/components/shared/ProgressToast';
+import { generateTimeContext } from '@/lib/domain/noteContext';
+import { formatDateToLocal } from '@/lib/utils/date';
+import { useCreateTransaction, useQuickSuggestions } from '@/lib/api/hooks';
+import type { QuickTransactionSuggestion } from '@/lib/api/services/ai';
 
 interface QuickTransactionDialogProps {
   open: boolean;
@@ -29,57 +18,55 @@ interface QuickTransactionDialogProps {
 }
 
 export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickTransactionDialogProps) {
-  // 使用 React Query 获取快速建议
+  const [submittingId, setSubmittingId] = useState<string | null>(null);
+  const [lastSuccessSuggestion, setLastSuccessSuggestion] = useState<QuickTransactionSuggestion | null>(null);
+  const [showToast, setShowToast] = useState(false);
+  const timeContext = useMemo(() => generateTimeContext(), []);
+
   const {
     data: suggestionsData,
     isLoading: loading,
     error: queryError,
     refetch: fetchSuggestions
-  } = useQuery({
-    queryKey: ['quick-suggestions'],
-    queryFn: async () => {
-      const result = await aiApi.predict({ type: 'quick-suggestions' });
-      return (result.suggestions || []) as QuickTransactionSuggestion[];
-    },
-    enabled: open
-  });
+  } = useQuickSuggestions(timeContext.label, open);
 
-  const suggestions = suggestionsData || [];
+  const suggestions = suggestionsData?.suggestions || [];
 
-  // 使用 useMutation 处理快速记账
-  const quickTransactionMutation = useMutation({
-    mutationFn: (suggestion: QuickTransactionSuggestion) =>
-      quickTransactionApi.create({
-        category: suggestion.category,
-        amount: suggestion.amount,
-        note: suggestion.note,
-        currency: 'CNY'
-      }),
-    onSuccess: (_, suggestion) => {
-      onSuccess?.(suggestion);
-
-      // 延迟关闭并刷新页面
-      setTimeout(() => {
-        onOpenChange(false);
-        window.location.reload();
-      }, 1500);
-    },
-    onError: (error) => {
-      console.error('快速记账失败:', error);
-    }
-  });
+  const createTransaction = useCreateTransaction();
 
   // 错误信息
   const error = queryError
     ? (queryError instanceof Error ? queryError.message : '获取建议失败')
-    : quickTransactionMutation.error
+    : createTransaction.error
     ? '记账失败，请重试'
     : '';
 
   // 处理快速记账
-  const handleQuickTransaction = useCallback((suggestion: QuickTransactionSuggestion) => {
-    quickTransactionMutation.mutate(suggestion);
-  }, [quickTransactionMutation]);
+  const handleQuickTransaction = useCallback(async (suggestion: QuickTransactionSuggestion) => {
+    setSubmittingId(suggestion.id);
+
+    try {
+      await createTransaction.mutateAsync({
+        type: 'expense',
+        category: suggestion.category,
+        amount: suggestion.amount,
+        note: suggestion.note,
+        date: formatDateToLocal(new Date()),
+        currency: 'CNY'
+      });
+
+      setLastSuccessSuggestion(suggestion);
+      setShowToast(true);
+      onSuccess?.(suggestion);
+
+      setTimeout(() => {
+        onOpenChange(false);
+        void fetchSuggestions();
+      }, 1500);
+    } finally {
+      setSubmittingId(null);
+    }
+  }, [createTransaction, fetchSuggestions, onOpenChange, onSuccess]);
 
   // 获取置信度颜色
   const getConfidenceColor = (confidence: number) => {
@@ -104,37 +91,18 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
     return icons[category] || '💰';
   };
 
-  // 生成时间上下文
-  const generateTimeContext = () => {
-    const now = new Date();
-    const hour = now.getHours();
-    const day = now.getDay();
-    const isWeekend = day === 0 || day === 6;
-
-    let timeContext = '';
-    if (hour >= 11 && hour < 14) {
-      timeContext = isWeekend ? '周末午餐时间' : '工作日午餐时间';
-    } else if (hour >= 17 && hour < 21) {
-      timeContext = isWeekend ? '周末晚餐时间' : '工作日晚餐时间';
-    } else if (hour >= 7 && hour < 10) {
-      timeContext = '早餐时间';
-    } else if (hour >= 9 && hour < 18 && !isWeekend) {
-      timeContext = '工作时间';
-    } else {
-      timeContext = '日常时间';
-    }
-
-    return {
-      label: timeContext,
-      hour,
-      isWeekend
-    };
-  };
-
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {showToast && lastSuccessSuggestion && (
+        <ProgressToast
+          message={`${lastSuccessSuggestion.title} (¥${lastSuccessSuggestion.amount}) 记账成功！`}
+          duration={2000}
+          onClose={() => setShowToast(false)}
+        />
+      )}
+
       {/* 背景遮罩 */}
       <div
         className="absolute inset-0 bg-black/50"
@@ -164,7 +132,7 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
             <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
               <Clock className="h-4 w-4 text-blue-600" />
               <span className="text-sm text-blue-700">
-                当前时间: {generateTimeContext().label}
+                当前时间: {timeContext.label}
               </span>
             </div>
 
@@ -239,10 +207,10 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
                           <Button
                             size="sm"
                             onClick={() => handleQuickTransaction(suggestion)}
-                            disabled={quickTransactionMutation.isPending && quickTransactionMutation.variables?.id === suggestion.id}
+                            disabled={submittingId === suggestion.id || createTransaction.isPending}
                             className="min-w-[80px] bg-orange-500 hover:bg-orange-600 text-white"
                           >
-                            {quickTransactionMutation.isPending && quickTransactionMutation.variables?.id === suggestion.id ? (
+                            {submittingId === suggestion.id ? (
                               <>
                                 <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin mr-1"></div>
                                 记录中
@@ -279,10 +247,10 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
                 variant="outline"
                 size="sm"
                 onClick={() => fetchSuggestions()}
-                disabled={loading}
+                disabled={loading || createTransaction.isPending}
                 className="text-gray-500 dark:text-gray-400 hover:text-gray-700"
               >
-                <RefreshCw className={`h-4 w-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`h-4 w-4 mr-1 ${(loading || createTransaction.isPending) ? 'animate-spin' : ''}`} />
                 刷新建议
               </Button>
 
