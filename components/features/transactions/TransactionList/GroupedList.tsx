@@ -161,7 +161,7 @@ export function TransactionGroupedList({
       setError('金额必须大于 0');
       return;
     }
-    updateMutation.mutate({ id: editingId, data: patch });
+    updateMutation.mutate({ id: editingId, ...patch });
   }
 
   function cancelEdit() {
