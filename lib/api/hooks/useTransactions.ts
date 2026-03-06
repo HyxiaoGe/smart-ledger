@@ -37,7 +37,7 @@ type CreateTransactionHookOptions = MutationCallbacks<Transaction, CreateTransac
 
 type TransactionRowsQueryOptions = Omit<
   UseQueryOptions<Transaction[], Error, Transaction[], readonly unknown[]>,
-  'queryFn'
+  'queryKey' | 'queryFn'
 > & {
   queryKey?: readonly unknown[];
 };
