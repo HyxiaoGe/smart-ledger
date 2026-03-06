@@ -66,7 +66,7 @@ export function useCreateTransaction(
 
   return useMutation({
     mutationFn: (data: CreateTransactionParams) => transactionsApi.create(data),
-    onSuccess: (newTransaction, variables, context) => {
+    onSuccess: (newTransaction, variables, onMutateResult, context) => {
       applyTransactionWriteEffects({
         action: 'create',
         queryClient,
@@ -74,7 +74,7 @@ export function useCreateTransaction(
         payload: newTransaction,
         clearCommonNotesCache: Boolean(newTransaction.note?.trim()),
       });
-      options?.onSuccess?.(newTransaction, variables, context);
+      options?.onSuccess?.(newTransaction, variables, onMutateResult, context);
     },
     onError: options?.onError,
   });
@@ -90,14 +90,14 @@ export function useUpdateTransaction(
 
   return useMutation({
     mutationFn: (data: UpdateTransactionParams) => transactionsApi.update(data),
-    onSuccess: (updatedTransaction, variables, context) => {
+    onSuccess: (updatedTransaction, variables, onMutateResult, context) => {
       applyTransactionWriteEffects({
         action: 'update',
         queryClient,
         transactionId: variables.id,
         payload: updatedTransaction,
       });
-      options?.onSuccess?.(updatedTransaction, variables, context);
+      options?.onSuccess?.(updatedTransaction, variables, onMutateResult, context);
     },
     onError: options?.onError,
   });
@@ -113,13 +113,13 @@ export function useDeleteTransaction(
 
   return useMutation({
     mutationFn: (id: string) => transactionsApi.delete(id),
-    onSuccess: (_, id, context) => {
+    onSuccess: (_, id, onMutateResult, context) => {
       applyTransactionWriteEffects({
         action: 'delete',
         queryClient,
         transactionId: id,
       });
-      options?.onSuccess?.(undefined, id, context);
+      options?.onSuccess?.(undefined, id, onMutateResult, context);
     },
     onError: options?.onError,
   });
@@ -135,14 +135,14 @@ export function useRestoreTransaction(
 
   return useMutation({
     mutationFn: (id: string) => transactionsApi.restore(id),
-    onSuccess: (restoredTransaction, id, context) => {
+    onSuccess: (restoredTransaction, id, onMutateResult, context) => {
       applyTransactionWriteEffects({
         action: 'restore',
         queryClient,
         transactionId: id,
         payload: restoredTransaction,
       });
-      options?.onSuccess?.(restoredTransaction, id, context);
+      options?.onSuccess?.(restoredTransaction, id, onMutateResult, context);
     },
     onError: options?.onError,
   });
