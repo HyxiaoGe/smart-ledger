@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPrismaClient } from '@/lib/clients/db';
-import { revalidatePath } from 'next/cache';
 import { formatDateToLocal } from '@/lib/utils/date';
 import { z } from 'zod';
 import { validateRequest, commonSchemas } from '@/lib/utils/validation';
 import { withErrorHandler } from '@/lib/domain/errors/errorHandler';
 import { logger } from '@/lib/services/logging';
-import { revalidateTransactions } from '@/lib/services/transaction/revalidation.server';
+import { createTransaction } from '@/lib/services/transactions.server';
+import { revalidateTransactionWrite } from '@/lib/services/transaction/revalidation.server';
 
 export const runtime = 'nodejs';
 
@@ -16,7 +15,8 @@ const quickTransactionSchema = z.object({
   amount: commonSchemas.amount,
   note: commonSchemas.nonEmptyString,
   currency: commonSchemas.currency.optional().default('CNY'),
-  date: z.string().optional()
+  date: z.string().optional(),
+  paymentMethod: z.string().nullable().optional(),
 });
 
 /**
@@ -32,27 +32,16 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
     return validation.response;
   }
 
-  const { category, amount, note, currency, date } = validation.data;
+  const { category, amount, note, currency, date, paymentMethod } = validation.data;
 
-  const type = 'expense';
-  // 将日期字符串转换为 Date 对象，Prisma DateTime 需要完整的 ISO-8601 格式
-  const transactionDate = date ? new Date(date) : new Date();
-
-  // 创建交易记录
-  const prisma = getPrismaClient();
-  const result = await prisma.transactions.create({
-    data: {
-      type,
-      category,
-      amount,
-      note,
-      date: transactionDate,
-      currency,
-      payment_method: null,
-      merchant: null,
-      subcategory: null,
-      product: null,
-    },
+  const result = await createTransaction({
+    type: 'expense',
+    category,
+    amount,
+    note,
+    date: date || formatDateToLocal(new Date()),
+    currency,
+    payment_method: paymentMethod || undefined,
   });
 
   // ✅ 记录用户操作日志（异步，不阻塞响应）
@@ -67,10 +56,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
     },
   });
 
-  // 刷新缓存 - 确保页面显示最新数据
-  revalidateTransactions();
-  revalidatePath('/');
-  revalidatePath('/records');
+  revalidateTransactionWrite({ includeCommonNotes: true });
 
   return NextResponse.json({
     success: true,

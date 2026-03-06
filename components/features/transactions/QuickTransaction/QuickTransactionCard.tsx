@@ -5,9 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDateToLocal } from '@/lib/utils/date';
-import { useMutation } from '@tanstack/react-query';
-import { usePaymentMethods, useTransactionRowsQuery } from '@/lib/api/hooks';
-import { quickTransactionApi } from '@/lib/api/services/quick-transaction';
+import { useCreateTransaction, usePaymentMethods, useTransactionRowsQuery } from '@/lib/api/hooks';
 import type { QuickTransactionCardProps, QuickTransactionItem } from './types';
 import { QUICK_ITEMS, ITEM_KEYWORDS } from './constants';
 import {
@@ -21,6 +19,7 @@ import {
 
 export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTransactionCardProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [submittingItemId, setSubmittingItemId] = useState<string | null>(null);
   const [customAmounts, setCustomAmounts] = useState<Record<string, string>>({});
   const [showToast, setShowToast] = useState(false);
   const [lastTransaction, setLastTransaction] = useState<string | null>(null);
@@ -31,6 +30,7 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
 
   const { data: paymentMethodsData } = usePaymentMethods();
   const paymentMethods = paymentMethodsData || [];
+  const createTransaction = useCreateTransaction();
 
   // 设置默认支付方式
   useEffect(() => {
@@ -86,37 +86,6 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
     return items;
   }, [todayTransactionsData]);
 
-  // 使用 useMutation 处理快速记账
-  const quickTransactionMutation = useMutation({
-    mutationFn: (params: { category: string; amount: number; note: string; currency: string; paymentMethod: string | null }) =>
-      quickTransactionApi.create(params),
-    onSuccess: (_, variables) => {
-      setLastTransaction(variables.note);
-      setShowToast(true);
-      onSuccess?.();
-      refetchTodayCategories();
-
-      // 清空该项目的自定义金额
-      const item = QUICK_ITEMS.find(i => i.title === variables.note);
-      if (item && !item.isFixed) {
-        setCustomAmounts(prev => {
-          const newAmounts = { ...prev };
-          delete newAmounts[item.id];
-          return newAmounts;
-        });
-      }
-
-      // 延迟关闭卡片
-      setTimeout(() => {
-        onOpenChange(false);
-      }, 1500);
-    },
-    onError: (error) => {
-      console.error('快速记账失败:', error);
-      alert('记账失败，请重试');
-    }
-  });
-
   // 处理金额输入
   const handleAmountChange = (itemId: string, value: string) => {
     if (value === '' || /^\d*\.?\d*$/.test(value)) {
@@ -152,15 +121,41 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
       }
     }
 
-    quickTransactionMutation.mutate({
-      category: item.category,
-      amount: finalAmount,
-      note: item.title,
-      currency: 'CNY',
-      paymentMethod: paymentMethod || null
-    });
+    try {
+      setSubmittingItemId(item.id);
+      await createTransaction.mutateAsync({
+        type: 'expense',
+        category: item.category,
+        amount: finalAmount,
+        note: item.title,
+        date: getTodayDateString(),
+        currency: 'CNY',
+        payment_method: paymentMethod || null,
+      });
 
-    setEditingId(null);
+      setLastTransaction(item.title);
+      setShowToast(true);
+      onSuccess?.();
+      refetchTodayCategories();
+
+      if (!item.isFixed) {
+        setCustomAmounts(prev => {
+          const newAmounts = { ...prev };
+          delete newAmounts[item.id];
+          return newAmounts;
+        });
+      }
+
+      setTimeout(() => {
+        onOpenChange(false);
+      }, 1500);
+    } catch (error) {
+      console.error('快速记账失败:', error);
+      alert('记账失败，请重试');
+    } finally {
+      setSubmittingItemId(null);
+      setEditingId(null);
+    }
   };
 
   if (!open) return null;
@@ -235,8 +230,7 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
                           isRecordedToday={todayItems.has(item.id)}
                           isEditing={editingId === item.id}
                           isSubmitting={
-                            quickTransactionMutation.isPending &&
-                            quickTransactionMutation.variables?.note === item.title
+                            createTransaction.isPending && submittingItemId === item.id
                           }
                           currentAmount={customAmounts[item.id] || item.suggestedAmount?.toFixed(2) || ''}
                           onAmountChange={(value) => handleAmountChange(item.id, value)}
