@@ -369,7 +369,7 @@ const SmartNoteInputComponent = function SmartNoteInput({
 
       {/* 智能提示面板 */}
       {showSuggestions && !disabled && (
-        <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
+        <div className="absolute bottom-full left-0 right-0 z-50 mb-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
           {/* 错误状态 */}
           {error && (
             <div className="p-3 flex items-center gap-2 text-red-600 text-sm">
