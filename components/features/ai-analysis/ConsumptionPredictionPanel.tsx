@@ -7,7 +7,7 @@ import { TrendingUp, BarChart, ChevronDown, RefreshCw, Target } from 'lucide-rea
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAllDataSyncEvents } from '@/hooks/useEnhancedDataSync';
 import { useQuery } from '@tanstack/react-query';
-import { getTransactionRows, transactionsApi } from '@/lib/api/services/transactions';
+import { transactionsApi } from '@/lib/api/services/transactions';
 import { queryKeys } from '@/lib/api/queryClient';
 
 interface CategoryPrediction {
@@ -70,34 +70,31 @@ export function ConsumptionPredictionPanel({
       // 获取当前月数据
       const startDate = `${month}-01`;
       const endDate = `${month}-31`;
-      const currentResult = await transactionsApi.list({
+      const currentData = await transactionsApi.listRows({
         start_date: startDate,
         end_date: endDate,
         type: 'expense',
         page_size: 1000
       });
-      const currentData = getTransactionRows(currentResult);
 
       // 获取历史数据用于预测
       const lastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1).toISOString().slice(0, 7);
       const twoMonthsAgo = new Date(currentDate.getFullYear(), currentDate.getMonth() - 2, 1).toISOString().slice(0, 7);
 
-      const [lastMonthResult, twoMonthsAgoResult] = await Promise.all([
-        transactionsApi.list({
+      const [lastMonthData, twoMonthsAgoData] = await Promise.all([
+        transactionsApi.listRows({
           start_date: `${lastMonth}-01`,
           end_date: `${lastMonth}-31`,
           type: 'expense',
           page_size: 1000
         }),
-        transactionsApi.list({
+        transactionsApi.listRows({
           start_date: `${twoMonthsAgo}-01`,
           end_date: `${twoMonthsAgo}-31`,
           type: 'expense',
           page_size: 1000
         })
       ]);
-      const lastMonthData = getTransactionRows(lastMonthResult);
-      const twoMonthsAgoData = getTransactionRows(twoMonthsAgoResult);
 
       // 计算当前月总支出
       const currentMonthTotal = currentData?.reduce((sum, t) => sum + t.amount, 0) || 0;

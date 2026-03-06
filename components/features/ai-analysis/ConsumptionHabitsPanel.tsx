@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar, Clock, ChevronDown, RefreshCw, Activity, Coffee, ShoppingCart, Gamepad2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAllDataSyncEvents } from '@/hooks/useEnhancedDataSync';
-import { getTransactionRows, transactionsApi } from '@/lib/api/services/transactions';
+import { transactionsApi } from '@/lib/api/services/transactions';
 import { queryKeys } from '@/lib/api/queryClient';
 
 interface HabitPattern {
@@ -93,7 +93,7 @@ export function ConsumptionHabitsPanel({
         type: 'expense',
         page_size: 1000,
       }),
-      queryFn: () => transactionsApi.list({
+      queryFn: () => transactionsApi.listRows({
         start_date: `${m}-01`,
         end_date: `${m}-31`,
         type: 'expense',
@@ -118,7 +118,7 @@ export function ConsumptionHabitsPanel({
 
     const monthlyData = months.map((m, index) => ({
       month: m,
-      data: getTransactionRows(monthlyQueries[index].data)
+      data: monthlyQueries[index].data || []
     }));
 
     const currentMonthData = monthlyData.find(d => d.month === month)?.data || [];

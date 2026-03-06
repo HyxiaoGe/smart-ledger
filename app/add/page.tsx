@@ -14,13 +14,12 @@ import { SmartNoteInput } from '@/components/features/input/SmartNoteInput';
 import { MerchantInput, SubcategorySelect } from '@/components/features/input/MerchantInput';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { paymentMethodsApi } from '@/lib/api/services/payment-methods';
-import { transactionsApi } from '@/lib/api/services/transactions';
 import { Clock } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { formatDateToLocal } from '@/lib/utils/date';
 import { logger } from '@/lib/services/logging';
 import { getErrorMessage } from '@/types/common';
-import { useCreateTransaction } from '@/lib/api/hooks';
+import { useCreateTransaction, useTransactionRowsQuery } from '@/lib/api/hooks';
 import { queryKeys } from '@/lib/api/queryClient';
 
 import type { PaymentMethod } from '@/lib/api/services/payment-methods';
@@ -316,25 +315,20 @@ export default function AddPage() {
     queryFn: () => paymentMethodsApi.list()
   });
 
-  const { data: recentTransactionsData, isLoading: recentLoading } = useQuery({
-    queryKey: queryKeys.transactions.recent(5, 'expense'),
-    queryFn: () =>
-      transactionsApi.list({
-        type: 'expense',
-        page_size: 5,
-        sort_by: 'created_at',
-        sort_order: 'desc'
-      })
-  });
+  const { data: recentTransactionsData, isLoading: recentLoading } = useTransactionRowsQuery(
+    {
+      type: 'expense',
+      page_size: 5,
+      sort_by: 'created_at',
+      sort_order: 'desc'
+    },
+    {
+      queryKey: queryKeys.transactions.recent(5, 'expense')
+    }
+  );
 
   const recentTransactions = useMemo(() => {
-    if (!recentTransactionsData) return [];
-    // 兼容数组和对象两种格式（apiClient 会解包返回数组）
-    return (
-      Array.isArray(recentTransactionsData)
-        ? recentTransactionsData
-        : recentTransactionsData.data || recentTransactionsData.transactions || []
-    ) as Transaction[];
+    return (recentTransactionsData || []) as Transaction[];
   }, [recentTransactionsData]);
 
   // 去重后的最近记录（基于 category + amount + note/merchant 组合）
@@ -353,31 +347,28 @@ export default function AddPage() {
     return deduplicated;
   }, [recentTransactions]);
 
-  const { data: frequentAmountData } = useQuery({
-    queryKey: queryKeys.transactions.frequentAmounts(currency),
-    queryFn: () => {
+  const { data: frequentAmountData } = useTransactionRowsQuery(
+    useMemo(() => {
       const end = new Date();
       const start = new Date();
       start.setDate(start.getDate() - 30);
-      return transactionsApi.list({
-        type: 'expense',
+      return {
+        type: 'expense' as const,
         currency,
         start_date: formatDateToLocal(start),
         end_date: formatDateToLocal(end),
         page_size: 100,
-        sort_by: 'date',
-        sort_order: 'desc'
-      });
+        sort_by: 'date' as const,
+        sort_order: 'desc' as const
+      };
+    }, [currency]),
+    {
+      queryKey: queryKeys.transactions.frequentAmounts(currency)
     }
-  });
+  );
 
   const quickAmounts = useMemo(() => {
-    // 兼容数组和对象两种格式（apiClient 会解包返回数组）
-    const rows = (
-      Array.isArray(frequentAmountData)
-        ? frequentAmountData
-        : frequentAmountData?.data || frequentAmountData?.transactions || []
-    ) as Transaction[];
+    const rows = (frequentAmountData || []) as Transaction[];
     if (!rows.length) return fallbackAmounts;
 
     const counts = new Map<number, number>();

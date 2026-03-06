@@ -36,9 +36,11 @@ type CreateTransactionHookOptions = MutationCallbacks<Transaction, CreateTransac
 };
 
 type TransactionRowsQueryOptions = Omit<
-  UseQueryOptions<Transaction[], Error, Transaction[], ReturnType<typeof queryKeys.transactions.list>>,
-  'queryKey' | 'queryFn'
->;
+  UseQueryOptions<Transaction[], Error, Transaction[], readonly unknown[]>,
+  'queryFn'
+> & {
+  queryKey?: readonly unknown[];
+};
 
 /**
  * 获取交易列表
@@ -55,7 +57,7 @@ export function useTransactionRowsQuery(
   options?: TransactionRowsQueryOptions
 ) {
   return useQuery({
-    queryKey: queryKeys.transactions.list(params),
+    queryKey: options?.queryKey ?? queryKeys.transactions.list(params),
     queryFn: () => transactionsApi.listRows(params),
     ...options,
   });
