@@ -28,6 +28,10 @@ export async function listTransactionsByRange(
   return transactionQueryService.listByRange(month, range, startDate, endDate);
 }
 
+export async function getTransactionById(id: string) {
+  return transactionQueryService.findById(id);
+}
+
 /**
  * 查询昨天的交易
  */

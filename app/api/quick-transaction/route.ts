@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPrismaClient } from '@/lib/clients/db';
-import { revalidateTag, revalidatePath } from 'next/cache';
+import { revalidatePath } from 'next/cache';
 import { formatDateToLocal } from '@/lib/utils/date';
 import { z } from 'zod';
 import { validateRequest, commonSchemas } from '@/lib/utils/validation';
 import { withErrorHandler } from '@/lib/domain/errors/errorHandler';
 import { logger } from '@/lib/services/logging';
+import { revalidateTransactions } from '@/lib/services/transaction/revalidation.server';
 
 export const runtime = 'nodejs';
 
@@ -67,7 +68,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
   });
 
   // 刷新缓存 - 确保页面显示最新数据
-  revalidateTag('transactions');
+  revalidateTransactions();
   revalidatePath('/');
   revalidatePath('/records');
 

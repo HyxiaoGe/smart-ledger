@@ -5,8 +5,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withErrorHandler } from '@/lib/domain/errors/errorHandler';
-import { revalidateTag } from 'next/cache';
 import { restoreTransaction } from '@/lib/services/transactions.server';
+import { revalidateTransactions } from '@/lib/services/transaction/revalidation.server';
 
 export const runtime = 'nodejs';
 
@@ -24,8 +24,7 @@ export const POST = withErrorHandler(async (
   const { id } = await params;
   await restoreTransaction(id);
 
-  // 刷新缓存
-  revalidateTag('transactions');
+  revalidateTransactions();
 
   return NextResponse.json({
     success: true,

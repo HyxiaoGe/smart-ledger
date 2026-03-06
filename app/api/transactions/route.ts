@@ -8,9 +8,9 @@ import { getTransactionRepository } from '@/lib/infrastructure/repositories/inde
 import { withErrorHandler } from '@/lib/domain/errors/errorHandler';
 import { z } from 'zod';
 import { validateRequest, commonSchemas } from '@/lib/utils/validation';
-import { revalidateTag } from 'next/cache';
 import type { TransactionType, Currency } from '@/types/domain/transaction';
 import { createTransaction } from '@/lib/services/transactions.server';
+import { revalidateTransactionWrite } from '@/lib/services/transaction/revalidation.server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -135,9 +135,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     product: data.product || undefined,
   });
 
-  // 刷新缓存
-  revalidateTag('transactions');
-  revalidateTag('common-notes');
+  revalidateTransactionWrite({ includeCommonNotes: true });
 
   return NextResponse.json({
     success: true,

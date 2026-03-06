@@ -4,14 +4,17 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getTransactionRepository } from '@/lib/infrastructure/repositories/index.server';
 import { withErrorHandler } from '@/lib/domain/errors/errorHandler';
 import { z } from 'zod';
 import { validateRequest, commonSchemas } from '@/lib/utils/validation';
-import { revalidateTag } from 'next/cache';
 import { NotFoundError } from '@/lib/domain/errors/AppError';
 import type { TransactionType, Currency } from '@/types/domain/transaction';
-import { deleteTransaction, updateTransaction } from '@/lib/services/transactions.server';
+import {
+  deleteTransaction,
+  getTransactionById,
+  updateTransaction,
+} from '@/lib/services/transactions.server';
+import { revalidateTransactions } from '@/lib/services/transaction/revalidation.server';
 
 export const runtime = 'nodejs';
 
@@ -41,9 +44,7 @@ export const GET = withErrorHandler(async (
   { params }: RouteParams
 ) => {
   const { id } = await params;
-  const repository = getTransactionRepository();
-
-  const transaction = await repository.findById(id);
+  const transaction = await getTransactionById(id);
 
   if (!transaction) {
     throw new NotFoundError(`交易不存在: ${id}`);
@@ -85,8 +86,7 @@ export const PUT = withErrorHandler(async (
     product: data.product ?? undefined,
   });
 
-  // 刷新缓存
-  revalidateTag('transactions');
+  revalidateTransactions();
 
   return NextResponse.json({
     success: true,
@@ -109,8 +109,7 @@ export const DELETE = withErrorHandler(async (
   const { id } = await params;
   await deleteTransaction(id);
 
-  // 刷新缓存
-  revalidateTag('transactions');
+  revalidateTransactions();
 
   return NextResponse.json({
     success: true,
