@@ -100,13 +100,6 @@ export default function AddPage() {
     return [10, 15, 20, 30, 50];
   }, [currency]);
 
-  // 快速支付方式列表（预留功能，暂未使用）
-  const _quickPaymentMethods = useMemo(() => {
-    if (!paymentMethods.length) return [];
-    const sorted = [...paymentMethods].sort((a, b) => Number(b.is_default) - Number(a.is_default));
-    return sorted.slice(0, 3);
-  }, [paymentMethods]);
-
   // 防抖提交函数（依赖数组为空是故意的，避免函数重建）
   const debouncedSubmit = useCallback(
     async (formData: {
