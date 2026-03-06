@@ -6,10 +6,10 @@ import { EmptyState } from '@/components/EmptyState';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { FileText } from 'lucide-react';
 import Link from 'next/link';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { paymentMethodsApi, PaymentMethod } from '@/lib/api/services/payment-methods';
 import { transactionsApi } from '@/lib/api/services/transactions';
-import { enhancedDataSync } from '@/lib/core/EnhancedDataSync';
+import { applyTransactionWriteEffects } from '@/lib/api/transactionWriteEffects';
 import {
   Transaction,
   TransactionGroupedListProps,
@@ -25,6 +25,7 @@ export function TransactionGroupedList({
   className,
   defaultExpandedDates
 }: TransactionGroupedListProps) {
+  const queryClient = useQueryClient();
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   const initRef = useRef(false);
 
@@ -103,7 +104,12 @@ export function TransactionGroupedList({
       setEditingId(null);
       setForm({});
       setShowEditToast(true);
-      enhancedDataSync.notifyTransactionUpdated(updatedTransaction, true);
+      applyTransactionWriteEffects({
+        action: 'update',
+        queryClient,
+        transactionId: variables.id,
+        payload: updatedTransaction,
+      });
     },
     onError: (err: unknown) => {
       const errorMessage = err instanceof Error ? err.message : '更新失败';
@@ -120,7 +126,12 @@ export function TransactionGroupedList({
         setRecentlyDeleted(transaction);
         setTransactions((ts) => ts.filter((t) => t.id !== id));
         setShowDeleteToast(true);
-        enhancedDataSync.notifyTransactionDeleted(transaction, true);
+        applyTransactionWriteEffects({
+          action: 'delete',
+          queryClient,
+          transactionId: id,
+          payload: transaction,
+        });
       }
     },
     onError: (err: unknown) => {
@@ -132,7 +143,7 @@ export function TransactionGroupedList({
   // 恢复交易的 mutation
   const restoreMutation = useMutation({
     mutationFn: (id: string) => transactionsApi.restore(id),
-    onSuccess: () => {
+    onSuccess: (restoredTransaction) => {
       if (recentlyDeleted) {
         setTransactions((ts) => [recentlyDeleted, ...ts].sort((a, b) =>
           new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -140,6 +151,12 @@ export function TransactionGroupedList({
         setShowUndoToast(true);
         setRecentlyDeleted(null);
       }
+      applyTransactionWriteEffects({
+        action: 'restore',
+        queryClient,
+        transactionId: restoredTransaction?.id,
+        payload: restoredTransaction,
+      });
     },
     onError: () => {
       setError('撤销失败，请重试');

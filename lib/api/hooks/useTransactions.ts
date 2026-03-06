@@ -12,7 +12,7 @@ import {
   type CreateTransactionParams,
   type UpdateTransactionParams,
 } from '../services/transactions';
-import { enhancedDataSync, markTransactionsDirty } from '@/lib/core/EnhancedDataSync';
+import { applyTransactionWriteEffects } from '../transactionWriteEffects';
 
 /**
  * 获取交易列表
@@ -54,12 +54,13 @@ export function useCreateTransaction() {
   return useMutation({
     mutationFn: (data: CreateTransactionParams) => transactionsApi.create(data),
     onSuccess: (newTransaction) => {
-      // 使所有交易列表缓存失效
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
-
-      // 触发跨标签页同步
-      enhancedDataSync.notifyTransactionAdded(newTransaction);
-      markTransactionsDirty();
+      applyTransactionWriteEffects({
+        action: 'create',
+        queryClient,
+        transactionId: newTransaction.id,
+        payload: newTransaction,
+        clearCommonNotesCache: Boolean(newTransaction.note?.trim()),
+      });
     },
   });
 }
@@ -73,18 +74,12 @@ export function useUpdateTransaction() {
   return useMutation({
     mutationFn: (data: UpdateTransactionParams) => transactionsApi.update(data),
     onSuccess: (updatedTransaction, variables) => {
-      // 更新单个交易的缓存
-      queryClient.setQueryData(
-        queryKeys.transactions.detail(variables.id),
-        updatedTransaction
-      );
-
-      // 使列表缓存失效
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
-
-      // 触发跨标签页同步
-      enhancedDataSync.notifyTransactionUpdated(updatedTransaction);
-      markTransactionsDirty();
+      applyTransactionWriteEffects({
+        action: 'update',
+        queryClient,
+        transactionId: variables.id,
+        payload: updatedTransaction,
+      });
     },
   });
 }
@@ -98,15 +93,11 @@ export function useDeleteTransaction() {
   return useMutation({
     mutationFn: (id: string) => transactionsApi.delete(id),
     onSuccess: (_, id) => {
-      // 移除单个交易的缓存
-      queryClient.removeQueries({ queryKey: queryKeys.transactions.detail(id) });
-
-      // 使列表缓存失效
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
-
-      // 触发跨标签页同步
-      enhancedDataSync.notifyTransactionDeleted({ id });
-      markTransactionsDirty();
+      applyTransactionWriteEffects({
+        action: 'delete',
+        queryClient,
+        transactionId: id,
+      });
     },
   });
 }
@@ -119,13 +110,13 @@ export function useRestoreTransaction() {
 
   return useMutation({
     mutationFn: (id: string) => transactionsApi.restore(id),
-    onSuccess: () => {
-      // 使所有交易列表缓存失效
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
-
-      // 触发跨标签页同步
-      enhancedDataSync.notifyTransactionAdded();
-      markTransactionsDirty();
+    onSuccess: (restoredTransaction, id) => {
+      applyTransactionWriteEffects({
+        action: 'restore',
+        queryClient,
+        transactionId: id,
+        payload: restoredTransaction,
+      });
     },
   });
 }

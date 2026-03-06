@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { TransactionType, Currency, Transaction } from '@/types/domain/transaction';
 import { SUPPORTED_CURRENCIES, DEFAULT_CURRENCY } from '@/lib/config/config';
 import { useCategories } from '@/contexts/CategoryContext';
@@ -12,22 +12,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DateInput } from '@/components/features/input/DateInput';
 import { SmartNoteInput } from '@/components/features/input/SmartNoteInput';
 import { MerchantInput, SubcategorySelect } from '@/components/features/input/MerchantInput';
-import { enhancedDataSync, markTransactionsDirty } from '@/lib/core/EnhancedDataSync';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { paymentMethodsApi } from '@/lib/api/services/payment-methods';
 import { transactionsApi } from '@/lib/api/services/transactions';
-import { aiApi } from '@/lib/api/services/ai';
 import { Clock } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { formatDateToLocal } from '@/lib/utils/date';
 import { logger } from '@/lib/services/logging';
-import { STORAGE_KEYS } from '@/lib/config/storageKeys';
 import { getErrorMessage } from '@/types/common';
+import { applyTransactionWriteEffects } from '@/lib/api/transactionWriteEffects';
 
 import type { PaymentMethod } from '@/lib/api/services/payment-methods';
 import { SmartSuggestionPanel } from './components';
 
 export default function AddPage() {
+  const queryClient = useQueryClient();
   const type: TransactionType = 'expense'; // 固定为支出类型
   const { categories, isLoading: categoriesLoading, getMerchantsForCategory } = useCategories();
   const [category, setCategory] = useState<string>('food');
@@ -194,29 +193,26 @@ export default function AddPage() {
 
         setShowToast(true);
 
-        // 触发增强版同步事件（会自动显示 Toast 通知）
-        enhancedDataSync.notifyTransactionAdded({
-          type,
-          category: formData.category,
-          amount: formData.amt,
-          note: formData.note,
-          date: dateStr, // 使用已经格式化好的本地日期字符串
-          currency: formData.currency,
-          merchant: formData.merchant,
-          subcategory: formData.subcategory,
-          product: formData.product
+        applyTransactionWriteEffects({
+          action: 'create',
+          queryClient,
+          transactionId,
+          payload: {
+            ...result,
+            type,
+            category: formData.category,
+            amount: formData.amt,
+            note: formData.note,
+            date: dateStr,
+            currency: formData.currency,
+            merchant: formData.merchant,
+            subcategory: formData.subcategory,
+            product: formData.product,
+            payment_method: formData.paymentMethod || undefined
+          },
+          clearCommonNotesCache: Boolean(formData.note?.trim()),
+          revalidateServer: true,
         });
-        markTransactionsDirty();
-
-        // 异步刷新缓存（带错误日志）
-        aiApi.revalidate('transactions').catch((err) => {
-          console.error('缓存刷新失败:', err);
-        });
-
-        // 清除常用备注本地缓存（API 层已更新数据库，这里只清缓存）
-        if (formData.note && formData.note.trim()) {
-          localStorage.removeItem(STORAGE_KEYS.COMMON_NOTES_CACHE);
-        }
 
         // 延迟重置表单，让用户看到成功提示
         setTimeout(() => {

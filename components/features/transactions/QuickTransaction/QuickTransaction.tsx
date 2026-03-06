@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { generateTimeContext } from '@/lib/domain/noteContext';
-import { STORAGE_KEYS } from '@/lib/config/storageKeys';
 import { Zap, Clock, TrendingUp, CheckCircle } from 'lucide-react';
 import { useQuickSuggestions, useCreateTransaction } from '@/lib/api/hooks';
 import type { QuickTransactionSuggestion } from '@/lib/api/services/ai';
@@ -52,9 +51,6 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
         date,
         currency: 'CNY',
       });
-
-      // 清除本地缓存
-      localStorage.removeItem(STORAGE_KEYS.COMMON_NOTES_CACHE);
 
       // 显示成功提示
       setLastSuccessTransaction(suggestion);
