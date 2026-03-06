@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import type { TransactionType, Currency, Transaction } from '@/types/domain/transaction';
 import { SUPPORTED_CURRENCIES, DEFAULT_CURRENCY } from '@/lib/config/config';
 import { useCategories } from '@/contexts/CategoryContext';
@@ -20,13 +20,13 @@ import { useSearchParams } from 'next/navigation';
 import { formatDateToLocal } from '@/lib/utils/date';
 import { logger } from '@/lib/services/logging';
 import { getErrorMessage } from '@/types/common';
-import { applyTransactionWriteEffects } from '@/lib/api/transactionWriteEffects';
+import { useCreateTransaction } from '@/lib/api/hooks';
+import { queryKeys } from '@/lib/api/queryClient';
 
 import type { PaymentMethod } from '@/lib/api/services/payment-methods';
 import { SmartSuggestionPanel } from './components';
 
 export default function AddPage() {
-  const queryClient = useQueryClient();
   const type: TransactionType = 'expense'; // 固定为支出类型
   const { categories, isLoading: categoriesLoading, getMerchantsForCategory } = useCategories();
   const [category, setCategory] = useState<string>('food');
@@ -60,6 +60,11 @@ export default function AddPage() {
   const amountInputRef = useRef<HTMLInputElement | null>(null);
   const parsedAmount = useMemo(() => parseAmount(amountText), [amountText]);
   const invalidAmount = parsedAmount <= 0;
+  const createTransaction = useCreateTransaction({
+    effectOptions: {
+      revalidateServer: true,
+    },
+  });
 
   function formatThousand(n: number) {
     return n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
@@ -129,7 +134,7 @@ export default function AddPage() {
         const dateStr = formatDateToLocal(formData.date);
 
         // 使用 API 服务创建交易
-        const result = await transactionsApi.create({
+        const result = await createTransaction.mutateAsync({
           type,
           category: formData.category,
           amount: formData.amt,
@@ -192,27 +197,6 @@ export default function AddPage() {
         }
 
         setShowToast(true);
-
-        applyTransactionWriteEffects({
-          action: 'create',
-          queryClient,
-          transactionId,
-          payload: {
-            ...result,
-            type,
-            category: formData.category,
-            amount: formData.amt,
-            note: formData.note,
-            date: dateStr,
-            currency: formData.currency,
-            merchant: formData.merchant,
-            subcategory: formData.subcategory,
-            product: formData.product,
-            payment_method: formData.paymentMethod || undefined
-          },
-          clearCommonNotesCache: Boolean(formData.note?.trim()),
-          revalidateServer: true,
-        });
 
         // 延迟重置表单，让用户看到成功提示
         setTimeout(() => {
@@ -333,7 +317,7 @@ export default function AddPage() {
   });
 
   const { data: recentTransactionsData, isLoading: recentLoading } = useQuery({
-    queryKey: ['recent-transactions'],
+    queryKey: queryKeys.transactions.recent(5, 'expense'),
     queryFn: () =>
       transactionsApi.list({
         type: 'expense',
@@ -370,7 +354,7 @@ export default function AddPage() {
   }, [recentTransactions]);
 
   const { data: frequentAmountData } = useQuery({
-    queryKey: ['frequent-amounts', currency],
+    queryKey: queryKeys.transactions.frequentAmounts(currency),
     queryFn: () => {
       const end = new Date();
       const start = new Date();

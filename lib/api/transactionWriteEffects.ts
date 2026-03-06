@@ -27,10 +27,8 @@ function invalidateTransactionQueries(queryClient?: QueryClient) {
   if (!queryClient) return;
 
   void queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
-  void queryClient.invalidateQueries({
-    predicate: ({ queryKey }) =>
-      queryKey[0] === 'recent-transactions' || queryKey[0] === 'frequent-amounts',
-  });
+  void queryClient.invalidateQueries({ queryKey: queryKeys.transactions.recent() });
+  void queryClient.invalidateQueries({ queryKey: queryKeys.transactions.frequentAmounts() });
 }
 
 function invalidateCommonNoteQueries(queryClient?: QueryClient) {
