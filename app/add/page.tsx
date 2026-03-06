@@ -59,6 +59,34 @@ export default function AddPage() {
     },
   });
   const isSubmitting = isSubmitScheduled || createTransaction.isPending;
+  const prefillData = useMemo(() => {
+    const categoryParam = searchParams.get('category');
+    const amountParam = searchParams.get('amount');
+    const noteParam = searchParams.get('note');
+    const currencyParam = searchParams.get('currency');
+    const merchantParam = searchParams.get('merchant');
+    const paymentParam = searchParams.get('payment_method');
+
+    if (
+      !categoryParam &&
+      !amountParam &&
+      !noteParam &&
+      !currencyParam &&
+      !merchantParam &&
+      !paymentParam
+    ) {
+      return null;
+    }
+
+    return {
+      category: categoryParam,
+      amount: amountParam,
+      note: noteParam,
+      currency: currencyParam,
+      merchant: merchantParam,
+      paymentMethod: paymentParam,
+    };
+  }, [searchParams]);
 
   function formatThousand(n: number) {
     return n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
@@ -369,38 +397,22 @@ export default function AddPage() {
 
   useEffect(() => {
     if (prefillAppliedRef.current) return;
-    if (!searchParams) return;
-
-    const categoryParam = searchParams.get('category');
-    const amountParam = searchParams.get('amount');
-    const noteParam = searchParams.get('note');
-    const currencyParam = searchParams.get('currency');
-    const merchantParam = searchParams.get('merchant');
-    const paymentParam = searchParams.get('payment_method');
-
-    if (
-      !categoryParam &&
-      !amountParam &&
-      !noteParam &&
-      !currencyParam &&
-      !merchantParam &&
-      !paymentParam
-    ) {
+    if (!prefillData) {
       return;
     }
 
-    if (categoryParam) setCategory(categoryParam);
-    if (amountParam && !Number.isNaN(Number(amountParam))) {
-      setAmountText(formatThousand(Number(amountParam)));
+    if (prefillData.category) setCategory(prefillData.category);
+    if (prefillData.amount && !Number.isNaN(Number(prefillData.amount))) {
+      setAmountText(formatThousand(Number(prefillData.amount)));
     }
-    if (noteParam) setNote(noteParam);
-    if (currencyParam) setCurrency(currencyParam as Currency);
-    if (merchantParam) setMerchant(merchantParam);
-    if (paymentParam) setPaymentMethod(paymentParam);
-    if (merchantParam || paymentParam) setShowAdvanced(true);
+    if (prefillData.note) setNote(prefillData.note);
+    if (prefillData.currency) setCurrency(prefillData.currency as Currency);
+    if (prefillData.merchant) setMerchant(prefillData.merchant);
+    if (prefillData.paymentMethod) setPaymentMethod(prefillData.paymentMethod);
+    if (prefillData.merchant || prefillData.paymentMethod) setShowAdvanced(true);
 
     prefillAppliedRef.current = true;
-  }, [searchParams]);
+  }, [prefillData]);
 
   // 组件卸载时清理
   React.useEffect(() => {
