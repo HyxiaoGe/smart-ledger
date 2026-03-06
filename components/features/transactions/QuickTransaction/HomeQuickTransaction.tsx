@@ -52,10 +52,7 @@ export function HomeQuickTransaction({ onSuccess }: HomeQuickTransactionProps) {
 
   const handleSuccess = () => {
     onSuccess?.();
-    // 快速记账成功后可以刷新页面数据
-    setTimeout(() => {
-      window.location.reload();
-    }, 1000);
+    setShowCard(false);
   };
 
   // 自动动画和说话效果
