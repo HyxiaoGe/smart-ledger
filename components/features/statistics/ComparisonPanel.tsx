@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Trophy, Users, ChevronDown, RefreshCw, Award, ArrowUp, ArrowDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAllDataSyncEvents } from '@/hooks/useEnhancedDataSync';
-import { transactionsApi } from '@/lib/api/services/transactions';
+import { getTransactionRows, transactionsApi } from '@/lib/api/services/transactions';
 import { queryKeys } from '@/lib/api/queryClient';
 
 interface ComparisonData {
@@ -76,7 +76,7 @@ export function ComparisonPanel({
   const data = useMemo<ComparisonData | null>(() => {
     if (!transactionsData) return null;
 
-    const currentData = transactionsData.data || [];
+    const currentData = getTransactionRows(transactionsData);
     const expenseData = currentData.filter((t: { type: string }) => t.type === 'expense') || [];
     const incomeData = currentData.filter((t: { type: string }) => t.type === 'income') || [];
 

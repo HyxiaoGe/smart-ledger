@@ -7,7 +7,7 @@ import { TrendingUp, BarChart, ChevronDown, RefreshCw, Target } from 'lucide-rea
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAllDataSyncEvents } from '@/hooks/useEnhancedDataSync';
 import { useQuery } from '@tanstack/react-query';
-import { transactionsApi } from '@/lib/api/services/transactions';
+import { getTransactionRows, transactionsApi } from '@/lib/api/services/transactions';
 import { queryKeys } from '@/lib/api/queryClient';
 
 interface CategoryPrediction {
@@ -76,7 +76,7 @@ export function ConsumptionPredictionPanel({
         type: 'expense',
         page_size: 1000
       });
-      const currentData = currentResult.data || [];
+      const currentData = getTransactionRows(currentResult);
 
       // 获取历史数据用于预测
       const lastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1).toISOString().slice(0, 7);
@@ -96,8 +96,8 @@ export function ConsumptionPredictionPanel({
           page_size: 1000
         })
       ]);
-      const lastMonthData = lastMonthResult.data || [];
-      const twoMonthsAgoData = twoMonthsAgoResult.data || [];
+      const lastMonthData = getTransactionRows(lastMonthResult);
+      const twoMonthsAgoData = getTransactionRows(twoMonthsAgoResult);
 
       // 计算当前月总支出
       const currentMonthTotal = currentData?.reduce((sum, t) => sum + t.amount, 0) || 0;

@@ -7,7 +7,7 @@ import { CategoryChip } from '@/components/CategoryChip';
 import { useCategories } from '@/contexts/CategoryContext';
 import { formatCurrency } from '@/lib/utils/format';
 import { EmptyState } from '@/components/EmptyState';
-import { transactionsApi } from '@/lib/api/services/transactions';
+import { getTransactionRows, transactionsApi } from '@/lib/api/services/transactions';
 import { queryKeys } from '@/lib/api/queryClient';
 import { FileText } from 'lucide-react';
 import Link from 'next/link';
@@ -63,18 +63,19 @@ export function TransactionList({
 
   // 当数据变化时更新行列表
   useEffect(() => {
-    if (transactionsData?.data) {
+    const currentRows = getTransactionRows(transactionsData) as Row[];
+    if (currentRows.length > 0) {
       if (page === 1) {
-        setAllRows(transactionsData.data as Row[]);
+        setAllRows(currentRows);
       } else {
-        setAllRows((prev) => [...prev, ...(transactionsData.data as Row[])]);
+        setAllRows((prev) => [...prev, ...currentRows]);
       }
     }
   }, [transactionsData, page]);
 
   // 计算是否还有更多数据
   const hasMore = useMemo(() => {
-    const currentData = transactionsData?.data || [];
+    const currentData = getTransactionRows(transactionsData);
     return currentData.length >= 50;
   }, [transactionsData]);
 

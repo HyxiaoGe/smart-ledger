@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { formatDateToLocal } from '@/lib/utils/date';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { paymentMethodsApi, PaymentMethod } from '@/lib/api/services/payment-methods';
-import { transactionsApi } from '@/lib/api/services/transactions';
+import { transactionsApi, getTransactionRows } from '@/lib/api/services/transactions';
 import { queryKeys } from '@/lib/api/queryClient';
 import { quickTransactionApi } from '@/lib/api/services/quick-transaction';
 import type { QuickTransactionCardProps, QuickTransactionItem } from './types';
@@ -65,19 +65,18 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
     }),
     queryFn: async () => {
       const today = getTodayDateString();
-      const result = await transactionsApi.list({
+      return transactionsApi.listRows({
         start_date: today,
         end_date: today,
-        page_size: 100
+        page_size: 100,
       });
-      return result.data || [];
     },
     enabled: open,
   });
 
   // 计算今日已记录的项目
   const todayItems = useMemo(() => {
-    const data = todayTransactionsData || [];
+    const data = getTransactionRows(todayTransactionsData);
     const items = new Set<string>();
 
     data.forEach((transaction: { note?: string }) => {

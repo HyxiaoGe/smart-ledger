@@ -56,6 +56,14 @@ export interface TransactionListResponse {
   total?: number;
 }
 
+export function getTransactionRows(
+  response?: TransactionListResponse | Transaction[]
+): Transaction[] {
+  if (!response) return [];
+  if (Array.isArray(response)) return response;
+  return response.data || response.transactions || [];
+}
+
 /**
  * 交易 API 服务
  */
@@ -66,6 +74,14 @@ export const transactionsApi = {
   list(params?: TransactionListParams): Promise<TransactionListResponse> {
     const query = buildQueryString(params || {});
     return apiClient.get<TransactionListResponse>(`/api/transactions${query}`);
+  },
+
+  /**
+   * 获取交易列表行数据
+   */
+  async listRows(params?: TransactionListParams): Promise<Transaction[]> {
+    const response = await this.list(params);
+    return getTransactionRows(response);
   },
 
   /**
