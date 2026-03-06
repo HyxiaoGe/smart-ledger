@@ -55,7 +55,8 @@ export class PrismaTransactionRepository implements ITransactionRepository {
     // 计算分页
     const page = pagination?.page || 1;
     const pageSize = pagination?.pageSize || 20;
-    const skip = (page - 1) * pageSize;
+    const skip = pagination ? (page - 1) * pageSize : undefined;
+    const take = pagination ? pageSize : undefined;
 
     // 并行执行查询和计数
     const [data, total] = await Promise.all([
@@ -63,18 +64,20 @@ export class PrismaTransactionRepository implements ITransactionRepository {
         where,
         orderBy,
         skip,
-        take: pageSize,
+        take,
       }),
       this.prisma.transactions.count({ where }),
     ]);
+
+    const resolvedPageSize = pagination ? pageSize : total || data.length || 0;
 
     return {
       data: data.map(this.mapToEntity),
       total,
       page,
-      pageSize,
-      totalPages: Math.ceil(total / pageSize),
-      hasMore: total > page * pageSize,
+      pageSize: resolvedPageSize,
+      totalPages: resolvedPageSize > 0 ? Math.ceil(total / resolvedPageSize) : 1,
+      hasMore: pagination ? total > page * pageSize : false,
     };
   }
 

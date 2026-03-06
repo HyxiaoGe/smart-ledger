@@ -1,11 +1,6 @@
 import nextDynamic from 'next/dynamic';
 import { partitionExpenseTransactions } from '@/lib/domain/records';
-import {
-  getCurrentMonthSummary,
-  listTransactionsByRange,
-  listYesterdayTransactions,
-  getAIAnalysisData
-} from '@/lib/services/transactions.server';
+import { getTransactionRecordsPageData } from '@/lib/services/transactions.server';
 import { getMonthlyBudgetStatus, getCurrentYearMonth } from '@/lib/services/budgetService.server';
 import { TabsRangePicker } from '@/components/shared/TabsRangePicker';
 import { CollapsibleTransactionList } from '@/components/features/transactions/TransactionList/CollapsibleList';
@@ -47,23 +42,25 @@ export default async function RecordsPage({
   // 获取当前年月用于预算查询
   const { year, month: currentMonth } = getCurrentYearMonth();
 
-  const [mainResult, yesterdayData, monthSummary, aiAnalysisData, budgetStatuses] = await Promise.all([
-    listTransactionsByRange(month, range, start, end).catch(() => ({
-      rows: [],
-      monthLabel: '全部'
-    })),
-    listYesterdayTransactions(range).catch(() => []),
-    getCurrentMonthSummary().catch(() => ({
-      monthItems: [],
-      monthTotalAmount: 0,
-      monthTotalCount: 0
-    })),
-    getAIAnalysisData(month).catch(() => ({
-      currentMonthFull: [],
-      lastMonth: [],
-      currentMonthTop20: [],
-      currentMonthStr: '',
-      lastMonthStr: ''
+  const [recordsPageData, budgetStatuses] = await Promise.all([
+    getTransactionRecordsPageData(month, range, start, end).catch(() => ({
+      mainResult: {
+        rows: [],
+        monthLabel: '全部'
+      },
+      yesterdayData: [],
+      monthSummary: {
+        monthItems: [],
+        monthTotalAmount: 0,
+        monthTotalCount: 0
+      },
+      aiAnalysisData: {
+        currentMonthFull: [],
+        lastMonth: [],
+        currentMonthTop20: [],
+        currentMonthStr: '',
+        lastMonthStr: ''
+      }
     })),
     getMonthlyBudgetStatus(year, currentMonth).catch(() => [])
   ]);
@@ -72,6 +69,7 @@ export default async function RecordsPage({
   const totalBudgetRecord = budgetStatuses.find(b => !b.category_key);
   const monthlyBudget = totalBudgetRecord?.budget_amount || 5000;
 
+  const { mainResult, yesterdayData, monthSummary, aiAnalysisData } = recordsPageData;
   const rows = mainResult.rows;
   const monthLabel = mainResult.monthLabel;
 

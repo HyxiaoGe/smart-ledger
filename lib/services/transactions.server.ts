@@ -9,7 +9,9 @@
 import {
   transactionQueryService,
   transactionSummaryService,
-  transactionAnalyticsService
+  transactionAnalyticsService,
+  transactionDashboardService,
+  transactionRecordsPageService
 } from '@/lib/services/transaction/index.server';
 
 /**
@@ -53,10 +55,41 @@ export async function getPredictionData(monthsToAnalyze: number = 6) {
 }
 
 /**
+ * 获取首页交易看板数据
+ */
+export async function getTransactionDashboardData(params: {
+  currency: string;
+  month?: string;
+  range?: string;
+  startDate?: string;
+  endDate?: string;
+}) {
+  return transactionDashboardService.getDashboardData(params);
+}
+
+/**
+ * 获取记录页交易主数据
+ */
+export async function getTransactionRecordsPageData(
+  month?: string,
+  range?: string,
+  startDate?: string,
+  endDate?: string
+) {
+  return transactionRecordsPageService.getPageData({
+    month,
+    range,
+    startDate,
+    endDate
+  });
+}
+
+/**
  * 清空所有 Transaction 服务的缓存
  */
 export function clearAllTransactionCaches(): void {
   transactionQueryService.clearCache();
   transactionSummaryService.clearCache();
   transactionAnalyticsService.clearCache();
+  transactionDashboardService.clearCache();
 }

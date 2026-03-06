@@ -1,6 +1,6 @@
 import { getPrismaClient } from '@/lib/clients/db';
-import { getExtendedQuickRange, formatMonth, formatDateToLocal, parseLocalDate, type ExtendedQuickRange } from '@/lib/utils/date';
-import type { TransactionRow } from '@/types/domain/transaction';
+import { formatMonth } from '@/lib/utils/date';
+import { getTransactionDashboardData } from '@/lib/services/transactions.server';
 
 type RecurringExpense = {
   id: string;
@@ -20,7 +20,6 @@ type RecurringExpense = {
 };
 
 export type PageData = {
-  // 当前范围统计
   rangeExpense: number;
   rangeIncome: number;
   rangeCount: number;
@@ -29,487 +28,43 @@ export type PageData = {
   rangeRows: any[];
   isSingleDay: boolean;
   isToday: boolean;
-
-  // 环比数据（上一周期）
   prevRangeExpense: number;
   prevRangeLabel: string;
-
-  // 动态趋势数据
   trend: { name: string; expense: number }[];
-
-  // 分类饼图
   pie: { name: string; value: number }[];
-
-  // Top 10 支出
   top10: any[];
-
-  // 日历热力图数据
   calendarData: { date: string; amount: number; count: number }[];
   calendarYear: number;
   calendarMonth: number;
-
-  // 固定支出
   recurringExpenses: RecurringExpense[];
 };
 
-/**
- * 解析月份标签（兼容旧逻辑）
- */
 export function resolveMonthLabel(monthParam?: string): string {
   return monthParam || formatMonth(new Date());
 }
 
-/**
- * 获取上一周期的范围类型
- */
-function getPrevRangeType(rangeParam: string): ExtendedQuickRange {
-  const prevMap: Record<string, ExtendedQuickRange> = {
-    today: 'yesterday',
-    yesterday: 'dayBeforeYesterday',
-    dayBeforeYesterday: 'dayBeforeYesterday', // 没有更早的，保持不变
-    thisWeek: 'lastWeek',
-    lastWeek: 'weekBeforeLast',
-    weekBeforeLast: 'weekBeforeLast',
-    thisMonth: 'lastMonth',
-    lastMonth: 'monthBeforeLast',
-    monthBeforeLast: 'monthBeforeLast',
-    thisQuarter: 'lastQuarter',
-    lastQuarter: 'lastQuarter',
-  };
-  return prevMap[rangeParam] || 'yesterday';
-}
-
-/**
- * 获取范围的粒度类型
- */
-function getRangeGranularity(rangeParam: string): 'day' | 'week' | 'month' | 'quarter' {
-  if (['today', 'yesterday', 'dayBeforeYesterday'].includes(rangeParam)) return 'day';
-  if (['thisWeek', 'lastWeek', 'weekBeforeLast'].includes(rangeParam)) return 'week';
-  if (['thisMonth', 'lastMonth', 'monthBeforeLast'].includes(rangeParam)) return 'month';
-  if (['thisQuarter', 'lastQuarter'].includes(rangeParam)) return 'quarter';
-  return 'day'; // custom 默认为日
-}
-
-/**
- * 计算日期范围的天数
- */
-function getDaysInRange(start: string, end: string): number {
-  const startDate = new Date(start);
-  const endDate = new Date(end);
-  return Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
-}
-
-/**
- * 生成趋势数据（根据粒度聚合）
- */
-function generateTrendData(
-  rows: any[],
-  granularity: 'day' | 'week' | 'month' | 'quarter',
-  startDate: string,
-  endDate: string
-): { name: string; expense: number }[] {
-  const expenseRows = rows.filter((r) => r.type === 'expense');
-
-  if (granularity === 'day') {
-    // 日粒度：不显示趋势（只有一天的数据）
-    return [];
-  }
-
-  if (granularity === 'week') {
-    // 周粒度：显示周一~周日
-    const dayNames = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
-    const dailyExpense = new Map<number, number>();
-
-    for (const row of expenseRows) {
-      const date = row.date instanceof Date ? row.date : new Date(row.date);
-      let dayOfWeek = date.getDay(); // 0=周日, 1=周一, ...
-      dayOfWeek = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // 转为 0=周一, 6=周日
-      dailyExpense.set(dayOfWeek, (dailyExpense.get(dayOfWeek) || 0) + Number(row.amount || 0));
-    }
-
-    return dayNames.map((name, index) => ({
-      name,
-      expense: dailyExpense.get(index) || 0,
-    }));
-  }
-
-  if (granularity === 'month') {
-    // 月粒度：显示每天
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const daysInMonth = getDaysInRange(startDate, endDate);
-    const dailyExpense = new Map<number, number>();
-
-    for (const row of expenseRows) {
-      const date = row.date instanceof Date ? row.date : new Date(row.date);
-      const day = date.getDate();
-      dailyExpense.set(day, (dailyExpense.get(day) || 0) + Number(row.amount || 0));
-    }
-
-    const result: { name: string; expense: number }[] = [];
-    for (let d = 1; d <= Math.min(daysInMonth, 31); d++) {
-      result.push({
-        name: String(d),
-        expense: dailyExpense.get(d) || 0,
-      });
-    }
-    return result;
-  }
-
-  if (granularity === 'quarter') {
-    // 季粒度：显示3个月
-    const monthlyExpense = new Map<string, number>();
-
-    for (const row of expenseRows) {
-      const date = row.date instanceof Date ? row.date : new Date(row.date);
-      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      monthlyExpense.set(monthKey, (monthlyExpense.get(monthKey) || 0) + Number(row.amount || 0));
-    }
-
-    // 获取季度的3个月
-    const start = new Date(startDate);
-    const months: string[] = [];
-    for (let i = 0; i < 3; i++) {
-      const m = new Date(start.getFullYear(), start.getMonth() + i, 1);
-      months.push(`${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, '0')}`);
-    }
-
-    return months.map((monthKey) => ({
-      name: monthKey.slice(5) + '月', // "01月", "02月", ...
-      expense: monthlyExpense.get(monthKey) || 0,
-    }));
-  }
-
-  return [];
-}
-
 export async function loadPageData(
   currency: string,
-  _monthLabel: string,
+  monthLabel: string,
   rangeParam: string,
   startParam?: string,
   endParam?: string
 ): Promise<PageData> {
-  const prisma = getPrismaClient();
-
-  const [rangeData, recurringData, calendarResult] = await Promise.all([
-    loadRangeData(currency, rangeParam, startParam, endParam),
+  const [dashboardData, recurringData] = await Promise.all([
+    getTransactionDashboardData({
+      currency,
+      month: monthLabel,
+      range: rangeParam,
+      startDate: startParam,
+      endDate: endParam,
+    }),
     loadRecurringExpenses(),
-    loadCalendarData(prisma, currency, resolveCalendarMonth(rangeParam, startParam, endParam)),
   ]);
 
   return {
-    ...rangeData,
+    ...dashboardData,
     recurringExpenses: recurringData,
-    calendarData: calendarResult.data,
-    calendarYear: calendarResult.year,
-    calendarMonth: calendarResult.month,
   };
-}
-
-/**
- * 加载范围数据（包含当前范围、上一周期、趋势、饼图、Top10）
- */
-async function loadRangeData(
-  currency: string,
-  rangeParam: string,
-  startParam?: string,
-  endParam?: string
-): Promise<Omit<PageData, 'recurringExpenses' | 'calendarData' | 'calendarYear' | 'calendarMonth'>> {
-  // 计算当前范围
-  let rStart: string;
-  let rEnd: string;
-  let rLabel: string;
-
-  if (rangeParam === 'custom' && startParam && endParam) {
-    rStart = startParam;
-    rEnd = endParam;
-    if (isFullMonthRange(startParam, endParam)) {
-      const parsed = parseLocalDate(startParam);
-      rLabel = parsed ? `${parsed.getFullYear()}年${parsed.getMonth() + 1}月` : `${startParam.slice(5)} ~ ${endParam.slice(5)}`;
-    } else {
-      rLabel = `${startParam.slice(5)} ~ ${endParam.slice(5)}`;
-    }
-  } else {
-    const extendedRange = getExtendedQuickRange(rangeParam as ExtendedQuickRange);
-    rStart = extendedRange.start;
-    rEnd = extendedRange.end;
-    rLabel = extendedRange.label;
-  }
-
-  // 计算上一周期范围
-  const prevRangeType = getPrevRangeType(rangeParam);
-  const prevRange = getExtendedQuickRange(prevRangeType);
-
-  // 获取粒度
-  const granularity = getRangeGranularity(rangeParam);
-
-  // 单日范围类型列表
-  const singleDayRanges = ['today', 'yesterday', 'dayBeforeYesterday'];
-  const isSingleDay = singleDayRanges.includes(rangeParam) || (rangeParam === 'custom' && rStart === rEnd);
-
-  // 计算结束日期（用于查询）
-  let queryEnd = rEnd;
-  if (rangeParam === 'custom' && rStart !== rEnd) {
-    // 只有在范围查询时才给结束日期加1天
-    const endDate = new Date(rEnd);
-    endDate.setDate(endDate.getDate() + 1);
-    queryEnd = formatDateToLocal(endDate);
-  }
-
-  const prisma = getPrismaClient();
-
-  // 并行查询当前范围和上一周期的数据
-  const [currentRows, prevRows] = await Promise.all([
-    queryTransactions(prisma, currency, rStart, queryEnd, isSingleDay),
-    queryTransactions(prisma, currency, prevRange.start, prevRange.end, singleDayRanges.includes(prevRangeType)),
-  ]);
-
-  // 计算当前范围统计
-  const expenseRows = currentRows.filter((r) => r.type === 'expense');
-  const incomeRows = currentRows.filter((r) => r.type === 'income');
-  const rangeExpense = expenseRows.reduce((a, b) => a + Number(b.amount || 0), 0);
-  const rangeIncome = incomeRows.reduce((a, b) => a + Number(b.amount || 0), 0);
-  const rangeCount = expenseRows.length;
-  const daysInRange = getDaysInRange(rStart, rEnd);
-  const rangeDailyAvg = daysInRange > 0 ? rangeExpense / daysInRange : 0;
-  const todayStr = formatDateToLocal(new Date());
-  const isToday = isSingleDay && rStart === todayStr;
-
-  // 计算上一周期统计
-  const prevExpenseRows = prevRows.filter((r) => r.type === 'expense');
-  const prevRangeExpense = prevExpenseRows.reduce((a, b) => a + Number(b.amount || 0), 0);
-
-  // 生成趋势数据
-  const trend = generateTrendData(currentRows, granularity, rStart, rEnd);
-
-  // 生成分类饼图数据
-  const categoryExpense = new Map<string, number>();
-  for (const row of expenseRows) {
-    const category = row.category || 'other';
-    categoryExpense.set(category, (categoryExpense.get(category) || 0) + Number(row.amount || 0));
-  }
-  const pie = Array.from(categoryExpense.entries())
-    .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value);
-
-  // 生成 Top 10
-  const top10 = generateTop10(expenseRows, currency, isSingleDay);
-
-  return {
-    rangeExpense,
-    rangeIncome,
-    rangeCount,
-    rangeDailyAvg,
-    rangeLabel: rLabel,
-    rangeRows: currentRows,
-    isSingleDay,
-    isToday,
-    prevRangeExpense,
-    prevRangeLabel: prevRange.label,
-    trend,
-    pie,
-    top10,
-  };
-}
-
-// Re-export TransactionRow for consumers
-export type { TransactionRow } from '@/types/domain/transaction';
-
-/**
- * 查询交易数据
- */
-async function queryTransactions(
-  prisma: ReturnType<typeof getPrismaClient>,
-  currency: string,
-  start: string,
-  end: string,
-  isSingleDay: boolean
-): Promise<TransactionRow[]> {
-  const where: Record<string, unknown> = {
-    deleted_at: null,
-    currency,
-  };
-
-  if (isSingleDay) {
-    const parsed = parseLocalDate(start);
-    where.date = parsed ?? new Date(start);
-  } else {
-    const parsedStart = parseLocalDate(start) ?? new Date(start);
-    const parsedEnd = parseLocalDate(end) ?? new Date(end);
-    where.date = { gte: parsedStart, lt: parsedEnd };
-  }
-
-  return prisma.transactions.findMany({
-    where,
-    select: {
-      id: true,
-      type: true,
-      category: true,
-      amount: true,
-      date: true,
-      note: true,
-      currency: true,
-      merchant: true,
-      subcategory: true,
-      product: true,
-    },
-  });
-}
-
-/**
- * 生成 Top 10 支出
- */
-function generateTop10(expenseRows: any[], currency: string, isSingleDay: boolean) {
-  if (isSingleDay) {
-    // 单日模式：显示实际交易记录，不合并
-    return expenseRows
-      .sort((a, b) => Number(b.amount || 0) - Number(a.amount || 0))
-      .slice(0, 10)
-      .map((transaction) => ({
-        id: transaction.id,
-        category: transaction.category || 'other',
-        amount: Number(transaction.amount || 0),
-        date: transaction.date instanceof Date
-          ? formatDateToLocal(transaction.date)
-          : String(transaction.date),
-        note: transaction.note || undefined,
-        currency,
-        merchant: transaction.merchant || undefined,
-        subcategory: transaction.subcategory || undefined,
-        product: transaction.product || undefined,
-      }));
-  }
-
-  // 范围模式：按分类合并统计
-  const categoryMap = new Map<
-    string,
-    {
-      category: string;
-      total: number;
-      count: number;
-    }
-  >();
-
-  for (const transaction of expenseRows) {
-    const category = transaction.category || 'other';
-    const amount = Number(transaction.amount || 0);
-
-    if (!categoryMap.has(category)) {
-      categoryMap.set(category, {
-        category,
-        total: 0,
-        count: 0,
-      });
-    }
-
-    const categoryData = categoryMap.get(category)!;
-    categoryData.total += amount;
-    categoryData.count += 1;
-  }
-
-  return Array.from(categoryMap.values())
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 10)
-    .map((item) => ({
-      id: `${item.category}-agg`,
-      category: item.category,
-      amount: item.total,
-      date: undefined,
-      note: `共${item.count}笔消费`,
-      currency,
-      merchant: undefined,
-    }));
-}
-
-/**
- * 加载当月日历热力图数据
- */
-async function loadCalendarData(
-  prisma: ReturnType<typeof getPrismaClient>,
-  currency: string,
-  target?: { year: number; month: number }
-): Promise<{ data: { date: string; amount: number; count: number }[]; year: number; month: number }> {
-  const now = new Date();
-  const year = target?.year ?? now.getFullYear();
-  const month = target?.month ?? now.getMonth() + 1; // 1-12
-
-  // 计算当月的开始和结束日期
-  const firstDay = new Date(year, month - 1, 1);
-  const lastDay = new Date(year, month, 0); // 当月最后一天
-  const nextMonthFirst = new Date(year, month, 1);
-
-  const rows = await prisma.transactions.findMany({
-    where: {
-      deleted_at: null,
-      currency,
-      type: 'expense',
-      date: {
-        gte: firstDay,
-        lt: nextMonthFirst,
-      },
-    },
-    select: {
-      date: true,
-      amount: true,
-    },
-  });
-
-  // 按日期聚合
-  const dailyMap = new Map<string, { amount: number; count: number }>();
-
-  for (const row of rows) {
-    const date = row.date instanceof Date ? row.date : new Date(row.date);
-    const dateStr = formatDateToLocal(date);
-    const existing = dailyMap.get(dateStr) || { amount: 0, count: 0 };
-    dailyMap.set(dateStr, {
-      amount: existing.amount + Number(row.amount || 0),
-      count: existing.count + 1,
-    });
-  }
-
-  // 转换为数组格式
-  const data = Array.from(dailyMap.entries()).map(([date, { amount, count }]) => ({
-    date,
-    amount,
-    count,
-  }));
-
-  return { data, year, month };
-}
-
-function resolveCalendarMonth(
-  rangeParam: string,
-  startParam?: string,
-  endParam?: string
-): { year: number; month: number } | undefined {
-  if (['thisMonth', 'lastMonth', 'monthBeforeLast'].includes(rangeParam)) {
-    const range = getExtendedQuickRange(rangeParam as ExtendedQuickRange);
-    const start = parseLocalDate(range.start);
-    if (start) {
-      return { year: start.getFullYear(), month: start.getMonth() + 1 };
-    }
-  }
-
-  if (rangeParam === 'custom' && startParam && endParam && isFullMonthRange(startParam, endParam)) {
-    const start = parseLocalDate(startParam);
-    if (start) {
-      return { year: start.getFullYear(), month: start.getMonth() + 1 };
-    }
-  }
-
-  return undefined;
-}
-
-function isFullMonthRange(startStr: string, endStr: string): boolean {
-  const start = parseLocalDate(startStr);
-  const end = parseLocalDate(endStr);
-  if (!start || !end) return false;
-  if (start.getFullYear() !== end.getFullYear()) return false;
-  if (start.getMonth() !== end.getMonth()) return false;
-  if (start.getDate() !== 1) return false;
-  const lastDay = new Date(start.getFullYear(), start.getMonth() + 1, 0).getDate();
-  return end.getDate() === lastDay;
 }
 
 async function loadRecurringExpenses(): Promise<RecurringExpense[]> {
@@ -518,12 +73,25 @@ async function loadRecurringExpenses(): Promise<RecurringExpense[]> {
     const data = await prisma.recurring_expenses.findMany({
       orderBy: { created_at: 'desc' },
     });
+
     return data.map((item: any) => ({
-      ...item,
+      id: item.id,
+      name: item.name,
       amount: Number(item.amount),
-    })) as RecurringExpense[];
+      category: item.category,
+      frequency: item.frequency,
+      frequency_config: item.frequency_config as Record<string, any>,
+      start_date: item.start_date.toISOString().split('T')[0],
+      note: undefined,
+      currency: 'CNY',
+      payment_method: undefined,
+      is_active: item.is_active ?? true,
+      last_generated_date: item.last_generated?.toISOString().split('T')[0],
+      created_at: item.created_at?.toISOString() || new Date().toISOString(),
+      updated_at: item.updated_at?.toISOString() || new Date().toISOString(),
+    }));
   } catch (error) {
-    console.error('获取固定支出列表失败:', error);
+    console.error('Failed to load recurring expenses:', error);
     return [];
   }
 }
