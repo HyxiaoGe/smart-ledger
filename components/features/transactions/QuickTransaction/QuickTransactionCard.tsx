@@ -5,9 +5,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDateToLocal } from '@/lib/utils/date';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { useTransactionRowsQuery } from '@/lib/api/hooks';
-import { paymentMethodsApi, PaymentMethod } from '@/lib/api/services/payment-methods';
+import { useMutation } from '@tanstack/react-query';
+import { usePaymentMethods, useTransactionRowsQuery } from '@/lib/api/hooks';
 import { quickTransactionApi } from '@/lib/api/services/quick-transaction';
 import type { QuickTransactionCardProps, QuickTransactionItem } from './types';
 import { QUICK_ITEMS, ITEM_KEYWORDS } from './constants';
@@ -30,15 +29,7 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
   // 获取今天的日期字符串
   const getTodayDateString = () => formatDateToLocal(new Date());
 
-  // 使用 React Query 获取支付方式
-  const { data: paymentMethodsData } = useQuery({
-    queryKey: ['payment-methods'],
-    queryFn: async () => {
-      const response = await paymentMethodsApi.list();
-      return Array.isArray(response) ? response : (response as unknown as { data: PaymentMethod[] }).data || [];
-    }
-  });
-
+  const { data: paymentMethodsData } = usePaymentMethods();
   const paymentMethods = paymentMethodsData || [];
 
   // 设置默认支付方式

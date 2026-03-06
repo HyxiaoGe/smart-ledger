@@ -1,6 +1,5 @@
 'use client';
 import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import type { TransactionType, Currency, Transaction } from '@/types/domain/transaction';
 import { SUPPORTED_CURRENCIES, DEFAULT_CURRENCY } from '@/lib/config/config';
 import { useCategories } from '@/contexts/CategoryContext';
@@ -13,16 +12,14 @@ import { DateInput } from '@/components/features/input/DateInput';
 import { SmartNoteInput } from '@/components/features/input/SmartNoteInput';
 import { MerchantInput, SubcategorySelect } from '@/components/features/input/MerchantInput';
 import { ProgressToast } from '@/components/shared/ProgressToast';
-import { paymentMethodsApi } from '@/lib/api/services/payment-methods';
 import { Clock } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { formatDateToLocal } from '@/lib/utils/date';
 import { logger } from '@/lib/services/logging';
 import { getErrorMessage } from '@/types/common';
-import { useCreateTransaction, useTransactionRowsQuery } from '@/lib/api/hooks';
+import { useCreateTransaction, usePaymentMethods, useTransactionRowsQuery } from '@/lib/api/hooks';
 import { queryKeys } from '@/lib/api/queryClient';
 
-import type { PaymentMethod } from '@/lib/api/services/payment-methods';
 import { SmartSuggestionPanel } from './components';
 
 export default function AddPage() {
@@ -49,7 +46,6 @@ export default function AddPage() {
   const [product, setProduct] = useState<string>('');
 
   // 新增：支付方式
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<string>('');
 
   // 防抖相关
@@ -309,11 +305,8 @@ export default function AddPage() {
     setProduct('');
   }
 
-  // 使用 React Query 加载支付方式列表
-  const { data: paymentMethodsData } = useQuery({
-    queryKey: ['payment-methods'],
-    queryFn: () => paymentMethodsApi.list()
-  });
+  const { data: paymentMethodsData } = usePaymentMethods();
+  const paymentMethods = paymentMethodsData || [];
 
   const { data: recentTransactionsData, isLoading: recentLoading } = useTransactionRowsQuery(
     {
@@ -387,16 +380,16 @@ export default function AddPage() {
     return sorted.length ? sorted : fallbackAmounts;
   }, [frequentAmountData, fallbackAmounts]);
 
-  // 当支付方式数据加载完成时更新状态
   useEffect(() => {
-    if (paymentMethodsData) {
-      setPaymentMethods(paymentMethodsData);
-      const defaultMethod = paymentMethodsData.find((m) => m.is_default);
-      if (defaultMethod && !paymentMethod) {
-        setPaymentMethod(defaultMethod.id);
-      }
+    if (paymentMethods.length === 0 || paymentMethod) {
+      return;
     }
-  }, [paymentMethodsData, paymentMethod]);
+
+    const defaultMethod = paymentMethods.find((m) => m.is_default);
+    if (defaultMethod) {
+      setPaymentMethod(defaultMethod.id);
+    }
+  }, [paymentMethods, paymentMethod]);
 
   useEffect(() => {
     if (prefillAppliedRef.current) return;
