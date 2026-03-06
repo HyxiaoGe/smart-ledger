@@ -30,7 +30,7 @@ export default function AddPage() {
   const [note, setNote] = useState<string>('');
   const [date, setDate] = useState<Date>(new Date());
   const [currency, setCurrency] = useState<Currency>(DEFAULT_CURRENCY as Currency);
-  const [loading, setLoading] = useState(false);
+  const [isSubmitScheduled, setIsSubmitScheduled] = useState(false);
   const [error, setError] = useState<string>('');
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('账单保存成功！');
@@ -50,8 +50,6 @@ export default function AddPage() {
 
   // 防抖相关
   const submitTimeoutRef = useRef<number | null>(null);
-  const lastSubmitTimeRef = useRef<number>(0);
-  const isSubmittingRef = useRef<boolean>(false); // 强制提交状态
   const amountInputRef = useRef<HTMLInputElement | null>(null);
   const parsedAmount = useMemo(() => parseAmount(amountText), [amountText]);
   const invalidAmount = parsedAmount <= 0;
@@ -60,6 +58,7 @@ export default function AddPage() {
       revalidateServer: true,
     },
   });
+  const isSubmitting = isSubmitScheduled || createTransaction.isPending;
 
   function formatThousand(n: number) {
     return n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
@@ -101,7 +100,7 @@ export default function AddPage() {
   }, [currency]);
 
   // 防抖提交函数（依赖数组为空是故意的，避免函数重建）
-  const debouncedSubmit = useCallback(
+  const submitTransaction = useCallback(
     async (formData: {
       amt: number;
       category: string;
@@ -109,12 +108,12 @@ export default function AddPage() {
       note: string;
       date: Date;
       currency: Currency;
+      keepForm: boolean;
       paymentMethod?: string;
       merchant?: string;
       subcategory?: string;
       product?: string;
     }) => {
-      setLoading(true);
       setError('');
 
       try {
@@ -188,57 +187,37 @@ export default function AddPage() {
 
         // 延迟重置表单，让用户看到成功提示
         setTimeout(() => {
-          resetForm({ keep: keepForm });
+          resetForm({ keep: formData.keepForm });
           amountInputRef.current?.focus();
         }, 500);
       } catch (err: unknown) {
         setError(getErrorMessage(err) || '提交失败');
-      } finally {
-        setLoading(false);
-        lastSubmitTimeRef.current = 0; // 重置时间戳，允许下次提交
-        isSubmittingRef.current = false; // 重置提交状态
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [createTransaction, type]
   );
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     e.stopPropagation(); // 阻止事件冒泡
 
-    // 强制防重复提交检查
-    if (isSubmittingRef.current || loading) {
+    if (isSubmitting) {
       return;
     }
 
-    // 防抖处理：500ms内只允许一次提交
-    const now = Date.now();
-    if (now - lastSubmitTimeRef.current < 500) {
-      return;
-    }
-
-    // 立即设置提交状态，防止重复
-    isSubmittingRef.current = true;
-    lastSubmitTimeRef.current = now;
-    setLoading(true);
-
-    // 清除之前的定时器
+    setError('');
     if (submitTimeoutRef.current) {
       clearTimeout(submitTimeoutRef.current);
+      submitTimeoutRef.current = null;
     }
 
     const amt = parsedAmount;
     if (!category || !date) {
       setError('请完整填写必填项');
-      isSubmittingRef.current = false;
-      setLoading(false);
       return;
     }
     if (!(amt > 0)) {
       setError('金额必须大于 0');
-      isSubmittingRef.current = false;
-      setLoading(false);
       amountInputRef.current?.focus();
       return;
     }
@@ -247,20 +226,27 @@ export default function AddPage() {
     const categoryLabel = categories.find((c) => c.key === category)?.label || category;
 
     // 使用防抖提交
-    submitTimeoutRef.current = setTimeout(() => {
-      debouncedSubmit({
-        amt,
-        category,
-        categoryLabel,
-        note,
-        date,
-        currency,
-        paymentMethod,
-        merchant,
-        subcategory,
-        product
-      });
-    }, 200) as any as number; // 200ms 延迟
+    setIsSubmitScheduled(true);
+    submitTimeoutRef.current = window.setTimeout(async () => {
+      submitTimeoutRef.current = null;
+      try {
+        await submitTransaction({
+          amt,
+          category,
+          categoryLabel,
+          note,
+          date,
+          currency,
+          keepForm,
+          paymentMethod,
+          merchant,
+          subcategory,
+          product
+        });
+      } finally {
+        setIsSubmitScheduled(false);
+      }
+    }, 200);
   }
 
   // 重置表单
@@ -270,8 +256,7 @@ export default function AddPage() {
       clearTimeout(submitTimeoutRef.current);
       submitTimeoutRef.current = null;
     }
-    lastSubmitTimeRef.current = 0;
-    isSubmittingRef.current = false;
+    setIsSubmitScheduled(false);
 
     setAmountText('');
     setNote('');
@@ -426,7 +411,6 @@ export default function AddPage() {
       if (submitTimeoutRef.current) {
         clearTimeout(submitTimeoutRef.current);
       }
-      isSubmittingRef.current = false;
     };
   }, []);
 
@@ -490,7 +474,7 @@ export default function AddPage() {
                   className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  disabled={loading || categoriesLoading}
+                  disabled={isSubmitting || categoriesLoading}
                 >
                   {categories.map((c) => (
                     <option
@@ -528,7 +512,7 @@ export default function AddPage() {
                     }
                   }}
                   className={amountText.trim() && invalidAmount ? 'border-destructive' : undefined}
-                  disabled={loading}
+                  disabled={isSubmitting}
                 />
                 {amountText.trim() && invalidAmount && (
                   <p className="mt-1 text-sm text-destructive">金额必须大于 0</p>
@@ -543,7 +527,7 @@ export default function AddPage() {
                     className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
                     value={currency}
                     onChange={(e) => setCurrency(e.target.value as Currency)}
-                    disabled={loading}
+                    disabled={isSubmitting}
                   >
                     {SUPPORTED_CURRENCIES.map((c) => (
                       <option
@@ -564,7 +548,7 @@ export default function AddPage() {
                     selected={date}
                     onSelect={setDate}
                     placeholder="选择日期"
-                    disabled={loading}
+                    disabled={isSubmitting}
                   />
                 </div>
               </div>
@@ -589,7 +573,7 @@ export default function AddPage() {
                         className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
                         value={paymentMethod}
                         onChange={(e) => setPaymentMethod(e.target.value)}
-                        disabled={loading}
+                        disabled={isSubmitting}
                       >
                         <option
                           className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -617,7 +601,7 @@ export default function AddPage() {
                           value={merchant}
                           onChange={setMerchant}
                           placeholder="如：瑞幸咖啡、地铁"
-                          disabled={loading}
+                          disabled={isSubmitting}
                           category={category}
                         />
                       </div>
@@ -627,7 +611,7 @@ export default function AddPage() {
                           category={category}
                           value={subcategory}
                           onChange={setSubcategory}
-                          disabled={loading}
+                          disabled={isSubmitting}
                         />
                       </div>
                     </div>
@@ -639,7 +623,7 @@ export default function AddPage() {
                         onChange={(e) => setProduct(e.target.value)}
                         onClear={() => setProduct('')}
                         placeholder="如：生椰拿铁、地铁票"
-                        disabled={loading}
+                        disabled={isSubmitting}
                       />
                     </div>
                   </div>
@@ -652,7 +636,7 @@ export default function AddPage() {
                   value={note}
                   onChange={setNote}
                   placeholder="选择分类和金额后，智能提示将自动显示"
-                  disabled={loading}
+                  disabled={isSubmitting}
                   category={category}
                   amount={parsedAmount}
                   currency={currency}
@@ -664,8 +648,8 @@ export default function AddPage() {
               {error && <p className="text-red-600 text-sm">{error}</p>}
 
               <div>
-                <Button type="submit" disabled={loading} className="w-full">
-                  {loading ? '保存中...' : '保存账单'}
+                <Button type="submit" disabled={isSubmitting} className="w-full">
+                  {isSubmitting ? '保存中...' : '保存账单'}
                 </Button>
                 <label className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
                   <input
