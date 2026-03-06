@@ -249,42 +249,43 @@ export default function AddPage() {
     }, 200);
   }
 
-  // 重置表单
-  function resetForm({ keep }: { keep: boolean }) {
-    // 清理防抖状态
-    if (submitTimeoutRef.current) {
-      clearTimeout(submitTimeoutRef.current);
-      submitTimeoutRef.current = null;
-    }
-    setIsSubmitScheduled(false);
-
-    setAmountText('');
-    setNote('');
-    if (!keep) {
-      setCategory('food');
-      setDate(new Date());
-      setCurrency(DEFAULT_CURRENCY as Currency);
-    }
-    setError('');
-
-    if (!keep) {
-      // 重置为默认支付方式
-      const defaultMethod = paymentMethods.find((m) => m.is_default);
-      if (defaultMethod) {
-        setPaymentMethod(defaultMethod.id);
-      } else {
-        setPaymentMethod('');
-      }
-    }
-
-    // 清空三层结构字段
-    setMerchant('');
-    setSubcategory('');
-    setProduct('');
-  }
-
   const { data: paymentMethodsData } = usePaymentMethods();
   const paymentMethods = paymentMethodsData || [];
+  const defaultPaymentMethodId = useMemo(
+    () => paymentMethods.find((method) => method.is_default)?.id || '',
+    [paymentMethods]
+  );
+
+  // 重置表单
+  const resetForm = useCallback(
+    ({ keep }: { keep: boolean }) => {
+      // 清理防抖状态
+      if (submitTimeoutRef.current) {
+        clearTimeout(submitTimeoutRef.current);
+        submitTimeoutRef.current = null;
+      }
+      setIsSubmitScheduled(false);
+
+      setAmountText('');
+      setNote('');
+      if (!keep) {
+        setCategory('food');
+        setDate(new Date());
+        setCurrency(DEFAULT_CURRENCY as Currency);
+      }
+      setError('');
+
+      if (!keep) {
+        setPaymentMethod(defaultPaymentMethodId);
+      }
+
+      // 清空三层结构字段
+      setMerchant('');
+      setSubcategory('');
+      setProduct('');
+    },
+    [defaultPaymentMethodId]
+  );
 
   const { data: recentTransactionsData, isLoading: recentLoading } = useTransactionRowsQuery(
     {
@@ -359,15 +360,12 @@ export default function AddPage() {
   }, [frequentAmountData, fallbackAmounts]);
 
   useEffect(() => {
-    if (paymentMethods.length === 0 || paymentMethod) {
+    if (!defaultPaymentMethodId || paymentMethod) {
       return;
     }
 
-    const defaultMethod = paymentMethods.find((m) => m.is_default);
-    if (defaultMethod) {
-      setPaymentMethod(defaultMethod.id);
-    }
-  }, [paymentMethods, paymentMethod]);
+    setPaymentMethod(defaultPaymentMethodId);
+  }, [defaultPaymentMethodId, paymentMethod]);
 
   useEffect(() => {
     if (prefillAppliedRef.current) return;
