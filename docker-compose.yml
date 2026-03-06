@@ -5,10 +5,13 @@ services:
       dockerfile: Dockerfile
       args:
         DATABASE_URL: ${DATABASE_URL}
+        GIT_SHA: ${GIT_SHA:-unknown}
     ports:
       - "3000:3000"
     env_file:
       - .env.local
+    environment:
+      APP_GIT_SHA: ${GIT_SHA:-unknown}
     networks:
       - postgres_default
 

@@ -7,7 +7,9 @@ RUN npm ci
 
 FROM node:20-alpine AS builder
 WORKDIR /app
+ARG GIT_SHA=unknown
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV APP_GIT_SHA=${GIT_SHA}
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ARG DATABASE_URL=postgresql://placeholder:placeholder@localhost:5432/placeholder
@@ -17,8 +19,11 @@ RUN npm run build
 
 FROM node:20-alpine AS runner
 WORKDIR /app
+ARG GIT_SHA=unknown
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV APP_GIT_SHA=${GIT_SHA}
+LABEL org.opencontainers.image.revision=${GIT_SHA}
 EXPOSE 3000
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
