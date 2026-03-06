@@ -334,6 +334,26 @@ const SmartNoteInputComponent = function SmartNoteInput({
     };
   }, []);
 
+  useEffect(() => {
+    if (!showSuggestions) return;
+
+    const handlePointerDown = (event: MouseEvent | TouchEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      if (containerRef.current?.contains(target)) return;
+      setShowSuggestions(false);
+      setActiveIndex(-1);
+    };
+
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('touchstart', handlePointerDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('touchstart', handlePointerDown);
+    };
+  }, [showSuggestions]);
+
   return (
     <div ref={containerRef} className={`relative ${className}`}>
       <ClearableInput
@@ -349,15 +369,7 @@ const SmartNoteInputComponent = function SmartNoteInput({
 
       {/* 智能提示面板 */}
       {showSuggestions && !disabled && (
-        <>
-          {/* 点击外部关闭的透明背景层 */}
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setShowSuggestions(false)}
-            style={{ backgroundColor: 'transparent' }}
-          />
-
-          <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
+        <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
           {/* 错误状态 */}
           {error && (
             <div className="p-3 flex items-center gap-2 text-red-600 text-sm">
@@ -461,8 +473,7 @@ const SmartNoteInputComponent = function SmartNoteInput({
               </div>
             </div>
           )}
-          </div>
-        </>
+        </div>
       )}
     </div>
   );
