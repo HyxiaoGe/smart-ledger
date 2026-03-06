@@ -8,6 +8,7 @@ import { useCategories } from '@/contexts/CategoryContext';
 import { formatCurrency } from '@/lib/utils/format';
 import { EmptyState } from '@/components/EmptyState';
 import { transactionsApi } from '@/lib/api/services/transactions';
+import { queryKeys } from '@/lib/api/queryClient';
 import { FileText } from 'lucide-react';
 import Link from 'next/link';
 
@@ -42,7 +43,13 @@ export function TransactionList({
     isLoading: loading,
     isFetching
   } = useQuery({
-    queryKey: ['transaction-list', start, end, page],
+    queryKey: queryKeys.transactions.list({
+      start_date: start,
+      end_date: end,
+      type: 'expense',
+      page,
+      page_size: 50,
+    }),
     queryFn: () =>
       transactionsApi.list({
         start_date: start,
@@ -51,7 +58,7 @@ export function TransactionList({
         page,
         page_size: 50
       }),
-    enabled: !!start
+    enabled: !!start,
   });
 
   // 当数据变化时更新行列表

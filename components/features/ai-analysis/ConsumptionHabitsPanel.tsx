@@ -8,6 +8,7 @@ import { Calendar, Clock, ChevronDown, RefreshCw, Activity, Coffee, ShoppingCart
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAllDataSyncEvents } from '@/hooks/useEnhancedDataSync';
 import { transactionsApi } from '@/lib/api/services/transactions';
+import { queryKeys } from '@/lib/api/queryClient';
 
 interface HabitPattern {
   period: string;
@@ -86,7 +87,12 @@ export function ConsumptionHabitsPanel({
   // 使用 React Query 批量获取多个月的数据
   const monthlyQueries = useQueries({
     queries: months.map((m) => ({
-      queryKey: ['habits-transactions', m],
+      queryKey: queryKeys.transactions.list({
+        start_date: `${m}-01`,
+        end_date: `${m}-31`,
+        type: 'expense',
+        page_size: 1000,
+      }),
       queryFn: () => transactionsApi.list({
         start_date: `${m}-01`,
         end_date: `${m}-31`,

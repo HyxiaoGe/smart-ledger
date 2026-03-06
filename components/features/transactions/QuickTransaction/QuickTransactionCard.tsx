@@ -8,6 +8,7 @@ import { formatDateToLocal } from '@/lib/utils/date';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { paymentMethodsApi, PaymentMethod } from '@/lib/api/services/payment-methods';
 import { transactionsApi } from '@/lib/api/services/transactions';
+import { queryKeys } from '@/lib/api/queryClient';
 import { quickTransactionApi } from '@/lib/api/services/quick-transaction';
 import type { QuickTransactionCardProps, QuickTransactionItem } from './types';
 import { QUICK_ITEMS, ITEM_KEYWORDS } from './constants';
@@ -57,7 +58,11 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
     isLoading: loadingCategories,
     refetch: refetchTodayCategories
   } = useQuery({
-    queryKey: ['today-transactions', getTodayDateString()],
+    queryKey: queryKeys.transactions.list({
+      start_date: getTodayDateString(),
+      end_date: getTodayDateString(),
+      page_size: 100,
+    }),
     queryFn: async () => {
       const today = getTodayDateString();
       const result = await transactionsApi.list({
@@ -67,7 +72,7 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
       });
       return result.data || [];
     },
-    enabled: open
+    enabled: open,
   });
 
   // 计算今日已记录的项目

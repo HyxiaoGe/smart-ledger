@@ -8,6 +8,7 @@ import { Trophy, Users, ChevronDown, RefreshCw, Award, ArrowUp, ArrowDown } from
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAllDataSyncEvents } from '@/hooks/useEnhancedDataSync';
 import { transactionsApi } from '@/lib/api/services/transactions';
+import { queryKeys } from '@/lib/api/queryClient';
 
 interface ComparisonData {
   userStats: {
@@ -54,7 +55,11 @@ export function ComparisonPanel({
 
   // 使用 React Query 获取交易数据
   const { data: transactionsData, isLoading: loading, refetch } = useQuery({
-    queryKey: ['comparison-transactions', month],
+    queryKey: queryKeys.transactions.list({
+      start_date: startDate,
+      end_date: endDate,
+      page_size: 1000,
+    }),
     queryFn: () => transactionsApi.list({
       start_date: startDate,
       end_date: endDate,

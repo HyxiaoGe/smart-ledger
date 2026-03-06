@@ -4,6 +4,7 @@
  */
 
 import { QueryClient } from '@tanstack/react-query';
+import type { TransactionListParams } from './services/transactions';
 
 /**
  * 默认的查询配置
@@ -46,7 +47,7 @@ export const queryKeys = {
   // 交易相关
   transactions: {
     all: ['transactions'] as const,
-    list: (params?: { month?: string; range?: string; startDate?: string; endDate?: string }) =>
+    list: (params?: TransactionListParams) =>
       ['transactions', 'list', params] as const,
     detail: (id: string) => ['transactions', 'detail', id] as const,
     recent: (limit: number = 10, type?: 'income' | 'expense') =>
