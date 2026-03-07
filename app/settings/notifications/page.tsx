@@ -19,11 +19,13 @@ import {
   type SettingsActionItem,
 } from '@/components/shared/SettingsActionGrid';
 import { SettingsBackButton } from '@/components/shared/SettingsBackButton';
+import { SettingsCalloutCard } from '@/components/shared/SettingsCalloutCard';
 import {
   SettingsFeatureGrid,
   type SettingsFeatureItem,
 } from '@/components/shared/SettingsFeatureGrid';
 import { SettingsPageHeader } from '@/components/shared/SettingsPageHeader';
+import { SettingsTipsPanel } from '@/components/shared/SettingsTipsPanel';
 
 export default function NotificationsSettingsPage() {
   const notificationTypes: SettingsFeatureItem[] = [
@@ -72,14 +74,7 @@ export default function NotificationsSettingsPage() {
           tone="green"
         />
 
-        <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 dark:border-green-800 mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-green-900 dark:text-green-100">
-              <CheckCircle className="h-5 w-5" />
-              通知状态
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        <SettingsCalloutCard title="通知状态" icon={CheckCircle} tone="green" className="mb-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600">0</div>
@@ -94,8 +89,7 @@ export default function NotificationsSettingsPage() {
                 <div className="text-sm text-gray-600 dark:text-gray-300">通知服务</div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+        </SettingsCalloutCard>
 
         <SettingsFeatureGrid
           items={notificationTypes}
@@ -104,14 +98,7 @@ export default function NotificationsSettingsPage() {
           availableActionLabel="配置设置"
         />
 
-        <Card className="bg-gradient-to-r from-orange-50 to-amber-50 border-orange-200 dark:border-orange-800">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-orange-900 dark:text-orange-300">
-              <Bell className="h-5 w-5" />
-              开发进度
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        <SettingsCalloutCard title="开发进度" icon={Bell} tone="orange">
             <div className="text-center py-6">
               <div className="text-lg text-orange-900 dark:text-orange-300 mb-4">
                 通知系统正在开发中
@@ -141,8 +128,7 @@ export default function NotificationsSettingsPage() {
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+        </SettingsCalloutCard>
 
         <Card className="mt-8">
           <CardHeader>
@@ -262,15 +248,15 @@ export default function NotificationsSettingsPage() {
           </CardContent>
         </Card>
 
-        <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
-          <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-2">💡 使用提示</h3>
-          <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-            <li>• 合理设置通知频率，避免通知过频繁</li>
-            <li>• 重要通知建议开启多个渠道，确保不会遗漏</li>
-            <li>• 利用免打扰功能保护您的休息时间</li>
-            <li>• 定期检查通知设置，确保符合您的需求</li>
-          </ul>
-        </div>
+        <SettingsTipsPanel
+          title="💡 使用提示"
+          items={[
+            '• 合理设置通知频率，避免通知过频繁',
+            '• 重要通知建议开启多个渠道，确保不会遗漏',
+            '• 利用免打扰功能保护您的休息时间',
+            '• 定期检查通知设置，确保符合您的需求',
+          ]}
+        />
       </div>
     </div>
   );

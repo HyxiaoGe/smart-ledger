@@ -21,11 +21,13 @@ import {
   type SettingsActionItem,
 } from '@/components/shared/SettingsActionGrid';
 import { SettingsBackButton } from '@/components/shared/SettingsBackButton';
+import { SettingsCalloutCard } from '@/components/shared/SettingsCalloutCard';
 import {
   SettingsFeatureGrid,
   type SettingsFeatureItem,
 } from '@/components/shared/SettingsFeatureGrid';
 import { SettingsPageHeader } from '@/components/shared/SettingsPageHeader';
+import { SettingsTipsPanel } from '@/components/shared/SettingsTipsPanel';
 
 export default function DataSettingsPage() {
   const dataFeatures: SettingsFeatureItem[] = [
@@ -110,14 +112,7 @@ export default function DataSettingsPage() {
           availableActionLabel="管理设置"
         />
 
-        <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 border-purple-200 dark:border-purple-800">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-purple-900 dark:text-purple-300">
-              <RefreshCw className="h-5 w-5" />
-              开发进度
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        <SettingsCalloutCard title="开发进度" icon={RefreshCw} tone="purple">
             <div className="text-center py-6">
               <div className="text-lg text-purple-900 dark:text-purple-300 mb-4">
                 数据管理系统正在完善中
@@ -167,8 +162,7 @@ export default function DataSettingsPage() {
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+        </SettingsCalloutCard>
 
         <Card className="mt-8">
           <CardHeader>
@@ -182,14 +176,7 @@ export default function DataSettingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="mt-8 bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-950 dark:to-orange-950 border-red-200 dark:border-red-800">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-red-900 dark:text-red-300">
-              <Lock className="h-5 w-5" />
-              数据安全
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        <SettingsCalloutCard title="数据安全" icon={Lock} tone="red" className="mt-8">
             <div className="space-y-4">
               {[
                 ['端到端加密', '所有数据传输均采用 SSL 加密'],
@@ -209,19 +196,18 @@ export default function DataSettingsPage() {
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
+        </SettingsCalloutCard>
 
-        <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
-          <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-2">💡 数据安全建议</h3>
-          <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-            <li>• 定期备份重要数据，避免数据丢失</li>
-            <li>• 使用强密码并定期更换</li>
-            <li>• 不要在不安全的设备上登录账户</li>
-            <li>• 定期检查和清理不必要的旧数据</li>
-            <li>• 了解并合理设置隐私保护选项</li>
-          </ul>
-        </div>
+        <SettingsTipsPanel
+          title="💡 数据安全建议"
+          items={[
+            '• 定期备份重要数据，避免数据丢失',
+            '• 使用强密码并定期更换',
+            '• 不要在不安全的设备上登录账户',
+            '• 定期检查和清理不必要的旧数据',
+            '• 了解并合理设置隐私保护选项',
+          ]}
+        />
       </div>
     </div>
   );

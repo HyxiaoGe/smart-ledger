@@ -18,6 +18,7 @@ export interface SettingsActionItem {
 interface SettingsActionGridProps {
   items: readonly SettingsActionItem[];
   columnsClassName?: string;
+  itemClassName?: string;
 }
 
 const ACTION_TONE_STYLES = {
@@ -31,6 +32,7 @@ const ACTION_TONE_STYLES = {
 export function SettingsActionGrid({
   items,
   columnsClassName = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4',
+  itemClassName = 'w-full h-auto p-4 flex flex-col items-center gap-2',
 }: SettingsActionGridProps) {
   return (
     <div className={columnsClassName}>
@@ -41,7 +43,7 @@ export function SettingsActionGrid({
           <Button
             variant="outline"
             disabled={item.status !== 'available'}
-            className="w-full h-auto p-4 flex flex-col items-center gap-2"
+            className={itemClassName}
           >
             <Icon className={`h-8 w-8 ${ACTION_TONE_STYLES[tone]}`} />
             <span className="text-sm">{item.title}</span>

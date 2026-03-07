@@ -2,13 +2,14 @@ import React from 'react';
 
 import { Bell, MapPin, Shield, User } from 'lucide-react';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   SettingsActionGrid,
   type SettingsActionItem,
 } from '@/components/shared/SettingsActionGrid';
 import { SettingsBackButton } from '@/components/shared/SettingsBackButton';
+import { SettingsCalloutCard } from '@/components/shared/SettingsCalloutCard';
 import { SettingsPageHeader } from '@/components/shared/SettingsPageHeader';
+import { SettingsTipsPanel } from '@/components/shared/SettingsTipsPanel';
 
 export default function ProfileSettingsPage() {
   const upcomingFeatures: SettingsActionItem[] = [
@@ -50,14 +51,7 @@ export default function ProfileSettingsPage() {
           tone="blue"
         />
 
-        <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 dark:border-blue-800 mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
-              <User className="h-5 w-5" />
-              敬请期待
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        <SettingsCalloutCard title="敬请期待" icon={User} tone="blue" className="mb-8">
             <div className="text-center py-6">
               <div className="text-lg text-blue-900 dark:text-blue-100 mb-4">
                 个人信息管理功能正在开发中
@@ -73,22 +67,22 @@ export default function ProfileSettingsPage() {
                   <SettingsActionGrid
                     items={upcomingFeatures}
                     columnsClassName="grid grid-cols-1 md:grid-cols-2 gap-4"
+                    itemClassName="w-full h-auto min-h-[112px] p-4 flex flex-col items-center gap-2"
                   />
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+        </SettingsCalloutCard>
 
-        <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
-          <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-2">💡 开发提示</h3>
-          <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-            <li>• 个人信息管理功能即将上线</li>
-            <li>• 将支持完整的用户资料编辑功能</li>
-            <li>• 重视用户隐私和数据安全</li>
-            <li>• 敬请期待更多个性化设置选项</li>
-          </ul>
-        </div>
+        <SettingsTipsPanel
+          title="💡 开发提示"
+          items={[
+            '• 个人信息管理功能即将上线',
+            '• 将支持完整的用户资料编辑功能',
+            '• 重视用户隐私和数据安全',
+            '• 敬请期待更多个性化设置选项',
+          ]}
+        />
       </div>
     </div>
   );
