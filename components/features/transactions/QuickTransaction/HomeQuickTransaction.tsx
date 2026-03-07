@@ -30,9 +30,9 @@ export function HomeQuickTransaction({ onSuccess }: HomeQuickTransactionProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [currentTip, setCurrentTip] = useState('');
   const [showTip, setShowTip] = useState(false);
-  const hideTipTimeoutRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
-  const initialDelayTimeoutRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
-  const tipIntervalRef = useRef<ReturnType<typeof window.setInterval> | null>(null);
+  const hideTipTimeoutRef = useRef<number | null>(null);
+  const initialDelayTimeoutRef = useRef<number | null>(null);
+  const tipIntervalRef = useRef<number | null>(null);
 
   // 小助手的话术库
   // 随机选择一句提示
