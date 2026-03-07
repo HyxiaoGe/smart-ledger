@@ -1,33 +1,17 @@
 import { formatWeekRangeLabel, getWeekNumberDescription } from '@/lib/utils/date';
 import { formatCurrencyAmount, formatSignedPercentage } from '@/lib/utils/format';
+import {
+  REPORT_CATEGORY_NAME_MAP,
+  REPORT_PAYMENT_METHOD_NAME_MAP,
+  getReportCategoryName,
+  getReportPaymentMethodName,
+} from '@/lib/utils/reportMetadata';
 
 // 周报告详情页工具函数和常量
 
-export const CATEGORY_MAP: Record<string, string> = {
-  food: '餐饮',
-  drink: '饮品',
-  transport: '交通',
-  shopping: '购物',
-  entertainment: '娱乐',
-  daily: '日用',
-  housing: '住房',
-  medical: '医疗',
-  education: '教育',
-  subscription: '订阅',
-  rent: '房租',
-  utilities: '水电费',
-  other: '其他',
-};
+export const CATEGORY_MAP = REPORT_CATEGORY_NAME_MAP;
 
-export const PAYMENT_METHOD_MAP: Record<string, string> = {
-  alipay: '支付宝',
-  wechat: '微信支付',
-  cash: '现金',
-  card: '银行卡',
-  creditcard: '信用卡',
-  debitcard: '借记卡',
-  '未指定': '其他',
-};
+export const PAYMENT_METHOD_MAP = REPORT_PAYMENT_METHOD_NAME_MAP;
 
 // 图表颜色配置
 export const CATEGORY_COLORS = [
@@ -49,11 +33,11 @@ export function getWeekDescription(date: string): string {
 }
 
 export function getCategoryName(category: string): string {
-  return CATEGORY_MAP[category.toLowerCase()] || category;
+  return getReportCategoryName(category);
 }
 
 export function getPaymentMethodName(method: string): string {
-  return PAYMENT_METHOD_MAP[method.toLowerCase()] || method;
+  return getReportPaymentMethodName(method);
 }
 
 export function formatCurrency(amount: number | null | undefined): string {

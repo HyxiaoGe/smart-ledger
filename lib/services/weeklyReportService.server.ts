@@ -6,6 +6,7 @@
 import { getWeeklyReportRepository } from '@/lib/infrastructure/repositories/index.server';
 import { formatWeekRangeLabel, getWeekNumberDescription } from '@/lib/utils/date';
 import { formatCurrencyAmount, formatSignedPercentage } from '@/lib/utils/format';
+import { getReportCategoryName, getReportPaymentMethodName } from '@/lib/utils/reportMetadata';
 import type {
   WeeklyReport,
   WeeklyReportGenerationResult,
@@ -72,49 +73,17 @@ export function getWeekDescription(date: string): string {
 }
 
 /**
- * 分类映射表（英文 → 中文）
- */
-const CATEGORY_MAP: Record<string, string> = {
-  food: '餐饮',
-  drink: '饮品',
-  transport: '交通',
-  shopping: '购物',
-  entertainment: '娱乐',
-  daily: '日用',
-  housing: '住房',
-  medical: '医疗',
-  education: '教育',
-  subscription: '订阅',
-  rent: '房租',
-  utilities: '水电费',
-  other: '其他',
-};
-
-/**
- * 支付方式映射表（英文 → 中文）
- */
-const PAYMENT_METHOD_MAP: Record<string, string> = {
-  alipay: '支付宝',
-  wechat: '微信支付',
-  cash: '现金',
-  card: '银行卡',
-  creditcard: '信用卡',
-  debitcard: '借记卡',
-  '未指定': '其他',
-};
-
-/**
  * 转换分类为中文
  */
 export function getCategoryName(category: string): string {
-  return CATEGORY_MAP[category.toLowerCase()] || category;
+  return getReportCategoryName(category);
 }
 
 /**
  * 转换支付方式为中文
  */
 export function getPaymentMethodName(method: string): string {
-  return PAYMENT_METHOD_MAP[method.toLowerCase()] || method;
+  return getReportPaymentMethodName(method);
 }
 
 /**

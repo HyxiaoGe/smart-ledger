@@ -15,6 +15,11 @@ import {
   formatSignedPercentage,
 } from '@/lib/utils/format';
 import {
+  REPORT_PAYMENT_METHOD_NAME_MAP,
+  getReportCategoryName,
+  getReportPaymentMethodName,
+} from '@/lib/utils/reportMetadata';
+import {
   ChevronLeft,
   TrendingDown,
   TrendingUp,
@@ -73,23 +78,6 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 const COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#6366f1', '#a855f7', '#0ea5e9'];
 
-// 分类名称映射
-const CATEGORY_NAMES: Record<string, string> = {
-  food: '餐饮',
-  drink: '饮品',
-  transport: '交通',
-  shopping: '购物',
-  entertainment: '娱乐',
-  daily: '日用',
-  housing: '住房',
-  medical: '医疗',
-  education: '教育',
-  subscription: '订阅',
-  rent: '房租',
-  utilities: '水电费',
-  other: '其他',
-};
-
 // 分类图标映射
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   food: <Utensils className="h-4 w-4" />,
@@ -107,19 +95,8 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   other: <MoreHorizontal className="h-4 w-4" />,
 };
 
-// 支付方式名称映射（用于静态映射）
-const PAYMENT_METHOD_NAMES: Record<string, string> = {
-  alipay: '支付宝',
-  wechat: '微信支付',
-  cash: '现金',
-  card: '银行卡',
-  creditcard: '信用卡',
-  debitcard: '借记卡',
-  '未指定': '未指定',
-};
-
 function getCategoryName(category: string): string {
-  return CATEGORY_NAMES[category.toLowerCase()] || category;
+  return getReportCategoryName(category);
 }
 
 function getCategoryIcon(category: string): React.ReactNode {
@@ -150,11 +127,11 @@ export default function MonthlyReportDetailPage() {
       if (method) return method.name;
     }
     // 再尝试静态映射
-    const staticName = PAYMENT_METHOD_NAMES[methodId.toLowerCase()];
+    const staticName = REPORT_PAYMENT_METHOD_NAME_MAP[methodId.toLowerCase()];
     if (staticName) return staticName;
     // 如果是UUID格式，返回"未知支付方式"
     if (methodId.includes('-') && methodId.length > 30) return '未知支付方式';
-    return methodId;
+    return getReportPaymentMethodName(methodId);
   };
 
   if (isLoading) {
