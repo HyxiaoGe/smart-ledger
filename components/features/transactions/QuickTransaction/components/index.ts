@@ -5,6 +5,7 @@ export { TipBanner } from './TipBanner';
 export { QuickCardHeader } from './QuickCardHeader';
 export { QuickCardFooter } from './QuickCardFooter';
 export { QuickSuggestionList } from './QuickSuggestionList';
+export { QuickSuccessToast } from './QuickSuccessToast';
 export {
   QuickSuggestionLoadingState,
   QuickSuggestionEmptyState,

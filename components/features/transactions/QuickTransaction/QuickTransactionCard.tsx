@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { ProgressToast } from '@/components/shared/ProgressToast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDateToLocal } from '@/lib/utils/date';
 import {
@@ -20,14 +19,14 @@ import {
   TipBanner,
   QuickCardHeader,
   QuickCardFooter,
+  QuickSuccessToast,
 } from './components';
+import { useQuickSuccessToast } from './useQuickSuccessToast';
 
 export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTransactionCardProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [submittingItemId, setSubmittingItemId] = useState<string | null>(null);
   const [customAmounts, setCustomAmounts] = useState<Record<string, string>>({});
-  const [showToast, setShowToast] = useState(false);
-  const [lastTransaction, setLastTransaction] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<string>('');
 
   // 获取今天的日期字符串
@@ -35,6 +34,8 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
 
   const { paymentMethods, defaultPaymentMethodId } = usePaymentMethodsWithDefault();
   const createTransaction = useCreateTransaction();
+  const { hideSuccessToast, showSuccessToast, showToast, toastMessage } =
+    useQuickSuccessToast();
 
   // 设置默认支付方式
   useEffect(() => {
@@ -111,8 +112,7 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
         payment_method: paymentMethod || null,
       });
 
-      setLastTransaction(item.title);
-      setShowToast(true);
+      showSuccessToast(`${item.title} 记账成功！`);
       onSuccess?.();
       refetchTodayCategories();
 
@@ -142,13 +142,11 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
     <AnimatePresence>
       {open && (
         <>
-          {showToast && (
-            <ProgressToast
-              message={`${lastTransaction} 记账成功！`}
-              duration={2000}
-              onClose={() => setShowToast(false)}
-            />
-          )}
+          <QuickSuccessToast
+            open={showToast}
+            message={toastMessage}
+            onClose={hideSuccessToast}
+          />
 
           {/* 弹窗背景 */}
           <motion.div

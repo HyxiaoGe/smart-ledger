@@ -4,7 +4,6 @@ import React, { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Zap, Clock, RefreshCw, X } from 'lucide-react';
-import { ProgressToast } from '@/components/shared/ProgressToast';
 import { generateTimeContext } from '@/lib/domain/noteContext';
 import { useQuickSuggestions } from '@/lib/api/hooks';
 import type { QuickTransactionSuggestion } from '@/lib/api/services/ai';
@@ -15,6 +14,7 @@ import {
   QuickSuggestionList,
   QuickSuggestionLoadingState,
   QuickSuggestionSection,
+  QuickSuccessToast,
 } from './components';
 
 interface QuickTransactionDialogProps {
@@ -38,10 +38,11 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
   const {
     createTransaction,
     lastSuccessSuggestion,
-    setShowToast,
+    hideSuccessToast,
     showToast,
     submitSuggestion,
     submittingId,
+    toastMessage,
   } = useQuickSuggestionSubmission({
     onSuccess,
     afterSuccess: () => {
@@ -62,13 +63,11 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {showToast && lastSuccessSuggestion && (
-        <ProgressToast
-          message={`${lastSuccessSuggestion.title} (¥${lastSuccessSuggestion.amount}) 记账成功！`}
-          duration={2000}
-          onClose={() => setShowToast(false)}
-        />
-      )}
+      <QuickSuccessToast
+        open={showToast && Boolean(lastSuccessSuggestion)}
+        message={toastMessage}
+        onClose={hideSuccessToast}
+      />
 
       {/* 背景遮罩 */}
       <div

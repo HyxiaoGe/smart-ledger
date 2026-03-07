@@ -4,20 +4,22 @@ import { useCallback, useState } from 'react';
 import { formatDateToLocal } from '@/lib/utils/date';
 import { useCreateTransaction } from '@/lib/api/hooks';
 import type { QuickTransactionSuggestion } from '@/lib/api/services/ai';
+import { useQuickSuccessToast } from './useQuickSuccessToast';
 
 interface QuickSuggestionSubmissionOptions {
   onSuccess?: (suggestion: QuickTransactionSuggestion) => void;
   afterSuccess?: () => void;
   refreshSuggestions?: () => void | Promise<unknown>;
   refreshDelayMs?: number;
+  getSuccessMessage?: (suggestion: QuickTransactionSuggestion) => string;
 }
 
 export function useQuickSuggestionSubmission(options?: QuickSuggestionSubmissionOptions) {
   const [submittingId, setSubmittingId] = useState<string | null>(null);
-  const [showToast, setShowToast] = useState(false);
   const [lastSuccessSuggestion, setLastSuccessSuggestion] =
     useState<QuickTransactionSuggestion | null>(null);
   const createTransaction = useCreateTransaction();
+  const { hideSuccessToast, showSuccessToast, showToast, toastMessage } = useQuickSuccessToast();
 
   const submitSuggestion = useCallback(
     async (suggestion: QuickTransactionSuggestion) => {
@@ -34,7 +36,10 @@ export function useQuickSuggestionSubmission(options?: QuickSuggestionSubmission
         });
 
         setLastSuccessSuggestion(suggestion);
-        setShowToast(true);
+        showSuccessToast(
+          options?.getSuccessMessage?.(suggestion) ||
+            `${suggestion.title} (¥${suggestion.amount}) 记账成功！`
+        );
         options?.onSuccess?.(suggestion);
 
         const delay = options?.refreshDelayMs ?? 1000;
@@ -54,7 +59,8 @@ export function useQuickSuggestionSubmission(options?: QuickSuggestionSubmission
     submitSuggestion,
     submittingId,
     showToast,
-    setShowToast,
+    hideSuccessToast,
     lastSuccessSuggestion,
+    toastMessage,
   };
 }

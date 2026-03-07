@@ -3,7 +3,6 @@
 import React, { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ProgressToast } from '@/components/shared/ProgressToast';
 import { generateTimeContext } from '@/lib/domain/noteContext';
 import { Zap, Clock, TrendingUp } from 'lucide-react';
 import { useQuickSuggestions } from '@/lib/api/hooks';
@@ -12,6 +11,7 @@ import {
   QuickSuggestionEmptyState,
   QuickSuggestionList,
   QuickSuggestionLoadingState,
+  QuickSuccessToast,
 } from './components';
 
 interface QuickTransactionProps {
@@ -34,10 +34,11 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
   const {
     createTransaction,
     lastSuccessSuggestion,
-    setShowToast,
+    hideSuccessToast,
     showToast,
     submitSuggestion,
     submittingId,
+    toastMessage,
   } = useQuickSuggestionSubmission({
     onSuccess: () => {
       onSuccess?.();
@@ -49,13 +50,11 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
 
   return (
     <>
-      {showToast && lastSuccessSuggestion && (
-        <ProgressToast
-          message={`${lastSuccessSuggestion.title} (¥${lastSuccessSuggestion.amount}) 记账成功！`}
-          duration={2000}
-          onClose={() => setShowToast(false)}
-        />
-      )}
+      <QuickSuccessToast
+        open={showToast && Boolean(lastSuccessSuggestion)}
+        message={toastMessage}
+        onClose={hideSuccessToast}
+      />
 
       <Card className={`w-full ${className}`}>
         <CardHeader className="pb-4">
