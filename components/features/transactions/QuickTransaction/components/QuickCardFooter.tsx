@@ -1,7 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { QuickModalActionBar } from './QuickModalActionBar';
 
 interface QuickCardFooterProps {
   onClose: () => void;
@@ -18,24 +17,12 @@ export function QuickCardFooter({
 }: QuickCardFooterProps) {
   return (
     <>
-      <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
-        <div className="flex items-center justify-between">
-          <Button
-            variant="outline"
-            onClick={onDetailedEntry}
-            className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-          >
-            详细记账
-          </Button>
-          <Button
-            variant="outline"
-            onClick={onClose}
-            className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-          >
-            关闭
-          </Button>
-        </div>
-      </div>
+      <QuickModalActionBar
+        onClose={onClose}
+        onDetailedEntry={onDetailedEntry}
+        onRefresh={onRefresh}
+        isLoading={isLoading}
+      />
 
       {/* 底部操作区域 */}
       <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
@@ -50,16 +37,7 @@ export function QuickCardFooter({
               <span>可修改金额</span>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onRefresh}
-            disabled={isLoading}
-            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 h-7 px-2 text-xs"
-          >
-            <RefreshCw className={`h-3 w-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
-            刷新
-          </Button>
+          <div className="text-xs text-gray-500 dark:text-gray-400">支持快速记录和金额微调</div>
         </div>
       </div>
     </>

@@ -3,7 +3,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Zap, Clock, RefreshCw, X } from 'lucide-react';
+import { Zap, Clock, X } from 'lucide-react';
 import { generateTimeContext } from '@/lib/domain/noteContext';
 import { useQuickSuggestions } from '@/lib/api/hooks';
 import type { QuickTransactionSuggestion } from '@/lib/api/services/ai';
@@ -12,6 +12,7 @@ import {
   QuickSuggestionEmptyState,
   QuickSuggestionList,
   QuickSuggestionLoadingState,
+  QuickModalActionBar,
   QuickModalShell,
   QuickSuggestionSection,
   QuickSuccessToast,
@@ -131,31 +132,13 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
             />
           )}
 
-          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefreshSuggestions}
-              disabled={loading || createTransaction.isPending}
-              className="text-gray-500 dark:text-gray-400 hover:text-gray-700"
-            >
-              <RefreshCw className={`h-4 w-4 mr-1 ${(loading || createTransaction.isPending) ? 'animate-spin' : ''}`} />
-              刷新建议
-            </Button>
-
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                onClick={handleDetailedEntry}
-                className="text-gray-600 dark:text-gray-300 hover:text-gray-800"
-              >
-                详细记账
-              </Button>
-              <Button variant="outline" onClick={handleClose}>
-                关闭
-              </Button>
-            </div>
-          </div>
+          <QuickModalActionBar
+            onClose={handleClose}
+            onDetailedEntry={handleDetailedEntry}
+            onRefresh={handleRefreshSuggestions}
+            isLoading={loading || createTransaction.isPending}
+            refreshLabel="刷新建议"
+          />
 
           <div className="text-xs text-gray-400 dark:text-gray-400 pt-2 border-t border-gray-100">
             快速记账适用于日常高频消费，基于您的个人历史数据进行智能预测。

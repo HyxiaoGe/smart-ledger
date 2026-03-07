@@ -4,6 +4,7 @@ export { PaymentMethodSelector } from './PaymentMethodSelector';
 export { TipBanner } from './TipBanner';
 export { QuickCardHeader } from './QuickCardHeader';
 export { QuickCardFooter } from './QuickCardFooter';
+export { QuickModalActionBar } from './QuickModalActionBar';
 export { QuickModalShell } from './QuickModalShell';
 export { QuickSuggestionList } from './QuickSuggestionList';
 export { QuickSuccessToast } from './QuickSuccessToast';
