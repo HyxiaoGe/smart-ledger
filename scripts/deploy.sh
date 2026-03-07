@@ -5,21 +5,26 @@ set -euo pipefail
 echo "开始自动部署..."
 echo "部署提交: ${GIT_SHA:-unknown}"
 
+cleanup_stale_container() {
+  stale_container_ids="$(docker ps -aq --filter name='^/smart-ledger-app-1$')"
+  if [ -n "${stale_container_ids}" ]; then
+    echo "清理残留容器: ${stale_container_ids}"
+    docker rm -f ${stale_container_ids}
+  fi
+}
+
 # 确保 compose 使用最新环境变量，并清理历史残留容器。
 docker compose down --remove-orphans || true
 
-stale_container_ids="$(docker ps -aq --filter name='^/smart-ledger-app-1$')"
-if [ -n "${stale_container_ids}" ]; then
-  echo "清理残留容器: ${stale_container_ids}"
-  docker rm -f ${stale_container_ids}
-fi
-
+cleanup_stale_container
 docker compose rm -sf app || true
 
 if ! docker compose up -d --build --force-recreate; then
   echo "首次启动失败，重试清理 smart-ledger-app-1 后再次启动..."
-  docker rm -f smart-ledger-app-1 || true
+  docker compose down --remove-orphans || true
+  cleanup_stale_container
   docker compose rm -sf app || true
+  sleep 2
   docker compose up -d --build --force-recreate
 fi
 

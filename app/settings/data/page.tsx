@@ -5,6 +5,10 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
+  SettingsFeatureGrid,
+  type SettingsFeatureItem,
+} from '@/components/shared/SettingsFeatureGrid';
+import {
   Database,
   Download,
   Upload,
@@ -21,7 +25,7 @@ import {
 } from 'lucide-react';
 
 export default function DataSettingsPage() {
-  const dataFeatures = [
+  const dataFeatures: SettingsFeatureItem[] = [
     {
       title: '数据备份',
       description: '自动或手动备份您的财务数据',
@@ -99,48 +103,12 @@ export default function DataSettingsPage() {
         </Card>
 
         {/* 数据管理功能 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-          {dataFeatures.map((feature, index) => (
-            <Card key={index} className="hover:shadow-lg transition-shadow duration-200">
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${
-                      feature.status === 'available'
-                        ? 'bg-blue-100 dark:bg-blue-900'
-                        : 'bg-gray-100 dark:bg-gray-800'
-                    }`}>
-                      <feature.icon className={`h-6 w-6 ${
-                        feature.status === 'available'
-                          ? 'text-blue-600 dark:text-blue-400'
-                          : 'text-gray-400 dark:text-gray-400'
-                      }`} />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg">{feature.title}</CardTitle>
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 leading-relaxed">
-                  {feature.description}
-                </p>
-                {feature.status === 'available' ? (
-                  <Button className="w-full">
-                    <Settings className="h-4 w-4 mr-2" />
-                    管理设置
-                  </Button>
-                ) : (
-                  <Button variant="outline" disabled className="w-full">
-                    <Clock className="h-4 w-4 mr-2" />
-                    敬请期待
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <SettingsFeatureGrid
+          items={dataFeatures}
+          accentTone="blue"
+          columnsClassName="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12"
+          availableActionLabel="管理设置"
+        />
 
         {/* 开发进度 */}
         <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 border-purple-200 dark:border-purple-800 dark:border-purple-800 dark:border-purple-800">

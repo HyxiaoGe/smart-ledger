@@ -1,24 +1,20 @@
 import React from 'react';
-import Link from 'next/link';
-import type { Route } from 'next';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import {
-  Wallet,
+  SettingsFeatureGrid,
+  type SettingsFeatureItem,
+} from '@/components/shared/SettingsFeatureGrid';
+import {
   Calendar,
-  Plus,
-  Settings2,
   PiggyBank,
   CreditCard,
   Tag,
-  ChevronLeft,
   BarChart3,
   FileText
 } from 'lucide-react';
 
 export default function ExpensesSettingsPage() {
-  const expenseConfigSections = [
+  const expenseConfigSections: SettingsFeatureItem[] = [
     {
       title: '固定支出管理',
       description: '设置每月固定支出，如房租、水电费等，系统会自动生成记录',
@@ -98,61 +94,11 @@ export default function ExpensesSettingsPage() {
         </div>
 
         {/* 配置模块 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
-          {expenseConfigSections.map((section, index) => (
-            <Card key={index} className="hover:shadow-lg transition-shadow duration-200">
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-3 rounded-lg ${
-                      section.status === 'available'
-                        ? 'bg-blue-100 dark:bg-blue-900'
-                        : 'bg-gray-100'
-                    }`}>
-                      <section.icon className={`h-6 w-6 ${
-                        section.status === 'available'
-                          ? 'text-blue-600'
-                          : 'text-gray-400 dark:text-gray-400'
-                      }`} />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg">{section.title}</CardTitle>
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-1 ${
-                        section.badgeColor === 'green'
-                          ? 'bg-green-100 text-green-700'
-                          : section.badgeColor === 'blue'
-                          ? 'bg-blue-100 text-blue-600'
-                          : section.badgeColor === 'purple'
-                          ? 'bg-purple-100 text-purple-700'
-                          : 'bg-gray-100 text-gray-600 dark:text-gray-300'
-                      }`}>
-                        {section.badge}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-                  {section.description}
-                </p>
-                {section.status === 'available' ? (
-                  <Link href={section.href as Route}>
-                    <Button className="w-full">
-                      <Settings2 className="h-4 w-4 mr-2" />
-                      开始配置
-                    </Button>
-                  </Link>
-                ) : (
-                  <Button variant="outline" disabled className="w-full">
-                    <Settings2 className="h-4 w-4 mr-2" />
-                    敬请期待
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <SettingsFeatureGrid
+          items={expenseConfigSections}
+          accentTone="blue"
+          columnsClassName="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12"
+        />
 
         </div>
     </div>
