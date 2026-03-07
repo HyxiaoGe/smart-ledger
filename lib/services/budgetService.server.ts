@@ -7,7 +7,7 @@
 import { prisma } from '@/lib/clients/db/prisma';
 import { CacheDecorator, memoryCache } from '@/lib/infrastructure/cache';
 import { EXCLUDE_RECURRING_CONDITIONS } from '@/lib/infrastructure/queries';
-import { getMonthDateRange } from '@/lib/utils/date';
+import { formatMonth as formatMonthKey, getMonthDateRange, shiftMonth } from '@/lib/utils/date';
 
 // 创建缓存装饰器实例
 const cacheDecorator = new CacheDecorator(memoryCache, {
@@ -392,18 +392,20 @@ export async function getBudgetHistory(
   months: number = 6
 ): Promise<BudgetHistory[]> {
   const now = new Date();
+  const currentMonthDate = new Date(now.getFullYear(), now.getMonth(), 1);
 
   // 计算日期范围
-  const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-  const startDate = new Date(now.getFullYear(), now.getMonth() - months + 1, 1);
+  const endDate = shiftMonth(currentMonthDate, 1);
+  const startDate = shiftMonth(currentMonthDate, -months + 1);
 
   // 生成要查询的年月列表
-  const monthsList: { year: number; month: number }[] = [];
+  const monthsList: { year: number; month: number; key: string }[] = [];
   for (let i = 0; i < months; i++) {
-    const targetDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const targetDate = shiftMonth(currentMonthDate, -i);
     monthsList.push({
       year: targetDate.getFullYear(),
-      month: targetDate.getMonth() + 1
+      month: targetDate.getMonth() + 1,
+      key: formatMonthKey(targetDate)
     });
   }
 
@@ -419,7 +421,7 @@ export async function getBudgetHistory(
   // 构建预算映射
   const budgetMap = new Map<string, (typeof budgets)[0]>();
   for (const budget of budgets) {
-    budgetMap.set(`${budget.year}-${budget.month}`, budget);
+    budgetMap.set(formatMonthKey(new Date(budget.year, budget.month - 1, 1)), budget);
   }
 
   // 批量查询2：获取所有月份的支出（排除固定支出）
@@ -450,18 +452,18 @@ export async function getBudgetHistory(
   const spendingByMonth = new Map<string, number>();
   for (const tx of transactions) {
     const txDate = new Date(tx.date);
-    const key = `${txDate.getFullYear()}-${txDate.getMonth() + 1}`;
+    const key = formatMonthKey(txDate);
     spendingByMonth.set(key, (spendingByMonth.get(key) || 0) + Number(tx.amount));
   }
 
   // 构建结果
   const result: BudgetHistory[] = [];
-  for (const { year, month } of monthsList) {
-    const budget = budgetMap.get(`${year}-${month}`);
+  for (const { year, month, key } of monthsList) {
+    const budget = budgetMap.get(key);
     if (!budget) continue;
 
     const budgetAmount = Number(budget.amount);
-    const spentAmount = spendingByMonth.get(`${year}-${month}`) || 0;
+    const spentAmount = spendingByMonth.get(key) || 0;
     const usagePercentage = budgetAmount > 0 ? (spentAmount / budgetAmount) * 100 : 0;
 
     result.push({
