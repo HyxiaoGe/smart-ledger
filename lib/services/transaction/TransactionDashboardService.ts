@@ -1,7 +1,13 @@
 import type { ITransactionRepository } from '@/lib/domain/repositories/ITransactionRepository';
 import { CacheDecorator } from '@/lib/infrastructure/cache';
 import type { ICache } from '@/lib/infrastructure/cache';
-import { formatDateToLocal, parseLocalDate } from '@/lib/utils/date';
+import {
+  formatDateToLocal,
+  formatMonth,
+  getMonthDateRangeStr,
+  getMonthStringFromDate,
+  parseLocalDate,
+} from '@/lib/utils/date';
 import type { Currency } from '@/types/domain/transaction';
 import { resolveTransactionRange } from './TransactionRange';
 
@@ -229,15 +235,14 @@ function generateTrendData(
   const monthlyExpense = new Map<string, number>();
 
   for (const row of expenseRows) {
-    const date = new Date(row.date);
-    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const monthKey = getMonthStringFromDate(row.date);
     monthlyExpense.set(monthKey, (monthlyExpense.get(monthKey) || 0) + Number(row.amount || 0));
   }
 
   const start = parseLocalDate(startDate) ?? new Date(startDate);
   const months = Array.from({ length: 3 }, (_, index) => {
     const date = new Date(start.getFullYear(), start.getMonth() + index, 1);
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    return formatMonth(date);
   });
 
   return months.map((monthKey) => ({
@@ -314,11 +319,12 @@ function resolveCalendarMonth(resolved: {
   if (['thisMonth', 'lastMonth', 'monthBeforeLast', 'month'].includes(resolved.key)) {
     const parsed = parseLocalDate(resolved.queryStart);
     if (parsed) {
+      const { start, end } = getMonthDateRangeStr(parsed.getFullYear(), parsed.getMonth() + 1);
       return {
         year: parsed.getFullYear(),
         month: parsed.getMonth() + 1,
-        start: formatDateToLocal(new Date(parsed.getFullYear(), parsed.getMonth(), 1)),
-        end: formatDateToLocal(new Date(parsed.getFullYear(), parsed.getMonth() + 1, 1)),
+        start,
+        end,
       };
     }
   }
@@ -326,21 +332,23 @@ function resolveCalendarMonth(resolved: {
   if (isFullMonthRange(resolved.displayStart, resolved.displayEnd)) {
     const parsed = parseLocalDate(resolved.displayStart);
     if (parsed) {
+      const { start, end } = getMonthDateRangeStr(parsed.getFullYear(), parsed.getMonth() + 1);
       return {
         year: parsed.getFullYear(),
         month: parsed.getMonth() + 1,
-        start: formatDateToLocal(new Date(parsed.getFullYear(), parsed.getMonth(), 1)),
-        end: formatDateToLocal(new Date(parsed.getFullYear(), parsed.getMonth() + 1, 1)),
+        start,
+        end,
       };
     }
   }
 
   const now = new Date();
+  const { start, end } = getMonthDateRangeStr(now.getFullYear(), now.getMonth() + 1);
   return {
     year: now.getFullYear(),
     month: now.getMonth() + 1,
-    start: formatDateToLocal(new Date(now.getFullYear(), now.getMonth(), 1)),
-    end: formatDateToLocal(new Date(now.getFullYear(), now.getMonth() + 1, 1)),
+    start,
+    end,
   };
 }
 
@@ -348,7 +356,7 @@ function generateCalendarData(rows: any[]) {
   const dailyMap = new Map<string, { amount: number; count: number }>();
 
   for (const row of rows) {
-    const date = formatDateToLocal(new Date(row.date));
+    const date = getMonthDateKey(row.date);
     const current = dailyMap.get(date) || { amount: 0, count: 0 };
     dailyMap.set(date, {
       amount: current.amount + Number(row.amount || 0),
@@ -372,4 +380,17 @@ function isFullMonthRange(startStr: string, endStr: string): boolean {
   if (start.getDate() !== 1) return false;
   const lastDay = new Date(start.getFullYear(), start.getMonth() + 1, 0).getDate();
   return end.getDate() === lastDay;
+}
+
+function getMonthDateKey(value: string | Date) {
+  if (value instanceof Date) {
+    return formatDateToLocal(value);
+  }
+
+  const localDateMatch = value.match(/^\d{4}-\d{2}-\d{2}/);
+  if (localDateMatch) {
+    return localDateMatch[0];
+  }
+
+  return formatDateToLocal(new Date(value));
 }
