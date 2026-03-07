@@ -116,6 +116,46 @@ export function formatDateTimeToZhCN(
   return date.toLocaleString('zh-CN');
 }
 
+export function formatDateToZhCN(
+  value: string | Date | null | undefined,
+  fallback = '未知'
+): string {
+  if (!value) return fallback;
+
+  const date = value instanceof Date ? value : parseLocalDate(value) ?? new Date(value);
+  if (Number.isNaN(date.getTime())) return fallback;
+
+  return date.toLocaleDateString('zh-CN');
+}
+
+export function formatMonthDayLabelZhCN(
+  value: string | Date | null | undefined,
+  fallback = '未知'
+): string {
+  if (!value) return fallback;
+
+  const date = value instanceof Date ? value : parseLocalDate(value) ?? new Date(value);
+  if (Number.isNaN(date.getTime())) return fallback;
+
+  return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+}
+
+export function formatDateTimePartsZhCN(
+  value: string | Date | null | undefined
+): { date: string; time: string; full: string } {
+  const fallback = { date: '未知', time: '未知', full: '未知' };
+  if (!value) return fallback;
+
+  const date = value instanceof Date ? value : parseLocalDate(value) ?? new Date(value);
+  if (Number.isNaN(date.getTime())) return fallback;
+
+  return {
+    date: date.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' }),
+    time: date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
+    full: date.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' }),
+  };
+}
+
 export function parseLocalDate(value: string): Date | null {
   const parts = value.split('-');
   if (parts.length !== 3) return null;

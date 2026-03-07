@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Calendar, Pause, Play, Edit, Trash2, History, Clock } from 'lucide-react';
 import type { RecurringExpense } from '@/lib/api/services/recurring-expenses';
+import { formatDateToZhCN } from '@/lib/utils/date';
 import { FREQUENCY_LABELS, CATEGORY_ICONS } from '../constants';
 
 interface GenerationStatus {
@@ -26,9 +27,7 @@ function formatDateLabel(dateStr?: string) {
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
     return dateStr;
   }
-  const date = new Date(dateStr);
-  if (Number.isNaN(date.getTime())) return dateStr;
-  return date.toLocaleDateString('zh-CN');
+  return formatDateToZhCN(dateStr, dateStr);
 }
 
 export function RecurringExpenseCard({

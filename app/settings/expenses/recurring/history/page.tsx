@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PageSkeleton } from '@/components/shared/PageSkeleton';
 import { recurringExpensesApi, type RecurringGenerationHistory } from '@/lib/api/services/recurring-expenses';
+import { formatDateTimePartsZhCN } from '@/lib/utils/date';
 import {
   ChevronLeft,
   History,
@@ -127,12 +128,7 @@ export default function RecurringHistoryPage() {
 
   // 格式化时间
   const formatDateTime = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return {
-      date: date.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' }),
-      time: date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
-      full: date.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })
-    };
+    return formatDateTimePartsZhCN(dateStr);
   };
 
   if (loading) {

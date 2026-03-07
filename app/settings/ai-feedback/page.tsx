@@ -32,7 +32,12 @@ import {
 } from 'lucide-react';
 import { aiFeedbackService, getAIFeedbackStats } from '@/lib/services/ai';
 import type { AIFeedback, AIFeedbackStats } from '@/types/ai-feedback';
-import { formatDateTimeToZhCN, formatDateToLocal } from '@/lib/utils/date';
+import {
+  formatDateTimeToZhCN,
+  formatDateToLocal,
+  formatMonthDayLabelZhCN,
+} from '@/lib/utils/date';
+import { getAIFeedbackFeatureName } from '@/lib/utils/aiFeedback';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
@@ -149,7 +154,7 @@ export default function AIFeedbackManagementPage() {
     if (!stats) return [];
 
     return Object.entries(stats.featureStats).map(([feature, data]) => ({
-      name: getFeatureTypeName(feature),
+      name: getAIFeedbackFeatureName(feature),
       count: data.count,
       avgRating: data.avgRating
     }));
@@ -179,7 +184,7 @@ export default function AIFeedbackManagementPage() {
       });
 
       data.push({
-        date: date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' }),
+        date: formatMonthDayLabelZhCN(date),
         count: dayFeedbacks.length,
         avgRating: dayFeedbacks.length > 0
           ? dayFeedbacks.reduce((sum, f) => sum + (f.rating || 0), 0) / dayFeedbacks.length
@@ -188,18 +193,6 @@ export default function AIFeedbackManagementPage() {
     }
 
     return data;
-  };
-
-  const getFeatureTypeName = (feature: string): string => {
-    const names: Record<string, string> = {
-      spending_prediction: '支出预测',
-      smart_analysis: '智能分析',
-      budget_recommendation: '预算建议',
-      anomaly_detection: '异常检测',
-      auto_categorization: '自动分类',
-      deep_insight: '深度洞察'
-    };
-    return names[feature] || feature;
   };
 
   if (loading) {
@@ -422,7 +415,7 @@ export default function AIFeedbackManagementPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <Badge variant="outline">
-                        {getFeatureTypeName(feedback.featureType)}
+                        {getAIFeedbackFeatureName(feedback.featureType)}
                       </Badge>
                       <Badge variant={feedback.status === 'pending' ? 'default' : 'outline'}>
                         {feedback.status}

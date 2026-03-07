@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { categoriesApi } from '@/lib/api/services/categories';
+import { formatDateToZhCN } from '@/lib/utils/date';
 
 // 生成分类键
 function generateCategoryKey(): string {
@@ -334,7 +335,7 @@ export default function CategoriesPage() {
 
                   {category.last_used && (
                     <div className="text-xs text-gray-500 mb-3">
-                      最后使用：{new Date(category.last_used).toLocaleDateString('zh-CN')}
+                      最后使用：{formatDateToZhCN(category.last_used)}
                     </div>
                   )}
 
