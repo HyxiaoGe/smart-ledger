@@ -14,19 +14,15 @@ import {
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { adminApi } from '@/lib/api/services/admin';
 import { formatDateTimeShortZhCN } from '@/lib/utils/date';
+import { getCronCategoryStyle, getCronStatusStyle } from './utils';
 import {
   Clock,
   CheckCircle2,
-  XCircle,
   Activity,
   Calendar,
   Zap,
   TrendingUp,
-  AlertCircle,
   Database,
-  Cpu,
-  Sparkles,
-  Settings
 } from 'lucide-react';
 
 export default function CronManagementPage() {
@@ -86,78 +82,6 @@ export default function CronManagementPage() {
       ? (stats.reduce((sum, s) => sum + Number(s.success_count), 0) /
         Math.max(stats.reduce((sum, s) => sum + Number(s.total_runs), 0), 1) * 100).toFixed(1)
       : '0',
-  };
-
-  // 获取分类图标和颜色
-  const getCategoryStyle = (category: string) => {
-    switch (category) {
-      case 'business':
-        return {
-          icon: Database,
-          bgColor: 'bg-blue-50 dark:bg-blue-950',
-          iconColor: 'text-blue-600',
-          borderColor: 'border-blue-200 dark:border-blue-800'
-        };
-      case 'ai':
-        return {
-          icon: Sparkles,
-          bgColor: 'bg-purple-50 dark:bg-purple-950',
-          iconColor: 'text-purple-600',
-          borderColor: 'border-purple-200 dark:border-purple-800'
-        };
-      case 'maintenance':
-        return {
-          icon: Settings,
-          bgColor: 'bg-green-50 dark:bg-green-950',
-          iconColor: 'text-green-600',
-          borderColor: 'border-green-200 dark:border-green-800'
-        };
-      default:
-        return {
-          icon: Cpu,
-          bgColor: 'bg-gray-50 dark:bg-gray-900',
-          iconColor: 'text-gray-600',
-          borderColor: 'border-gray-200 dark:border-gray-700'
-        };
-    }
-  };
-
-  // 状态样式
-  const getStatusStyle = (status: string) => {
-    switch (status) {
-      case 'succeeded':
-        return {
-          icon: CheckCircle2,
-          color: 'text-green-600',
-          bg: 'bg-green-50 dark:bg-green-950',
-          border: 'border-green-200 dark:border-green-800',
-          label: '成功'
-        };
-      case 'failed':
-        return {
-          icon: XCircle,
-          color: 'text-red-600',
-          bg: 'bg-red-50 dark:bg-red-950',
-          border: 'border-red-200 dark:border-red-800',
-          label: '失败'
-        };
-      case 'running':
-        return {
-          icon: Activity,
-          color: 'text-blue-600',
-          bg: 'bg-blue-50 dark:bg-blue-950',
-          border: 'border-blue-200 dark:border-blue-800',
-          label: '运行中'
-        };
-      default:
-        return {
-          icon: AlertCircle,
-          color: 'text-gray-600',
-          bg: 'bg-gray-50 dark:bg-gray-900',
-          border: 'border-gray-200 dark:border-gray-700',
-          label: '未知'
-        };
-    }
   };
 
   // 格式化时间
@@ -306,7 +230,7 @@ export default function CronManagementPage() {
               <div className="space-y-4">
                 {jobs.map((job) => {
                   const jobDesc = getJobDescription(job.jobname);
-                  const categoryStyle = getCategoryStyle(jobDesc.category);
+                  const categoryStyle = getCronCategoryStyle(jobDesc.category);
                   const CategoryIcon = categoryStyle.icon;
                   const jobStat = stats.find(s => s.jobid === job.jobid);
                   const nextRun = calculateNextRun(job.schedule, jobStat?.last_run_time || undefined);
@@ -423,7 +347,7 @@ export default function CronManagementPage() {
             ) : (
               <div className="space-y-2">
                 {todayHistory.map((run) => {
-                  const statusStyle = getStatusStyle(run.status);
+                  const statusStyle = getCronStatusStyle(run.status);
                   const StatusIcon = statusStyle.icon;
                   const job = jobs.find(j => j.jobid === run.jobid);
                   const jobDesc = job ? getJobDescription(job.jobname) : null;
