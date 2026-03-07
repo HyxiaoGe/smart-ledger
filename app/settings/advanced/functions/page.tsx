@@ -10,10 +10,8 @@ import {
   Search,
   ChevronDown,
   ChevronUp,
-  Zap,
   BarChart3,
   Sparkles,
-  Settings,
   Info
 } from 'lucide-react';
 import {
@@ -22,6 +20,7 @@ import {
   searchFunctions,
   type FunctionInfo
 } from '@/lib/services/functionService';
+import { FUNCTION_CATEGORY_CONFIG, getFunctionCategoryConfig } from './utils';
 
 export default function FunctionsManagementPage() {
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['business']);
@@ -39,45 +38,6 @@ export default function FunctionsManagementPage() {
         ? prev.filter(c => c !== category)
         : [...prev, category]
     );
-  };
-
-  // 获取分类配置
-  const getCategoryConfig = (category: string) => {
-    const configs = {
-      business: {
-        title: '核心业务功能',
-        icon: Database,
-        iconColor: 'text-blue-600',
-        bgColor: 'bg-blue-50 dark:bg-blue-950',
-        borderColor: 'border-blue-200 dark:border-blue-800',
-        description: '增删改操作'
-      },
-      query: {
-        title: '数据查询分析',
-        icon: BarChart3,
-        iconColor: 'text-green-600',
-        bgColor: 'bg-green-50 dark:bg-green-950',
-        borderColor: 'border-green-200 dark:border-green-800',
-        description: '统计和报表'
-      },
-      ai: {
-        title: 'AI 智能助手',
-        icon: Sparkles,
-        iconColor: 'text-purple-600',
-        bgColor: 'bg-purple-50 dark:bg-purple-950',
-        borderColor: 'border-purple-200 dark:border-purple-800',
-        description: '预测和建议'
-      },
-      maintenance: {
-        title: '系统维护',
-        icon: Settings,
-        iconColor: 'text-orange-600',
-        bgColor: 'bg-orange-50 dark:bg-orange-950',
-        borderColor: 'border-orange-200 dark:border-orange-800',
-        description: '维护和监控'
-      }
-    };
-    return configs[category as keyof typeof configs];
   };
 
   return (
@@ -113,11 +73,11 @@ export default function FunctionsManagementPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.business}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">核心业务功能</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">增删改操作</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{FUNCTION_CATEGORY_CONFIG.business.title}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">{FUNCTION_CATEGORY_CONFIG.business.description}</div>
                 </div>
-                <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                  <Database className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                <div className={`p-3 rounded-lg ${FUNCTION_CATEGORY_CONFIG.business.bgColor}`}>
+                  <Database className={`h-6 w-6 ${FUNCTION_CATEGORY_CONFIG.business.iconColor} dark:text-blue-400`} />
                 </div>
               </div>
             </CardContent>
@@ -128,11 +88,11 @@ export default function FunctionsManagementPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.query}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">数据查询分析</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">统计和报表</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{FUNCTION_CATEGORY_CONFIG.query.title}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">{FUNCTION_CATEGORY_CONFIG.query.description}</div>
                 </div>
-                <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg">
-                  <BarChart3 className="h-6 w-6 text-green-600 dark:text-green-400" />
+                <div className={`p-3 rounded-lg ${FUNCTION_CATEGORY_CONFIG.query.bgColor}`}>
+                  <BarChart3 className={`h-6 w-6 ${FUNCTION_CATEGORY_CONFIG.query.iconColor} dark:text-green-400`} />
                 </div>
               </div>
             </CardContent>
@@ -143,11 +103,11 @@ export default function FunctionsManagementPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.ai}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">AI 智能助手</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">预测和建议</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{FUNCTION_CATEGORY_CONFIG.ai.title}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">{FUNCTION_CATEGORY_CONFIG.ai.description}</div>
                 </div>
-                <div className="p-3 bg-purple-50 dark:bg-purple-950 rounded-lg">
-                  <Sparkles className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                <div className={`p-3 rounded-lg ${FUNCTION_CATEGORY_CONFIG.ai.bgColor}`}>
+                  <Sparkles className={`h-6 w-6 ${FUNCTION_CATEGORY_CONFIG.ai.iconColor} dark:text-purple-400`} />
                 </div>
               </div>
             </CardContent>
@@ -199,7 +159,7 @@ export default function FunctionsManagementPage() {
         ) : (
           <div className="space-y-4">
             {Object.entries(functionsByCategory).map(([category, functions]) => {
-              const config = getCategoryConfig(category);
+              const config = getFunctionCategoryConfig(category as FunctionInfo['category']);
               const isExpanded = expandedCategories.includes(category);
               const Icon = config.icon;
 
@@ -280,15 +240,7 @@ export default function FunctionsManagementPage() {
 
 // 函数卡片组件
 function FunctionCard({ func, onViewDetail }: { func: FunctionInfo; onViewDetail: () => void }) {
-  const getCategoryColor = (category: string) => {
-    const colors = {
-      business: 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300',
-      query: 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300',
-      ai: 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300',
-      maintenance: 'bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300'
-    };
-    return colors[category as keyof typeof colors];
-  };
+  const categoryConfig = getFunctionCategoryConfig(func.category);
 
   return (
     <div className="p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-purple-300 dark:hover:border-purple-700 transition-colors bg-gray-50 dark:bg-gray-900">
@@ -296,11 +248,8 @@ function FunctionCard({ func, onViewDetail }: { func: FunctionInfo; onViewDetail
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
             <h4 className="font-semibold text-gray-900 dark:text-gray-100">{func.title}</h4>
-            <span className={`text-xs px-2 py-0.5 rounded-full ${getCategoryColor(func.category)}`}>
-              {func.category === 'business' && '业务'}
-              {func.category === 'query' && '查询'}
-              {func.category === 'ai' && 'AI'}
-              {func.category === 'maintenance' && '维护'}
+            <span className={`text-xs px-2 py-0.5 rounded-full ${categoryConfig.badgeClassName}`}>
+              {categoryConfig.shortLabel}
             </span>
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{func.summary}</p>
