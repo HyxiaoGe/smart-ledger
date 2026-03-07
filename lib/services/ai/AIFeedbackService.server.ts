@@ -6,6 +6,7 @@
 import { getAIFeedbackRepository } from '@/lib/infrastructure/repositories/index.server';
 import { memoryCache } from '@/lib/infrastructure/cache';
 import { STORAGE_KEYS } from '@/lib/config/storageKeys';
+import { formatDateToLocal } from '@/lib/utils/date';
 import type {
   AIFeedback,
   AIRequest,
@@ -225,8 +226,8 @@ export class AIFeedbackService {
     return {
       ...result,
       period: dateRange || {
-        start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-        end: new Date().toISOString().slice(0, 10),
+        start: formatDateToLocal(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)),
+        end: formatDateToLocal(new Date()),
       },
     };
   }

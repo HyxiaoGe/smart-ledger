@@ -372,7 +372,7 @@ export class PrismaTransactionRepository implements ITransactionRepository {
       category: row.category,
       amount: Number(row.amount),
       note: row.note,
-      date: row.date instanceof Date ? row.date.toISOString().slice(0, 10) : row.date,
+      date: row.date instanceof Date ? formatDateToLocal(row.date) : row.date,
       created_at: row.created_at?.toISOString?.() || row.created_at,
       currency: row.currency || 'CNY',
       payment_method: row.payment_method,

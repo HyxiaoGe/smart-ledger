@@ -3,6 +3,7 @@ import { getAiConfig } from '@/lib/clients/ai/client';
 import { getPrismaClient } from '@/lib/clients/db';
 import { getErrorMessage } from '@/types/common';
 import { EXCLUDE_RECURRING_CONDITIONS } from '@/lib/infrastructure/queries';
+import { formatDateToLocal } from '@/lib/utils/date';
 
 // 改为 nodejs runtime 以支持 Prisma
 export const runtime = 'nodejs';
@@ -128,7 +129,7 @@ export async function GET(req: NextRequest) {
     if (month) {
       const start = `${month}-01`;
       const endDate = new Date(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 1);
-      const end = endDate.toISOString().slice(0, 10);
+      const end = formatDateToLocal(endDate);
 
       const prisma = getPrismaClient();
       rows = await prisma.transactions.findMany({

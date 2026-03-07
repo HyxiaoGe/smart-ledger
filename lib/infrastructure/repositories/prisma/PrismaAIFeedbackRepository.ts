@@ -14,6 +14,7 @@ import type {
   AIFeedbackFilter,
   AIFeatureType,
 } from '@/lib/domain/repositories/IAIFeedbackRepository';
+import { formatDateToLocal } from '@/lib/utils/date';
 
 export class PrismaAIFeedbackRepository implements IAIFeedbackRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -144,18 +145,25 @@ export class PrismaAIFeedbackRepository implements IAIFeedbackRepository {
       : 0;
 
     const now = new Date();
-    const today = now.toISOString().slice(0, 10);
-    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const today = formatDateToLocal(now);
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     return {
       totalFeedbacks: total,
       averageRating: Math.round(avgRating * 100) / 100,
       positiveRate: total > 0 ? positive / total : 0,
       timeStats: {
-        today: feedbacks.filter((f: { timestamp: Date | null }) => f.timestamp?.toISOString().slice(0, 10) === today).length,
-        thisWeek: feedbacks.filter((f: { timestamp: Date | null }) => f.timestamp && f.timestamp.toISOString() >= weekAgo).length,
-        thisMonth: feedbacks.filter((f: { timestamp: Date | null }) => f.timestamp && f.timestamp.toISOString() >= monthAgo).length,
+        today: feedbacks.filter(
+          (f: { timestamp: Date | null }) =>
+            f.timestamp && formatDateToLocal(f.timestamp) === today
+        ).length,
+        thisWeek: feedbacks.filter(
+          (f: { timestamp: Date | null }) => f.timestamp && f.timestamp >= weekAgo
+        ).length,
+        thisMonth: feedbacks.filter(
+          (f: { timestamp: Date | null }) => f.timestamp && f.timestamp >= monthAgo
+        ).length,
       },
       sentimentAnalysis: {
         positive,

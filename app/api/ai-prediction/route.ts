@@ -3,6 +3,7 @@ import { getPrismaClient } from '@/lib/clients/db';
 import { aiPredictionServiceServer } from '@/lib/services/aiPrediction.server';
 import { generateTimeContext } from '@/lib/domain/noteContext';
 import { withErrorHandler, ApiError } from '@/lib/utils/apiErrorHandler';
+import { formatDateToLocal } from '@/lib/utils/date';
 
 export const runtime = 'nodejs';
 
@@ -96,7 +97,7 @@ async function handlePredictTransaction(params: {
       // 获取最近7天的交易记录
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      const startDate = sevenDaysAgo.toISOString().slice(0, 10);
+      const startDate = formatDateToLocal(sevenDaysAgo);
 
       const prisma = getPrismaClient();
       recentTransactions = await prisma.transactions.findMany({
