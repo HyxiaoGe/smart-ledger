@@ -24,10 +24,5 @@ jobs:
           cp /home/heyanxiao/project/smart-ledger/.env.local .
           cp /home/heyanxiao/project/smart-ledger/.env.local .env
 
-          echo "开始自动部署..."
-          echo "部署提交: ${GIT_SHA}"
-          docker compose down
-          docker compose up -d --build
-          docker image prune -f
-          echo "部署完成！"
-          docker inspect smart-ledger-app-1 --format 'APP_GIT_SHA={{range .Config.Env}}{{println .}}{{end}}' | grep APP_GIT_SHA || true
+          chmod +x ./scripts/deploy.sh
+          ./scripts/deploy.sh
