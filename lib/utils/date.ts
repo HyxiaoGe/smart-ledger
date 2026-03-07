@@ -104,6 +104,18 @@ export function formatDateToLocal(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+export function formatDateTimeToZhCN(
+  value: string | Date | null | undefined,
+  fallback = '未知'
+): string {
+  if (!value) return fallback;
+
+  const date = value instanceof Date ? value : parseLocalDate(value) ?? new Date(value);
+  if (Number.isNaN(date.getTime())) return fallback;
+
+  return date.toLocaleString('zh-CN');
+}
+
 export function parseLocalDate(value: string): Date | null {
   const parts = value.split('-');
   if (parts.length !== 3) return null;

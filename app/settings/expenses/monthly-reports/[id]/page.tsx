@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { monthlyReportsApi, type MonthlyReport } from '@/lib/api/services/monthly-reports';
 import { paymentMethodsApi } from '@/lib/api/services/payment-methods';
-import { formatYearMonthLabel } from '@/lib/utils/date';
+import { formatDateTimeToZhCN, formatYearMonthLabel } from '@/lib/utils/date';
 import {
   formatCurrencyAmount,
   formatSharePercentage,
@@ -197,7 +197,7 @@ export default function MonthlyReportDetailPage() {
             </h2>
           </div>
           <p className="text-blue-100 text-sm">
-            月度财务报告 · 生成于 {new Date(report.generated_at).toLocaleString('zh-CN')}
+            月度财务报告 · 生成于 {formatDateTimeToZhCN(report.generated_at)}
           </p>
         </div>
 

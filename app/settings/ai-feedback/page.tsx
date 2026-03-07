@@ -32,7 +32,7 @@ import {
 } from 'lucide-react';
 import { aiFeedbackService, getAIFeedbackStats } from '@/lib/services/ai';
 import type { AIFeedback, AIFeedbackStats } from '@/types/ai-feedback';
-import { formatDateToLocal } from '@/lib/utils/date';
+import { formatDateTimeToZhCN, formatDateToLocal } from '@/lib/utils/date';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
@@ -440,7 +440,7 @@ export default function AIFeedbackManagementPage() {
                     )}
 
                     <div className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-500">
-                      {new Date(feedback.timestamp).toLocaleString('zh-CN')}
+                      {formatDateTimeToZhCN(feedback.timestamp)}
                     </div>
                   </div>
 
