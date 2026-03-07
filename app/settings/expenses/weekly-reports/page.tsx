@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
 import { weeklyReportsApi, type WeeklyReport } from '@/lib/api/services/weekly-reports';
 import { formatWeekRangeLabel, getWeekNumberDescription } from '@/lib/utils/date';
+import { formatCurrencyAmount, formatSignedPercentage } from '@/lib/utils/format';
 import {
   ChevronLeft,
   TrendingDown,
@@ -21,19 +22,6 @@ import {
   BarChart3
 } from 'lucide-react';
 
-function formatCurrency(amount: number | null | undefined): string {
-  if (amount == null) return '0.00';
-  return amount.toLocaleString('zh-CN', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-}
-
-function formatPercentage(value: number | null | undefined): string {
-  if (value == null) return '+0.0%';
-  const sign = value > 0 ? '+' : '';
-  return `${sign}${value.toFixed(1)}%`;
-}
 import {
   LineChart,
   Line,
@@ -222,7 +210,7 @@ export default function WeeklyReportsPage() {
                   <DollarSign className="h-4 w-4 text-red-500" />
                 </div>
                 <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  ¥{formatCurrency(latestReport.total_expenses)}
+                  ¥{formatCurrencyAmount(latestReport.total_expenses)}
                 </div>
               </CardHeader>
               <CardContent>
@@ -246,7 +234,7 @@ export default function WeeklyReportsPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  平均 ¥{formatCurrency(latestReport.average_transaction ?? 0)}/笔
+                  平均 ¥{formatCurrencyAmount(latestReport.average_transaction ?? 0)}/笔
                 </p>
               </CardContent>
             </Card>
@@ -276,7 +264,7 @@ export default function WeeklyReportsPage() {
                     ? 'text-red-600 dark:text-red-400'
                     : 'text-green-600 dark:text-green-400'
                 }`}>
-                  {formatPercentage(latestReport.week_over_week_percentage)}
+                  {formatSignedPercentage(latestReport.week_over_week_percentage)}
                 </div>
               </CardHeader>
               <CardContent>
@@ -356,7 +344,7 @@ export default function WeeklyReportsPage() {
                     }}
                     formatter={(value: number, name: string) => {
                       if (name === 'amount') {
-                        return [`¥${formatCurrency(value)}`, '总支出'];
+                        return [`¥${formatCurrencyAmount(value)}`, '总支出'];
                       }
                       return [value, '交易笔数'];
                     }}
@@ -435,7 +423,7 @@ export default function WeeklyReportsPage() {
                           <div>
                             <p className="text-sm text-gray-500 dark:text-gray-400">总支出</p>
                             <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                              ¥{formatCurrency(report.total_expenses)}
+                              ¥{formatCurrencyAmount(report.total_expenses)}
                             </p>
                           </div>
                           <div>
@@ -451,7 +439,7 @@ export default function WeeklyReportsPage() {
                                 ? 'text-red-500'
                                 : 'text-green-500'
                             }`}>
-                              {formatPercentage(report.week_over_week_percentage)}
+                              {formatSignedPercentage(report.week_over_week_percentage)}
                             </p>
                           </div>
                         </div>

@@ -10,6 +10,11 @@ import { monthlyReportsApi, type MonthlyReport } from '@/lib/api/services/monthl
 import { paymentMethodsApi } from '@/lib/api/services/payment-methods';
 import { formatYearMonthLabel } from '@/lib/utils/date';
 import {
+  formatCurrencyAmount,
+  formatSharePercentage,
+  formatSignedPercentage,
+} from '@/lib/utils/format';
+import {
   ChevronLeft,
   TrendingDown,
   TrendingUp,
@@ -112,18 +117,6 @@ const PAYMENT_METHOD_NAMES: Record<string, string> = {
   debitcard: '借记卡',
   '未指定': '未指定',
 };
-
-function formatCurrency(amount: number): string {
-  return amount.toLocaleString('zh-CN', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-}
-
-function formatPercentage(value: number): string {
-  const sign = value > 0 ? '+' : '';
-  return `${sign}${value.toFixed(1)}%`;
-}
 
 function getCategoryName(category: string): string {
   return CATEGORY_NAMES[category.toLowerCase()] || category;
@@ -243,7 +236,7 @@ export default function MonthlyReportDetailPage() {
                 <span className="text-sm font-medium">总支出</span>
               </div>
               <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                ¥{formatCurrency(report.total_expenses)}
+                ¥{formatCurrencyAmount(report.total_expenses)}
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                 {report.transaction_count} 笔交易
@@ -261,10 +254,10 @@ export default function MonthlyReportDetailPage() {
                 <span className="text-sm font-medium">固定支出</span>
               </div>
               <div className="text-2xl font-bold text-orange-700 dark:text-orange-300">
-                ¥{formatCurrency(report.fixed_expenses)}
+                ¥{formatCurrencyAmount(report.fixed_expenses)}
               </div>
               <div className="text-sm text-orange-600 dark:text-orange-400 mt-2">
-                {report.fixed_transaction_count} 笔 · {((report.fixed_expenses / report.total_expenses) * 100).toFixed(1)}%
+                {report.fixed_transaction_count} 笔 · {formatSharePercentage(report.fixed_expenses, report.total_expenses)}
               </div>
             </CardContent>
           </Card>
@@ -279,10 +272,10 @@ export default function MonthlyReportDetailPage() {
                 <span className="text-sm font-medium">可变支出</span>
               </div>
               <div className="text-2xl font-bold text-green-700 dark:text-green-300">
-                ¥{formatCurrency(report.variable_expenses)}
+                ¥{formatCurrencyAmount(report.variable_expenses)}
               </div>
               <div className="text-sm text-green-600 dark:text-green-400 mt-2">
-                {report.variable_transaction_count} 笔 · {((report.variable_expenses / report.total_expenses) * 100).toFixed(1)}%
+                {report.variable_transaction_count} 笔 · {formatSharePercentage(report.variable_expenses, report.total_expenses)}
               </div>
             </CardContent>
           </Card>
@@ -318,7 +311,7 @@ export default function MonthlyReportDetailPage() {
                   : 'text-emerald-700 dark:text-emerald-300'
               }`}>
                 {report.month_over_month_percentage
-                  ? formatPercentage(report.month_over_month_percentage)
+                  ? formatSignedPercentage(report.month_over_month_percentage)
                   : '-'}
               </div>
               {report.month_over_month_change !== null && (
@@ -327,7 +320,7 @@ export default function MonthlyReportDetailPage() {
                     ? 'text-red-600 dark:text-red-400'
                     : 'text-emerald-600 dark:text-emerald-400'
                 }`}>
-                  {report.month_over_month_change > 0 ? '+' : ''}¥{formatCurrency(Math.abs(report.month_over_month_change))}
+                  {report.month_over_month_change > 0 ? '+' : ''}¥{formatCurrencyAmount(Math.abs(report.month_over_month_change))}
                 </div>
               )}
             </CardContent>
@@ -364,7 +357,7 @@ export default function MonthlyReportDetailPage() {
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value: number) => `¥${formatCurrency(value)}`} />
+                    <Tooltip formatter={(value: number) => `¥${formatCurrencyAmount(value)}`} />
                   </RechartsPieChart>
                 </ResponsiveContainer>
               </div>
@@ -408,7 +401,7 @@ export default function MonthlyReportDetailPage() {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value: number) => `¥${formatCurrency(value)}`} />
+                    <Tooltip formatter={(value: number) => `¥${formatCurrencyAmount(value)}`} />
                     <Legend />
                   </RechartsPieChart>
                 </ResponsiveContainer>
@@ -456,7 +449,7 @@ export default function MonthlyReportDetailPage() {
                       </div>
                       <div className="text-right">
                         <div className="font-semibold text-orange-600 dark:text-orange-400">
-                          ¥{formatCurrency(item.amount)}
+                          ¥{formatCurrencyAmount(item.amount)}
                         </div>
                         {item.count > 1 && (
                           <div className="text-xs text-orange-500 dark:text-orange-500">
@@ -510,7 +503,7 @@ export default function MonthlyReportDetailPage() {
                       </div>
                       <div className="text-right">
                         <div className="font-semibold text-gray-900 dark:text-gray-100">
-                          ¥{formatCurrency(item.amount)}
+                          ¥{formatCurrencyAmount(item.amount)}
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
                           {item.percentage.toFixed(1)}%
@@ -566,7 +559,7 @@ export default function MonthlyReportDetailPage() {
                       </div>
                       <div className="text-right">
                         <div className="font-semibold text-gray-900 dark:text-gray-100">
-                          ¥{formatCurrency(item.amount)}
+                          ¥{formatCurrencyAmount(item.amount)}
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
                           {item.count}笔
@@ -599,7 +592,7 @@ export default function MonthlyReportDetailPage() {
                       </span>
                       <div className="text-right">
                         <span className="font-semibold text-gray-900 dark:text-gray-100">
-                          ¥{formatCurrency(item.amount)}
+                          ¥{formatCurrencyAmount(item.amount)}
                         </span>
                         <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
                           {item.count}笔
@@ -637,19 +630,19 @@ export default function MonthlyReportDetailPage() {
               <div className="text-center p-5 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 rounded-xl">
                 <div className="text-sm text-blue-600 dark:text-blue-400 mb-2 font-medium">日均支出</div>
                 <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
-                  ¥{report.average_daily_expense ? formatCurrency(report.average_daily_expense) : '-'}
+                  ¥{report.average_daily_expense ? formatCurrencyAmount(report.average_daily_expense) : '-'}
                 </div>
               </div>
               <div className="text-center p-5 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/50 dark:to-pink-950/50 rounded-xl">
                 <div className="text-sm text-purple-600 dark:text-purple-400 mb-2 font-medium">单笔均价</div>
                 <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">
-                  ¥{report.average_transaction ? formatCurrency(report.average_transaction) : '-'}
+                  ¥{report.average_transaction ? formatCurrencyAmount(report.average_transaction) : '-'}
                 </div>
               </div>
               <div className="text-center p-5 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/50 dark:to-emerald-950/50 rounded-xl">
                 <div className="text-sm text-green-600 dark:text-green-400 mb-2 font-medium">日均可变支出</div>
                 <div className="text-2xl font-bold text-green-700 dark:text-green-300">
-                  ¥{formatCurrency(report.variable_expenses / new Date(report.year, report.month, 0).getDate())}
+                  ¥{formatCurrencyAmount(report.variable_expenses / new Date(report.year, report.month, 0).getDate())}
                 </div>
               </div>
             </div>

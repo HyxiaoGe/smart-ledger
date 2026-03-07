@@ -9,6 +9,11 @@ import { useToast } from '@/components/ui/toast';
 import { monthlyReportsApi, type MonthlyReport } from '@/lib/api/services/monthly-reports';
 import { formatYearMonthLabel } from '@/lib/utils/date';
 import {
+  formatCurrencyAmount,
+  formatSharePercentage,
+  formatSignedPercentage,
+} from '@/lib/utils/format';
+import {
   ChevronLeft,
   TrendingDown,
   TrendingUp,
@@ -35,21 +40,8 @@ import {
   Legend
 } from 'recharts';
 
-function formatCurrency(amount: number): string {
-  return amount.toLocaleString('zh-CN', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-}
-
-function formatPercentage(value: number): string {
-  const sign = value > 0 ? '+' : '';
-  return `${sign}${value.toFixed(1)}%`;
-}
-
 function getSharePercent(value: number, total: number): string {
-  if (total <= 0) return '0.0%';
-  return `${((value / total) * 100).toFixed(1)}%`;
+  return formatSharePercentage(value, total);
 }
 
 type FilterType = 'all' | 'thisYear' | 'lastYear';
@@ -222,7 +214,7 @@ export default function MonthlyReportsPage() {
                     <span className="text-sm">总支出</span>
                   </div>
                   <div className="text-xl font-bold text-gray-900 dark:text-gray-100">
-                    ¥{formatCurrency(latestReport.total_expenses)}
+                    ¥{formatCurrencyAmount(latestReport.total_expenses)}
                   </div>
                 </div>
 
@@ -232,7 +224,7 @@ export default function MonthlyReportsPage() {
                     <span className="text-sm">固定支出</span>
                   </div>
                   <div className="text-xl font-bold text-orange-700 dark:text-orange-300">
-                    ¥{formatCurrency(latestReport.fixed_expenses)}
+                    ¥{formatCurrencyAmount(latestReport.fixed_expenses)}
                   </div>
                   <div className="text-xs text-orange-600 dark:text-orange-400 mt-1">
                     占比 {getSharePercent(latestReport.fixed_expenses, latestReport.total_expenses)}
@@ -245,7 +237,7 @@ export default function MonthlyReportsPage() {
                     <span className="text-sm">可变支出</span>
                   </div>
                   <div className="text-xl font-bold text-green-700 dark:text-green-300">
-                    ¥{formatCurrency(latestReport.variable_expenses)}
+                    ¥{formatCurrencyAmount(latestReport.variable_expenses)}
                   </div>
                   <div className="text-xs text-green-600 dark:text-green-400 mt-1">
                     占比 {getSharePercent(latestReport.variable_expenses, latestReport.total_expenses)}
@@ -270,7 +262,7 @@ export default function MonthlyReportsPage() {
                         : 'text-gray-600 dark:text-gray-300'
                   }`}>
                     {latestReport.month_over_month_percentage != null
-                      ? formatPercentage(latestReport.month_over_month_percentage)
+                      ? formatSignedPercentage(latestReport.month_over_month_percentage)
                       : '-'}
                   </div>
                 </div>
@@ -300,7 +292,7 @@ export default function MonthlyReportsPage() {
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip
-                      formatter={(value: number) => [`¥${formatCurrency(value)}`, '']}
+                      formatter={(value: number) => [`¥${formatCurrencyAmount(value)}`, '']}
                     />
                     <Legend />
                     <Bar dataKey="固定支出" stackId="a" fill="#f97316" />
@@ -383,7 +375,7 @@ export default function MonthlyReportsPage() {
                           </div>
                           <div className="text-right">
                             <div className="font-medium text-gray-900 dark:text-gray-100">
-                              ¥{formatCurrency(report.total_expenses)}
+                              ¥{formatCurrencyAmount(report.total_expenses)}
                             </div>
                             {report.month_over_month_percentage !== null && (
                               <div className={`text-sm flex items-center justify-end gap-1 ${
@@ -396,7 +388,7 @@ export default function MonthlyReportsPage() {
                                 ) : (
                                   <TrendingDown className="h-3 w-3" />
                                 )}
-                                {formatPercentage(report.month_over_month_percentage)}
+                                {formatSignedPercentage(report.month_over_month_percentage)}
                               </div>
                             )}
                           </div>

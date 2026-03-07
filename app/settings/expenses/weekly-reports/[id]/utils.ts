@@ -1,4 +1,5 @@
 import { formatWeekRangeLabel, getWeekNumberDescription } from '@/lib/utils/date';
+import { formatCurrencyAmount, formatSignedPercentage } from '@/lib/utils/format';
 
 // 周报告详情页工具函数和常量
 
@@ -56,15 +57,9 @@ export function getPaymentMethodName(method: string): string {
 }
 
 export function formatCurrency(amount: number | null | undefined): string {
-  if (amount == null) return '0.00';
-  return amount.toLocaleString('zh-CN', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  return formatCurrencyAmount(amount);
 }
 
 export function formatPercentage(value: number | null | undefined): string {
-  if (value == null) return '+0.0%';
-  const sign = value > 0 ? '+' : '';
-  return `${sign}${value.toFixed(1)}%`;
+  return formatSignedPercentage(value);
 }

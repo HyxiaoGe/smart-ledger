@@ -5,6 +5,7 @@
 
 import { getWeeklyReportRepository } from '@/lib/infrastructure/repositories/index.server';
 import { formatWeekRangeLabel, getWeekNumberDescription } from '@/lib/utils/date';
+import { formatCurrencyAmount, formatSignedPercentage } from '@/lib/utils/format';
 import type {
   WeeklyReport,
   WeeklyReportGenerationResult,
@@ -120,16 +121,12 @@ export function getPaymentMethodName(method: string): string {
  * 格式化金额（千分位 + 2位小数）
  */
 export function formatCurrency(amount: number): string {
-  return amount.toLocaleString('zh-CN', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  return formatCurrencyAmount(amount);
 }
 
 /**
  * 格式化百分比（1位小数）
  */
 export function formatPercentage(value: number): string {
-  const sign = value > 0 ? '+' : '';
-  return `${sign}${value.toFixed(1)}%`;
+  return formatSignedPercentage(value);
 }
