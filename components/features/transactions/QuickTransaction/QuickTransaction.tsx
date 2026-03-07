@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { generateTimeContext } from '@/lib/domain/noteContext';
-import { Zap, TrendingUp } from 'lucide-react';
+import { Zap, Clock, TrendingUp } from 'lucide-react';
 import { useQuickSuggestions } from '@/lib/api/hooks';
 import { useQuickSuggestionSubmission } from './useQuickSuggestionSubmission';
 import {
