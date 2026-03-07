@@ -3,12 +3,12 @@
 import React, { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { generateTimeContext } from '@/lib/domain/noteContext';
-import { Zap, Clock, TrendingUp, CheckCircle } from 'lucide-react';
+import { Zap, Clock, TrendingUp } from 'lucide-react';
 import { useQuickSuggestions } from '@/lib/api/hooks';
 import { useQuickSuggestionSubmission } from './useQuickSuggestionSubmission';
+import { QuickSuggestionList } from './components';
 
 interface QuickTransactionProps {
   onSuccess?: () => void;
@@ -40,29 +40,6 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
     },
     refreshSuggestions: refetchSuggestions,
   });
-
-  // 获取置信度颜色
-  const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 0.8) return 'bg-green-100 text-green-700 border-green-200';
-    if (confidence >= 0.6) return 'bg-blue-100 text-blue-700 border-blue-200';
-    if (confidence >= 0.4) return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-    return 'bg-gray-100 text-gray-700 border-gray-200 dark:border-gray-700';
-  };
-
-  // 获取类别图标
-  const getCategoryIcon = (category: string) => {
-    const icons: Record<string, string> = {
-      food: '🍱',
-      drink: '☕',
-      transport: '🚇',
-      daily: '🛒',
-      subscription: '📱',
-      entertainment: '🎮',
-      medical: '💊',
-      education: '📚'
-    };
-    return icons[category] || '💰';
-  };
 
   const loading = isLoading || createTransaction.isPending;
 
@@ -97,83 +74,14 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
 
           {/* 快速记账建议列表 */}
           {!isLoading && suggestions.length > 0 && (
-            <div className="grid gap-3">
-              {suggestions.map((suggestion) => (
-                <div
-                  key={suggestion.id}
-                  className="group relative rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:border-orange-300 hover:bg-orange-50 transition-all duration-200"
-                >
-                  <div className="flex items-center justify-between">
-                    {/* 左侧内容 */}
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="text-2xl flex-shrink-0">
-                        {suggestion.icon}
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <div className="font-medium text-gray-900 group-hover:text-orange-700">
-                            {suggestion.title}
-                          </div>
-                          <div className="text-xl">
-                            {getCategoryIcon(suggestion.category)}
-                          </div>
-                        </div>
-
-                        <div className="text-sm text-gray-500 dark:text-gray-400 truncate mb-2">
-                          {suggestion.description}
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <Badge
-                            variant="outline"
-                            className={`text-xs ${getConfidenceColor(suggestion.confidence)}`}
-                          >
-                            {Math.round(suggestion.confidence * 100)}% 置信度
-                          </Badge>
-                          <span className="text-xs text-gray-400 dark:text-gray-400">
-                            {suggestion.reason}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 右侧金额和按钮 */}
-                    <div className="text-right flex-shrink-0 ml-4">
-                      <div className="text-lg font-bold text-gray-900 mb-2">
-                        ¥{suggestion.amount}
-                      </div>
-
-                      <Button
-                        size="sm"
-                        onClick={() => submitSuggestion(suggestion)}
-                        disabled={submittingId === suggestion.id || createTransaction.isPending}
-                        className="min-w-[80px] bg-orange-500 hover:bg-orange-600 text-white"
-                      >
-                        {submittingId === suggestion.id ? (
-                          <>
-                            <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin mr-1"></div>
-                            记录中
-                          </>
-                        ) : (
-                          <>
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                            快速记账
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* 成功指示器 */}
-                  {lastSuccessSuggestion?.id === suggestion.id && showToast && (
-                    <div className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full p-1">
-                      <CheckCircle className="h-4 w-4" />
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+            <QuickSuggestionList
+              suggestions={suggestions}
+              submittingId={submittingId}
+              isPending={createTransaction.isPending}
+              lastSuccessSuggestionId={showToast ? lastSuccessSuggestion?.id : undefined}
+              showSuccessIndicator
+              onSubmit={submitSuggestion}
+            />
           )}
 
           {/* 空状态 */}
