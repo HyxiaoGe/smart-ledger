@@ -7,8 +7,7 @@ import { TrendingUp, BarChart, ChevronDown, RefreshCw, Target } from 'lucide-rea
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAllDataSyncEvents } from '@/hooks/useEnhancedDataSync';
 import { useQuery } from '@tanstack/react-query';
-import { transactionsApi } from '@/lib/api/services/transactions';
-import { queryKeys } from '@/lib/api/queryClient';
+import { fetchTransactionRows } from '@/lib/api/hooks/useTransactions';
 
 interface CategoryPrediction {
   category: string;
@@ -70,7 +69,7 @@ export function ConsumptionPredictionPanel({
       // 获取当前月数据
       const startDate = `${month}-01`;
       const endDate = `${month}-31`;
-      const currentData = await transactionsApi.listRows({
+      const currentData = await fetchTransactionRows({
         start_date: startDate,
         end_date: endDate,
         type: 'expense',
@@ -82,13 +81,13 @@ export function ConsumptionPredictionPanel({
       const twoMonthsAgo = new Date(currentDate.getFullYear(), currentDate.getMonth() - 2, 1).toISOString().slice(0, 7);
 
       const [lastMonthData, twoMonthsAgoData] = await Promise.all([
-        transactionsApi.listRows({
+        fetchTransactionRows({
           start_date: `${lastMonth}-01`,
           end_date: `${lastMonth}-31`,
           type: 'expense',
           page_size: 1000
         }),
-        transactionsApi.listRows({
+        fetchTransactionRows({
           start_date: `${twoMonthsAgo}-01`,
           end_date: `${twoMonthsAgo}-31`,
           type: 'expense',

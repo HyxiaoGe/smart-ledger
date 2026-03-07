@@ -42,6 +42,21 @@ type TransactionRowsQueryOptions = Omit<
   queryKey?: readonly unknown[];
 };
 
+export function createTransactionRowsQueryOptions(
+  params?: TransactionListParams,
+  options?: TransactionRowsQueryOptions
+) {
+  return {
+    queryKey: options?.queryKey ?? queryKeys.transactions.list(params),
+    queryFn: () => transactionsApi.listRows(params),
+    ...options,
+  };
+}
+
+export function fetchTransactionRows(params?: TransactionListParams) {
+  return transactionsApi.listRows(params);
+}
+
 /**
  * 获取交易列表
  */
@@ -56,11 +71,7 @@ export function useTransactionRowsQuery(
   params?: TransactionListParams,
   options?: TransactionRowsQueryOptions
 ) {
-  return useQuery({
-    queryKey: options?.queryKey ?? queryKeys.transactions.list(params),
-    queryFn: () => transactionsApi.listRows(params),
-    ...options,
-  });
+  return useQuery(createTransactionRowsQueryOptions(params, options));
 }
 
 /**

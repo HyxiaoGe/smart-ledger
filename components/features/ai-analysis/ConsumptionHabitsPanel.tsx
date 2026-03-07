@@ -2,13 +2,12 @@
 
 import React, { useState, useMemo } from 'react';
 import { useQueries } from '@tanstack/react-query';
+import { createTransactionRowsQueryOptions } from '@/lib/api/hooks/useTransactions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, Clock, ChevronDown, RefreshCw, Activity, Coffee, ShoppingCart, Gamepad2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAllDataSyncEvents } from '@/hooks/useEnhancedDataSync';
-import { transactionsApi } from '@/lib/api/services/transactions';
-import { queryKeys } from '@/lib/api/queryClient';
 
 interface HabitPattern {
   period: string;
@@ -86,20 +85,12 @@ export function ConsumptionHabitsPanel({
 
   // 使用 React Query 批量获取多个月的数据
   const monthlyQueries = useQueries({
-    queries: months.map((m) => ({
-      queryKey: queryKeys.transactions.list({
+    queries: months.map((m) => createTransactionRowsQueryOptions({
         start_date: `${m}-01`,
         end_date: `${m}-31`,
         type: 'expense',
         page_size: 1000,
-      }),
-      queryFn: () => transactionsApi.listRows({
-        start_date: `${m}-01`,
-        end_date: `${m}-31`,
-        type: 'expense',
-        page_size: 1000,
-      }),
-    })),
+      })),
   });
 
   const loading = monthlyQueries.some(q => q.isLoading);
