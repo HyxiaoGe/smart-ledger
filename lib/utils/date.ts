@@ -204,6 +204,35 @@ export function weekRange(date = new Date()) {
   };
 }
 
+export function formatWeekRangeLabel(startDate: string | Date, endDate: string | Date): string {
+  const start =
+    startDate instanceof Date ? startDate : parseLocalDate(startDate) ?? new Date(startDate);
+  const end = endDate instanceof Date ? endDate : parseLocalDate(endDate) ?? new Date(endDate);
+
+  const startMonth = start.getMonth() + 1;
+  const startDay = start.getDate();
+  const endMonth = end.getMonth() + 1;
+  const endDay = end.getDate();
+
+  if (startMonth === endMonth) {
+    return `${startMonth}月${startDay}日 - ${endDay}日`;
+  }
+
+  return `${startMonth}月${startDay}日 - ${endMonth}月${endDay}日`;
+}
+
+export function getWeekNumberDescription(date: string | Date): string {
+  const value = date instanceof Date ? date : parseLocalDate(date) ?? new Date(date);
+  const year = value.getFullYear();
+  const firstDayOfYear = new Date(year, 0, 1);
+  const daysDiff = Math.floor(
+    (value.getTime() - firstDayOfYear.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  const weekNumber = Math.ceil((daysDiff + firstDayOfYear.getDay() + 1) / 7);
+
+  return `${year}年第${weekNumber}周`;
+}
+
 /**
  * 获取上周的日期范围
  */

@@ -4,6 +4,7 @@
  */
 
 import { getWeeklyReportRepository } from '@/lib/infrastructure/repositories/index.server';
+import { formatWeekRangeLabel, getWeekNumberDescription } from '@/lib/utils/date';
 import type {
   WeeklyReport,
   WeeklyReportGenerationResult,
@@ -59,35 +60,14 @@ export async function generateWeeklyReport(
  * 格式化日期范围显示
  */
 export function formatWeekRange(startDate: string, endDate: string): string {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-
-  const startMonth = start.getMonth() + 1;
-  const startDay = start.getDate();
-  const endMonth = end.getMonth() + 1;
-  const endDay = end.getDate();
-
-  if (startMonth === endMonth) {
-    return `${startMonth}月${startDay}日 - ${endDay}日`;
-  } else {
-    return `${startMonth}月${startDay}日 - ${endMonth}月${endDay}日`;
-  }
+  return formatWeekRangeLabel(startDate, endDate);
 }
 
 /**
  * 获取周数描述（今年第几周）
  */
 export function getWeekDescription(date: string): string {
-  const d = new Date(date);
-  const year = d.getFullYear();
-
-  const firstDayOfYear = new Date(year, 0, 1);
-  const daysDiff = Math.floor(
-    (d.getTime() - firstDayOfYear.getTime()) / (1000 * 60 * 60 * 24)
-  );
-  const weekNumber = Math.ceil((daysDiff + firstDayOfYear.getDay() + 1) / 7);
-
-  return `${year}年第${weekNumber}周`;
+  return getWeekNumberDescription(date);
 }
 
 /**

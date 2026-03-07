@@ -1,3 +1,5 @@
+import { formatWeekRangeLabel, getWeekNumberDescription } from '@/lib/utils/date';
+
 // 周报告详情页工具函数和常量
 
 export const CATEGORY_MAP: Record<string, string> = {
@@ -38,32 +40,11 @@ export const PAYMENT_COLORS = [
 ];
 
 export function formatWeekRange(startDate: string, endDate: string): string {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-
-  const startMonth = start.getMonth() + 1;
-  const startDay = start.getDate();
-  const endMonth = end.getMonth() + 1;
-  const endDay = end.getDate();
-
-  if (startMonth === endMonth) {
-    return `${startMonth}月${startDay}日 - ${endDay}日`;
-  } else {
-    return `${startMonth}月${startDay}日 - ${endMonth}月${endDay}日`;
-  }
+  return formatWeekRangeLabel(startDate, endDate);
 }
 
 export function getWeekDescription(date: string): string {
-  const d = new Date(date);
-  const year = d.getFullYear();
-
-  const firstDayOfYear = new Date(year, 0, 1);
-  const daysDiff = Math.floor(
-    (d.getTime() - firstDayOfYear.getTime()) / (1000 * 60 * 60 * 24)
-  );
-  const weekNumber = Math.ceil((daysDiff + firstDayOfYear.getDay() + 1) / 7);
-
-  return `${year}年第${weekNumber}周`;
+  return getWeekNumberDescription(date);
 }
 
 export function getCategoryName(category: string): string {

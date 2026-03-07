@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
 import { weeklyReportsApi, type WeeklyReport } from '@/lib/api/services/weekly-reports';
+import { formatWeekRangeLabel, getWeekNumberDescription } from '@/lib/utils/date';
 import {
   ChevronLeft,
   TrendingDown,
@@ -19,36 +20,6 @@ import {
   Loader2,
   BarChart3
 } from 'lucide-react';
-
-// 工具函数
-function formatWeekRange(startDate: string, endDate: string): string {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-
-  const startMonth = start.getMonth() + 1;
-  const startDay = start.getDate();
-  const endMonth = end.getMonth() + 1;
-  const endDay = end.getDate();
-
-  if (startMonth === endMonth) {
-    return `${startMonth}月${startDay}日 - ${endDay}日`;
-  } else {
-    return `${startMonth}月${startDay}日 - ${endMonth}月${endDay}日`;
-  }
-}
-
-function getWeekDescription(date: string): string {
-  const d = new Date(date);
-  const year = d.getFullYear();
-
-  const firstDayOfYear = new Date(year, 0, 1);
-  const daysDiff = Math.floor(
-    (d.getTime() - firstDayOfYear.getTime()) / (1000 * 60 * 60 * 24)
-  );
-  const weekNumber = Math.ceil((daysDiff + firstDayOfYear.getDay() + 1) / 7);
-
-  return `${year}年第${weekNumber}周`;
-}
 
 function formatCurrency(amount: number | null | undefined): string {
   if (amount == null) return '0.00';
@@ -256,7 +227,7 @@ export default function WeeklyReportsPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {formatWeekRange(latestReport.week_start_date, latestReport.week_end_date)}
+                  {formatWeekRangeLabel(latestReport.week_start_date, latestReport.week_end_date)}
                 </p>
               </CardContent>
             </Card>
@@ -355,7 +326,7 @@ export default function WeeklyReportsPage() {
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart
                   data={trendSource.slice(0, 8).reverse().map(report => ({
-                    name: getWeekDescription(report.week_start_date).replace('第', ''),
+                    name: getWeekNumberDescription(report.week_start_date).replace('第', ''),
                     amount: Number(report.total_expenses),
                     count: report.transaction_count
                   }))}
@@ -448,10 +419,10 @@ export default function WeeklyReportsPage() {
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
                           <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                            {getWeekDescription(report.week_start_date)}
+                            {getWeekNumberDescription(report.week_start_date)}
                           </h4>
                           <span className="text-sm text-gray-500 dark:text-gray-400">
-                            {formatWeekRange(report.week_start_date, report.week_end_date)}
+                            {formatWeekRangeLabel(report.week_start_date, report.week_end_date)}
                           </span>
                           {report.generation_type === 'manual' && (
                             <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full">
