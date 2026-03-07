@@ -38,6 +38,24 @@ export function getCurrentMonthString(now = new Date()) {
   return formatMonth(now);
 }
 
+export function getMonthStringFromDate(value: string | Date): string {
+  if (value instanceof Date) {
+    return formatMonth(value);
+  }
+
+  const normalized = value.trim();
+  if (/^\d{4}-\d{2}/.test(normalized)) {
+    return normalized.slice(0, 7);
+  }
+
+  const parsed = new Date(normalized);
+  if (!Number.isNaN(parsed.getTime())) {
+    return formatMonth(parsed);
+  }
+
+  return formatMonth(new Date());
+}
+
 export function getMonthRangeFromString(yyyyMM?: string) {
   const base = parseMonthStr(yyyyMM) || new Date();
   const { start, end } = monthRange(base);

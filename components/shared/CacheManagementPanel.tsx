@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { formatDateToLocal } from '@/lib/utils/date';
 import {
   Database,
   Trash2,
@@ -76,7 +77,7 @@ export function CacheManagementPanel({ show = false, onClose }: CacheManagementP
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `ai-cache-export-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `ai-cache-export-${formatDateToLocal(new Date())}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

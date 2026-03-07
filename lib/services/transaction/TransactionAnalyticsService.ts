@@ -6,7 +6,12 @@
 import type { ITransactionRepository } from '@/lib/domain/repositories/ITransactionRepository';
 import { CacheDecorator } from '@/lib/infrastructure/cache';
 import type { ICache } from '@/lib/infrastructure/cache';
-import { formatDateToLocal, formatMonth, getMonthDateRangeStr } from '@/lib/utils/date';
+import {
+  formatDateToLocal,
+  formatMonth,
+  getMonthDateRangeStr,
+  getMonthStringFromDate,
+} from '@/lib/utils/date';
 
 /**
  * AI分析数据
@@ -190,7 +195,7 @@ export class TransactionAnalyticsService {
 
         // 将交易分配到对应月份
         allTransactions.forEach((t) => {
-          const monthStr = t.date.slice(0, 7);
+          const monthStr = getMonthStringFromDate(t.date);
           if (monthsMap.has(monthStr)) {
             monthsMap.get(monthStr)!.push(t);
           }
@@ -256,7 +261,7 @@ export class TransactionAnalyticsService {
       categoryData[t.category].push({
         amount: t.amount,
         date: t.date,
-        month: t.date.slice(0, 7)
+        month: getMonthStringFromDate(t.date)
       });
     });
 
