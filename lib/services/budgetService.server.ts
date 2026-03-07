@@ -531,8 +531,7 @@ export async function getBudgetSuggestions(
   );
 
   // 实时查询当月各分类的实际支出（排除固定支出）
-  const startDate = new Date(year, month - 1, 1);
-  const endDate = new Date(year, month, 1);
+  const { start: startDate, end: endDate } = getMonthDateRange(year, month);
   const now = new Date();
   const daysIntoMonth = now.getDate();
   const daysInMonth = new Date(year, month, 0).getDate();
@@ -787,8 +786,7 @@ export async function predictMonthEndSpending(
     const daysRemaining = daysInMonth - daysPassed;
 
     // 计算当月已有支出（排除固定支出）
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 1);
+    const { start: startDate, end: endDate } = getMonthDateRange(year, month);
 
     const whereCondition: any = {
       deleted_at: null,

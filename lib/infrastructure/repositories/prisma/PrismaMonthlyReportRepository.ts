@@ -14,6 +14,7 @@ import type {
   PaymentMethodStat,
   FixedExpenseItem,
 } from '@/lib/domain/repositories/IMonthlyReportRepository';
+import { getMonthDateRange, shiftMonth } from '@/lib/utils/date';
 
 export class PrismaMonthlyReportRepository implements IMonthlyReportRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -124,8 +125,7 @@ export class PrismaMonthlyReportRepository implements IMonthlyReportRepository {
   async generate(year: number, month: number): Promise<MonthlyReportGenerationResult> {
     // 计算本月日期范围
     // 使用 lt 下月1号 而不是 lte 月末，避免时间戳导致的边界问题
-    const startDate = new Date(year, month - 1, 1);
-    const nextMonthStart = new Date(year, month, 1);
+    const { start: startDate, end: nextMonthStart } = getMonthDateRange(year, month);
     const daysInMonth = new Date(year, month, 0).getDate();
 
     // 检查是否已存在
@@ -271,8 +271,8 @@ export class PrismaMonthlyReportRepository implements IMonthlyReportRepository {
 
     // 计算环比变化（上月数据）
     // 同样使用 lt 避免时间戳边界问题
-    const lastMonthStart = new Date(year, month - 2, 1);
-    const thisMonthStart = new Date(year, month - 1, 1);
+    const thisMonthStart = startDate;
+    const lastMonthStart = shiftMonth(thisMonthStart, -1);
 
     const lastMonthTransactions = await this.prisma.transactions.findMany({
       where: {
