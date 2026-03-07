@@ -7,6 +7,10 @@ export { QuickCardFooter } from './QuickCardFooter';
 export { QuickSuggestionList } from './QuickSuggestionList';
 export { QuickSuccessToast } from './QuickSuccessToast';
 export {
+  QuickHomeAssistantButton,
+  QuickHomeAssistantBubble,
+} from './QuickHomeAssistant';
+export {
   QuickSuggestionLoadingState,
   QuickSuggestionEmptyState,
   QuickSuggestionSection,
