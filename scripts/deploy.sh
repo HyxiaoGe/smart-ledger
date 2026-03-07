@@ -26,6 +26,30 @@ wait_for_container_absent() {
   return 1
 }
 
+wait_for_service_ready() {
+  for _ in $(seq 1 30); do
+    container_id="$(docker compose ps -q app 2>/dev/null || true)"
+
+    if [ -n "${container_id}" ]; then
+      if ! docker inspect "${container_id}" >/dev/null 2>&1; then
+        sleep 1
+        continue
+      fi
+
+      running_state="$(docker inspect "${container_id}" --format '{{.State.Status}}' 2>/dev/null || true)"
+
+      if [ "${running_state}" = "running" ]; then
+        if curl -fsS http://127.0.0.1:3000/ >/dev/null 2>&1; then
+          return 0
+        fi
+      fi
+    fi
+
+    sleep 1
+  done
+  return 1
+}
+
 prepare_compose_restart() {
   docker compose down --remove-orphans || true
   cleanup_stale_container
@@ -47,6 +71,13 @@ if ! docker compose up -d --build --force-recreate; then
   prepare_compose_restart
   sleep 2
   docker compose up -d --build --force-recreate
+fi
+
+if ! wait_for_service_ready; then
+  echo "部署后服务未在预期时间内就绪，打印最近日志..."
+  docker compose ps -a || true
+  docker compose logs --tail=200 app || true
+  exit 1
 fi
 
 docker image prune -f
