@@ -8,7 +8,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRefetchOnDataSync } from '@/hooks/useEnhancedDataSync';
 import { useQuery } from '@tanstack/react-query';
 import { fetchTransactionRows } from '@/lib/api/hooks/useTransactions';
-import { getMonthRangeFromString } from '@/lib/utils/date';
+import {
+  getCurrentMonthString,
+  getMonthRangeFromString,
+  getRelativeMonthStrings,
+} from '@/lib/utils/date';
 
 interface CategoryPrediction {
   category: string;
@@ -61,7 +65,9 @@ export function ConsumptionPredictionPanel({
   } = useQuery({
     queryKey: ['consumption-prediction', dateRange, currentMonth],
     queryFn: async (): Promise<ConsumptionPredictionData> => {
-      const { month, start, end } = getMonthRangeFromString(currentMonth);
+      const { month, start, end } = getMonthRangeFromString(
+        currentMonth || getCurrentMonthString()
+      );
       const currentDate = new Date();
       const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
       const daysPassed = currentDate.getDate();
@@ -75,8 +81,7 @@ export function ConsumptionPredictionPanel({
       });
 
       // 获取历史数据用于预测
-      const lastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1).toISOString().slice(0, 7);
-      const twoMonthsAgo = new Date(currentDate.getFullYear(), currentDate.getMonth() - 2, 1).toISOString().slice(0, 7);
+      const [lastMonth, twoMonthsAgo] = getRelativeMonthStrings(month, [-1, -2]);
 
       const [lastMonthData, twoMonthsAgoData] = await Promise.all([
         fetchTransactionRows({

@@ -19,6 +19,7 @@ import {
 } from './AIAnalysisPanel/utils';
 import { memoryCache } from '@/lib/infrastructure/cache';
 import { aiApi } from '@/lib/api/services/ai';
+import { getCurrentMonthString } from '@/lib/utils/date';
 
 interface AIAnalysisPanelProps {
   className?: string;
@@ -43,6 +44,7 @@ export function AIAnalysisPanel({
   aiData,
   isModal = false
 }: AIAnalysisPanelProps) {
+  const resolvedMonth = currentMonth || getCurrentMonthString();
   const [trendAnalysis, setTrendAnalysis] = useState<TrendAnalysisData | null>(null);
   const [advice, setAdvice] = useState<PersonalizedAdviceData | null>(null);
   const [currentExpense, setCurrentExpense] = useState<number>(0);
@@ -85,9 +87,8 @@ export function AIAnalysisPanel({
 
       // 尝试从缓存加载 AI 分析结果
       const loadCachedAnalysis = () => {
-        const month = currentMonth || new Date().toISOString().slice(0, 7);
         const dataHash = JSON.stringify(aiData.currentMonthTop20).substring(0, 50);
-        const cacheKey = `ai_analysis_${month}_${dataHash}`;
+        const cacheKey = `ai_analysis_${resolvedMonth}_${dataHash}`;
 
         const cached = memoryCache.get(cacheKey) as string | undefined;
         if (cached) {
@@ -100,12 +101,12 @@ export function AIAnalysisPanel({
 
       loadCachedAnalysis();
     }
-  }, [aiData, processData, currentMonth]);
+  }, [aiData, processData, resolvedMonth]);
 
   // AI 分析 mutation
   const analyzeMutation = useMutation({
     mutationFn: (transactions: unknown[]) => aiApi.analyze({
-      month: currentMonth || new Date().toISOString().slice(0, 7),
+      month: resolvedMonth,
       transactions,
     }),
     onSuccess: (result) => {
@@ -142,9 +143,8 @@ export function AIAnalysisPanel({
         const result = await analyzeMutation.mutateAsync(aiData.currentMonthFull);
         if (result.summary) {
           // 3. 保存到缓存（30分钟有效期）
-          const month = currentMonth || new Date().toISOString().slice(0, 7);
           const dataHash = JSON.stringify(aiData.currentMonthTop20).substring(0, 50);
-          const cacheKey = `ai_analysis_${month}_${dataHash}`;
+          const cacheKey = `ai_analysis_${resolvedMonth}_${dataHash}`;
           memoryCache.set(cacheKey, result.summary, {
             ttl: 30 * 60 * 1000, // 30分钟
             tags: ['ai-cache']
@@ -166,7 +166,7 @@ export function AIAnalysisPanel({
     } finally {
       setLoading(false);
     }
-  }, [processData, aiData, analyzeMutation, revalidateMutation, currentMonth]);
+  }, [processData, aiData, analyzeMutation, revalidateMutation, resolvedMonth]);
 
   // 切换模块折叠状态
   const toggleModule = (moduleId: string) => {

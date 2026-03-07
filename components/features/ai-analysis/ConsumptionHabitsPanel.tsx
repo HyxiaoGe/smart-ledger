@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar, Clock, ChevronDown, RefreshCw, Activity, Coffee, ShoppingCart, Gamepad2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRefetchOnDataSync } from '@/hooks/useEnhancedDataSync';
+import { getCurrentMonthString, getRelativeMonthStrings } from '@/lib/utils/date';
 
 interface HabitPattern {
   period: string;
@@ -75,13 +76,8 @@ export function ConsumptionHabitsPanel({
   const [collapsed, setCollapsed] = useState(false);
 
   // 计算月份参数
-  const month = currentMonth || new Date().toISOString().slice(0, 7);
-  const currentDate = new Date();
-  const months = [
-    month,
-    new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1).toISOString().slice(0, 7),
-    new Date(currentDate.getFullYear(), currentDate.getMonth() - 2, 1).toISOString().slice(0, 7)
-  ];
+  const month = currentMonth || getCurrentMonthString();
+  const months = getRelativeMonthStrings(month, [0, -1, -2]);
 
   // 使用 React Query 批量获取多个月的数据
   const monthlyQueries = useQueries({

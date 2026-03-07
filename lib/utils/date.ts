@@ -34,6 +34,10 @@ export function formatMonth(d: Date): string {
   return `${y}-${m}`;
 }
 
+export function getCurrentMonthString(now = new Date()) {
+  return formatMonth(now);
+}
+
 export function getMonthRangeFromString(yyyyMM?: string) {
   const base = parseMonthStr(yyyyMM) || new Date();
   const { start, end } = monthRange(base);
@@ -43,6 +47,14 @@ export function getMonthRangeFromString(yyyyMM?: string) {
     start,
     end,
   };
+}
+
+export function getRelativeMonthStrings(
+  baseMonth?: string,
+  offsets: number[] = [0]
+) {
+  const base = parseMonthStr(baseMonth) || new Date();
+  return offsets.map((offset) => formatMonth(shiftMonth(base, offset)));
 }
 
 export function shiftMonth(d: Date, delta: number): Date {
