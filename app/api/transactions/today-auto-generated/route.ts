@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import { getPrismaClient } from '@/lib/clients/db';
 import { withErrorHandler } from '@/lib/utils/apiErrorHandler';
+import { formatDateToLocal } from '@/lib/utils/date';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export const GET = withErrorHandler(async () => {
-  const today = new Date().toISOString().split('T')[0];
+  const today = formatDateToLocal(new Date());
 
   // 查询今天自动生成的交易记录数量
   const prisma = getPrismaClient();

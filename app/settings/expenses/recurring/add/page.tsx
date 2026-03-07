@@ -11,6 +11,7 @@ import { DateInput } from '@/components/features/input/DateInput';
 import { BackNavigation } from '@/components/layout/BackNavigation';
 import { recurringExpensesApi } from '@/lib/api/services/recurring-expenses';
 import { ApiError } from '@/lib/api/client';
+import { formatDateToLocal } from '@/lib/utils/date';
 import {
   Plus,
   Calendar,
@@ -169,8 +170,8 @@ export default function AddRecurringExpensePage() {
       category: formData.category,
       frequency: formData.frequency as 'daily' | 'weekly' | 'monthly' | 'yearly',
       frequency_config: formData.frequency_config,
-      start_date: formData.start_date ? formData.start_date.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-      end_date: formData.end_date ? formData.end_date.toISOString().split('T')[0] : null,
+      start_date: formData.start_date ? formatDateToLocal(formData.start_date) : formatDateToLocal(new Date()),
+      end_date: formData.end_date ? formatDateToLocal(formData.end_date) : null,
       skip_holidays: formData.skip_holidays,
       is_active: true
     });

@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Wallet, Calendar, History } from 'lucide-react';
 import type { RecurringExpense } from '@/lib/api/services/recurring-expenses';
+import { formatDateToLocal } from '@/lib/utils/date';
 
 interface StatsCardsProps {
   expenses: RecurringExpense[];
@@ -23,7 +24,7 @@ export function StatsCards({ expenses, getExpenseGenerationStatus }: StatsCardsP
   const tomorrowGenerateCount = (() => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    const tomorrowStr = formatDateToLocal(tomorrow);
     const dayOfWeek = tomorrow.getDay();
 
     return expenses.filter(e => {

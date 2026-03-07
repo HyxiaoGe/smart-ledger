@@ -1,5 +1,5 @@
 import { getPrismaClient } from '@/lib/clients/db';
-import { formatMonth } from '@/lib/utils/date';
+import { formatDateToLocal, formatMonth } from '@/lib/utils/date';
 import { getTransactionDashboardData } from '@/lib/services/transactions.server';
 
 type RecurringExpense = {
@@ -81,12 +81,12 @@ async function loadRecurringExpenses(): Promise<RecurringExpense[]> {
       category: item.category,
       frequency: item.frequency,
       frequency_config: item.frequency_config as Record<string, any>,
-      start_date: item.start_date.toISOString().split('T')[0],
+      start_date: formatDateToLocal(item.start_date),
       note: undefined,
       currency: 'CNY',
       payment_method: undefined,
       is_active: item.is_active ?? true,
-      last_generated_date: item.last_generated?.toISOString().split('T')[0],
+      last_generated_date: item.last_generated ? formatDateToLocal(item.last_generated) : undefined,
       created_at: item.created_at?.toISOString() || new Date().toISOString(),
       updated_at: item.updated_at?.toISOString() || new Date().toISOString(),
     }));
