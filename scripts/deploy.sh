@@ -16,7 +16,13 @@ fi
 
 docker compose rm -sf app || true
 
-docker compose up -d --build --force-recreate
+if ! docker compose up -d --build --force-recreate; then
+  echo "首次启动失败，重试清理 smart-ledger-app-1 后再次启动..."
+  docker rm -f smart-ledger-app-1 || true
+  docker compose rm -sf app || true
+  docker compose up -d --build --force-recreate
+fi
+
 docker image prune -f
 
 echo "部署完成！"
