@@ -11,7 +11,7 @@ import {
 } from '@/lib/api/hooks';
 import type { QuickTransactionCardProps, QuickTransactionItem } from './types';
 import { QUICK_ITEMS } from './constants';
-import { getQuickTransactionStats } from './utils';
+import { getQuickTransactionStats, resolveQuickTransactionAmount } from './utils';
 import {
   QuickItemRow,
   StatsCards,
@@ -77,27 +77,10 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
 
   // 处理快速记账
   const handleQuickTransaction = async (item: QuickTransactionItem) => {
-    let finalAmount: number;
-
-    if (item.isFixed) {
-      finalAmount = item.fixedAmount!;
-    } else {
-      const customAmount = customAmounts[item.id];
-      if (!customAmount || customAmount.trim() === '') {
-        if (item.suggestedAmount && item.suggestedAmount > 0) {
-          finalAmount = item.suggestedAmount;
-        } else {
-          alert('请输入有效金额');
-          return;
-        }
-      } else {
-        const parsedAmount = parseFloat(customAmount);
-        if (isNaN(parsedAmount) || parsedAmount <= 0) {
-          alert('请输入有效金额');
-          return;
-        }
-        finalAmount = parsedAmount;
-      }
+    const resolvedAmount = resolveQuickTransactionAmount(item, customAmounts[item.id]);
+    if (resolvedAmount.error || resolvedAmount.amount === undefined) {
+      alert(resolvedAmount.error || '请输入有效金额');
+      return;
     }
 
     try {
@@ -105,7 +88,7 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
       await createTransaction.mutateAsync({
         type: 'expense',
         category: item.category,
-        amount: finalAmount,
+        amount: resolvedAmount.amount,
         note: item.title,
         date: getTodayDateString(),
         currency: 'CNY',

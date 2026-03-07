@@ -61,3 +61,27 @@ export function getQuickSuggestionCategoryIcon(category: string) {
 
   return icons[category] || '💰';
 }
+
+export function resolveQuickTransactionAmount(
+  item: QuickTransactionItem,
+  customAmount?: string
+): { amount?: number; error?: string } {
+  if (item.isFixed) {
+    return { amount: item.fixedAmount };
+  }
+
+  if (!customAmount || customAmount.trim() === '') {
+    if (item.suggestedAmount && item.suggestedAmount > 0) {
+      return { amount: item.suggestedAmount };
+    }
+
+    return { error: '请输入有效金额' };
+  }
+
+  const parsedAmount = parseFloat(customAmount);
+  if (isNaN(parsedAmount) || parsedAmount <= 0) {
+    return { error: '请输入有效金额' };
+  }
+
+  return { amount: parsedAmount };
+}
