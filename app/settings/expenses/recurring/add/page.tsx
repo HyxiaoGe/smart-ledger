@@ -7,6 +7,7 @@ import { useMutation } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ProgressToast } from '@/components/shared/ProgressToast';
+import { SettingsCalloutCard } from '@/components/shared/SettingsCalloutCard';
 import { DateInput } from '@/components/features/input/DateInput';
 import { BackNavigation } from '@/components/layout/BackNavigation';
 import { recurringExpensesApi } from '@/lib/api/services/recurring-expenses';
@@ -592,16 +593,7 @@ export default function AddRecurringExpensePage() {
               </Card>
 
               {/* 使用提示 */}
-              <Card className="border-0 shadow-lg overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-blue-950 dark:via-gray-800 dark:to-indigo-950">
-                <CardHeader className="bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 border-b dark:border-gray-700 border-blue-200 dark:border-blue-800">
-                  <CardTitle className="text-base text-blue-900 dark:text-blue-100 flex items-center gap-2">
-                    <div className="p-1.5 bg-blue-200 dark:bg-blue-800 rounded-lg">
-                      <span className="text-lg">💡</span>
-                    </div>
-                    使用提示
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
+              <SettingsCalloutCard title="使用提示" tone="blue">
                   <div className="space-y-4">
                     <div className="flex items-start gap-3">
                       <div className="w-6 h-6 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -636,8 +628,7 @@ export default function AddRecurringExpensePage() {
                       </p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+              </SettingsCalloutCard>
             </div>
           </div>
         </form>

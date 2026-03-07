@@ -21,6 +21,7 @@ import {
   type FunctionInfo
 } from '@/lib/services/functionService';
 import { FUNCTION_CATEGORY_CONFIG, getFunctionCategoryConfig } from './utils';
+import { SettingsInfoPanel } from '@/components/shared/SettingsInfoPanel';
 
 export default function FunctionsManagementPage() {
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['business']);
@@ -211,20 +212,13 @@ export default function FunctionsManagementPage() {
         )}
 
         {/* 说明信息 */}
-        <div className="mt-6 p-4 bg-purple-50 dark:bg-purple-950 rounded-lg border border-purple-200 dark:border-purple-800">
-          <div className="flex items-start gap-3">
-            <div className="p-1 bg-purple-100 dark:bg-purple-900 rounded">
-              <Info className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-            </div>
-            <div className="text-sm text-purple-900 dark:text-purple-100">
-              <p className="font-medium mb-1">💡 关于数据库函数</p>
-              <p className="text-purple-700 dark:text-purple-300">
-                这些函数是系统的核心业务逻辑，负责处理数据的增删改查、统计分析和 AI 智能功能。
-                了解这些函数能帮助你更好地理解系统是如何工作的。
-              </p>
-            </div>
-          </div>
-        </div>
+        <SettingsInfoPanel
+          title="💡 关于数据库函数"
+          description="这些函数是系统的核心业务逻辑，负责处理数据的增删改查、统计分析和 AI 智能功能。了解这些函数能帮助你更好地理解系统是如何工作的。"
+          icon={Info}
+          tone="purple"
+          className="mt-6"
+        />
       </div>
 
       {/* 函数详情弹窗 */}

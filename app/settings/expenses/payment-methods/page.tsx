@@ -9,6 +9,7 @@ import { ChevronLeft, CreditCard } from 'lucide-react';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { paymentMethodsApi, PaymentMethod } from '@/lib/api/services/payment-methods';
+import { SettingsFooterNote } from '@/components/shared/SettingsFooterNote';
 
 import {
   StatsCards,
@@ -189,11 +190,9 @@ export default function PaymentMethodsPage() {
         </Card>
 
         {/* 使用提示 */}
-        <div className="mt-8 text-center">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            💡 提示：设置默认支付方式后，添加账单时会自动选择该支付方式
-          </p>
-        </div>
+        <SettingsFooterNote>
+          💡 提示：设置默认支付方式后，添加账单时会自动选择该支付方式
+        </SettingsFooterNote>
       </div>
 
       {/* 添加支付方式对话框 */}

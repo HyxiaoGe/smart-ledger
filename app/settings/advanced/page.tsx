@@ -1,6 +1,7 @@
 import React from 'react';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { SettingsFeatureGrid } from '@/components/shared/SettingsFeatureGrid';
+import { SettingsInfoPanel } from '@/components/shared/SettingsInfoPanel';
 import {
   Clock,
   Settings2,
@@ -94,20 +95,12 @@ export default function AdvancedSettingsPage() {
         />
 
         {/* 提示信息 */}
-        <div className="mt-8 p-4 bg-purple-50 dark:bg-purple-950 rounded-lg border border-purple-200 dark:border-purple-800">
-          <div className="flex items-start gap-3">
-            <div className="p-1 bg-purple-100 dark:bg-purple-900 rounded">
-              <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-            </div>
-            <div className="text-sm text-purple-900 dark:text-purple-100">
-              <p className="font-medium mb-1">💡 关于高级配置</p>
-              <p className="text-purple-700 dark:text-purple-300">
-                高级配置提供系统级别的管理功能，包括定时任务自动化、系统维护工具和 AI 参数调优。
-                这些功能帮助您更好地管理和优化智能记账系统的运行。
-              </p>
-            </div>
-          </div>
-        </div>
+        <SettingsInfoPanel
+          title="💡 关于高级配置"
+          description="高级配置提供系统级别的管理功能，包括定时任务自动化、系统维护工具和 AI 参数调优。这些功能帮助您更好地管理和优化智能记账系统的运行。"
+          icon={Sparkles}
+          tone="purple"
+        />
       </div>
     </div>
   );

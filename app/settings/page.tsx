@@ -11,6 +11,7 @@ import {
   SettingsFeatureGrid,
   type SettingsFeatureItem,
 } from '@/components/shared/SettingsFeatureGrid';
+import { SettingsFooterNote } from '@/components/shared/SettingsFooterNote';
 import { SettingsPageHeader } from '@/components/shared/SettingsPageHeader';
 
 export default function SettingsPage() {
@@ -130,11 +131,9 @@ export default function SettingsPage() {
           </Card>
         </div>
 
-        <div className="mt-8 text-center">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            💡 提示：点击进入各个配置模块，根据您的个人需求自定义智能记账系统
-          </p>
-        </div>
+        <SettingsFooterNote>
+          💡 提示：点击进入各个配置模块，根据您的个人需求自定义智能记账系统
+        </SettingsFooterNote>
       </div>
     </div>
   );

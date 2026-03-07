@@ -1,16 +1,11 @@
 'use client';
 
 import { Settings2, Pause, Calendar, Clock } from 'lucide-react';
+import { SettingsCalloutCard } from '@/components/shared/SettingsCalloutCard';
 
 export function FeatureDescription() {
   return (
-    <div className="mt-8 p-6 bg-gradient-to-br from-blue-50 dark:from-blue-950 via-white dark:via-gray-900 to-purple-50 dark:to-purple-950 rounded-2xl border border-blue-100 dark:border-blue-800">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-          <Settings2 className="h-5 w-5 text-blue-600" />
-        </div>
-        <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">功能说明</h3>
-      </div>
+    <SettingsCalloutCard title="功能说明" icon={Settings2} tone="blue" className="mt-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="flex items-start gap-3">
           <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -49,6 +44,6 @@ export function FeatureDescription() {
           </div>
         </div>
       </div>
-    </div>
+    </SettingsCalloutCard>
   );
 }
