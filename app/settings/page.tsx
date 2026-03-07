@@ -1,141 +1,121 @@
 import React from 'react';
-import Link from 'next/link';
-import type { Route } from 'next';
+
+import { Brain, Bell, Database, Settings, User, Wallet } from 'lucide-react';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import {
-  User,
-  Wallet,
-  Brain,
-  Bell,
-  Database,
-  ChevronRight,
-  Settings,
-  Clock
-} from 'lucide-react';
+  SettingsActionGrid,
+  type SettingsActionItem,
+} from '@/components/shared/SettingsActionGrid';
+import {
+  SettingsFeatureGrid,
+  type SettingsFeatureItem,
+} from '@/components/shared/SettingsFeatureGrid';
+import { SettingsPageHeader } from '@/components/shared/SettingsPageHeader';
 
 export default function SettingsPage() {
-  const configSections = [
+  const configSections: SettingsFeatureItem[] = [
     {
       title: '个人信息设置',
       description: '管理个人资料和账户信息',
       icon: User,
       href: '/settings/profile',
-      comingSoon: true
+      status: 'coming-soon',
+      badge: '即将推出',
+      badgeTone: 'gray',
     },
     {
       title: '消费配置',
       description: '固定支出、预算设置、类别管理',
       icon: Wallet,
       href: '/settings/expenses',
-      comingSoon: false
+      status: 'available',
+      badge: '核心模块',
+      badgeTone: 'blue',
     },
     {
       title: 'AI分析配置',
       description: '分析偏好、提醒规则、个性化设置',
       icon: Brain,
       href: '/settings/ai-analysis',
-      comingSoon: true
+      status: 'coming-soon',
+      badge: '规划中',
+      badgeTone: 'gray',
     },
     {
       title: '通知设置',
       description: '预算提醒、账单提醒、异常通知',
       icon: Bell,
       href: '/settings/notifications',
-      comingSoon: true
+      status: 'coming-soon',
+      badge: '规划中',
+      badgeTone: 'gray',
     },
     {
       title: '数据管理',
       description: '数据备份、导入导出、隐私设置',
       icon: Database,
       href: '/settings/data',
-      comingSoon: true
+      status: 'coming-soon',
+      badge: '规划中',
+      badgeTone: 'gray',
     },
     {
       title: '高级配置',
       description: '定时任务管理、系统维护、高级功能设置',
       icon: Settings,
       href: '/settings/advanced',
-      comingSoon: false
-    }
+      status: 'available',
+      badge: '系统级',
+      badgeTone: 'purple',
+    },
+  ];
+
+  const quickActions: SettingsActionItem[] = [
+    {
+      title: '添加固定支出',
+      icon: Wallet,
+      href: '/settings/expenses',
+      status: 'available',
+      tone: 'blue',
+    },
+    {
+      title: '设置提醒',
+      icon: Bell,
+      status: 'coming-soon',
+      description: '即将推出',
+    },
+    {
+      title: '数据备份',
+      icon: Database,
+      status: 'coming-soon',
+      description: '即将推出',
+    },
+    {
+      title: '个人资料',
+      icon: User,
+      status: 'coming-soon',
+      description: '即将推出',
+    },
   ];
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* 主内容区域 */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">设置中心</h2>
-          <p className="text-gray-600 dark:text-gray-300">配置您的智能记账系统，让财务管理更加个性化和高效</p>
-        </div>
+        <SettingsPageHeader
+          title="设置中心"
+          description="配置您的智能记账系统，让财务管理更加个性化和高效"
+          icon={Settings}
+          tone="blue"
+        />
 
-        {/* 配置模块网格 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {configSections.map((section, index) => (
-            <Card key={index} className="hover:shadow-lg transition-shadow duration-200">
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${
-                      section.comingSoon
-                        ? 'bg-gray-100'
-                        : section.title === '消费配置'
-                        ? 'bg-blue-100 dark:bg-blue-900'
-                        : section.title === '高级配置'
-                        ? 'bg-purple-100 dark:bg-purple-900'
-                        : 'bg-gradient-to-r from-blue-100 to-purple-100'
-                    }`}>
-                      <section.icon className={`h-6 w-6 ${
-                        section.comingSoon
-                          ? 'text-gray-400 dark:text-gray-400'
-                          : section.title === '消费配置'
-                          ? 'text-blue-600'
-                          : section.title === '高级配置'
-                          ? 'text-purple-600'
-                          : 'text-blue-600'
-                      }`} />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg">{section.title}</CardTitle>
-                      {section.comingSoon && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 mt-1">
-                          即将推出
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 leading-relaxed">
-                  {section.description}
-                </p>
-                {section.comingSoon ? (
-                  <Button
-                    variant="outline"
-                    disabled
-                    className="w-full"
-                  >
-                    <ChevronRight className="h-4 w-4 mr-2" />
-                    敬请期待
-                  </Button>
-                ) : (
-                  <Link href={section.href as Route}>
-                    <Button
-                      variant={section.title === '消费配置' || section.title === '高级配置' ? 'default' : 'outline'}
-                      className={`w-full ${section.title === '高级配置' ? 'bg-purple-600 dark:bg-purple-700 hover:bg-purple-700 dark:hover:bg-purple-600' : ''}`}
-                    >
-                      <ChevronRight className="h-4 w-4 mr-2" />
-                      进入配置
-                    </Button>
-                  </Link>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <SettingsFeatureGrid
+          items={configSections}
+          accentTone="blue"
+          columnsClassName="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          availableActionLabel="进入配置"
+        />
 
-        {/* 快速操作区域 */}
         <div className="mt-12">
           <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 border-blue-200 dark:border-blue-800">
             <CardHeader>
@@ -145,34 +125,11 @@ export default function SettingsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Link href="/settings/expenses">
-                  <Button variant="outline" className="w-full h-auto p-4 flex flex-col items-center gap-2">
-                    <Wallet className="h-8 w-8 text-blue-600" />
-                    <span className="text-sm">添加固定支出</span>
-                  </Button>
-                </Link>
-                <Button variant="outline" disabled className="w-full h-auto p-4 flex flex-col items-center gap-2">
-                  <Bell className="h-8 w-8 text-gray-400 dark:text-gray-400" />
-                  <span className="text-sm">设置提醒</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">即将推出</span>
-                </Button>
-                <Button variant="outline" disabled className="w-full h-auto p-4 flex flex-col items-center gap-2">
-                  <Database className="h-8 w-8 text-gray-400 dark:text-gray-400" />
-                  <span className="text-sm">数据备份</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">即将推出</span>
-                </Button>
-                <Button variant="outline" disabled className="w-full h-auto p-4 flex flex-col items-center gap-2">
-                  <User className="h-8 w-8 text-gray-400 dark:text-gray-400" />
-                  <span className="text-sm">个人资料</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">即将推出</span>
-                </Button>
-              </div>
+              <SettingsActionGrid items={quickActions} />
             </CardContent>
           </Card>
         </div>
 
-        {/* 使用提示 */}
         <div className="mt-8 text-center">
           <p className="text-sm text-gray-500 dark:text-gray-400">
             💡 提示：点击进入各个配置模块，根据您的个人需求自定义智能记账系统

@@ -1,101 +1,74 @@
 import React from 'react';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+
 import {
   Brain,
-  Settings,
   Clock,
-  Target,
-  Zap,
-  TrendingUp,
   Lightbulb,
-  ChevronLeft
+  Settings,
+  Target,
+  TrendingUp,
+  Zap,
 } from 'lucide-react';
 
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { SettingsBackButton } from '@/components/shared/SettingsBackButton';
+import {
+  SettingsFeatureGrid,
+  type SettingsFeatureItem,
+} from '@/components/shared/SettingsFeatureGrid';
+import { SettingsPageHeader } from '@/components/shared/SettingsPageHeader';
+
 export default function AIAnalysisSettingsPage() {
-  const aiFeatures = [
+  const aiFeatures: SettingsFeatureItem[] = [
     {
       title: '智能分析配置',
-      description: '自定义AI分析的频率和深度',
+      description: '自定义 AI 分析的频率和深度',
       icon: Brain,
-      status: 'coming-soon'
+      status: 'coming-soon',
     },
     {
       title: '提醒规则设置',
       description: '设置消费异常提醒的触发条件',
       icon: Clock,
-      status: 'coming-soon'
+      status: 'coming-soon',
     },
     {
       title: '个性化偏好',
-      description: '调整AI模型的个人化参数',
+      description: '调整 AI 模型的个人化参数',
       icon: Settings,
-      status: 'coming-soon'
+      status: 'coming-soon',
     },
     {
       title: '数据源配置',
       description: '选择和分析的数据源范围',
       icon: Target,
-      status: 'coming-soon'
-    }
+      status: 'coming-soon',
+    },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:bg-gray-900">
-      {/* 主内容区域 */}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 返回导航 */}
-        <div className="mb-6">
-          <Link href="/settings">
-            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 dark:text-gray-100 hover:bg-gray-50 rounded-lg px-3 py-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200">
-              <ChevronLeft className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1" />
-              返回设置中心
-            </Button>
-          </Link>
-        </div>
+        <SettingsBackButton />
 
-        {/* 页面标题 */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">AI分析配置</h2>
-          <p className="text-gray-600 dark:text-gray-300">个性化您的智能分析体验，让AI更好地为您服务</p>
-        </div>
+        <SettingsPageHeader
+          title="AI分析配置"
+          description="个性化您的智能分析体验，让 AI 更好地为您服务"
+          icon={Brain}
+          tone="purple"
+        />
 
-        {/* 功能概览 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {aiFeatures.map((feature, index) => (
-            <Card key={index} className="hover:shadow-lg transition-shadow duration-200">
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 dark:bg-blue-900 dark:bg-blue-900 rounded-lg">
-                      <feature.icon className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg">{feature.title}</CardTitle>
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-                  {feature.description}
-                </p>
-                <Button variant="outline" disabled className="w-full">
-                  <span className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    敬请期待
-                  </span>
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <SettingsFeatureGrid
+          items={aiFeatures}
+          accentTone="purple"
+          columnsClassName="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
+        />
 
-        {/* 开发中提示 */}
-        <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 dark:border-blue-800 dark:border-blue-800">
+        <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 dark:border-blue-800">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100 dark:text-blue-100">
+            <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
               <Lightbulb className="h-5 w-5" />
               开发进度
             </CardTitle>
@@ -104,60 +77,65 @@ export default function AIAnalysisSettingsPage() {
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <div className="flex-1">
-                  <div className="font-medium text-blue-900 dark:text-blue-100 dark:text-blue-100">智能分析配置</div>
-                  <div className="text-sm text-blue-700 dark:text-blue-300 dark:text-blue-300">正在进行UI设计和功能规划</div>
+                  <div className="font-medium text-blue-900 dark:text-blue-100">智能分析配置</div>
+                  <div className="text-sm text-blue-700 dark:text-blue-300">
+                    正在进行 UI 设计和功能规划
+                  </div>
                   <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                    <div className="bg-blue-50 dark:bg-blue-9500 h-2 rounded-full" style={{ width: '30%' }}></div>
+                    <div className="bg-blue-500 h-2 rounded-full" style={{ width: '30%' }}></div>
                   </div>
                 </div>
-                <span className="text-sm text-blue-600">开发中</span>
+                <span className="text-sm text-blue-600 dark:text-blue-300">开发中</span>
               </div>
 
               <div className="flex items-center gap-3">
                 <div className="flex-1">
-                  <div className="font-medium text-blue-900 dark:text-blue-100 dark:text-blue-100">提醒规则设置</div>
-                  <div className="text-sm text-blue-700 dark:text-blue-300 dark:text-blue-300">功能设计和数据库架构已完成</div>
+                  <div className="font-medium text-blue-900 dark:text-blue-100">提醒规则设置</div>
+                  <div className="text-sm text-blue-700 dark:text-blue-300">
+                    功能设计和数据库架构已完成
+                  </div>
                   <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                    <div className="bg-blue-50 dark:bg-blue-9500 h-2 rounded-full" style={{ width: '15%' }}></div>
+                    <div className="bg-blue-500 h-2 rounded-full" style={{ width: '15%' }}></div>
                   </div>
                 </div>
-                <span className="text-sm text-blue-600">规划中</span>
+                <span className="text-sm text-blue-600 dark:text-blue-300">规划中</span>
               </div>
 
               <div className="flex items-center gap-3">
                 <div className="flex-1">
-                  <div className="font-medium text-blue-900 dark:text-blue-100 dark:text-blue-100">个性化偏好</div>
-                  <div className="text-sm text-blue-700 dark:text-blue-300 dark:text-blue-300">正在收集用户需求和反馈</div>
+                  <div className="font-medium text-blue-900 dark:text-blue-100">个性化偏好</div>
+                  <div className="text-sm text-blue-700 dark:text-blue-300">
+                    正在收集用户需求和反馈
+                  </div>
                   <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                    <div className="bg-blue-50 dark:bg-blue-9500 h-2 rounded-full" style={{ width: '5%' }}></div>
+                    <div className="bg-blue-500 h-2 rounded-full" style={{ width: '5%' }}></div>
                   </div>
                 </div>
-                <span className="text-sm text-blue-600">需求收集中</span>
+                <span className="text-sm text-blue-600 dark:text-blue-300">需求收集中</span>
               </div>
 
               <div className="flex items-center gap-3">
                 <div className="flex-1">
-                  <div className="font-medium text-blue-900 dark:text-blue-100 dark:text-blue-100">数据源配置</div>
-                  <div className="text-sm text-blue-700 dark:text-blue-300 dark:text-blue-300">功能规划阶段</div>
+                  <div className="font-medium text-blue-900 dark:text-blue-100">数据源配置</div>
+                  <div className="text-sm text-blue-700 dark:text-blue-300">功能规划阶段</div>
                   <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                    <div className="bg-blue-50 dark:bg-blue-9500 h-2 rounded-full" style={{ width: '0%' }}></div>
+                    <div className="bg-blue-500 h-2 rounded-full" style={{ width: '0%' }}></div>
                   </div>
                 </div>
-                <span className="text-sm text-blue-600">待开始</span>
+                <span className="text-sm text-blue-600 dark:text-blue-300">待开始</span>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* 预期功能 */}
-        <Card>
+        <Card className="mt-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
               预期功能
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
                 <h4 className="font-medium text-gray-900 dark:text-gray-100">分析频率控制</h4>
@@ -175,7 +153,7 @@ export default function AIAnalysisSettingsPage() {
                   <li>• 消费异常提醒：超出预算时通知</li>
                   <li>• 趋势变化提醒：消费习惯改变时提醒</li>
                   <li>• 固定支出提醒：固定支出到期前提醒</li>
-                  <li>• 个性化建议：基于AI的建议推送</li>
+                  <li>• 个性化建议：基于 AI 的建议推送</li>
                 </ul>
               </div>
             </div>
@@ -204,25 +182,28 @@ export default function AIAnalysisSettingsPage() {
           </CardContent>
         </Card>
 
-        {/* 反馈收集 */}
-        <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800 dark:border-blue-800">
+        <Card className="mt-8 bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
           <CardHeader>
             <CardTitle className="text-blue-900 dark:text-blue-100">💬 需求反馈</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-center py-6">
-              <p className="text-blue-800 mb-4">
-                您希望AI分析功能包含哪些特性？您的反馈对我们很重要！
+              <p className="text-blue-800 dark:text-blue-200 mb-4">
+                您希望 AI 分析功能包含哪些特性？您的反馈对我们很重要！
               </p>
               <div className="flex gap-4 justify-center">
-                <Button variant="outline" className="bg-white dark:bg-gray-800">
-                  <Zap className="h-4 w-4 mr-2" />
-                  提交建议
-                </Button>
-                <Button variant="outline" className="bg-white dark:bg-gray-800">
-                  <TrendingUp className="h-4 w-4 mr-2" />
-                  功能投票
-                </Button>
+                <Link href="/settings/ai-feedback">
+                  <Button variant="outline" className="bg-white dark:bg-gray-800">
+                    <Zap className="h-4 w-4 mr-2" />
+                    提交建议
+                  </Button>
+                </Link>
+                <Link href="/settings/ai-feedback">
+                  <Button variant="outline" className="bg-white dark:bg-gray-800">
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    功能投票
+                  </Button>
+                </Link>
               </div>
             </div>
           </CardContent>
