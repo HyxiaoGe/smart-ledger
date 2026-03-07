@@ -1,15 +1,14 @@
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { formatDateToLocal } from '@/lib/utils/date';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { generateTimeContext } from '@/lib/domain/noteContext';
 import { Zap, Clock, TrendingUp, CheckCircle } from 'lucide-react';
-import { useQuickSuggestions, useCreateTransaction } from '@/lib/api/hooks';
-import type { QuickTransactionSuggestion } from '@/lib/api/services/ai';
+import { useQuickSuggestions } from '@/lib/api/hooks';
+import { useQuickSuggestionSubmission } from './useQuickSuggestionSubmission';
 
 interface QuickTransactionProps {
   onSuccess?: () => void;
@@ -17,10 +16,6 @@ interface QuickTransactionProps {
 }
 
 export function QuickTransaction({ onSuccess, className = '' }: QuickTransactionProps) {
-  const [submittingId, setSubmittingId] = useState<string | null>(null);
-  const [showToast, setShowToast] = useState(false);
-  const [lastSuccessTransaction, setLastSuccessTransaction] = useState<QuickTransactionSuggestion | null>(null);
-
   // 获取当前时间上下文
   const timeContext = useMemo(() => generateTimeContext(), []);
 
@@ -32,45 +27,19 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
   } = useQuickSuggestions(timeContext.label);
 
   const suggestions = suggestionsData?.suggestions || [];
-
-  // 使用 React Query 创建交易
-  const createTransaction = useCreateTransaction();
-
-  // 一键快速记账
-  const handleQuickTransaction = useCallback(async (suggestion: QuickTransactionSuggestion) => {
-    setSubmittingId(suggestion.id);
-
-    try {
-      const date = formatDateToLocal(new Date());
-
-      await createTransaction.mutateAsync({
-        type: 'expense',
-        category: suggestion.category,
-        amount: suggestion.amount,
-        note: suggestion.note,
-        date,
-        currency: 'CNY',
-      });
-
-      // 显示成功提示
-      setLastSuccessTransaction(suggestion);
-      setShowToast(true);
-
-      // 调用成功回调
+  const {
+    createTransaction,
+    lastSuccessSuggestion,
+    setShowToast,
+    showToast,
+    submitSuggestion,
+    submittingId,
+  } = useQuickSuggestionSubmission({
+    onSuccess: () => {
       onSuccess?.();
-
-      // 刷新建议
-      setTimeout(() => {
-        refetchSuggestions();
-      }, 1000);
-
-    } catch (error: unknown) {
-      console.error('快速记账失败:', error);
-      // 错误已由 React Query 处理
-    } finally {
-      setSubmittingId(null);
-    }
-  }, [createTransaction, onSuccess, refetchSuggestions]);
+    },
+    refreshSuggestions: refetchSuggestions,
+  });
 
   // 获取置信度颜色
   const getConfidenceColor = (confidence: number) => {
@@ -99,9 +68,9 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
 
   return (
     <>
-      {showToast && lastSuccessTransaction && (
+      {showToast && lastSuccessSuggestion && (
         <ProgressToast
-          message={`${lastSuccessTransaction.title} (¥${lastSuccessTransaction.amount}) 记账成功！`}
+          message={`${lastSuccessSuggestion.title} (¥${lastSuccessSuggestion.amount}) 记账成功！`}
           duration={2000}
           onClose={() => setShowToast(false)}
         />
@@ -177,7 +146,7 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
 
                       <Button
                         size="sm"
-                        onClick={() => handleQuickTransaction(suggestion)}
+                        onClick={() => submitSuggestion(suggestion)}
                         disabled={submittingId === suggestion.id || createTransaction.isPending}
                         className="min-w-[80px] bg-orange-500 hover:bg-orange-600 text-white"
                       >
@@ -197,7 +166,7 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
                   </div>
 
                   {/* 成功指示器 */}
-                  {lastSuccessTransaction?.id === suggestion.id && showToast && (
+                  {lastSuccessSuggestion?.id === suggestion.id && showToast && (
                     <div className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full p-1">
                       <CheckCircle className="h-4 w-4" />
                     </div>

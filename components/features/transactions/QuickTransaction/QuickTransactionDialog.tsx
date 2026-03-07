@@ -1,15 +1,15 @@
 'use client';
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Zap, Clock, CheckCircle, RefreshCw, X } from 'lucide-react';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { generateTimeContext } from '@/lib/domain/noteContext';
-import { formatDateToLocal } from '@/lib/utils/date';
-import { useCreateTransaction, useQuickSuggestions } from '@/lib/api/hooks';
+import { useQuickSuggestions } from '@/lib/api/hooks';
 import type { QuickTransactionSuggestion } from '@/lib/api/services/ai';
+import { useQuickSuggestionSubmission } from './useQuickSuggestionSubmission';
 
 interface QuickTransactionDialogProps {
   open: boolean;
@@ -18,9 +18,6 @@ interface QuickTransactionDialogProps {
 }
 
 export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickTransactionDialogProps) {
-  const [submittingId, setSubmittingId] = useState<string | null>(null);
-  const [lastSuccessSuggestion, setLastSuccessSuggestion] = useState<QuickTransactionSuggestion | null>(null);
-  const [showToast, setShowToast] = useState(false);
   const timeContext = useMemo(() => generateTimeContext(), []);
 
   const {
@@ -31,8 +28,21 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
   } = useQuickSuggestions(timeContext.label, open);
 
   const suggestions = suggestionsData?.suggestions || [];
-
-  const createTransaction = useCreateTransaction();
+  const {
+    createTransaction,
+    lastSuccessSuggestion,
+    setShowToast,
+    showToast,
+    submitSuggestion,
+    submittingId,
+  } = useQuickSuggestionSubmission({
+    onSuccess,
+    afterSuccess: () => {
+      onOpenChange(false);
+    },
+    refreshSuggestions: fetchSuggestions,
+    refreshDelayMs: 1500,
+  });
 
   // 错误信息
   const error = queryError
@@ -40,33 +50,6 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
     : createTransaction.error
     ? '记账失败，请重试'
     : '';
-
-  // 处理快速记账
-  const handleQuickTransaction = useCallback(async (suggestion: QuickTransactionSuggestion) => {
-    setSubmittingId(suggestion.id);
-
-    try {
-      await createTransaction.mutateAsync({
-        type: 'expense',
-        category: suggestion.category,
-        amount: suggestion.amount,
-        note: suggestion.note,
-        date: formatDateToLocal(new Date()),
-        currency: 'CNY'
-      });
-
-      setLastSuccessSuggestion(suggestion);
-      setShowToast(true);
-      onSuccess?.(suggestion);
-
-      setTimeout(() => {
-        onOpenChange(false);
-        void fetchSuggestions();
-      }, 1500);
-    } finally {
-      setSubmittingId(null);
-    }
-  }, [createTransaction, fetchSuggestions, onOpenChange, onSuccess]);
 
   // 获取置信度颜色
   const getConfidenceColor = (confidence: number) => {
@@ -206,7 +189,7 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
 
                           <Button
                             size="sm"
-                            onClick={() => handleQuickTransaction(suggestion)}
+                            onClick={() => submitSuggestion(suggestion)}
                             disabled={submittingId === suggestion.id || createTransaction.isPending}
                             className="min-w-[80px] bg-orange-500 hover:bg-orange-600 text-white"
                           >
