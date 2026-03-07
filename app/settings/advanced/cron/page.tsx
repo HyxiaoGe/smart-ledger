@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { PageSkeleton } from '@/components/shared/PageSkeleton';
+import { SettingsInfoPanel } from '@/components/shared/SettingsInfoPanel';
+import { SettingsPageHeader } from '@/components/shared/SettingsPageHeader';
 import {
   parseCronExpression,
   calculateNextRun,
@@ -138,16 +140,12 @@ export default function CronManagementPage() {
           className="mb-6"
         />
 
-        {/* 页面标题 */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-              <Clock className="h-6 w-6 text-blue-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">定时任务管理</h2>
-          </div>
-          <p className="text-gray-600 dark:text-gray-400">查看和管理系统自动化任务</p>
-        </div>
+        <SettingsPageHeader
+          title="定时任务管理"
+          description="查看和管理系统自动化任务"
+          icon={Clock}
+          tone="blue"
+        />
 
         {/* 统计卡片 */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -393,20 +391,13 @@ export default function CronManagementPage() {
         </Card>
 
         {/* 说明信息 */}
-        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
-          <div className="flex items-start gap-3">
-            <div className="p-1 bg-blue-100 dark:bg-blue-900 rounded">
-              <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div className="text-sm text-blue-900 dark:text-blue-100">
-              <p className="font-medium mb-1">关于定时任务</p>
-              <p className="text-blue-700 dark:text-blue-300">
-                所有定时任务由 PostgreSQL pg_cron 扩展管理，按照设定的时间表自动执行。
-                您可以手动触发任务进行测试，但这不会影响定时调度。
-              </p>
-            </div>
-          </div>
-        </div>
+        <SettingsInfoPanel
+          title="关于定时任务"
+          description="所有定时任务由 PostgreSQL pg_cron 扩展管理，按照设定的时间表自动执行。您可以手动触发任务进行测试，但这不会影响定时调度。"
+          icon={Clock}
+          tone="blue"
+          className="mt-6"
+        />
 
         {/* Toast提示 */}
         {showToast && (

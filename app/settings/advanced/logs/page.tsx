@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState } from 'react';
-import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PageSkeleton } from '@/components/shared/PageSkeleton';
+import { SettingsBackButton } from '@/components/shared/SettingsBackButton';
+import { SettingsPageHeader } from '@/components/shared/SettingsPageHeader';
 import {
   adminApi,
   type LogLevel,
@@ -26,7 +27,6 @@ import {
   Filter,
   RefreshCw,
   Search,
-  ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
 
@@ -125,22 +125,15 @@ export default function LogsPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 返回导航 */}
-        <div className="mb-6">
-          <Link href="/settings/advanced">
-            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 dark:text-gray-100">
-              <ChevronLeft className="h-4 w-4 mr-2" />
-              返回高级配置
-            </Button>
-          </Link>
-        </div>
+        <SettingsBackButton href="/settings/advanced" label="返回高级配置" />
 
-        {/* 页面标题 */}
         <div className="flex justify-between items-center mb-8">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">系统日志</h2>
-            <p className="text-gray-600 dark:text-gray-300">查看和分析系统运行日志</p>
-          </div>
+          <SettingsPageHeader
+            title="系统日志"
+            description="查看和分析系统运行日志"
+            icon={Activity}
+            tone="blue"
+          />
           <Button onClick={handleRefresh} variant="outline" disabled={loading}>
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             刷新

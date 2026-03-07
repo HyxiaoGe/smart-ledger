@@ -6,10 +6,12 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PageSkeleton } from '@/components/shared/PageSkeleton';
-import { recurringExpensesApi, type RecurringGenerationHistory } from '@/lib/api/services/recurring-expenses';
+import { SettingsBackButton } from '@/components/shared/SettingsBackButton';
+import { SettingsInfoPanel } from '@/components/shared/SettingsInfoPanel';
+import { SettingsPageHeader } from '@/components/shared/SettingsPageHeader';
+import { recurringExpensesApi } from '@/lib/api/services/recurring-expenses';
 import { formatDateTimePartsZhCN } from '@/lib/utils/date';
 import {
-  ChevronLeft,
   History,
   CheckCircle2,
   XCircle,
@@ -139,14 +141,7 @@ export default function RecurringHistoryPage() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-6">
-            <Link href="/settings/expenses/recurring">
-              <Button variant="ghost" className="text-gray-600 hover:text-gray-900 dark:text-gray-100">
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                返回固定支出
-              </Button>
-            </Link>
-          </div>
+          <SettingsBackButton href="/settings/expenses/recurring" label="返回固定支出" />
           <div className="text-center py-12">
             <div className="text-red-500 mb-4">{error}</div>
             <Button onClick={() => refetch()}>重试</Button>
@@ -159,26 +154,14 @@ export default function RecurringHistoryPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 返回导航 */}
-        <div className="mb-6">
-          <Link href="/settings/expenses/recurring">
-            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 dark:text-gray-100 hover:bg-gray-50 rounded-lg px-3 py-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200">
-              <ChevronLeft className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1" />
-              返回固定支出
-            </Button>
-          </Link>
-        </div>
+        <SettingsBackButton href="/settings/expenses/recurring" label="返回固定支出" />
 
-        {/* 页面标题 */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-              <History className="h-6 w-6 text-blue-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">生成历史记录</h2>
-          </div>
-          <p className="text-gray-600 dark:text-gray-300">查看固定支出的自动生成记录和执行状态</p>
-        </div>
+        <SettingsPageHeader
+          title="生成历史记录"
+          description="查看固定支出的自动生成记录和执行状态"
+          icon={History}
+          tone="blue"
+        />
 
         {/* 统计卡片 */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -386,20 +369,13 @@ export default function RecurringHistoryPage() {
         </Card>
 
         {/* 说明信息 */}
-        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
-          <div className="flex items-start gap-3">
-            <div className="p-1 bg-blue-100 dark:bg-blue-900 rounded">
-              <Clock className="h-4 w-4 text-blue-600" />
-            </div>
-            <div className="text-sm text-blue-900 dark:text-blue-100">
-              <p className="font-medium mb-1">自动生成说明</p>
-              <p className="text-blue-700 dark:text-blue-300">
-                系统会在每天 00:01 自动执行定时任务，检查所有启用的固定支出并根据频率规则生成相应的交易记录。
-                所有执行结果（成功/失败）都会记录在此页面。
-              </p>
-            </div>
-          </div>
-        </div>
+        <SettingsInfoPanel
+          title="自动生成说明"
+          description="系统会在每天 00:01 自动执行定时任务，检查所有启用的固定支出并根据频率规则生成相应的交易记录。所有执行结果（成功/失败）都会记录在此页面。"
+          icon={Clock}
+          tone="blue"
+          className="mt-6"
+        />
       </div>
     </div>
   );

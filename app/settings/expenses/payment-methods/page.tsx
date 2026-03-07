@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ChevronLeft, CreditCard } from 'lucide-react';
+import { CreditCard } from 'lucide-react';
 import { ProgressToast } from '@/components/shared/ProgressToast';
+import { SettingsBackButton } from '@/components/shared/SettingsBackButton';
+import { SettingsPageHeader } from '@/components/shared/SettingsPageHeader';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { paymentMethodsApi, PaymentMethod } from '@/lib/api/services/payment-methods';
 import { SettingsFooterNote } from '@/components/shared/SettingsFooterNote';
@@ -121,30 +122,15 @@ export default function PaymentMethodsPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 返回导航 */}
-        <div className="mb-6">
-          <Link href="/settings/expenses">
-            <Button
-              variant="ghost"
-              className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 rounded-lg px-3 py-2"
-            >
-              <ChevronLeft className="h-4 w-4 mr-2" />
-              返回消费配置
-            </Button>
-          </Link>
-        </div>
+        <SettingsBackButton href="/settings/expenses" label="返回消费配置" />
 
-        {/* 页面标题 */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
-              <CreditCard className="h-7 w-7 text-blue-600" />
-              支付方式管理
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300">
-              管理您的支付账户，让记账更加便捷准确
-            </p>
-          </div>
+          <SettingsPageHeader
+            title="支付方式管理"
+            description="管理您的支付账户，让记账更加便捷准确"
+            icon={CreditCard}
+            tone="blue"
+          />
           <Button
             onClick={() => setShowAddDialog(true)}
             className="bg-blue-600 hover:bg-blue-700"
