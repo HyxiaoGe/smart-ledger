@@ -617,6 +617,7 @@ export async function refreshBudgetSuggestions(year: number, month: number): Pro
   const now = new Date();
   const daysIntoMonth = now.getDate();
   const daysInMonth = new Date(year, month, 0).getDate();
+  const currentMonthDate = new Date(year, month - 1, 1);
 
   // 获取所有分类
   const categories = await prisma.categories.findMany({
@@ -626,8 +627,8 @@ export async function refreshBudgetSuggestions(year: number, month: number): Pro
   if (categories.length === 0) return 0;
 
   // 计算日期范围：过去6个月 + 当月
-  const historicalStartDate = new Date(year, month - 7, 1);
-  const currentMonthEnd = new Date(year, month, 1);
+  const historicalStartDate = shiftMonth(currentMonthDate, -6);
+  const currentMonthEnd = shiftMonth(currentMonthDate, 1);
 
   // 批量查询：一次获取所有分类过去7个月的支出（排除固定支出）
   const transactions = await prisma.transactions.findMany({
@@ -652,7 +653,7 @@ export async function refreshBudgetSuggestions(year: number, month: number): Pro
   const spendingMap = new Map<string, Map<string, number>>();
   for (const tx of transactions) {
     const txDate = new Date(tx.date);
-    const monthKey = `${txDate.getFullYear()}-${txDate.getMonth() + 1}`;
+    const monthKey = formatMonthKey(txDate);
 
     if (!spendingMap.has(tx.category)) {
       spendingMap.set(tx.category, new Map());
@@ -674,7 +675,7 @@ export async function refreshBudgetSuggestions(year: number, month: number): Pro
   );
 
   let count = 0;
-  const currentMonthKey = `${year}-${month}`;
+  const currentMonthKey = formatMonthKey(currentMonthDate);
 
   for (const category of categories) {
     const categorySpending = spendingMap.get(category.key);
@@ -682,8 +683,8 @@ export async function refreshBudgetSuggestions(year: number, month: number): Pro
     // 构建历史数据（过去6个月）
     const historicalData: { month: number; total: number }[] = [];
     for (let i = 1; i <= 6; i++) {
-      const targetDate = new Date(year, month - 1 - i, 1);
-      const monthKey = `${targetDate.getFullYear()}-${targetDate.getMonth() + 1}`;
+      const targetDate = shiftMonth(currentMonthDate, -i);
+      const monthKey = formatMonthKey(targetDate);
       const total = categorySpending?.get(monthKey) || 0;
       if (total > 0) {
         historicalData.push({ month: targetDate.getMonth() + 1, total });
