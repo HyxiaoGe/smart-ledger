@@ -4,6 +4,7 @@
  */
 
 import { prisma } from '@/lib/clients/db/prisma';
+import { formatDateToLocal } from '@/lib/utils/date';
 
 export type RecurringGenerationResult = {
   expense_name: string;
@@ -76,7 +77,7 @@ type TransactionRow = {
  */
 export async function manualGenerateRecurring(): Promise<RecurringGenerationResult[]> {
   const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
+  const todayStr = formatDateToLocal(today);
   const results: RecurringGenerationResult[] = [];
 
   // 获取所有激活的固定支出
@@ -315,7 +316,7 @@ export async function getGenerationHistory(limit = 20): Promise<GenerationHistor
     return {
       id: log.id,
       recurring_expense_id: log.recurring_expense_id,
-      generation_date: log.generation_date.toISOString().split('T')[0],
+      generation_date: formatDateToLocal(log.generation_date),
       generated_transaction_id: log.generated_transaction_id,
       status: log.status,
       reason: log.reason,
@@ -332,7 +333,7 @@ export async function getGenerationHistory(limit = 20): Promise<GenerationHistor
             id: tx.id,
             amount: Number(tx.amount),
             note: tx.note,
-            date: tx.date.toISOString().split('T')[0],
+            date: formatDateToLocal(tx.date),
           }
         : null,
     };
@@ -365,7 +366,7 @@ export async function getTodayGenerationStats(): Promise<GenerationStats> {
     total: logs.length,
     success: successCount,
     failed: failedCount,
-    date: today.toISOString().split('T')[0],
+    date: formatDateToLocal(today),
   };
 }
 
@@ -394,7 +395,7 @@ export async function getPendingRecurringExpenses(): Promise<any[]> {
     amount: Number(e.amount),
     category: e.category,
     frequency: e.frequency,
-    next_generate: e.next_generate?.toISOString().split('T')[0],
-    last_generated: e.last_generated?.toISOString().split('T')[0],
+    next_generate: e.next_generate ? formatDateToLocal(e.next_generate) : undefined,
+    last_generated: e.last_generated ? formatDateToLocal(e.last_generated) : undefined,
   }));
 }

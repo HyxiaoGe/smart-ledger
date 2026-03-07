@@ -8,6 +8,7 @@ import {
   getTransactionRepository
 } from '@/lib/infrastructure/repositories/index.server';
 import { getPrismaClient } from '@/lib/clients/db';
+import { formatDateToLocal } from '@/lib/utils/date';
 import type {
   RecurringExpense,
   CreateRecurringExpenseDTO,
@@ -68,7 +69,7 @@ async function loadHolidayMapFromDb(year: number): Promise<Map<string, boolean>>
     });
     const map = new Map<string, boolean>();
     rows.forEach((row: { date: Date; is_holiday: boolean }) => {
-      map.set(row.date.toISOString().split('T')[0], row.is_holiday);
+      map.set(formatDateToLocal(row.date), row.is_holiday);
     });
     return map;
   } catch (error) {
@@ -258,7 +259,7 @@ export class RecurringExpenseService {
   async generatePendingExpenses(options?: {
     includeOverdue?: boolean;
   }): Promise<{ generated: number; errors: string[] }> {
-    const today = new Date().toISOString().split('T')[0];
+    const today = formatDateToLocal(new Date());
     const errors: string[] = [];
     let generated = 0;
     const includeOverdue = options?.includeOverdue ?? false;
@@ -395,7 +396,7 @@ export class RecurringExpenseService {
       }
     }
 
-    return nextDate.toISOString().split('T')[0];
+    return formatDateToLocal(nextDate);
   }
 
   private async calculateNextDateSkippingHolidays(
@@ -416,7 +417,7 @@ export class RecurringExpenseService {
       while (guard < 62) {
         const candidate = new Date(nextDate);
         candidate.setDate(candidate.getDate() + 1);
-        const candidateStr = candidate.toISOString().split('T')[0];
+        const candidateStr = formatDateToLocal(candidate);
         if (await isWorkingDay(candidateStr)) {
           return candidateStr;
         }

@@ -9,6 +9,7 @@ import type {
   CreateRecurringExpenseDTO,
   UpdateRecurringExpenseDTO,
 } from '@/lib/domain/repositories/IRecurringExpenseRepository';
+import { formatDateToLocal } from '@/lib/utils/date';
 
 export class PrismaRecurringExpenseRepository implements IRecurringExpenseRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -197,7 +198,7 @@ export class PrismaRecurringExpenseRepository implements IRecurringExpenseReposi
         break;
     }
 
-    return nextDate.toISOString().split('T')[0];
+    return formatDateToLocal(nextDate);
   }
 
   private mapToEntity(row: any): RecurringExpense {
@@ -209,18 +210,18 @@ export class PrismaRecurringExpenseRepository implements IRecurringExpenseReposi
       frequency: row.frequency as RecurringExpense['frequency'],
       frequency_config: row.frequency_config as any || {},
       start_date: row.start_date instanceof Date
-        ? row.start_date.toISOString().split('T')[0]
+        ? formatDateToLocal(row.start_date)
         : row.start_date,
       end_date: row.end_date instanceof Date
-        ? row.end_date.toISOString().split('T')[0]
+        ? formatDateToLocal(row.end_date)
         : row.end_date,
       skip_holidays: row.skip_holidays ?? false,
       is_active: row.is_active ?? true,
       last_generated: row.last_generated instanceof Date
-        ? row.last_generated.toISOString().split('T')[0]
+        ? formatDateToLocal(row.last_generated)
         : row.last_generated,
       next_generate: row.next_generate instanceof Date
-        ? row.next_generate.toISOString().split('T')[0]
+        ? formatDateToLocal(row.next_generate)
         : row.next_generate,
       created_at: row.created_at?.toISOString() || new Date().toISOString(),
       updated_at: row.updated_at?.toISOString() || new Date().toISOString(),
