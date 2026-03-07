@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Trophy, Users, ChevronDown, RefreshCw, Award, ArrowUp, ArrowDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAllDataSyncEvents } from '@/hooks/useEnhancedDataSync';
+import { useRefetchOnDataSync } from '@/hooks/useEnhancedDataSync';
+import { getMonthRangeFromString } from '@/lib/utils/date';
 
 interface ComparisonData {
   userStats: {
@@ -47,23 +48,18 @@ export function ComparisonPanel({
   const [collapsed, setCollapsed] = useState(false);
 
   // 计算月份参数
-  const month = currentMonth || new Date().toISOString().slice(0, 7);
-  const startDate = `${month}-01`;
-  const endDate = `${month}-31`;
+  const { month, start, end } = getMonthRangeFromString(currentMonth);
 
   // 使用 React Query 获取交易数据
   const { data: transactionsData, isLoading: loading, refetch } = useTransactionRowsQuery(
     {
-      start_date: startDate,
-      end_date: endDate,
+      start_date: start,
+      end_date: end,
       page_size: 1000,
     }
   );
 
-  // 监听数据同步事件
-  useAllDataSyncEvents(() => {
-    refetch();
-  });
+  useRefetchOnDataSync(refetch);
 
   // 从交易数据计算对比数据
   const data = useMemo<ComparisonData | null>(() => {

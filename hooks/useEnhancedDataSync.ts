@@ -65,3 +65,14 @@ export function useAllDataSyncEvents(
 
   return mounted;
 }
+
+/**
+ * 在交易同步事件后统一触发数据刷新
+ */
+export function useRefetchOnDataSync(
+  refetch: () => void | Promise<unknown>
+): boolean {
+  return useAllDataSyncEvents(() => {
+    void refetch();
+  });
+}

@@ -34,6 +34,17 @@ export function formatMonth(d: Date): string {
   return `${y}-${m}`;
 }
 
+export function getMonthRangeFromString(yyyyMM?: string) {
+  const base = parseMonthStr(yyyyMM) || new Date();
+  const { start, end } = monthRange(base);
+
+  return {
+    month: formatMonth(base),
+    start,
+    end,
+  };
+}
+
 export function shiftMonth(d: Date, delta: number): Date {
   return new Date(d.getFullYear(), d.getMonth() + delta, 1);
 }

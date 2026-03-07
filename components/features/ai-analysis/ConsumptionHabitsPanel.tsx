@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, Clock, ChevronDown, RefreshCw, Activity, Coffee, ShoppingCart, Gamepad2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAllDataSyncEvents } from '@/hooks/useEnhancedDataSync';
+import { useRefetchOnDataSync } from '@/hooks/useEnhancedDataSync';
 
 interface HabitPattern {
   period: string;
@@ -97,9 +97,7 @@ export function ConsumptionHabitsPanel({
   const refetchAll = () => monthlyQueries.forEach(q => q.refetch());
 
   // 监听数据同步事件
-  useAllDataSyncEvents(() => {
-    refetchAll();
-  });
+  useRefetchOnDataSync(refetchAll);
 
   // 从交易数据分析消费习惯
   const { data, currentMonthData } = useMemo(() => {

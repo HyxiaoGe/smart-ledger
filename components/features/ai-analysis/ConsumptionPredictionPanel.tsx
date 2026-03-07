@@ -5,9 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, BarChart, ChevronDown, RefreshCw, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAllDataSyncEvents } from '@/hooks/useEnhancedDataSync';
+import { useRefetchOnDataSync } from '@/hooks/useEnhancedDataSync';
 import { useQuery } from '@tanstack/react-query';
 import { fetchTransactionRows } from '@/lib/api/hooks/useTransactions';
+import { getMonthRangeFromString } from '@/lib/utils/date';
 
 interface CategoryPrediction {
   category: string;
@@ -60,18 +61,15 @@ export function ConsumptionPredictionPanel({
   } = useQuery({
     queryKey: ['consumption-prediction', dateRange, currentMonth],
     queryFn: async (): Promise<ConsumptionPredictionData> => {
-      const month = currentMonth || new Date().toISOString().slice(0, 7);
+      const { month, start, end } = getMonthRangeFromString(currentMonth);
       const currentDate = new Date();
       const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
       const daysPassed = currentDate.getDate();
       const remainingDays = daysInMonth - daysPassed;
 
-      // 获取当前月数据
-      const startDate = `${month}-01`;
-      const endDate = `${month}-31`;
       const currentData = await fetchTransactionRows({
-        start_date: startDate,
-        end_date: endDate,
+        start_date: start,
+        end_date: end,
         type: 'expense',
         page_size: 1000
       });
@@ -165,10 +163,7 @@ export function ConsumptionPredictionPanel({
     }
   });
 
-  // 监听数据同步事件
-  useAllDataSyncEvents(() => {
-    refetch();
-  });
+  useRefetchOnDataSync(refetch);
 
   // 刷新数据
   const refreshData = () => {
