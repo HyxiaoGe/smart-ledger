@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Zap, Plus, TrendingUp } from 'lucide-react';
+import { Zap, TrendingUp } from 'lucide-react';
 
 interface QuickTransactionButtonProps {
   onSuccess?: () => void;
@@ -10,14 +11,15 @@ interface QuickTransactionButtonProps {
 }
 
 export function QuickTransactionButton({ onSuccess, className = '' }: QuickTransactionButtonProps) {
+  const router = useRouter();
+
   const handleQuickTransaction = () => {
-    // 直接打开快速记账页面
-    window.open('/quick', '_blank');
+    router.push('/quick');
     onSuccess?.();
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className={`flex items-center gap-2 ${className}`}>
       <Button
         onClick={handleQuickTransaction}
         className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"

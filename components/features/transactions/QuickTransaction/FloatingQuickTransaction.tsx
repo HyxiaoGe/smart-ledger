@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Zap, Plus, X } from 'lucide-react';
+import { Zap, Plus } from 'lucide-react';
 
 interface FloatingQuickTransactionProps {
   className?: string;
@@ -10,16 +11,15 @@ interface FloatingQuickTransactionProps {
 
 export function FloatingQuickTransaction({ className = '' }: FloatingQuickTransactionProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const router = useRouter();
 
   const handleQuickTransaction = () => {
-    // 打开快速记账页面
-    window.open('/quick', '_blank');
+    router.push('/quick');
     setIsExpanded(false);
   };
 
   const handleAddTransaction = () => {
-    // 打开详细记账页面
-    window.open('/add', '_blank');
+    router.push('/add');
     setIsExpanded(false);
   };
 
