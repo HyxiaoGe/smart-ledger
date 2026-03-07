@@ -13,6 +13,7 @@ import type {
   PaymentMethodStat
 } from '@/lib/domain/repositories/IWeeklyReportRepository';
 import { EXCLUDE_RECURRING_CONDITIONS } from '@/lib/infrastructure/queries';
+import { formatDateToLocal } from '@/lib/utils/date';
 
 export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
   // eslint-disable-next-line no-unused-vars
@@ -106,8 +107,8 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
     endDate.setDate(startDate.getDate() + 6); // 周六
     endDate.setHours(23, 59, 59, 999);
 
-    const weekStartStr = startDate.toISOString().split('T')[0];
-    const weekEndStr = endDate.toISOString().split('T')[0];
+    const weekStartStr = formatDateToLocal(startDate);
+    const weekEndStr = formatDateToLocal(endDate);
 
     // 检查是否已存在
     const exists = await this.existsForWeek(weekStartStr);
@@ -269,11 +270,11 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
       user_id: row.user_id,
       week_start_date:
         row.week_start_date instanceof Date
-          ? row.week_start_date.toISOString().split('T')[0]
+          ? formatDateToLocal(row.week_start_date)
           : row.week_start_date,
       week_end_date:
         row.week_end_date instanceof Date
-          ? row.week_end_date.toISOString().split('T')[0]
+          ? formatDateToLocal(row.week_end_date)
           : row.week_end_date,
       total_expenses: Number(row.total_expenses),
       transaction_count: row.transaction_count,
