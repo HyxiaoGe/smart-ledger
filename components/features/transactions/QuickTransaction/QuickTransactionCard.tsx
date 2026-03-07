@@ -7,7 +7,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { formatDateToLocal } from '@/lib/utils/date';
 import { useCreateTransaction, usePaymentMethods, useTransactionRowsQuery } from '@/lib/api/hooks';
 import type { QuickTransactionCardProps, QuickTransactionItem } from './types';
-import { QUICK_ITEMS, ITEM_KEYWORDS } from './constants';
+import { QUICK_ITEMS } from './constants';
+import { getQuickTransactionStats } from './utils';
 import {
   QuickItemRow,
   StatsCards,
@@ -60,30 +61,7 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
 
   // 计算今日已记录的项目
   const todayItems = useMemo(() => {
-    const data = todayTransactionsData || [];
-    const items = new Set<string>();
-
-    data.forEach((transaction: { note?: string }) => {
-      const matchedItem = QUICK_ITEMS.find(item => {
-        if (transaction.note === item.title) return true;
-
-        if (transaction.note) {
-          const itemKeywords = ITEM_KEYWORDS[item.id] || [item.title];
-          return itemKeywords.some(keyword =>
-            transaction.note!.includes(keyword) ||
-            keyword.includes(transaction.note!)
-          );
-        }
-
-        return false;
-      });
-
-      if (matchedItem) {
-        items.add(matchedItem.id);
-      }
-    });
-
-    return items;
+    return getQuickTransactionStats(todayTransactionsData || []).matchedItems;
   }, [todayTransactionsData]);
 
   // 处理金额输入

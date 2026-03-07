@@ -1,12 +1,31 @@
 "use client";
-import React from 'react';
+import React, { useMemo } from 'react';
 import { QuickTransaction } from '@/components/features/transactions/QuickTransaction/QuickTransaction';
+import { QUICK_ITEMS } from '@/components/features/transactions/QuickTransaction/constants';
+import { getQuickTransactionStats } from '@/components/features/transactions/QuickTransaction/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/components/ui/link';
+import { useTransactionRowsQuery } from '@/lib/api/hooks';
+import { formatDateToLocal } from '@/lib/utils/date';
 import { Zap, Plus, BarChart3, Home } from 'lucide-react';
 
 export default function QuickPage() {
+  const today = formatDateToLocal(new Date());
+  const { data: todayTransactions } = useTransactionRowsQuery(
+    {
+      start_date: today,
+      end_date: today,
+      page_size: 100,
+    }
+  );
+
+  const quickStats = useMemo(
+    () => getQuickTransactionStats(todayTransactions || []),
+    [todayTransactions]
+  );
+  const estimatedMinutesSaved = quickStats.matchedCount * 2;
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* 页面头部 */}
@@ -133,15 +152,27 @@ export default function QuickPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-500 dark:text-gray-400">快速记账次数</span>
-                    <span className="font-semibold text-gray-900 dark:text-gray-100">0 次</span>
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">
+                      {quickStats.matchedCount} 次
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-500 dark:text-gray-400">快速记账金额</span>
-                    <span className="font-semibold text-gray-900 dark:text-gray-100">¥0.00</span>
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">
+                      ¥{quickStats.totalAmount.toFixed(2)}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-500 dark:text-gray-400">节省时间</span>
-                    <span className="font-semibold text-green-600 dark:text-green-500">~0 分钟</span>
+                    <span className="font-semibold text-green-600 dark:text-green-500">
+                      ~{estimatedMinutesSaved} 分钟
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">覆盖项目</span>
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">
+                      {quickStats.matchedItems.size}/{QUICK_ITEMS.length}
+                    </span>
                   </div>
                 </div>
 
