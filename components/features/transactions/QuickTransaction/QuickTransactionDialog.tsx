@@ -9,7 +9,12 @@ import { generateTimeContext } from '@/lib/domain/noteContext';
 import { useQuickSuggestions } from '@/lib/api/hooks';
 import type { QuickTransactionSuggestion } from '@/lib/api/services/ai';
 import { useQuickSuggestionSubmission } from './useQuickSuggestionSubmission';
-import { QuickSuggestionList } from './components';
+import {
+  QuickSuggestionEmptyState,
+  QuickSuggestionList,
+  QuickSuggestionLoadingState,
+  QuickSuggestionSection,
+} from './components';
 
 interface QuickTransactionDialogProps {
   open: boolean;
@@ -105,36 +110,27 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
 
             {/* 加载状态 */}
             {loading && suggestions.length === 0 && (
-              <div className="flex items-center justify-center py-8 text-gray-500 dark:text-gray-400">
-                <div className="text-sm">AI正在分析您的消费模式...</div>
-              </div>
+              <QuickSuggestionLoadingState message="AI正在分析您的消费模式..." />
             )}
 
             {/* 快速记账建议 */}
             {!loading && suggestions.length > 0 && (
-              <div className="space-y-3">
-                <div className="text-sm font-medium text-gray-700">
-                  基于当前时间的智能建议
-                </div>
-
+              <QuickSuggestionSection title="基于当前时间的智能建议">
                 <QuickSuggestionList
                   suggestions={suggestions}
                   submittingId={submittingId}
                   isPending={createTransaction.isPending}
                   onSubmit={submitSuggestion}
                 />
-              </div>
+              </QuickSuggestionSection>
             )}
 
             {/* 空状态 */}
             {!loading && suggestions.length === 0 && !error && (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                <Clock className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                <div className="text-sm">暂无快速记账建议</div>
-                <div className="text-xs text-gray-400 dark:text-gray-400 mt-1">
-                  请稍后再试或使用详细记账功能
-                </div>
-              </div>
+              <QuickSuggestionEmptyState
+                title="暂无快速记账建议"
+                description="请稍后再试或使用详细记账功能"
+              />
             )}
 
             {/* 操作按钮 */}

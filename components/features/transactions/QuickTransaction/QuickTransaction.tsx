@@ -5,10 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { generateTimeContext } from '@/lib/domain/noteContext';
-import { Zap, Clock, TrendingUp } from 'lucide-react';
+import { Zap, TrendingUp } from 'lucide-react';
 import { useQuickSuggestions } from '@/lib/api/hooks';
 import { useQuickSuggestionSubmission } from './useQuickSuggestionSubmission';
-import { QuickSuggestionList } from './components';
+import {
+  QuickSuggestionEmptyState,
+  QuickSuggestionList,
+  QuickSuggestionLoadingState,
+} from './components';
 
 interface QuickTransactionProps {
   onSuccess?: () => void;
@@ -67,9 +71,7 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
         <CardContent className="space-y-4">
           {/* 加载状态 */}
           {isLoading && suggestions.length === 0 && (
-            <div className="flex items-center justify-center py-8 text-gray-500 dark:text-gray-400">
-              <div className="text-sm">AI正在生成快速记账建议...</div>
-            </div>
+            <QuickSuggestionLoadingState message="AI正在生成快速记账建议..." />
           )}
 
           {/* 快速记账建议列表 */}
@@ -86,13 +88,10 @@ export function QuickTransaction({ onSuccess, className = '' }: QuickTransaction
 
           {/* 空状态 */}
           {!isLoading && suggestions.length === 0 && (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              <Clock className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-              <div className="text-sm">暂无快速记账建议</div>
-              <div className="text-xs text-gray-400 dark:text-gray-400 mt-1">
-                请稍后再试或手动添加账单
-              </div>
-            </div>
+            <QuickSuggestionEmptyState
+              title="暂无快速记账建议"
+              description="请稍后再试或手动添加账单"
+            />
           )}
 
           {/* 刷新按钮 */}
