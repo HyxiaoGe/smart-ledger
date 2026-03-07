@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { monthlyReportsApi, type MonthlyReport } from '@/lib/api/services/monthly-reports';
 import { paymentMethodsApi } from '@/lib/api/services/payment-methods';
+import { formatYearMonthLabel } from '@/lib/utils/date';
 import {
   ChevronLeft,
   TrendingDown,
@@ -124,10 +125,6 @@ function formatPercentage(value: number): string {
   return `${sign}${value.toFixed(1)}%`;
 }
 
-function formatMonthDisplay(year: number, month: number): string {
-  return `${year}年${month}月`;
-}
-
 function getCategoryName(category: string): string {
   return CATEGORY_NAMES[category.toLowerCase()] || category;
 }
@@ -226,7 +223,7 @@ export default function MonthlyReportDetailPage() {
           <div className="flex items-center gap-3 mb-2">
             <Calendar className="h-8 w-8" />
             <h2 className="text-3xl font-bold">
-              {formatMonthDisplay(report.year, report.month)}
+              {formatYearMonthLabel(report.year, report.month)}
             </h2>
           </div>
           <p className="text-blue-100 text-sm">

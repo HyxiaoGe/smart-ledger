@@ -5,6 +5,7 @@
  */
 
 import { getMonthlyReportRepository } from '@/lib/infrastructure/repositories/index.server';
+import { formatYearMonthLabel } from '@/lib/utils/date';
 import type {
   MonthlyReport,
   MonthlyReportGenerationResult,
@@ -87,7 +88,7 @@ export async function deleteMonthlyReport(id: string): Promise<void> {
  * 格式化月份显示
  */
 export function formatMonthDisplay(year: number, month: number): string {
-  return `${year}年${month}月`;
+  return formatYearMonthLabel(year, month);
 }
 
 /**

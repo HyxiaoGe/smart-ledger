@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
 import { monthlyReportsApi, type MonthlyReport } from '@/lib/api/services/monthly-reports';
+import { formatYearMonthLabel } from '@/lib/utils/date';
 import {
   ChevronLeft,
   TrendingDown,
@@ -33,11 +34,6 @@ import {
   Bar,
   Legend
 } from 'recharts';
-
-// 工具函数
-function formatMonthDisplay(year: number, month: number): string {
-  return `${year}年${month}月`;
-}
 
 function formatCurrency(amount: number): string {
   return amount.toLocaleString('zh-CN', {
@@ -215,7 +211,7 @@ export default function MonthlyReportsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BarChart3 className="h-5 w-5" />
-                最新月报告概览 - {formatMonthDisplay(latestReport.year, latestReport.month)}
+                最新月报告概览 - {formatYearMonthLabel(latestReport.year, latestReport.month)}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -374,7 +370,7 @@ export default function MonthlyReportsPage() {
                             </div>
                             <div>
                               <div className="font-medium text-gray-900 dark:text-gray-100">
-                                {formatMonthDisplay(report.year, report.month)}
+                                {formatYearMonthLabel(report.year, report.month)}
                               </div>
                               <div className="text-sm text-gray-500 dark:text-gray-400">
                                 {report.transaction_count} 笔交易

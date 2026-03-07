@@ -1,3 +1,5 @@
+import { formatYearMonthLabel } from '@/lib/utils/date';
+
 export function getCurrentYearMonthParts(now = new Date()): { year: number; month: number } {
   return {
     year: now.getFullYear(),
@@ -6,7 +8,7 @@ export function getCurrentYearMonthParts(now = new Date()): { year: number; mont
 }
 
 export function formatBudgetMonthLabel(year: number, month: number): string {
-  return `${year}年${month}月`;
+  return formatYearMonthLabel(year, month);
 }
 
 export function getBudgetProgressBarColor(

@@ -34,6 +34,10 @@ export function formatMonth(d: Date): string {
   return `${y}-${m}`;
 }
 
+export function formatYearMonthLabel(year: number, month: number): string {
+  return `${year}年${month}月`;
+}
+
 export function getCurrentMonthString(now = new Date()) {
   return formatMonth(now);
 }
