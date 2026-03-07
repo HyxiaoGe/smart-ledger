@@ -1,17 +1,13 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDateToLocal } from '@/lib/utils/date';
-import {
-  useCreateTransaction,
-  usePaymentMethodsWithDefault,
-  useTransactionRowsQuery,
-} from '@/lib/api/hooks';
-import type { QuickTransactionCardProps, QuickTransactionItem } from './types';
+import { useTransactionRowsQuery } from '@/lib/api/hooks';
+import type { QuickTransactionCardProps } from './types';
 import { QUICK_ITEMS } from './constants';
-import { getQuickTransactionStats, resolveQuickTransactionAmount } from './utils';
+import { getQuickTransactionStats } from './utils';
 import {
   QuickItemRow,
   StatsCards,
@@ -21,28 +17,11 @@ import {
   QuickCardFooter,
   QuickSuccessToast,
 } from './components';
-import { useQuickSuccessToast } from './useQuickSuccessToast';
+import { useQuickTransactionCardState } from './useQuickTransactionCardState';
 
 export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTransactionCardProps) {
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [submittingItemId, setSubmittingItemId] = useState<string | null>(null);
-  const [customAmounts, setCustomAmounts] = useState<Record<string, string>>({});
-  const [paymentMethod, setPaymentMethod] = useState<string>('');
-
   // 获取今天的日期字符串
   const getTodayDateString = () => formatDateToLocal(new Date());
-
-  const { paymentMethods, defaultPaymentMethodId } = usePaymentMethodsWithDefault();
-  const createTransaction = useCreateTransaction();
-  const { hideSuccessToast, showSuccessToast, showToast, toastMessage } =
-    useQuickSuccessToast();
-
-  // 设置默认支付方式
-  useEffect(() => {
-    if (!paymentMethod && defaultPaymentMethodId) {
-      setPaymentMethod(defaultPaymentMethodId);
-    }
-  }, [defaultPaymentMethodId, paymentMethod]);
 
   // 使用 React Query 获取今日交易记录
   const {
@@ -65,59 +44,26 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
     return getQuickTransactionStats(todayTransactionsData || []).matchedItems;
   }, [todayTransactionsData]);
 
-  // 处理金额输入
-  const handleAmountChange = (itemId: string, value: string) => {
-    if (value === '' || /^\d*\.?\d*$/.test(value)) {
-      setCustomAmounts(prev => ({
-        ...prev,
-        [itemId]: value
-      }));
-    }
-  };
-
-  // 处理快速记账
-  const handleQuickTransaction = async (item: QuickTransactionItem) => {
-    const resolvedAmount = resolveQuickTransactionAmount(item, customAmounts[item.id]);
-    if (resolvedAmount.error || resolvedAmount.amount === undefined) {
-      alert(resolvedAmount.error || '请输入有效金额');
-      return;
-    }
-
-    try {
-      setSubmittingItemId(item.id);
-      await createTransaction.mutateAsync({
-        type: 'expense',
-        category: item.category,
-        amount: resolvedAmount.amount,
-        note: item.title,
-        date: getTodayDateString(),
-        currency: 'CNY',
-        payment_method: paymentMethod || null,
-      });
-
-      showSuccessToast(`${item.title} 记账成功！`);
-      onSuccess?.();
-      refetchTodayCategories();
-
-      if (!item.isFixed) {
-        setCustomAmounts(prev => {
-          const newAmounts = { ...prev };
-          delete newAmounts[item.id];
-          return newAmounts;
-        });
-      }
-
-      setTimeout(() => {
-        onOpenChange(false);
-      }, 1500);
-    } catch (error) {
-      console.error('快速记账失败:', error);
-      alert('记账失败，请重试');
-    } finally {
-      setSubmittingItemId(null);
-      setEditingId(null);
-    }
-  };
+  const {
+    createTransaction,
+    editingId,
+    getCurrentAmount,
+    handleAmountChange,
+    hideSuccessToast,
+    paymentMethod,
+    paymentMethods,
+    setEditingId,
+    setPaymentMethod,
+    showToast,
+    submitQuickTransaction,
+    submittingItemId,
+    toastMessage,
+  } = useQuickTransactionCardState({
+    open,
+    onClose: () => onOpenChange(false),
+    onSuccess,
+    refreshTodayTransactions: () => refetchTodayCategories(),
+  });
 
   if (!open) return null;
 
@@ -191,11 +137,11 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
                           isSubmitting={
                             createTransaction.isPending && submittingItemId === item.id
                           }
-                          currentAmount={customAmounts[item.id] || item.suggestedAmount?.toFixed(2) || ''}
+                          currentAmount={getCurrentAmount(item)}
                           onAmountChange={(value) => handleAmountChange(item.id, value)}
                           onStartEdit={() => setEditingId(item.id)}
                           onStopEdit={() => setEditingId(null)}
-                          onSubmit={() => handleQuickTransaction(item)}
+                          onSubmit={() => submitQuickTransaction(item)}
                         />
                       </motion.div>
                     ))}
