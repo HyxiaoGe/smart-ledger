@@ -6,6 +6,7 @@
 import { predictionCache } from './predictionCache';
 import { STORAGE_KEYS } from '@/lib/config/storageKeys';
 import { CACHE_CLEANUP } from '@/lib/config/cacheConfig';
+import { getCurrentMonthString } from '@/lib/utils/date';
 
 interface CacheInvalidationRule {
   id: string;
@@ -155,7 +156,7 @@ class CacheManager {
       newTransaction,
       transactionCount,
       lastTransactionDate: newTransaction?.date,
-      currentMonth: new Date().toISOString().slice(0, 7),
+      currentMonth: getCurrentMonthString(),
       timeSinceLastCache: Date.now() - this.lastInvalidationTime
     };
 

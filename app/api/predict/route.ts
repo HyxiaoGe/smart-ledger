@@ -5,6 +5,7 @@ import { memoryCache } from '@/lib/infrastructure/cache';
 import { CACHE_TTL, CACHE_PREFIXES } from '@/lib/config/cacheConfig';
 import { AIFeedbackService } from '@/lib/services/ai/AIFeedbackService.server';
 import { withErrorHandler, ApiError } from '@/lib/utils/apiErrorHandler';
+import { formatMonth } from '@/lib/utils/date';
 
 export const runtime = 'nodejs';
 
@@ -363,7 +364,7 @@ function generateRuleBasedPrediction(predictionData: any, predictionMonths: numb
   for (let i = 1; i <= predictionMonths; i++) {
     const futureDate = new Date();
     futureDate.setMonth(futureDate.getMonth() + i);
-    const monthStr = futureDate.toISOString().slice(0, 7);
+    const monthStr = formatMonth(futureDate);
 
     predictions.push({
       month: monthStr,

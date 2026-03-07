@@ -6,6 +6,7 @@
 import type { ITransactionRepository } from '@/lib/domain/repositories/ITransactionRepository';
 import { CacheDecorator } from '@/lib/infrastructure/cache';
 import type { ICache } from '@/lib/infrastructure/cache';
+import { formatDateToLocal, formatMonth, getMonthDateRangeStr } from '@/lib/utils/date';
 
 /**
  * AI分析数据
@@ -86,7 +87,7 @@ export class TransactionAnalyticsService {
    */
   async getAIAnalysisData(targetMonth?: string): Promise<AIAnalysisData> {
     const today = new Date();
-    const currentMonth = targetMonth || today.toISOString().slice(0, 7);
+    const currentMonth = targetMonth || formatMonth(today);
 
     const cacheKey = `analytics:ai-analysis:${currentMonth}`;
 
@@ -109,6 +110,10 @@ export class TransactionAnalyticsService {
 
         const currentMonthStr = this.formatMonth(currentYear, currentMonthNum);
         const lastMonthStr = this.formatMonth(lastYear, lastMonthNum);
+        const { start: currentMonthStart, end: currentMonthEnd } = getMonthDateRangeStr(
+          currentYear,
+          currentMonthNum
+        );
 
         // 并行查询：当前月和上个月数据（优化：移除重复的Top20查询）
         const [currentMonthResult, lastMonthResult] = await Promise.all([
@@ -116,8 +121,8 @@ export class TransactionAnalyticsService {
           this.repository.findMany(
             {
               type: 'expense',
-              startDate: `${currentMonthStr}-01`,
-              endDate: this.getMonthEnd(currentYear, currentMonthNum)
+              startDate: currentMonthStart,
+              endDate: currentMonthEnd
             },
             { field: 'date', order: 'desc' }
           ),
@@ -158,7 +163,7 @@ export class TransactionAnalyticsService {
    */
   async getPredictionData(monthsToAnalyze: number = 6): Promise<PredictionData> {
     const currentDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-    const currentMonth = currentDate.toISOString().slice(0, 7);
+    const currentMonth = formatMonth(currentDate);
 
     const cacheKey = `analytics:prediction:${monthsToAnalyze}:${currentMonth}`;
 
@@ -169,8 +174,8 @@ export class TransactionAnalyticsService {
         const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - monthsToAnalyze + 1, 1);
         const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
 
-        const startStr = startDate.toISOString().slice(0, 10);
-        const endStr = endDate.toISOString().slice(0, 10);
+        const startStr = formatDateToLocal(startDate);
+        const endStr = formatDateToLocal(endDate);
 
         // 单次查询所有月份数据（优化前：6次查询 → 优化后：1次查询）
         const allTransactions = await this.repository.findByDateRange(startStr, endStr, 'expense');
@@ -179,7 +184,7 @@ export class TransactionAnalyticsService {
         const monthsMap = new Map<string, any[]>();
         for (let i = 0; i < monthsToAnalyze; i++) {
           const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
-          const monthStr = this.formatMonth(date.getFullYear(), date.getMonth() + 1);
+          const monthStr = formatMonth(date);
           monthsMap.set(monthStr, []);
         }
 
@@ -380,15 +385,6 @@ export class TransactionAnalyticsService {
    */
   private formatMonth(year: number, month: number): string {
     return `${year}-${month.toString().padStart(2, '0')}`;
-  }
-
-  /**
-   * 获取月末日期
-   */
-  private getMonthEnd(year: number, month: number): string {
-    const endMonth = month === 12 ? 1 : month + 1;
-    const endYear = month === 12 ? year + 1 : year;
-    return `${endYear}-${endMonth.toString().padStart(2, '0')}-01`;
   }
 
   /**

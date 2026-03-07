@@ -7,6 +7,7 @@ import type { ITransactionRepository } from '@/lib/domain/repositories/ITransact
 import type { Transaction } from '@/types/domain/transaction';
 import { CacheDecorator } from '@/lib/infrastructure/cache';
 import type { ICache } from '@/lib/infrastructure/cache';
+import { formatMonth, getMonthDateRangeStr } from '@/lib/utils/date';
 
 /**
  * 月度汇总结果
@@ -58,18 +59,16 @@ export class TransactionSummaryService {
    */
   async getCurrentMonthSummary(): Promise<MonthSummaryResult> {
     const today = new Date();
-    const currentMonth = today.toISOString().slice(0, 7);
+    const currentMonth = formatMonth(today);
     const cacheKey = `summary:month:${currentMonth}`;
 
     return this.cacheDecorator.wrap(
       cacheKey,
       async () => {
-        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
-          .toISOString()
-          .slice(0, 10);
-        const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 1)
-          .toISOString()
-          .slice(0, 10);
+        const { start: monthStart, end: monthEnd } = getMonthDateRangeStr(
+          today.getFullYear(),
+          today.getMonth() + 1
+        );
 
         // 查询月度数据
         const monthData = await this.repository.findByDateRange(monthStart, monthEnd, 'expense');
@@ -103,8 +102,7 @@ export class TransactionSummaryService {
     return this.cacheDecorator.wrap(
       cacheKey,
       async () => {
-        const monthStart = new Date(year, month - 1, 1).toISOString().slice(0, 10);
-        const monthEnd = new Date(year, month, 1).toISOString().slice(0, 10);
+        const { start: monthStart, end: monthEnd } = getMonthDateRangeStr(year, month);
 
         // 查询月度数据
         const monthData = await this.repository.findByDateRange(monthStart, monthEnd, 'expense');
@@ -138,8 +136,7 @@ export class TransactionSummaryService {
     return this.cacheDecorator.wrap(
       cacheKey,
       async () => {
-        const monthStart = new Date(year, month - 1, 1).toISOString().slice(0, 10);
-        const monthEnd = new Date(year, month, 1).toISOString().slice(0, 10);
+        const { start: monthStart, end: monthEnd } = getMonthDateRangeStr(year, month);
 
         // 使用 Repository 的分类统计功能
         const stats = await this.repository.getStatsByCategory({
