@@ -6,16 +6,13 @@ import { getQuickTransactionStats } from '@/components/features/transactions/Qui
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/components/ui/link';
-import { useTransactionRowsQuery } from '@/lib/api/hooks';
-import { formatDateToLocal } from '@/lib/utils/date';
+import { useDailyTransactionRowsQuery } from '@/lib/api/hooks';
 import { Zap, Plus, BarChart3, Home } from 'lucide-react';
 
 export default function QuickPage() {
-  const today = formatDateToLocal(new Date());
-  const { data: todayTransactions } = useTransactionRowsQuery(
+  const { data: todayTransactions } = useDailyTransactionRowsQuery(
+    new Date(),
     {
-      start_date: today,
-      end_date: today,
       page_size: 100,
     }
   );

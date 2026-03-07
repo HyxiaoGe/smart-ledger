@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useQueries } from '@tanstack/react-query';
-import { createTransactionRowsQueryOptions } from '@/lib/api/hooks/useTransactions';
+import { createMonthlyTransactionRowsQueryOptions } from '@/lib/api/hooks/useTransactions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, Clock, ChevronDown, RefreshCw, Activity, Coffee, ShoppingCart, Gamepad2 } from 'lucide-react';
@@ -81,12 +81,15 @@ export function ConsumptionHabitsPanel({
 
   // 使用 React Query 批量获取多个月的数据
   const monthlyQueries = useQueries({
-    queries: months.map((m) => createTransactionRowsQueryOptions({
-        start_date: `${m}-01`,
-        end_date: `${m}-31`,
-        type: 'expense',
-        page_size: 1000,
-      })),
+    queries: months.map((m) =>
+      createMonthlyTransactionRowsQueryOptions(
+        m,
+        {
+          type: 'expense',
+          page_size: 1000,
+        }
+      )
+    ),
   });
 
   const loading = monthlyQueries.some(q => q.isLoading);

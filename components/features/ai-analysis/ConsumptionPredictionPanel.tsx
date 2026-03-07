@@ -7,10 +7,9 @@ import { TrendingUp, BarChart, ChevronDown, RefreshCw, Target } from 'lucide-rea
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRefetchOnDataSync } from '@/hooks/useEnhancedDataSync';
 import { useQuery } from '@tanstack/react-query';
-import { fetchTransactionRows } from '@/lib/api/hooks/useTransactions';
+import { fetchMonthlyTransactionRows } from '@/lib/api/hooks/useTransactions';
 import {
   getCurrentMonthString,
-  getMonthRangeFromString,
   getRelativeMonthStrings,
 } from '@/lib/utils/date';
 
@@ -65,17 +64,13 @@ export function ConsumptionPredictionPanel({
   } = useQuery({
     queryKey: ['consumption-prediction', dateRange, currentMonth],
     queryFn: async (): Promise<ConsumptionPredictionData> => {
-      const { month, start, end } = getMonthRangeFromString(
-        currentMonth || getCurrentMonthString()
-      );
+      const month = currentMonth || getCurrentMonthString();
       const currentDate = new Date();
       const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
       const daysPassed = currentDate.getDate();
       const remainingDays = daysInMonth - daysPassed;
 
-      const currentData = await fetchTransactionRows({
-        start_date: start,
-        end_date: end,
+      const currentData = await fetchMonthlyTransactionRows(month, {
         type: 'expense',
         page_size: 1000
       });
@@ -84,15 +79,11 @@ export function ConsumptionPredictionPanel({
       const [lastMonth, twoMonthsAgo] = getRelativeMonthStrings(month, [-1, -2]);
 
       const [lastMonthData, twoMonthsAgoData] = await Promise.all([
-        fetchTransactionRows({
-          start_date: `${lastMonth}-01`,
-          end_date: `${lastMonth}-31`,
+        fetchMonthlyTransactionRows(lastMonth, {
           type: 'expense',
           page_size: 1000
         }),
-        fetchTransactionRows({
-          start_date: `${twoMonthsAgo}-01`,
-          end_date: `${twoMonthsAgo}-31`,
+        fetchMonthlyTransactionRows(twoMonthsAgo, {
           type: 'expense',
           page_size: 1000
         })

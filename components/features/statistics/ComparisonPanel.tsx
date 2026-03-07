@@ -1,13 +1,12 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { useTransactionRowsQuery } from '@/lib/api/hooks';
+import { useMonthlyTransactionRowsQuery } from '@/lib/api/hooks';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Trophy, Users, ChevronDown, RefreshCw, Award, ArrowUp, ArrowDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRefetchOnDataSync } from '@/hooks/useEnhancedDataSync';
-import { getMonthRangeFromString } from '@/lib/utils/date';
 
 interface ComparisonData {
   userStats: {
@@ -47,17 +46,10 @@ export function ComparisonPanel({
 }: ComparisonPanelProps) {
   const [collapsed, setCollapsed] = useState(false);
 
-  // 计算月份参数
-  const { month, start, end } = getMonthRangeFromString(currentMonth);
-
-  // 使用 React Query 获取交易数据
-  const { data: transactionsData, isLoading: loading, refetch } = useTransactionRowsQuery(
-    {
-      start_date: start,
-      end_date: end,
+  const { data: transactionsData, isLoading: loading, refetch } =
+    useMonthlyTransactionRowsQuery(currentMonth, {
       page_size: 1000,
-    }
-  );
+    });
 
   useRefetchOnDataSync(refetch);
 

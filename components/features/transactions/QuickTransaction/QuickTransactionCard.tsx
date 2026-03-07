@@ -3,8 +3,7 @@
 import React, { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { motion } from 'framer-motion';
-import { formatDateToLocal } from '@/lib/utils/date';
-import { useTransactionRowsQuery } from '@/lib/api/hooks';
+import { useDailyTransactionRowsQuery } from '@/lib/api/hooks';
 import type { QuickTransactionCardProps } from './types';
 import { QUICK_ITEMS } from './constants';
 import { getQuickTransactionStats } from './utils';
@@ -22,18 +21,13 @@ import { useQuickTransactionCardState } from './useQuickTransactionCardState';
 import { useQuickModalNavigation } from './useQuickModalNavigation';
 
 export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTransactionCardProps) {
-  // 获取今天的日期字符串
-  const getTodayDateString = () => formatDateToLocal(new Date());
-
-  // 使用 React Query 获取今日交易记录
   const {
     data: todayTransactionsData,
     isLoading: loadingCategories,
     refetch: refetchTodayCategories
-  } = useTransactionRowsQuery(
+  } = useDailyTransactionRowsQuery(
+    new Date(),
     {
-      start_date: getTodayDateString(),
-      end_date: getTodayDateString(),
       page_size: 100,
     },
     {

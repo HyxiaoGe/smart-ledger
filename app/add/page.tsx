@@ -314,17 +314,18 @@ export default function AddPage() {
     [defaultPaymentMethodId]
   );
 
-  const { data: recentTransactionsData, isLoading: recentLoading } = useTransactionRowsQuery(
-    {
-      type: 'expense',
-      page_size: 5,
-      sort_by: 'created_at',
-      sort_order: 'desc'
-    },
-    {
-      queryKey: queryKeys.transactions.recent(5, 'expense')
-    }
-  );
+  const { data: recentTransactionsData, isLoading: recentLoading } =
+    useTransactionRowsQuery(
+      {
+        type: 'expense',
+        page_size: 5,
+        sort_by: 'created_at',
+        sort_order: 'desc'
+      },
+      {
+        queryKey: queryKeys.transactions.recent(5, 'expense')
+      }
+    );
 
   const recentTransactions = useMemo(() => {
     return (recentTransactionsData || []) as Transaction[];

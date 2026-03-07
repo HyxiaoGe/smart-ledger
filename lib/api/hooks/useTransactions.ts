@@ -20,6 +20,7 @@ import {
 } from '../services/transactions';
 import { applyTransactionWriteEffects } from '../transactionWriteEffects';
 import type { Transaction } from '@/types/domain/transaction';
+import { formatDateToLocal, getMonthRangeFromString, parseLocalDate } from '@/lib/utils/date';
 
 type MutationCallbacks<TData, TVariables> = Pick<
   UseMutationOptions<TData, Error, TVariables>,
@@ -42,6 +43,40 @@ type TransactionRowsQueryOptions = Omit<
   queryKey?: readonly unknown[];
 };
 
+type TransactionRowsRangeOverrides = Omit<
+  TransactionListParams,
+  'month' | 'range' | 'startDate' | 'endDate' | 'start_date' | 'end_date'
+>;
+
+export function buildMonthlyTransactionRowsParams(
+  month?: string,
+  overrides?: TransactionRowsRangeOverrides
+): TransactionListParams {
+  const { start, end } = getMonthRangeFromString(month);
+
+  return {
+    start_date: start,
+    end_date: end,
+    ...overrides,
+  };
+}
+
+export function buildDailyTransactionRowsParams(
+  date: string | Date = new Date(),
+  overrides?: TransactionRowsRangeOverrides
+): TransactionListParams {
+  const parsedDate =
+    date instanceof Date ? date : parseLocalDate(date) ?? new Date(date);
+  const safeDate = Number.isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
+  const day = formatDateToLocal(safeDate);
+
+  return {
+    start_date: day,
+    end_date: day,
+    ...overrides,
+  };
+}
+
 export function createTransactionRowsQueryOptions(
   params?: TransactionListParams,
   options?: TransactionRowsQueryOptions
@@ -55,6 +90,58 @@ export function createTransactionRowsQueryOptions(
 
 export function fetchTransactionRows(params?: TransactionListParams) {
   return transactionsApi.listRows(params);
+}
+
+export function createMonthlyTransactionRowsQueryOptions(
+  month?: string,
+  params?: TransactionRowsRangeOverrides,
+  options?: TransactionRowsQueryOptions
+) {
+  return createTransactionRowsQueryOptions(
+    buildMonthlyTransactionRowsParams(month, params),
+    options
+  );
+}
+
+export function fetchMonthlyTransactionRows(
+  month?: string,
+  params?: TransactionRowsRangeOverrides
+) {
+  return fetchTransactionRows(buildMonthlyTransactionRowsParams(month, params));
+}
+
+export function useMonthlyTransactionRowsQuery(
+  month?: string,
+  params?: TransactionRowsRangeOverrides,
+  options?: TransactionRowsQueryOptions
+) {
+  return useQuery(createMonthlyTransactionRowsQueryOptions(month, params, options));
+}
+
+export function createDailyTransactionRowsQueryOptions(
+  date?: string | Date,
+  params?: TransactionRowsRangeOverrides,
+  options?: TransactionRowsQueryOptions
+) {
+  return createTransactionRowsQueryOptions(
+    buildDailyTransactionRowsParams(date, params),
+    options
+  );
+}
+
+export function fetchDailyTransactionRows(
+  date?: string | Date,
+  params?: TransactionRowsRangeOverrides
+) {
+  return fetchTransactionRows(buildDailyTransactionRowsParams(date, params));
+}
+
+export function useDailyTransactionRowsQuery(
+  date?: string | Date,
+  params?: TransactionRowsRangeOverrides,
+  options?: TransactionRowsQueryOptions
+) {
+  return useQuery(createDailyTransactionRowsQueryOptions(date, params, options));
 }
 
 /**
