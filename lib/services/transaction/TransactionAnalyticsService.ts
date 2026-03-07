@@ -113,8 +113,8 @@ export class TransactionAnalyticsService {
         const lastMonthNum = currentMonthNum === 1 ? 12 : currentMonthNum - 1;
         const lastYear = currentMonthNum === 1 ? currentYear - 1 : currentYear;
 
-        const currentMonthStr = this.formatMonth(currentYear, currentMonthNum);
-        const lastMonthStr = this.formatMonth(lastYear, lastMonthNum);
+        const currentMonthStr = formatMonth(new Date(currentYear, currentMonthNum - 1, 1));
+        const lastMonthStr = formatMonth(new Date(lastYear, lastMonthNum - 1, 1));
         const { start: currentMonthStart, end: currentMonthEnd } = getMonthDateRangeStr(
           currentYear,
           currentMonthNum
@@ -383,13 +383,6 @@ export class TransactionAnalyticsService {
       timePreference,
       dayOfWeekDistribution
     };
-  }
-
-  /**
-   * 格式化月份
-   */
-  private formatMonth(year: number, month: number): string {
-    return `${year}-${month.toString().padStart(2, '0')}`;
   }
 
   /**

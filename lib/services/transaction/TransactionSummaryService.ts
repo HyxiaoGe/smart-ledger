@@ -96,7 +96,7 @@ export class TransactionSummaryService {
    * 获取指定月份汇总
    */
   async getMonthSummary(year: number, month: number): Promise<MonthSummaryResult> {
-    const monthStr = `${year}-${month.toString().padStart(2, '0')}`;
+    const monthStr = formatMonth(new Date(year, month - 1, 1));
     const cacheKey = `summary:month:${monthStr}`;
 
     return this.cacheDecorator.wrap(
@@ -130,7 +130,7 @@ export class TransactionSummaryService {
    * 获取分类汇总
    */
   async getCategorySummary(year: number, month: number): Promise<CategorySummary[]> {
-    const monthStr = `${year}-${month.toString().padStart(2, '0')}`;
+    const monthStr = formatMonth(new Date(year, month - 1, 1));
     const cacheKey = `summary:category:${monthStr}`;
 
     return this.cacheDecorator.wrap(
