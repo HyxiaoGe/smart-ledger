@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { QuickTransactionCard } from '@/components/features/transactions/QuickTransaction/QuickTransactionCard';
 import { motion } from 'framer-motion';
 import { useHomeQuickAssistant } from './useHomeQuickAssistant';
@@ -28,6 +28,18 @@ export function HomeQuickTransaction({ onSuccess }: HomeQuickTransactionProps) {
     onSuccess?.();
     closeCard();
   };
+
+  const handleCardOpenChange = useCallback(
+    (open: boolean) => {
+      if (open) {
+        openCard();
+        return;
+      }
+
+      closeCard();
+    },
+    [closeCard, openCard]
+  );
 
   return (
     <>
@@ -58,7 +70,7 @@ export function HomeQuickTransaction({ onSuccess }: HomeQuickTransactionProps) {
       {/* 快速记账卡片弹窗 */}
       <QuickTransactionCard
         open={showCard}
-        onOpenChange={(open) => (open ? openCard() : closeCard())}
+        onOpenChange={handleCardOpenChange}
         onSuccess={handleSuccess}
       />
     </>

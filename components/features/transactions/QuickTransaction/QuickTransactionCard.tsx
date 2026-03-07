@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { formatDateToLocal } from '@/lib/utils/date';
 import { useTransactionRowsQuery } from '@/lib/api/hooks';
 import type { QuickTransactionCardProps } from './types';
@@ -20,6 +21,8 @@ import {
 import { useQuickTransactionCardState } from './useQuickTransactionCardState';
 
 export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTransactionCardProps) {
+  const router = useRouter();
+
   // 获取今天的日期字符串
   const getTodayDateString = () => formatDateToLocal(new Date());
 
@@ -44,6 +47,17 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
     return getQuickTransactionStats(todayTransactionsData || []).matchedItems;
   }, [todayTransactionsData]);
 
+  const handleClose = useCallback(() => {
+    onOpenChange(false);
+  }, [onOpenChange]);
+
+  const handleDetailedEntry = useCallback(() => {
+    handleClose();
+    window.setTimeout(() => {
+      router.push('/add');
+    }, 300);
+  }, [handleClose, router]);
+
   const {
     createTransaction,
     editingId,
@@ -60,7 +74,7 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
     toastMessage,
   } = useQuickTransactionCardState({
     open,
-    onClose: () => onOpenChange(false),
+    onClose: handleClose,
     onSuccess,
     refreshTodayTransactions: () => refetchTodayCategories(),
   });
@@ -87,7 +101,7 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
           >
             <motion.div
               className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-              onClick={() => onOpenChange(false)}
+              onClick={handleClose}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -102,7 +116,7 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
               className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-hidden border border-gray-100 dark:border-gray-700"
             >
               <Card className="border-0 shadow-none bg-transparent">
-                <QuickCardHeader onClose={() => onOpenChange(false)} />
+                <QuickCardHeader onClose={handleClose} />
 
                 <CardContent className="space-y-6 px-6 pb-6 pt-4">
                   {/* 状态统计卡片 */}
@@ -149,7 +163,8 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
 
                   {/* 底部区域 */}
                   <QuickCardFooter
-                    onClose={() => onOpenChange(false)}
+                    onClose={handleClose}
+                    onDetailedEntry={handleDetailedEntry}
                     onRefresh={() => refetchTodayCategories()}
                     isLoading={loadingCategories}
                   />

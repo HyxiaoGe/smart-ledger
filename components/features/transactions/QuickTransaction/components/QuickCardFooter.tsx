@@ -2,29 +2,27 @@
 
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 
 interface QuickCardFooterProps {
   onClose: () => void;
+  onDetailedEntry: () => void;
   onRefresh: () => void;
   isLoading: boolean;
 }
 
-export function QuickCardFooter({ onClose, onRefresh, isLoading }: QuickCardFooterProps) {
-  const router = useRouter();
-
+export function QuickCardFooter({
+  onClose,
+  onDetailedEntry,
+  onRefresh,
+  isLoading,
+}: QuickCardFooterProps) {
   return (
     <>
       <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <Button
             variant="outline"
-            onClick={() => {
-              onClose();
-              window.setTimeout(() => {
-                router.push('/add');
-              }, 300);
-            }}
+            onClick={onDetailedEntry}
             className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             详细记账
