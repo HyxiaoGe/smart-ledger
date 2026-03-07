@@ -27,6 +27,7 @@ import {
   Filter,
   RefreshCw,
   Search,
+  ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
 
