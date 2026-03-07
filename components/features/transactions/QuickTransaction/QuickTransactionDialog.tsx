@@ -8,6 +8,7 @@ import { ProgressToast } from '@/components/shared/ProgressToast';
 import { generateTimeContext } from '@/lib/domain/noteContext';
 import { useQuickSuggestions } from '@/lib/api/hooks';
 import type { QuickTransactionSuggestion } from '@/lib/api/services/ai';
+import { useRouter } from 'next/navigation';
 import { useQuickSuggestionSubmission } from './useQuickSuggestionSubmission';
 import {
   QuickSuggestionEmptyState,
@@ -23,6 +24,7 @@ interface QuickTransactionDialogProps {
 }
 
 export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickTransactionDialogProps) {
+  const router = useRouter();
   const timeContext = useMemo(() => generateTimeContext(), []);
 
   const {
@@ -149,7 +151,10 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
-                  onClick={() => window.open('/add', '_blank')}
+                  onClick={() => {
+                    onOpenChange(false);
+                    router.push('/add');
+                  }}
                   className="text-gray-600 dark:text-gray-300 hover:text-gray-800"
                 >
                   详细记账

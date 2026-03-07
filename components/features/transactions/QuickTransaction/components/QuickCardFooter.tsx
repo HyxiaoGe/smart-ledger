@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface QuickCardFooterProps {
   onClose: () => void;
@@ -10,6 +11,8 @@ interface QuickCardFooterProps {
 }
 
 export function QuickCardFooter({ onClose, onRefresh, isLoading }: QuickCardFooterProps) {
+  const router = useRouter();
+
   return (
     <>
       <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
@@ -18,8 +21,8 @@ export function QuickCardFooter({ onClose, onRefresh, isLoading }: QuickCardFoot
             variant="outline"
             onClick={() => {
               onClose();
-              setTimeout(() => {
-                window.location.href = '/add';
+              window.setTimeout(() => {
+                router.push('/add');
               }, 300);
             }}
             className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
