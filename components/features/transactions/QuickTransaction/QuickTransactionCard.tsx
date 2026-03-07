@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
 import { formatDateToLocal } from '@/lib/utils/date';
 import { useTransactionRowsQuery } from '@/lib/api/hooks';
 import type { QuickTransactionCardProps } from './types';
@@ -20,10 +19,9 @@ import {
   QuickSuccessToast,
 } from './components';
 import { useQuickTransactionCardState } from './useQuickTransactionCardState';
+import { useQuickModalNavigation } from './useQuickModalNavigation';
 
 export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTransactionCardProps) {
-  const router = useRouter();
-
   // 获取今天的日期字符串
   const getTodayDateString = () => formatDateToLocal(new Date());
 
@@ -48,16 +46,10 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
     return getQuickTransactionStats(todayTransactionsData || []).matchedItems;
   }, [todayTransactionsData]);
 
-  const handleClose = useCallback(() => {
-    onOpenChange(false);
-  }, [onOpenChange]);
-
-  const handleDetailedEntry = useCallback(() => {
-    handleClose();
-    window.setTimeout(() => {
-      router.push('/add');
-    }, 300);
-  }, [handleClose, router]);
+  const { handleClose, handleDetailedEntry } = useQuickModalNavigation({
+    onOpenChange,
+    detailDelayMs: 300,
+  });
 
   const {
     createTransaction,

@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Zap, Clock, RefreshCw, X } from 'lucide-react';
 import { generateTimeContext } from '@/lib/domain/noteContext';
 import { useQuickSuggestions } from '@/lib/api/hooks';
 import type { QuickTransactionSuggestion } from '@/lib/api/services/ai';
-import { useRouter } from 'next/navigation';
 import { useQuickSuggestionSubmission } from './useQuickSuggestionSubmission';
 import {
   QuickSuggestionEmptyState,
@@ -17,6 +16,7 @@ import {
   QuickSuggestionSection,
   QuickSuccessToast,
 } from './components';
+import { useQuickModalNavigation } from './useQuickModalNavigation';
 
 interface QuickTransactionDialogProps {
   open: boolean;
@@ -25,8 +25,10 @@ interface QuickTransactionDialogProps {
 }
 
 export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickTransactionDialogProps) {
-  const router = useRouter();
   const timeContext = useMemo(() => generateTimeContext(), []);
+  const { handleClose, handleDetailedEntry } = useQuickModalNavigation({
+    onOpenChange,
+  });
 
   const {
     data: suggestionsData,
@@ -47,7 +49,7 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
   } = useQuickSuggestionSubmission({
     onSuccess,
     afterSuccess: () => {
-      onOpenChange(false);
+      handleClose();
     },
     refreshSuggestions: fetchSuggestions,
     refreshDelayMs: 1500,
@@ -60,12 +62,16 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
     ? '记账失败，请重试'
     : '';
 
+  const handleRefreshSuggestions = useCallback(() => {
+    void fetchSuggestions();
+  }, [fetchSuggestions]);
+
   if (!open) return null;
 
   return (
     <QuickModalShell
       open={open}
-      onClose={() => onOpenChange(false)}
+      onClose={handleClose}
       panelClassName="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden mx-4"
     >
       <QuickSuccessToast
@@ -82,7 +88,7 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => onOpenChange(false)}
+            onClick={handleClose}
             className="h-8 w-8 p-0"
           >
             <X className="h-4 w-4" />
@@ -129,7 +135,7 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
             <Button
               variant="outline"
               size="sm"
-              onClick={() => fetchSuggestions()}
+              onClick={handleRefreshSuggestions}
               disabled={loading || createTransaction.isPending}
               className="text-gray-500 dark:text-gray-400 hover:text-gray-700"
             >
@@ -140,15 +146,12 @@ export function QuickTransactionDialog({ open, onOpenChange, onSuccess }: QuickT
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
-                onClick={() => {
-                  onOpenChange(false);
-                  router.push('/add');
-                }}
+                onClick={handleDetailedEntry}
                 className="text-gray-600 dark:text-gray-300 hover:text-gray-800"
               >
                 详细记账
               </Button>
-              <Button variant="outline" onClick={() => onOpenChange(false)}>
+              <Button variant="outline" onClick={handleClose}>
                 关闭
               </Button>
             </div>
