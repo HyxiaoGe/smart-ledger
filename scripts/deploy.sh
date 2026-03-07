@@ -7,7 +7,14 @@ echo "部署提交: ${GIT_SHA:-unknown}"
 
 # 确保 compose 使用最新环境变量，并清理历史残留容器。
 docker compose down --remove-orphans || true
-docker rm -f smart-ledger-app-1 >/dev/null 2>&1 || true
+
+stale_container_ids="$(docker ps -aq --filter name='^/smart-ledger-app-1$')"
+if [ -n "${stale_container_ids}" ]; then
+  echo "清理残留容器: ${stale_container_ids}"
+  docker rm -f ${stale_container_ids}
+fi
+
+docker compose rm -sf app || true
 
 docker compose up -d --build --force-recreate
 docker image prune -f
