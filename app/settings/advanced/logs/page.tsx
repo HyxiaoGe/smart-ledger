@@ -15,6 +15,7 @@ import {
   type LogRecord,
   type LogStats,
 } from '@/lib/api/services/admin';
+import { formatDateTimeToZhCN } from '@/lib/utils/date';
 import {
   AlertCircle,
   Info,
@@ -118,15 +119,7 @@ export default function LogsPage() {
 
   // 格式化时间
   const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
+    return formatDateTimeToZhCN(dateString, '-');
   };
 
   return (

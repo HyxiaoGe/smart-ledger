@@ -13,6 +13,7 @@ import {
 } from '@/lib/services/cronService';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { adminApi } from '@/lib/api/services/admin';
+import { formatDateTimeShortZhCN } from '@/lib/utils/date';
 import {
   Clock,
   CheckCircle2,
@@ -161,14 +162,7 @@ export default function CronManagementPage() {
 
   // 格式化时间
   const formatTime = (dateStr: string | null) => {
-    if (!dateStr) return '-';
-    const date = new Date(dateStr);
-    return date.toLocaleString('zh-CN', {
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    return formatDateTimeShortZhCN(dateStr, '-');
   };
 
   // 过滤今天的执行记录

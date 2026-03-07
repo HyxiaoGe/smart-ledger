@@ -156,6 +156,23 @@ export function formatDateTimePartsZhCN(
   };
 }
 
+export function formatDateTimeShortZhCN(
+  value: string | Date | null | undefined,
+  fallback = '-'
+): string {
+  if (!value) return fallback;
+
+  const date = value instanceof Date ? value : parseLocalDate(value) ?? new Date(value);
+  if (Number.isNaN(date.getTime())) return fallback;
+
+  return date.toLocaleString('zh-CN', {
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
 export function parseLocalDate(value: string): Date | null {
   const parts = value.split('-');
   if (parts.length !== 3) return null;

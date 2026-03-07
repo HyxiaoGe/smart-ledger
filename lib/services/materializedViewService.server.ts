@@ -5,6 +5,7 @@
 
 import { prisma } from '@/lib/clients/db/prisma';
 import { CacheDecorator, memoryCache } from '@/lib/infrastructure/cache';
+import { formatDateToLocal, getMonthDateRangeStr } from '@/lib/utils/date';
 
 // 创建缓存装饰器实例
 const cacheDecorator = new CacheDecorator(memoryCache, {
@@ -64,7 +65,7 @@ export interface DailySummary {
  * 格式化月份为字符串（避免时区问题）
  */
 function formatMonthString(year: number, month: number): string {
-  return `${year}-${String(month).padStart(2, '0')}-01`;
+  return getMonthDateRangeStr(year, month).start;
 }
 
 /**
@@ -199,10 +200,7 @@ export async function getCategoryMonthlyStat(
  * 格式化日期为字符串（避免时区问题）
  */
 function formatDateString(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return formatDateToLocal(date);
 }
 
 /**
