@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { Route } from 'next';
 import type { LucideIcon } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,7 +14,7 @@ export interface SettingsFeatureItem {
   description: string;
   icon: LucideIcon;
   status: SettingsFeatureStatus;
-  href?: string;
+  href?: Route;
   badge?: string;
   badgeTone?: SettingsFeatureTone;
   badgeColor?: SettingsFeatureTone;
