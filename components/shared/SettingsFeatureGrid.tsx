@@ -16,6 +16,7 @@ export interface SettingsFeatureItem {
   href?: string;
   badge?: string;
   badgeTone?: SettingsFeatureTone;
+  badgeColor?: SettingsFeatureTone;
 }
 
 interface SettingsFeatureGridProps {
@@ -75,7 +76,7 @@ export function SettingsFeatureGrid({
         const iconClassName =
           item.status === 'available' ? availableToneStyle.iconColor : UNAVAILABLE_ICON_COLOR;
         const badgeClassName = item.badge
-          ? BADGE_TONE_STYLES[item.badgeTone || 'gray']
+          ? BADGE_TONE_STYLES[item.badgeTone || item.badgeColor || 'gray']
           : null;
 
         return (
