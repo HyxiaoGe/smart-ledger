@@ -324,9 +324,7 @@ export class PrismaAIFeedbackRepository implements IAIFeedbackRepository {
   private mapPerformanceStatToEntity(row: any): AIPerformanceStat {
     return {
       id: row.id,
-      stat_date: row.stat_date instanceof Date
-        ? row.stat_date.toISOString().split('T')[0]
-        : row.stat_date,
+      stat_date: row.stat_date instanceof Date ? formatDateToLocal(row.stat_date) : row.stat_date,
       ai_provider: row.ai_provider,
       feature_type: row.feature_type,
       model_name: row.model_name,

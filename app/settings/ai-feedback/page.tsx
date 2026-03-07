@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { aiFeedbackService, getAIFeedbackStats } from '@/lib/services/ai';
 import type { AIFeedback, AIFeedbackStats } from '@/types/ai-feedback';
+import { formatDateToLocal } from '@/lib/utils/date';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
@@ -123,7 +124,7 @@ export default function AIFeedbackManagementPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `ai-feedbacks-${new Date().toISOString().split('T')[0]}.${format}`;
+      a.download = `ai-feedbacks-${formatDateToLocal(new Date())}.${format}`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (error) {

@@ -300,7 +300,7 @@ export class TransactionAnalyticsService {
 
     const dailySpending: Record<string, { count: number; amount: number }> = {};
     transactions.forEach((t) => {
-      const date = t.date.split('T')[0];
+      const date = typeof t.date === 'string' ? getMonthDateKey(t.date) : formatDateToLocal(t.date);
       if (!dailySpending[date]) {
         dailySpending[date] = { count: 0, amount: 0 };
       }
@@ -398,4 +398,18 @@ export class TransactionAnalyticsService {
   clearCache(): void {
     this.cacheDecorator.invalidateByTag('analytics');
   }
+}
+
+function getMonthDateKey(value: string) {
+  const localDateMatch = value.match(/^\d{4}-\d{2}-\d{2}/);
+  if (localDateMatch) {
+    return localDateMatch[0];
+  }
+
+  const parsed = new Date(value);
+  if (!Number.isNaN(parsed.getTime())) {
+    return formatDateToLocal(parsed);
+  }
+
+  return formatDateToLocal(new Date());
 }
