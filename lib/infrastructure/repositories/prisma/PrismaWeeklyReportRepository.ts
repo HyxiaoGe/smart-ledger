@@ -92,10 +92,12 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
     // 计算本周的开始和结束日期
     const now = new Date();
     let startDate: Date;
-    let endDate: Date;
+    let weekEndDate: Date;
+    let nextWeekStart: Date;
 
     if (weekStartDate) {
       startDate = new Date(weekStartDate);
+      startDate.setHours(0, 0, 0, 0);
     } else {
       // 默认为上周
       startDate = new Date(now);
@@ -103,12 +105,16 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
       startDate.setHours(0, 0, 0, 0);
     }
 
-    endDate = new Date(startDate);
-    endDate.setDate(startDate.getDate() + 6); // 周六
-    endDate.setHours(23, 59, 59, 999);
+    weekEndDate = new Date(startDate);
+    weekEndDate.setDate(startDate.getDate() + 6); // 周六
+    weekEndDate.setHours(0, 0, 0, 0);
+
+    nextWeekStart = new Date(startDate);
+    nextWeekStart.setDate(startDate.getDate() + 7); // 下周日
+    nextWeekStart.setHours(0, 0, 0, 0);
 
     const weekStartStr = formatDateToLocal(startDate);
-    const weekEndStr = formatDateToLocal(endDate);
+    const weekEndStr = formatDateToLocal(weekEndDate);
 
     // 检查是否已存在
     const exists = await this.existsForWeek(weekStartStr);
@@ -126,7 +132,7 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
         type: 'expense',
         date: {
           gte: startDate,
-          lte: endDate
+          lt: nextWeekStart
         },
         // 排除固定支出：非自动生成且无关联固定账单
         ...EXCLUDE_RECURRING_CONDITIONS
@@ -217,8 +223,9 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
     // 计算环比变化
     const lastWeekStart = new Date(startDate);
     lastWeekStart.setDate(lastWeekStart.getDate() - 7);
-    const lastWeekEnd = new Date(endDate);
-    lastWeekEnd.setDate(lastWeekEnd.getDate() - 7);
+    lastWeekStart.setHours(0, 0, 0, 0);
+    const lastWeekNextStart = new Date(startDate);
+    lastWeekNextStart.setHours(0, 0, 0, 0);
 
     // 上周交易（同样排除固定支出，确保环比对比的一致性）
     const lastWeekTransactions = await this.prisma.transactions.findMany({
@@ -227,7 +234,7 @@ export class PrismaWeeklyReportRepository implements IWeeklyReportRepository {
         type: 'expense',
         date: {
           gte: lastWeekStart,
-          lte: lastWeekEnd
+          lt: lastWeekNextStart
         },
         // 排除固定支出
         ...EXCLUDE_RECURRING_CONDITIONS
