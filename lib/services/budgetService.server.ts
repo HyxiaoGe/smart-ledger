@@ -7,6 +7,11 @@
 import { prisma } from '@/lib/clients/db/prisma';
 import { CacheDecorator, memoryCache } from '@/lib/infrastructure/cache';
 import { EXCLUDE_RECURRING_CONDITIONS } from '@/lib/infrastructure/queries';
+import {
+  formatBudgetMonthLabel,
+  getBudgetProgressBarColor,
+  getCurrentYearMonthParts,
+} from '@/lib/utils/budget';
 import { formatMonth as formatMonthKey, getMonthDateRange, shiftMonth } from '@/lib/utils/date';
 
 // 创建缓存装饰器实例
@@ -482,18 +487,14 @@ export async function getBudgetHistory(
  * 获取当前年月
  */
 export function getCurrentYearMonth(): { year: number; month: number } {
-  const now = new Date();
-  return {
-    year: now.getFullYear(),
-    month: now.getMonth() + 1
-  };
+  return getCurrentYearMonthParts();
 }
 
 /**
  * 格式化月份显示
  */
 export function formatMonth(year: number, month: number): string {
-  return `${year}年${month}月`;
+  return formatBudgetMonthLabel(year, month);
 }
 
 /**
@@ -882,8 +883,5 @@ export function getBudgetStatusLabel(status: BudgetStatus): {
  * 计算进度条颜色
  */
 export function getProgressBarColor(percentage: number, isOverBudget: boolean): string {
-  if (isOverBudget) return 'bg-red-500';
-  if (percentage >= 80) return 'bg-orange-500';
-  if (percentage >= 50) return 'bg-blue-500';
-  return 'bg-green-500';
+  return getBudgetProgressBarColor(percentage, isOverBudget);
 }

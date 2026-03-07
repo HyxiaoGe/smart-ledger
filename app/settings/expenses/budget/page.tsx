@@ -7,13 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { PageSkeleton } from '@/components/shared/PageSkeleton';
-import {
-  getCurrentYearMonth,
-  formatMonth,
-  getProgressBarColor
-} from '@/lib/services/budgetService.server';
 import { budgetsApi } from '@/lib/api/services/budgets';
 import { categoriesApi } from '@/lib/api/services/categories';
+import {
+  formatBudgetMonthLabel,
+  getBudgetProgressBarColor,
+  getCurrentYearMonthParts,
+} from '@/lib/utils/budget';
 import type { Category } from '@/types/dto/category.dto';
 import {
   ChevronLeft,
@@ -30,7 +30,7 @@ import {
 } from 'lucide-react';
 
 export default function BudgetPage() {
-  const { year, month } = getCurrentYearMonth();
+  const { year, month } = getCurrentYearMonthParts();
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [isSuggestionsExpanded, setIsSuggestionsExpanded] = useState(true);
@@ -190,7 +190,7 @@ export default function BudgetPage() {
             <div className="px-4 py-2 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
               <Calendar className="inline h-4 w-4 mr-2 text-blue-600" />
               <span className="font-semibold text-blue-900 dark:text-blue-100">
-                {formatMonth(year, month)}
+                {formatBudgetMonthLabel(year, month)}
               </span>
             </div>
           </div>
@@ -314,7 +314,7 @@ export default function BudgetPage() {
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
-                  className={`h-2 rounded-full transition-all ${getProgressBarColor(usagePercentage, usagePercentage > 100)}`}
+                  className={`h-2 rounded-full transition-all ${getBudgetProgressBarColor(usagePercentage, usagePercentage > 100)}`}
                   style={{ width: `${Math.min(usagePercentage, 100)}%` }}
                 />
               </div>
