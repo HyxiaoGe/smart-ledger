@@ -17,7 +17,11 @@ import { useSearchParams } from 'next/navigation';
 import { formatDateToLocal } from '@/lib/utils/date';
 import { logger } from '@/lib/services/logging';
 import { getErrorMessage } from '@/types/common';
-import { useCreateTransaction, usePaymentMethods, useTransactionRowsQuery } from '@/lib/api/hooks';
+import {
+  useCreateTransaction,
+  usePaymentMethodsWithDefault,
+  useTransactionRowsQuery,
+} from '@/lib/api/hooks';
 import { queryKeys } from '@/lib/api/queryClient';
 
 import { SmartSuggestionPanel } from './components';
@@ -277,12 +281,7 @@ export default function AddPage() {
     }, 200);
   }
 
-  const { data: paymentMethodsData } = usePaymentMethods();
-  const paymentMethods = paymentMethodsData || [];
-  const defaultPaymentMethodId = useMemo(
-    () => paymentMethods.find((method) => method.is_default)?.id || '',
-    [paymentMethods]
-  );
+  const { paymentMethods, defaultPaymentMethodId } = usePaymentMethodsWithDefault();
 
   // 重置表单
   const resetForm = useCallback(

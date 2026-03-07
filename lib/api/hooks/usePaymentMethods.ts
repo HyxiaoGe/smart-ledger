@@ -4,6 +4,7 @@
  * 支付方式相关 React Query Hooks
  */
 
+import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../queryClient';
 import {
@@ -20,6 +21,21 @@ export function usePaymentMethods() {
     queryKey: queryKeys.paymentMethods.list(),
     queryFn: () => paymentMethodsApi.list(),
   });
+}
+
+export function usePaymentMethodsWithDefault() {
+  const { data, ...query } = usePaymentMethods();
+  const paymentMethods = data || [];
+  const defaultPaymentMethodId = useMemo(
+    () => paymentMethods.find((method) => method.is_default)?.id || '',
+    [paymentMethods]
+  );
+
+  return {
+    ...query,
+    paymentMethods,
+    defaultPaymentMethodId,
+  };
 }
 
 /**

@@ -5,7 +5,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDateToLocal } from '@/lib/utils/date';
-import { useCreateTransaction, usePaymentMethods, useTransactionRowsQuery } from '@/lib/api/hooks';
+import {
+  useCreateTransaction,
+  usePaymentMethodsWithDefault,
+  useTransactionRowsQuery,
+} from '@/lib/api/hooks';
 import type { QuickTransactionCardProps, QuickTransactionItem } from './types';
 import { QUICK_ITEMS } from './constants';
 import { getQuickTransactionStats } from './utils';
@@ -29,19 +33,15 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
   // 获取今天的日期字符串
   const getTodayDateString = () => formatDateToLocal(new Date());
 
-  const { data: paymentMethodsData } = usePaymentMethods();
-  const paymentMethods = paymentMethodsData || [];
+  const { paymentMethods, defaultPaymentMethodId } = usePaymentMethodsWithDefault();
   const createTransaction = useCreateTransaction();
 
   // 设置默认支付方式
   useEffect(() => {
-    if (paymentMethods.length > 0 && !paymentMethod) {
-      const defaultMethod = paymentMethods.find(m => m.is_default);
-      if (defaultMethod) {
-        setPaymentMethod(defaultMethod.id);
-      }
+    if (!paymentMethod && defaultPaymentMethodId) {
+      setPaymentMethod(defaultPaymentMethodId);
     }
-  }, [paymentMethods, paymentMethod]);
+  }, [defaultPaymentMethodId, paymentMethod]);
 
   // 使用 React Query 获取今日交易记录
   const {
