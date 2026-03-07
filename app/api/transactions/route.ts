@@ -15,6 +15,14 @@ import { revalidateTransactionWrite } from '@/lib/services/transaction/revalidat
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+function getExclusiveEndDate(dateStr?: string) {
+  if (!dateStr) return undefined;
+
+  const date = new Date(`${dateStr}T00:00:00`);
+  date.setDate(date.getDate() + 1);
+  return date.toISOString().slice(0, 10);
+}
+
 // POST 验证 schema - 创建交易
 const createTransactionSchema = z.object({
   type: z.enum(['expense', 'income']).default('expense'),
@@ -78,7 +86,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
       type: params.type as TransactionType | undefined,
       category: params.category,
       startDate: params.start_date,
-      endDate: params.end_date,
+      endDate: getExclusiveEndDate(params.end_date),
       currency: params.currency as Currency | undefined,
       paymentMethod: params.payment_method,
       merchant: params.merchant,
