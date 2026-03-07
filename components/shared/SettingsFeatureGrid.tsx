@@ -14,7 +14,7 @@ export interface SettingsFeatureItem {
   description: string;
   icon: LucideIcon;
   status: SettingsFeatureStatus;
-  href?: Route;
+  href?: string;
   badge?: string;
   badgeTone?: SettingsFeatureTone;
   badgeColor?: SettingsFeatureTone;
@@ -106,7 +106,7 @@ export function SettingsFeatureGrid({
                 {item.description}
               </p>
               {item.status === 'available' && item.href ? (
-                <Link href={item.href}>
+                <Link href={item.href as Route}>
                   <Button className={`w-full ${availableToneStyle.buttonClassName}`}>
                     <Settings2 className="h-4 w-4 mr-2" />
                     {availableActionLabel}
