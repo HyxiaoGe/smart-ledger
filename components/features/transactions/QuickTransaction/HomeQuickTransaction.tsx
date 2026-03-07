@@ -1,94 +1,33 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { QuickTransactionCard } from '@/components/features/transactions/QuickTransaction/QuickTransactionCard';
 import { FaRobot, FaStar } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
 import { BsEmojiSmileFill } from 'react-icons/bs';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useHomeQuickAssistant } from './useHomeQuickAssistant';
 
 interface HomeQuickTransactionProps {
   onSuccess?: () => void;
 }
 
-const ASSISTANT_TIPS = [
-  '点我快速记账~',
-  '今天记账了吗？',
-  '我是你的记账小助手！',
-  '记录消费，养成好习惯~',
-  '点击我，轻松记账！',
-  '记得记账哦~',
-  '我在这里等你！',
-  '记账让生活更美好~',
-  '点击开始记账吧！',
-  '记录每一笔支出~',
-];
-
 export function HomeQuickTransaction({ onSuccess }: HomeQuickTransactionProps) {
-  const [showCard, setShowCard] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-  const [currentTip, setCurrentTip] = useState('');
-  const [showTip, setShowTip] = useState(false);
-  const hideTipTimeoutRef = useRef<number | null>(null);
-  const initialDelayTimeoutRef = useRef<number | null>(null);
-  const tipIntervalRef = useRef<number | null>(null);
-
-  // 小助手的话术库
-  // 随机选择一句提示
-  const getRandomTip = useCallback(() => {
-    const randomIndex = Math.floor(Math.random() * ASSISTANT_TIPS.length);
-    return ASSISTANT_TIPS[randomIndex];
-  }, []);
-
-  // 显示小助手说话
-  const showAssistantTip = useCallback(() => {
-    const tip = getRandomTip();
-    setCurrentTip(tip);
-    setShowTip(true);
-
-    if (hideTipTimeoutRef.current) {
-      window.clearTimeout(hideTipTimeoutRef.current);
-    }
-
-    hideTipTimeoutRef.current = window.setTimeout(() => {
-      setShowTip(false);
-    }, 3000);
-  }, [getRandomTip]);
+  const {
+    closeCard,
+    currentTip,
+    isHovered,
+    openCard,
+    setIsHovered,
+    showCard,
+    showTip,
+  } = useHomeQuickAssistant();
 
   const handleSuccess = () => {
     onSuccess?.();
-    setShowCard(false);
+    closeCard();
   };
-
-  // 自动动画和说话效果
-  useEffect(() => {
-    // 初始延迟后开始第一次说话
-    initialDelayTimeoutRef.current = window.setTimeout(() => {
-      if (!showCard && !isHovered) {
-        showAssistantTip();
-      }
-    }, 2000);
-
-    // 设置定时器，每8-12秒随机触发一次
-    tipIntervalRef.current = window.setInterval(() => {
-      if (!showCard && !isHovered && Math.random() > 0.3) {
-        showAssistantTip();
-      }
-    }, Math.floor(Math.random() * 4000) + 8000); // 8-12秒随机间隔
-
-    return () => {
-      if (initialDelayTimeoutRef.current) {
-        window.clearTimeout(initialDelayTimeoutRef.current);
-      }
-      if (tipIntervalRef.current) {
-        window.clearInterval(tipIntervalRef.current);
-      }
-      if (hideTipTimeoutRef.current) {
-        window.clearTimeout(hideTipTimeoutRef.current);
-      }
-    };
-  }, [showCard, isHovered]);
 
   return (
     <>
@@ -102,7 +41,7 @@ export function HomeQuickTransaction({ onSuccess }: HomeQuickTransactionProps) {
         whileTap={{ scale: 0.95 }}
       >
         <Button
-          onClick={() => setShowCard(true)}
+          onClick={openCard}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
           className="relative bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:from-pink-600 hover:via-purple-600 hover:to-indigo-600 text-white font-medium shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-full w-20 h-20 flex items-center justify-center group overflow-hidden border-3 border-white/30"
@@ -313,7 +252,7 @@ export function HomeQuickTransaction({ onSuccess }: HomeQuickTransactionProps) {
       {/* 快速记账卡片弹窗 */}
       <QuickTransactionCard
         open={showCard}
-        onOpenChange={setShowCard}
+        onOpenChange={(open) => (open ? openCard() : closeCard())}
         onSuccess={handleSuccess}
       />
     </>
