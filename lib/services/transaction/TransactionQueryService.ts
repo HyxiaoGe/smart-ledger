@@ -7,6 +7,7 @@ import type { ITransactionRepository } from '@/lib/domain/repositories/ITransact
 import type { Transaction, TransactionType } from '@/types/domain/transaction';
 import { CacheDecorator } from '@/lib/infrastructure/cache';
 import type { ICache } from '@/lib/infrastructure/cache';
+import { formatDateToLocal } from '@/lib/utils/date';
 import { resolveTransactionRange } from './TransactionRange';
 
 /**
@@ -43,7 +44,7 @@ export class TransactionQueryService {
     startDate?: string,
     endDate?: string
   ): Promise<TransactionQueryResult> {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = formatDateToLocal(new Date());
     const cacheKey = `transactions:range:${month ?? 'all'}:${range ?? 'today'}:${startDate ?? 'none'}:${endDate ?? 'none'}:${today}`;
 
     return this.cacheDecorator.wrap(
@@ -79,7 +80,7 @@ export class TransactionQueryService {
   async listYesterdayTransactions(range?: string): Promise<Transaction[]> {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().slice(0, 10);
+    const yesterdayStr = formatDateToLocal(yesterday);
 
     const cacheKey = `transactions:yesterday:${range ?? 'none'}:${yesterdayStr}`;
 

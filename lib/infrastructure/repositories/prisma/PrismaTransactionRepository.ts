@@ -16,6 +16,7 @@ import type {
   TransactionStats,
   CategoryStats,
 } from '@/types/dto/transaction.dto';
+import { formatDateToLocal } from '@/lib/utils/date';
 
 /**
  * Prisma 交易仓储实现
@@ -108,8 +109,8 @@ export class PrismaTransactionRepository implements ITransactionRepository {
    * 根据月份查找交易
    */
   async findByMonth(year: number, month: number, type?: TransactionType): Promise<Transaction[]> {
-    const startDate = new Date(year, month - 1, 1).toISOString().slice(0, 10);
-    const endDate = new Date(year, month, 1).toISOString().slice(0, 10);
+    const startDate = formatDateToLocal(new Date(year, month - 1, 1));
+    const endDate = formatDateToLocal(new Date(year, month, 1));
 
     return this.findByDateRange(startDate, endDate, type);
   }

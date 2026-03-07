@@ -11,6 +11,7 @@ import { validateRequest, commonSchemas } from '@/lib/utils/validation';
 import type { TransactionType, Currency } from '@/types/domain/transaction';
 import { createTransaction } from '@/lib/services/transactions.server';
 import { revalidateTransactionWrite } from '@/lib/services/transaction/revalidation.server';
+import { formatDateToLocal } from '@/lib/utils/date';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -20,7 +21,7 @@ function getExclusiveEndDate(dateStr?: string) {
 
   const date = new Date(`${dateStr}T00:00:00`);
   date.setDate(date.getDate() + 1);
-  return date.toISOString().slice(0, 10);
+  return formatDateToLocal(date);
 }
 
 // POST 验证 schema - 创建交易
