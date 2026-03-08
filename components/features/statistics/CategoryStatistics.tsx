@@ -21,7 +21,7 @@ type CategoryStatisticTransaction = {
   subcategory?: string | null;
 };
 
-interface CategoryStatisticsProps {
+export interface CategoryStatisticsProps {
   transactions: CategoryStatisticTransaction[];
   currency: string;
 }

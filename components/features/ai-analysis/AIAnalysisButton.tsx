@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Brain } from 'lucide-react';
 
-interface AIAnalysisButtonProps {
+export interface AIAnalysisButtonProps {
   dateRange?: string;
   currentMonth?: string;
   aiData?: {

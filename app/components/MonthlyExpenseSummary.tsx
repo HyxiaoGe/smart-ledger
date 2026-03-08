@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { TrendingUp, Calendar, DollarSign, BarChart3, TrendingDown, Minus } from 'lucide-react';
 import { calculateMonthlyExpenseSummaryStats } from '@/lib/utils/recordStatistics';
 
-interface MonthlyExpenseSummaryProps {
+export interface MonthlyExpenseSummaryProps {
   items: { date: string; total: number; count: number }[];
   transactions?: { amount: number; date: string; note?: string }[];
   yesterdayTransactions?: { amount: number; date: string; note?: string }[];

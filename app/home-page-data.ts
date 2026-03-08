@@ -1,25 +1,8 @@
 import { getTransactionDashboardData } from '@/lib/services/transactions.server';
 import type { HomePageRequestParams } from '@/lib/services/transaction/pageParams';
+import type { TransactionDashboardResult } from '@/lib/services/transaction/index.server';
 
-export type PageData = {
-  rangeExpense: number;
-  rangeIncome: number;
-  rangeCount: number;
-  rangeDailyAvg: number;
-  rangeLabel: string;
-  rangeRows: any[];
-  isSingleDay: boolean;
-  isToday: boolean;
-  prevRangeExpense: number;
-  prevRangeLabel: string;
-  trend: { name: string; expense: number }[];
-  pie: { name: string; value: number }[];
-  top10: any[];
-  calendarData: { date: string; amount: number; count: number }[];
-  calendarYear: number;
-  calendarMonth: number;
-  refreshSnapshot: string;
-};
+export type PageData = TransactionDashboardResult;
 
 export async function loadPageData(params: HomePageRequestParams): Promise<PageData> {
   return getTransactionDashboardData({

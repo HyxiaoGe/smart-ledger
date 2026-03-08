@@ -1,6 +1,9 @@
 import { partitionExpenseTransactions } from '@/lib/domain/records';
 import { getCurrentMonthlyBudgetAmount } from '@/lib/services/budgetService.server';
 import type { Transaction } from '@/types/domain/transaction';
+import type { AIAnalysisButtonProps } from '@/components/features/ai-analysis/AIAnalysisButton';
+import type { MonthlyExpenseSummaryProps } from '@/app/components/MonthlyExpenseSummary';
+import type { CategoryStatisticsProps } from '@/components/features/statistics/CategoryStatistics';
 import { TransactionAnalyticsService, type AIAnalysisData } from './TransactionAnalyticsService';
 import {
   TransactionQueryService,
@@ -21,26 +24,9 @@ export interface TransactionRecordsPageData {
 export interface TransactionRecordsPageViewData extends TransactionRecordsPageData {
   monthlyBudget: number;
   headerTitle: string;
-  summaryView: {
-    items: Array<{ date: string; total: number; count: number }>;
-    transactions: Transaction[];
-    yesterdayTransactions: any[];
-    monthTotalAmount: number;
-    monthTotalCount: number;
-    monthlyBudget: number;
-    currency: string;
-    dateRange: string;
-    rangeType: string;
-  };
-  categoryStatisticsView: {
-    transactions: Transaction[];
-    currency: string;
-  };
-  aiAnalysisView: {
-    dateRange: string;
-    currentMonth?: string;
-    aiData: AIAnalysisData;
-  };
+  summaryView: MonthlyExpenseSummaryProps;
+  categoryStatisticsView: CategoryStatisticsProps;
+  aiAnalysisView: AIAnalysisButtonProps;
 }
 
 export interface TransactionRecordsMainResult extends TransactionQueryResult {
