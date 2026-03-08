@@ -130,6 +130,19 @@ export function fetchTransactionRows(params?: TransactionListParams) {
   return transactionsApi.listRows(params);
 }
 
+export function createAllTransactionRowsQueryOptions(
+  params?: TransactionListParams,
+  options?: TransactionRowsQueryOptions & { pageSize?: number }
+) {
+  const { pageSize, ...queryOptions } = options || {};
+
+  return {
+    queryKey: queryOptions.queryKey ?? ['transactions', 'list', 'all', params, pageSize ?? 100],
+    queryFn: () => fetchAllTransactionRows(params, { pageSize }),
+    ...queryOptions,
+  };
+}
+
 export async function fetchAllTransactionRows(
   params?: TransactionListParams,
   options?: { pageSize?: number }
@@ -203,13 +216,15 @@ export function createAllMonthlyTransactionRowsQueryOptions(
   params?: TransactionRowsRangeOverrides,
   options?: TransactionRowsQueryOptions & { pageSize?: number }
 ) {
-  return {
-    queryKey:
-      options?.queryKey ??
-      ['transactions', 'list', 'all', 'month', month ?? 'current', params, options?.pageSize ?? 100],
-    queryFn: () => fetchAllMonthlyTransactionRows(month, params, { pageSize: options?.pageSize }),
-    ...options,
-  };
+  return createAllTransactionRowsQueryOptions(
+    buildMonthlyTransactionRowsParams(month, params),
+    {
+      queryKey:
+        options?.queryKey ??
+        ['transactions', 'list', 'all', 'month', month ?? 'current', params, options?.pageSize ?? 100],
+      ...options,
+    }
+  );
 }
 
 export function createDailyTransactionRowsQueryOptions(
@@ -236,6 +251,22 @@ export function fetchAllDailyTransactionRows(
   options?: { pageSize?: number }
 ) {
   return fetchAllTransactionRows(buildDailyTransactionRowsParams(date, params), options);
+}
+
+export function createAllDailyTransactionRowsQueryOptions(
+  date?: string | Date,
+  params?: TransactionRowsRangeOverrides,
+  options?: TransactionRowsQueryOptions & { pageSize?: number }
+) {
+  return createAllTransactionRowsQueryOptions(
+    buildDailyTransactionRowsParams(date, params),
+    {
+      queryKey:
+        options?.queryKey ??
+        ['transactions', 'list', 'all', 'day', formatDateToLocal(date instanceof Date ? date : parseLocalDate(date || '') ?? new Date()), params, options?.pageSize ?? 100],
+      ...options,
+    }
+  );
 }
 
 export function useDailyTransactionRowsQuery(
@@ -284,14 +315,13 @@ export function useFrequentExpenseAmounts(
       currency,
       start_date: formatDateToLocal(start),
       end_date: formatDateToLocal(end),
-      page_size: 100,
       sort_by: 'date' as const,
       sort_order: 'desc' as const,
     };
   }, [currency, days]);
 
-  const query = useTransactionRowsQuery(params, {
-    queryKey: queryKeys.transactions.frequentAmounts(currency),
+  const query = useAllTransactionRowsQuery(params, {
+    queryKey: queryKeys.transactions.frequentAmounts(currency, days),
   });
 
   const amounts = useMemo(() => {
@@ -337,13 +367,7 @@ export function useAllTransactionRowsQuery(
   params?: TransactionListParams,
   options?: TransactionRowsQueryOptions & { pageSize?: number }
 ) {
-  const { pageSize, ...queryOptions } = options || {};
-
-  return useQuery({
-    queryKey: queryOptions.queryKey ?? ['transactions', 'list', 'all', params, pageSize ?? 100],
-    queryFn: () => fetchAllTransactionRows(params, { pageSize }),
-    ...queryOptions,
-  });
+  return useQuery(createAllTransactionRowsQueryOptions(params, options));
 }
 
 export function usePaginatedTransactionRows(

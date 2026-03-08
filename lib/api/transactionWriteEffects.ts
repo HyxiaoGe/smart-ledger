@@ -28,7 +28,7 @@ function invalidateTransactionQueries(queryClient?: QueryClient) {
 
   void queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
   void queryClient.invalidateQueries({ queryKey: queryKeys.transactions.recent() });
-  void queryClient.invalidateQueries({ queryKey: queryKeys.transactions.frequentAmounts() });
+  void queryClient.invalidateQueries({ queryKey: queryKeys.transactions.frequentAmountsAll() });
 }
 
 function invalidateCommonNoteQueries(queryClient?: QueryClient) {
