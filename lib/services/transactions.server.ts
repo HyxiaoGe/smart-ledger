@@ -90,6 +90,20 @@ export async function getTransactionRecordsPageData(
   });
 }
 
+export async function getTransactionRecordsPageViewData(
+  month?: string,
+  range?: string,
+  startDate?: string,
+  endDate?: string
+) {
+  return transactionRecordsPageService.getPageViewData({
+    month,
+    range,
+    startDate,
+    endDate,
+  });
+}
+
 export async function createTransaction(input: CreateTransactionDTO) {
   return transactionMutationService.createTransaction(input);
 }

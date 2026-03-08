@@ -176,6 +176,14 @@ export async function getMonthlyBudgetStatus(year: number, month: number): Promi
   return cacheDecorator.wrap(cacheKey, () => getMonthlyBudgetStatusInternal(year, month));
 }
 
+export async function getCurrentMonthlyBudgetAmount(defaultAmount: number = 5000): Promise<number> {
+  const { year, month } = getCurrentYearMonth();
+  const budgetStatuses = await getMonthlyBudgetStatus(year, month);
+  const totalBudgetStatus = budgetStatuses.find((budget) => budget.category_key === null);
+
+  return totalBudgetStatus?.budget_amount || defaultAmount;
+}
+
 /**
  * 获取本月预算执行情况（内部实现）
  */

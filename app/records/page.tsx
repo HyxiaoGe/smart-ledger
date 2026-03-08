@@ -1,6 +1,5 @@
 import nextDynamic from 'next/dynamic';
-import { getTransactionRecordsPageData } from '@/lib/services/transactions.server';
-import { getMonthlyBudgetStatus, getCurrentYearMonth } from '@/lib/services/budgetService.server';
+import { getTransactionRecordsPageViewData } from '@/lib/services/transactions.server';
 import { TabsRangePicker } from '@/components/shared/TabsRangePicker';
 import { CollapsibleTransactionList } from '@/components/features/transactions/TransactionList/CollapsibleList';
 import { SkeletonBlock, SkeletonGrid } from '@/components/shared/Skeletons';
@@ -38,40 +37,8 @@ export default async function RecordsPage({
   const start = searchParams?.start;
   const end = searchParams?.end;
 
-  // 获取当前年月用于预算查询
-  const { year, month: currentMonth } = getCurrentYearMonth();
-
-  const [recordsPageData, budgetStatuses] = await Promise.all([
-    getTransactionRecordsPageData(month, range, start, end).catch(() => ({
-      mainResult: {
-        rows: [],
-        monthLabel: '全部',
-        expenseTransactions: [],
-        dailyItems: [],
-        totalCount: 0,
-      },
-      yesterdayData: [],
-      monthSummary: {
-        monthItems: [],
-        monthTotalAmount: 0,
-        monthTotalCount: 0
-      },
-      aiAnalysisData: {
-        currentMonthFull: [],
-        lastMonth: [],
-        currentMonthTop20: [],
-        currentMonthStr: '',
-        lastMonthStr: ''
-      }
-    })),
-    getMonthlyBudgetStatus(year, currentMonth).catch(() => [])
-  ]);
-
-  // 从预算状态中提取总预算（category_key 为 null 的记录）
-  const totalBudgetRecord = budgetStatuses.find(b => !b.category_key);
-  const monthlyBudget = totalBudgetRecord?.budget_amount || 5000;
-
-  const { mainResult, yesterdayData, monthSummary, aiAnalysisData } = recordsPageData;
+  const { mainResult, yesterdayData, monthSummary, aiAnalysisData, monthlyBudget } =
+    await getTransactionRecordsPageViewData(month, range, start, end);
   const { rows, monthLabel, dailyItems, expenseTransactions, totalCount } = mainResult;
 
   return (

@@ -1,4 +1,5 @@
 import { partitionExpenseTransactions } from '@/lib/domain/records';
+import { getCurrentMonthlyBudgetAmount } from '@/lib/services/budgetService.server';
 import type { Transaction } from '@/types/domain/transaction';
 import { TransactionAnalyticsService, type AIAnalysisData } from './TransactionAnalyticsService';
 import {
@@ -15,6 +16,10 @@ export interface TransactionRecordsPageData {
   yesterdayData: any[];
   monthSummary: MonthSummaryResult;
   aiAnalysisData: AIAnalysisData;
+}
+
+export interface TransactionRecordsPageViewData extends TransactionRecordsPageData {
+  monthlyBudget: number;
 }
 
 export interface TransactionRecordsMainResult extends TransactionQueryResult {
@@ -61,6 +66,55 @@ export class TransactionRecordsPageService {
       yesterdayData,
       monthSummary,
       aiAnalysisData,
+    };
+  }
+
+  async getPageViewData(params: {
+    month?: string;
+    range?: string;
+    startDate?: string;
+    endDate?: string;
+  }): Promise<TransactionRecordsPageViewData> {
+    try {
+      const [pageData, monthlyBudget] = await Promise.all([
+        this.getPageData(params),
+        getCurrentMonthlyBudgetAmount(),
+      ]);
+
+      return {
+        ...pageData,
+        monthlyBudget,
+      };
+    } catch {
+      return {
+        ...this.buildEmptyPageData(),
+        monthlyBudget: 5000,
+      };
+    }
+  }
+
+  private buildEmptyPageData(): TransactionRecordsPageData {
+    return {
+      mainResult: {
+        rows: [],
+        monthLabel: '全部',
+        expenseTransactions: [],
+        dailyItems: [],
+        totalCount: 0,
+      },
+      yesterdayData: [],
+      monthSummary: {
+        monthItems: [],
+        monthTotalAmount: 0,
+        monthTotalCount: 0,
+      },
+      aiAnalysisData: {
+        currentMonthFull: [],
+        lastMonth: [],
+        currentMonthTop20: [],
+        currentMonthStr: '',
+        lastMonthStr: '',
+      },
     };
   }
 }

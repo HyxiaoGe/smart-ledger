@@ -24,7 +24,10 @@ export { TransactionDashboardService } from './TransactionDashboardService';
 export { TransactionRecordsPageService } from './TransactionRecordsPageService';
 export { TransactionMutationService } from './TransactionMutationService';
 export type { TransactionDashboardResult } from './TransactionDashboardService';
-export type { TransactionRecordsPageData } from './TransactionRecordsPageService';
+export type {
+  TransactionRecordsPageData,
+  TransactionRecordsPageViewData,
+} from './TransactionRecordsPageService';
 
 // 导出类型
 export type { TransactionQueryResult } from './TransactionQueryService';
