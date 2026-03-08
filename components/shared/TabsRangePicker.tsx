@@ -363,11 +363,11 @@ function TabsRangePickerContent({ className, onRangeChange }: TabsRangePickerPro
       <Button
         variant="outline"
         onClick={() => setIsOpen(!isOpen)}
-        className="min-h-10 h-auto w-full max-w-full min-w-0 justify-between rounded-xl px-3 py-2 text-left font-normal shadow-sm sm:min-w-[110px]"
+        className="min-h-10 h-auto w-full max-w-full min-w-0 justify-between rounded-xl px-3 py-2 text-left font-normal shadow-sm sm:h-10 sm:w-auto sm:min-w-[180px] sm:max-w-none sm:py-2 lg:min-w-[220px]"
       >
         <span className="flex min-w-0 flex-1 items-start gap-2 text-left sm:items-center">
           <CalendarIcon className="mt-0.5 h-4 w-4 shrink-0 sm:mt-0" />
-          <span className="min-w-0 whitespace-normal break-words leading-snug sm:truncate sm:whitespace-nowrap">
+          <span className="min-w-0 whitespace-normal break-words leading-snug sm:whitespace-nowrap">
             {getDisplayText()}
           </span>
         </span>

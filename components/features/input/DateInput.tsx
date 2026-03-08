@@ -75,12 +75,12 @@ export function DateInput({
         type="button"
         variant="outline"
         onClick={handleButtonClick}
-        className="min-h-11 h-auto w-full justify-between rounded-xl border-slate-200 bg-white/80 px-3 py-2 text-left font-normal shadow-sm hover:border-blue-400 hover:bg-white focus-visible:ring-blue-500/70 dark:border-slate-700 dark:bg-slate-950 dark:hover:border-blue-500 dark:hover:bg-slate-950"
+        className="min-h-11 h-auto w-full justify-between rounded-xl border-slate-200 bg-white/80 px-3 py-2 text-left font-normal shadow-sm hover:border-blue-400 hover:bg-white focus-visible:ring-blue-500/70 dark:border-slate-700 dark:bg-slate-950 dark:hover:border-blue-500 dark:hover:bg-slate-950 sm:h-11 sm:py-2"
         disabled={disabled}
       >
         <span className="flex min-w-0 flex-1 items-start gap-2 sm:items-center">
           <CalendarIcon className="mt-0.5 h-4 w-4 shrink-0 sm:mt-0" />
-          <span className="min-w-0 whitespace-normal break-words text-left leading-snug sm:truncate sm:whitespace-nowrap">
+          <span className="min-w-0 whitespace-normal break-words text-left leading-snug sm:whitespace-nowrap">
             {selected ? format(selected, 'yyyy年MM月dd日', { locale: zhCN }) : placeholder}
           </span>
         </span>
