@@ -39,22 +39,20 @@ export default async function RecordsPage({
   const { month, range, start, end } = resolveTransactionRangePageParams(searchParams);
 
   const {
-    mainResult,
-    headerTitle,
+    headerView,
     summaryView,
     categoryStatisticsView,
-    aiAnalysisView,
+    listView,
   } = await getTransactionRecordsPageViewData(month, range, start, end);
-  const { rows, totalCount } = mainResult;
 
   return (
     <>
       <div className="container space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold">{headerTitle}</h1>
+          <h1 className="text-xl font-semibold">{headerView.title}</h1>
           <div className="flex items-center gap-4">
             <TabsRangePicker />
-            <AIAnalysisButton {...aiAnalysisView} />
+            <AIAnalysisButton {...headerView.aiAnalysisButton} />
           </div>
         </div>
 
@@ -66,7 +64,7 @@ export default async function RecordsPage({
         </>
 
         {/* 交易明细列表 - 带收纳功能 */}
-        <CollapsibleTransactionList initialTransactions={rows} totalCount={totalCount} />
+        <CollapsibleTransactionList {...listView} />
       </div>
     </>
   );

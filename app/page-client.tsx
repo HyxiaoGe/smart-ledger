@@ -30,12 +30,10 @@ const TEXT = {
 
 type HomePageClientProps = {
   data: PageData;
-  currency: string;
 };
 
 export default function HomePageClient({
   data,
-  currency,
 }: HomePageClientProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -80,7 +78,7 @@ export default function HomePageClient({
         <div className="flex items-center gap-4">
           <div className="flex gap-2 items-center">
             <span className="text-sm text-muted-foreground">{TEXT.currency}</span>
-            <CurrencySelect value={currency} />
+            <CurrencySelect value={data.currency} />
           </div>
           {isRefreshing && (
             <span className="text-xs text-blue-500 animate-pulse">{TEXT.refreshing}</span>
@@ -99,14 +97,14 @@ export default function HomePageClient({
 
       {/* 图表概览 */}
       <section className="space-y-2">
-        <h2 className="text-lg font-semibold">{`${TEXT.chartsTitle} (${currency})`}</h2>
+        <h2 className="text-lg font-semibold">{`${TEXT.chartsTitle} (${data.currency})`}</h2>
         <ChartSummary {...data.chartSummaryView} />
       </section>
 
       {/* Top 10 支出 */}
       <section className="space-y-2">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">{`${TEXT.topTitle} (${currency})`}</h2>
+          <h2 className="text-lg font-semibold">{`${TEXT.topTitle} (${data.currency})`}</h2>
           <div className="text-xs text-gray-500 dark:text-gray-400">
             💡 需要 AI 财务分析？请前往
             <a href="/records" className="text-blue-600 hover:text-blue-800 underline ml-1">

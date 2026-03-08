@@ -19,7 +19,6 @@ export default async function HomePage({
   return (
     <HomePageClient
       data={pageData}
-      currency={pageParams.currency}
     />
   );
 }

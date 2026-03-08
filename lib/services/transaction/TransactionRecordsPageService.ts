@@ -2,9 +2,7 @@ import { partitionExpenseTransactions } from '@/lib/domain/records';
 import { getCurrentMonthlyBudgetAmount } from '@/lib/services/budgetService.server';
 import type { Transaction } from '@/types/domain/transaction';
 import type {
-  AIAnalysisButtonProps,
-  CategoryStatisticsProps,
-  MonthlyExpenseSummaryProps,
+  TransactionRecordsPageViewSlices,
 } from '@/lib/types/transactionViews';
 import { TransactionAnalyticsService, type AIAnalysisData } from './TransactionAnalyticsService';
 import {
@@ -25,10 +23,10 @@ export interface TransactionRecordsPageData {
 
 export interface TransactionRecordsPageViewData extends TransactionRecordsPageData {
   monthlyBudget: number;
-  headerTitle: string;
-  summaryView: MonthlyExpenseSummaryProps;
-  categoryStatisticsView: CategoryStatisticsProps;
-  aiAnalysisView: AIAnalysisButtonProps;
+  headerView: TransactionRecordsPageViewSlices['headerView'];
+  summaryView: TransactionRecordsPageViewSlices['summaryView'];
+  categoryStatisticsView: TransactionRecordsPageViewSlices['categoryStatisticsView'];
+  listView: TransactionRecordsPageViewSlices['listView'];
 }
 
 export interface TransactionRecordsMainResult extends TransactionQueryResult {
@@ -116,7 +114,14 @@ export class TransactionRecordsPageService {
     return {
       ...pageData,
       monthlyBudget,
-      headerTitle: `账单列表（${pageData.mainResult.monthLabel}）`,
+      headerView: {
+        title: `账单列表（${pageData.mainResult.monthLabel}）`,
+        aiAnalysisButton: {
+          dateRange: rangeType,
+          currentMonth: params.month,
+          aiData: pageData.aiAnalysisData,
+        },
+      },
       summaryView: {
         items: pageData.mainResult.dailyItems,
         transactions: pageData.mainResult.expenseTransactions,
@@ -132,10 +137,9 @@ export class TransactionRecordsPageService {
         transactions: pageData.mainResult.expenseTransactions,
         currency: DEFAULT_RECORDS_CURRENCY,
       },
-      aiAnalysisView: {
-        dateRange: rangeType,
-        currentMonth: params.month,
-        aiData: pageData.aiAnalysisData,
+      listView: {
+        initialTransactions: pageData.mainResult.rows,
+        totalCount: pageData.mainResult.totalCount,
       },
     };
   }

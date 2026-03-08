@@ -34,9 +34,16 @@ export interface AIAnalysisButtonProps {
 }
 
 export interface TransactionRecordsPageViewSlices {
+  headerView: {
+    title: string;
+    aiAnalysisButton: AIAnalysisButtonProps;
+  };
   summaryView: MonthlyExpenseSummaryProps;
   categoryStatisticsView: CategoryStatisticsProps;
-  aiAnalysisView: AIAnalysisButtonProps;
+  listView: {
+    initialTransactions: Transaction[];
+    totalCount: number;
+  };
 }
 
 export interface TransactionRecordsViewContext {
