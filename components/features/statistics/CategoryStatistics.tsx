@@ -7,6 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCategories } from '@/contexts/CategoryContext';
 import { TrendingUp, BarChart3, ChevronDown, ChevronUp, Store } from 'lucide-react';
+import {
+  calculateCategoryStats,
+  calculateMerchantStatsByCategory,
+} from '@/lib/utils/recordStatistics';
 import type { ChartTooltipProps, ChartLegendProps, LegendPayloadItem } from '@/types/ui/chart';
 
 type CategoryStatisticTransaction = {
@@ -28,95 +32,13 @@ export function CategoryStatistics({ transactions }: CategoryStatisticsProps) {
   const { getCategoryMeta } = useCategories();
 
   // 计算分类统计数据（按主分类聚合）
-  const categoryStats = useMemo(() => {
-    const stats = new Map<string, { total: number; count: number; percentage: number }>();
-    let totalAmount = 0;
-
-    // 聚合数据
-    for (const transaction of transactions) {
-      if (transaction.type !== 'expense') continue;
-
-      const category = transaction.category || 'other';
-      const amount = Number(transaction.amount || 0);
-
-      totalAmount += amount;
-      const current = stats.get(category) || { total: 0, count: 0, percentage: 0 };
-      stats.set(category, {
-        total: current.total + amount,
-        count: current.count + 1,
-        percentage: 0 // 稍后计算
-      });
-    }
-
-    // 计算百分比并排序
-    const sortedStats = Array.from(stats.entries())
-      .map(([category, data]) => ({
-        category,
-        ...data,
-        percentage: totalAmount > 0 ? (data.total / totalAmount) * 100 : 0
-      }))
-      .sort((a, b) => b.total - a.total);
-
-    return { sortedStats, totalAmount };
-  }, [transactions]);
+  const categoryStats = useMemo(() => calculateCategoryStats(transactions), [transactions]);
 
   // 计算分类下的商家统计（用于展开显示）
-  const merchantStatsByCategory = useMemo(() => {
-    const statsByCategory = new Map<string, Map<string, { total: number; count: number; subcategories: Map<string, { total: number; count: number }> }>>();
-
-    for (const transaction of transactions) {
-      if (transaction.type !== 'expense') continue;
-
-      const category = transaction.category || 'other';
-      const merchant = transaction.merchant || '未分类商家';
-      const subcategory = transaction.subcategory;
-      const amount = Number(transaction.amount || 0);
-
-      // 初始化分类统计
-      if (!statsByCategory.has(category)) {
-        statsByCategory.set(category, new Map());
-      }
-      const categoryMap = statsByCategory.get(category)!;
-
-      // 初始化商家统计
-      if (!categoryMap.has(merchant)) {
-        categoryMap.set(merchant, { total: 0, count: 0, subcategories: new Map() });
-      }
-      const merchantData = categoryMap.get(merchant)!;
-      merchantData.total += amount;
-      merchantData.count += 1;
-
-      // 统计子分类
-      if (subcategory) {
-        if (!merchantData.subcategories.has(subcategory)) {
-          merchantData.subcategories.set(subcategory, { total: 0, count: 0 });
-        }
-        const subData = merchantData.subcategories.get(subcategory)!;
-        subData.total += amount;
-        subData.count += 1;
-      }
-    }
-
-    // 对每个分类下的商家按金额排序
-    const sortedStats = new Map<string, Array<{ merchant: string; total: number; count: number; subcategories: Array<{ name: string; total: number; count: number }> }>>();
-
-    for (const [category, merchantMap] of statsByCategory.entries()) {
-      const merchantArray = Array.from(merchantMap.entries())
-        .map(([merchant, data]) => ({
-          merchant,
-          total: data.total,
-          count: data.count,
-          subcategories: Array.from(data.subcategories.entries())
-            .map(([name, subData]) => ({ name, total: subData.total, count: subData.count }))
-            .sort((a, b) => b.total - a.total)
-        }))
-        .sort((a, b) => b.total - a.total);
-
-      sortedStats.set(category, merchantArray);
-    }
-
-    return sortedStats;
-  }, [transactions]);
+  const merchantStatsByCategory = useMemo(
+    () => calculateMerchantStatsByCategory(transactions),
+    [transactions]
+  );
 
   // 切换分类展开状态
   const toggleCategory = (category: string) => {
