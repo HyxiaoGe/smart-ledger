@@ -26,7 +26,7 @@ function CurrencySelectContent({ value }: CurrencySelectProps) {
 
   return (
     <select
-      className="h-9 rounded-md border border-input bg-background px-3 text-sm transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
+      className="h-10 min-w-[88px] rounded-xl border border-input bg-background px-3 text-sm transition-all duration-200 ease-in-out hover:border-blue-400 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70 focus-visible:ring-offset-2 dark:hover:border-blue-500 cursor-pointer"
       value={value}
       onChange={handleChange}
     >
@@ -41,7 +41,16 @@ function CurrencySelectContent({ value }: CurrencySelectProps) {
 
 export function CurrencySelect(props: CurrencySelectProps) {
   return (
-    <Suspense fallback={<select className="h-9 rounded-md border border-input bg-background px-3 text-sm" disabled><option>CNY</option></select>}>
+    <Suspense
+      fallback={
+        <select
+          className="h-10 min-w-[88px] rounded-xl border border-input bg-background px-3 text-sm"
+          disabled
+        >
+          <option>CNY</option>
+        </select>
+      }
+    >
       <CurrencySelectContent {...props} />
     </Suspense>
   );

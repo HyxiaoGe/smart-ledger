@@ -392,7 +392,7 @@ export default function AddPage() {
   }, []);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 sm:space-y-6">
       {showToast && (
         <div>
           <ProgressToast
@@ -403,15 +403,15 @@ export default function AddPage() {
         </div>
       )}
 
-      <section className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.16),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.14),_transparent_28%),linear-gradient(135deg,_#ffffff_0%,_#f8fafc_100%)] p-6 shadow-sm dark:border-slate-800 dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.12),_transparent_28%),linear-gradient(135deg,_#020617_0%,_#0f172a_100%)]">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+      <section className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.16),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.14),_transparent_28%),linear-gradient(135deg,_#ffffff_0%,_#f8fafc_100%)] p-5 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.12),_transparent_28%),linear-gradient(135deg,_#020617_0%,_#0f172a_100%)]">
+        <div className="flex flex-col gap-4 sm:gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white/80 px-3 py-1 text-xs font-medium text-sky-700 backdrop-blur dark:border-sky-900 dark:bg-slate-950/60 dark:text-sky-300">
               <Sparkles className="h-3.5 w-3.5" />
               先录入核心信息，再补充细节
             </div>
             <div className="space-y-2">
-              <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+              <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-100">
                 快速记一笔支出
               </h1>
               <p className="max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
@@ -445,10 +445,10 @@ export default function AddPage() {
         </div>
       </section>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,0.9fr)]">
-        <div className="space-y-6">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,0.9fr)] xl:gap-6">
+        <div className="space-y-5 sm:space-y-6">
           <Card className="overflow-hidden border-slate-200 shadow-sm dark:border-slate-800">
-            <CardHeader className="border-b border-slate-100 bg-slate-50/70 pb-4 dark:border-slate-800 dark:bg-slate-900/70">
+            <CardHeader className="border-b border-slate-100 bg-slate-50/70 px-4 pb-4 pt-5 sm:px-6 dark:border-slate-800 dark:bg-slate-900/70">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <CardTitle className="text-xl">账单录入</CardTitle>
@@ -462,11 +462,11 @@ export default function AddPage() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="space-y-6 p-6">
+            <CardContent className="space-y-5 p-4 sm:space-y-6 sm:p-6">
             <form onSubmit={onSubmit} className="space-y-4">
               <div className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.9fr)]">
                 <div className="space-y-6">
-                  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-950">
                     <div className="flex items-center justify-between">
                       <div>
                         <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -501,7 +501,7 @@ export default function AddPage() {
                             setAmountText(formatThousand(parsedAmount));
                           }
                         }}
-                        className={`h-16 text-3xl font-semibold tracking-tight ${
+                        className={`h-14 text-[1.75rem] font-semibold tracking-tight sm:h-16 sm:text-3xl ${
                           amountText.trim() && invalidAmount ? 'border-destructive' : ''
                         }`}
                         disabled={isSubmitting}
@@ -536,7 +536,7 @@ export default function AddPage() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-950">
                     <div className="flex items-center justify-between">
                       <div>
                         <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -568,7 +568,7 @@ export default function AddPage() {
                     </div>
                     <div className="mt-4">
                       <select
-                        className="h-11 w-full rounded-xl border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
+                        className="h-11 w-full rounded-xl border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70 focus-visible:ring-offset-2 dark:hover:border-blue-500 cursor-pointer"
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
                         disabled={isSubmitting || categoriesLoading}
@@ -587,7 +587,7 @@ export default function AddPage() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-950">
                     <div className="flex items-center justify-between">
                       <div>
                         <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">备注</Label>
@@ -613,7 +613,7 @@ export default function AddPage() {
                 </div>
 
                 <div className="space-y-6">
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5 dark:border-slate-800 dark:bg-slate-900/70">
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 sm:p-5 dark:border-slate-800 dark:bg-slate-900/70">
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="text-xs font-medium uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
@@ -656,7 +656,7 @@ export default function AddPage() {
                     )}
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-950">
                     <button
                       type="button"
                       onClick={() => setShowAdvanced((prev) => !prev)}
@@ -685,7 +685,7 @@ export default function AddPage() {
                               币种 <span className="text-destructive">*</span>
                             </Label>
                             <select
-                              className="mt-2 h-10 w-full rounded-xl border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
+                              className="mt-2 h-11 w-full rounded-xl border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70 focus-visible:ring-offset-2 dark:hover:border-blue-500 cursor-pointer"
                               value={currency}
                               onChange={(e) => setCurrency(e.target.value as Currency)}
                               disabled={isSubmitting}
@@ -719,7 +719,7 @@ export default function AddPage() {
                         <div>
                           <Label>支付方式</Label>
                           <select
-                            className="mt-2 h-10 w-full rounded-xl border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
+                            className="mt-2 h-11 w-full rounded-xl border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70 focus-visible:ring-offset-2 dark:hover:border-blue-500 cursor-pointer"
                             value={paymentMethod}
                             onChange={(e) => setPaymentMethod(e.target.value)}
                             disabled={isSubmitting}
@@ -785,7 +785,7 @@ export default function AddPage() {
                     )}
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-950">
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
@@ -824,7 +824,11 @@ export default function AddPage() {
                       {parsedAmount > 0 ? `${currency === 'USD' ? '$' : '¥'}${formatThousand(parsedAmount)}` : '未填写金额'}
                     </p>
                   </div>
-                  <Button type="submit" disabled={isSubmitting} className="min-w-[180px]">
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="min-h-11 w-full rounded-xl sm:w-auto sm:min-w-[180px]"
+                  >
                     {isSubmitting ? '保存中...' : '保存账单'}
                   </Button>
                 </div>

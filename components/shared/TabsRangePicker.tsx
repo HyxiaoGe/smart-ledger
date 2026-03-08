@@ -363,7 +363,7 @@ function TabsRangePickerContent({ className, onRangeChange }: TabsRangePickerPro
       <Button
         variant="outline"
         onClick={() => setIsOpen(!isOpen)}
-        className="justify-between text-left font-normal min-w-[100px]"
+        className="min-h-10 min-w-[110px] justify-between rounded-xl text-left font-normal shadow-sm"
       >
         <span className="flex items-center gap-2">
           <CalendarIcon className="h-4 w-4" />
@@ -387,7 +387,7 @@ function TabsRangePickerContent({ className, onRangeChange }: TabsRangePickerPro
           />
 
           {/* 弹出内容 */}
-          <Card className="absolute top-full right-0 z-50 mt-2 w-auto min-w-[320px] shadow-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
+          <Card className="absolute top-full right-0 z-50 mt-2 w-[min(92vw,24rem)] shadow-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-2xl overflow-hidden">
             <CardContent className="p-0">
               {/* Tab 切换 */}
               <div className="flex border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
@@ -412,7 +412,7 @@ function TabsRangePickerContent({ className, onRangeChange }: TabsRangePickerPro
 
               {/* 快捷选项 */}
               <div className="p-3">
-                <div className="flex flex-wrap gap-2">
+                <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
                   {TAB_OPTIONS[activeTab].map((option) => (
                     <Button
                       key={option.key}
@@ -420,7 +420,7 @@ function TabsRangePickerContent({ className, onRangeChange }: TabsRangePickerPro
                       size="sm"
                       onClick={() => handleQuickOption(option.key)}
                       className={cn(
-                        "flex-1 min-w-[80px]",
+                        "min-h-9 rounded-xl sm:flex-1 sm:min-w-[80px]",
                         getCurrentTabSelection() === option.key
                           ? "bg-blue-600 text-white hover:bg-blue-700"
                           : "hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -454,7 +454,7 @@ function TabsRangePickerContent({ className, onRangeChange }: TabsRangePickerPro
                       }
                     >
                       {activeTab === "day" && (
-                        <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-2 overflow-x-auto">
+                        <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-2 overflow-x-auto">
                           <DatePicker
                             mode="range"
                             selected={

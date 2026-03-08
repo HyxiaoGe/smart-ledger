@@ -31,7 +31,7 @@ export function CollapsibleListControls({
 }: CollapsibleListControlsProps) {
   return (
     <>
-      <div className="mb-5 rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+      <div className="mb-5 rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-950">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
@@ -50,7 +50,7 @@ export function CollapsibleListControls({
             variant="outline"
             size="sm"
             onClick={onToggleExpanded}
-            className="flex items-center gap-2 rounded-full px-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200"
+            className="flex min-h-10 w-full items-center gap-2 rounded-2xl px-4 transition-colors duration-200 hover:bg-gray-50 sm:w-auto sm:rounded-full dark:hover:bg-gray-800"
           >
             <span className="text-sm">{isExpanded ? '收起明细' : '展开明细'}</span>
             {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -69,7 +69,7 @@ export function CollapsibleListControls({
                     key={item.key}
                     size="sm"
                     variant={currentRange === item.key ? 'default' : 'outline'}
-                    className="rounded-full"
+                    className="min-h-9 rounded-xl sm:rounded-full"
                     onClick={() => onSelectRange(item.key)}
                   >
                     {item.label}
@@ -86,7 +86,7 @@ export function CollapsibleListControls({
                   <Button
                     size="sm"
                     variant={!activeCategory ? 'default' : 'outline'}
-                    className="rounded-full"
+                    className="min-h-9 rounded-xl sm:rounded-full"
                     onClick={() => onSelectCategory(null)}
                   >
                     全部
@@ -96,7 +96,7 @@ export function CollapsibleListControls({
                       key={item.key}
                       size="sm"
                       variant={activeCategory === item.key ? 'default' : 'outline'}
-                      className="rounded-full"
+                      className="min-h-9 rounded-xl sm:rounded-full"
                       onClick={() => onSelectCategory(item.key)}
                     >
                       {item.icon ? `${item.icon} ` : ''}

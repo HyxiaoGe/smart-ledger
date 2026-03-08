@@ -10,7 +10,7 @@ interface RecordsPageHeaderProps {
 
 export function RecordsPageHeader({ headerView }: RecordsPageHeaderProps) {
   return (
-    <section className="relative overflow-hidden rounded-[28px] border border-slate-200/80 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.16),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(249,115,22,0.14),_transparent_30%),linear-gradient(135deg,_#ffffff_0%,_#f8fafc_100%)] p-6 shadow-sm dark:border-slate-800 dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(249,115,22,0.12),_transparent_30%),linear-gradient(135deg,_#020617_0%,_#0f172a_100%)]">
+    <section className="relative overflow-hidden rounded-[28px] border border-slate-200/80 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.16),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(249,115,22,0.14),_transparent_30%),linear-gradient(135deg,_#ffffff_0%,_#f8fafc_100%)] p-5 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(249,115,22,0.12),_transparent_30%),linear-gradient(135deg,_#020617_0%,_#0f172a_100%)]">
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.85fr)]">
         <div className="space-y-4">
           <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white/80 px-3 py-1 text-xs font-medium text-sky-700 backdrop-blur dark:border-sky-900 dark:bg-slate-950/60 dark:text-sky-300">
@@ -18,21 +18,21 @@ export function RecordsPageHeader({ headerView }: RecordsPageHeaderProps) {
             复盘工作台
           </div>
           <div className="space-y-2">
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-100">
               {headerView.title}
             </h1>
             <p className="max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
               先看汇总，再看分类，最后下钻到明细。范围切换和 AI 分析入口都放在顶部，方便连续复盘。
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-950">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <div className="inline-flex w-full items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm sm:w-auto sm:justify-start sm:rounded-full dark:border-slate-700 dark:bg-slate-950">
               <span className="text-slate-500 dark:text-slate-400">时间范围</span>
               <TabsRangePicker />
             </div>
             <Link
               href="/add"
-              className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-sky-400 hover:text-sky-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300 dark:hover:border-sky-500 dark:hover:text-sky-300"
+              className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-sky-400 hover:text-sky-700 sm:w-auto sm:justify-start sm:rounded-full dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300 dark:hover:border-sky-500 dark:hover:text-sky-300"
             >
               <ReceiptText className="h-4 w-4" />
               继续记账
@@ -40,7 +40,7 @@ export function RecordsPageHeader({ headerView }: RecordsPageHeaderProps) {
           </div>
         </div>
 
-        <div className="rounded-[24px] border border-white/80 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
+        <div className="rounded-[24px] border border-white/80 bg-white/80 p-4 shadow-sm backdrop-blur sm:p-5 dark:border-slate-800 dark:bg-slate-950/70">
           <div className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1 text-xs font-medium text-white dark:bg-slate-100 dark:text-slate-900">
             复盘动作
           </div>
