@@ -60,3 +60,14 @@ export async function getAIAnalysisData(targetMonth?: string) {
 export async function getPredictionData(monthsToAnalyze: number = 6) {
   return transactionAnalyticsService.getPredictionData(monthsToAnalyze);
 }
+
+/**
+ * 获取月度分析 bundle
+ * @deprecated 请使用 `transactionAnalyticsService.getMonthlyAnalysisBundle()` 替代
+ */
+export async function getMonthlyAnalysisBundle(
+  targetMonth?: string,
+  monthsToAnalyze: number = 6
+) {
+  return transactionAnalyticsService.getMonthlyAnalysisBundle(targetMonth, monthsToAnalyze);
+}

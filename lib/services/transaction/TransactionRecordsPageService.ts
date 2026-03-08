@@ -54,11 +54,11 @@ export class TransactionRecordsPageService {
   }): Promise<TransactionRecordsPageData> {
     const range = params.range || DEFAULT_RANGE;
 
-    const [queryResult, yesterdayData, monthSummary, aiAnalysisData] = await Promise.all([
+    const [queryResult, yesterdayData, monthSummary, analysisBundle] = await Promise.all([
       this.queryService.listByRange(params.month, range, params.startDate, params.endDate),
       this.queryService.listYesterdayTransactions(range),
       this.summaryService.getCurrentMonthSummary(),
-      this.analyticsService.getAIAnalysisData(params.month),
+      this.analyticsService.getMonthlyAnalysisBundle(params.month),
     ]);
 
     const { expenseTransactions, dailyItems } = partitionExpenseTransactions(
@@ -76,7 +76,7 @@ export class TransactionRecordsPageService {
       mainResult,
       yesterdayData,
       monthSummary,
-      aiAnalysisData,
+      aiAnalysisData: analysisBundle.aiAnalysisData,
     };
   }
 

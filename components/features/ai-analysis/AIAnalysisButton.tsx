@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Brain } from 'lucide-react';
 import type { AIAnalysisButtonProps } from '@/lib/types/transactionViews';
+import type { AIAnalysisData } from '@/lib/services/transaction/TransactionAnalyticsService';
 
 export function AIAnalysisButton({
   dateRange,
@@ -41,13 +42,7 @@ interface AIAnalysisModalProps {
   onClose: () => void;
   dateRange?: string;
   currentMonth?: string;
-  aiData?: {
-    currentMonthFull: any[];
-    lastMonth: any[];
-    currentMonthTop20: any[];
-    currentMonthStr: string;
-    lastMonthStr: string;
-  };
+  aiData?: AIAnalysisData;
 }
 
 function AIAnalysisModal({

@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { chat } from '@/lib/clients/ai/client';
-import { getPredictionData } from '@/lib/services/transactions.server';
+import { getMonthlyAnalysisBundle } from '@/lib/services/transactions.server';
 import { memoryCache } from '@/lib/infrastructure/cache';
 import { CACHE_TTL, CACHE_PREFIXES } from '@/lib/config/cacheConfig';
 import { AIFeedbackService } from '@/lib/services/ai/AIFeedbackService.server';
@@ -20,7 +20,8 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
   const { type = 'spending-prediction', monthsToAnalyze = 6, predictionMonths = 3 } = body;
 
   // 获取历史数据
-  const predictionData = await getPredictionData(monthsToAnalyze);
+  const analysisBundle = await getMonthlyAnalysisBundle(undefined, monthsToAnalyze);
+  const predictionData = analysisBundle.predictionData;
 
   // 检查数据质量
   if (!predictionData.overallStats.dataQuality.sufficientData) {

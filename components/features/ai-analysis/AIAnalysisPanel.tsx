@@ -20,19 +20,14 @@ import {
 import { memoryCache } from '@/lib/infrastructure/cache';
 import { aiApi } from '@/lib/api/services/ai';
 import { getCurrentMonthString } from '@/lib/utils/date';
+import type { AIAnalysisData } from '@/lib/services/transaction/TransactionAnalyticsService';
 
 interface AIAnalysisPanelProps {
   className?: string;
   dateRange?: string;
   categories?: string[];
   currentMonth?: string;
-  aiData?: {
-    currentMonthFull: any[];
-    lastMonth: any[];
-    currentMonthTop20: any[];
-    currentMonthStr: string;
-    lastMonthStr: string;
-  };
+  aiData?: AIAnalysisData;
   isModal?: boolean;
 }
 

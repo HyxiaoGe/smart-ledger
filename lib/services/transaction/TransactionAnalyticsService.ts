@@ -34,6 +34,13 @@ export interface PredictionData {
   advancedAnalysis: AdvancedAnalysis;
 }
 
+export interface MonthlyAnalysisBundle {
+  targetMonth: string;
+  monthsToAnalyze: number;
+  aiAnalysisData: AIAnalysisData;
+  predictionData: PredictionData;
+}
+
 interface MonthlyData {
   month: string;
   transactions: any[];
@@ -246,6 +253,25 @@ export class TransactionAnalyticsService {
       },
       { ttl: 1800 * 1000 } // 30分钟缓存
     );
+  }
+
+  async getMonthlyAnalysisBundle(
+    targetMonth?: string,
+    monthsToAnalyze: number = 6
+  ): Promise<MonthlyAnalysisBundle> {
+    const resolvedMonth = targetMonth || formatMonth(new Date());
+
+    const [aiAnalysisData, predictionData] = await Promise.all([
+      this.getAIAnalysisData(resolvedMonth),
+      this.getPredictionData(monthsToAnalyze),
+    ]);
+
+    return {
+      targetMonth: resolvedMonth,
+      monthsToAnalyze,
+      aiAnalysisData,
+      predictionData,
+    };
   }
 
   /**

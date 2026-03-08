@@ -32,7 +32,11 @@ export type {
   DailySummary,
   CategorySummary
 } from './TransactionSummaryService';
-export type { AIAnalysisData, PredictionData } from './TransactionAnalyticsService';
+export type {
+  AIAnalysisData,
+  PredictionData,
+  MonthlyAnalysisBundle,
+} from './TransactionAnalyticsService';
 
 /**
  * 服务工厂

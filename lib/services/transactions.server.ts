@@ -60,6 +60,13 @@ export async function getPredictionData(monthsToAnalyze: number = 6) {
   return transactionAnalyticsService.getPredictionData(monthsToAnalyze);
 }
 
+export async function getMonthlyAnalysisBundle(
+  targetMonth?: string,
+  monthsToAnalyze: number = 6
+) {
+  return transactionAnalyticsService.getMonthlyAnalysisBundle(targetMonth, monthsToAnalyze);
+}
+
 /**
  * 获取首页交易看板数据
  */
