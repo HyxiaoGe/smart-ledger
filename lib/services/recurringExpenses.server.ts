@@ -320,6 +320,16 @@ export class RecurringExpenseService {
 
   async getGenerationHistory(limit = 20): Promise<RecurringGenerationHistoryItem[]> {
     const prisma = getPrismaClient();
+    type GenerationLogRow = {
+      id: string;
+      recurring_expense_id: string | null;
+      generation_date: Date;
+      generated_transaction_id: string | null;
+      status: string | null;
+      reason: string | null;
+      created_at: Date | null;
+    };
+
     const logs = await prisma.recurring_generation_logs.findMany({
       orderBy: { created_at: 'desc' },
       take: limit,
@@ -330,10 +340,10 @@ export class RecurringExpenseService {
     }
 
     const expenseIds = logs
-      .map((log) => log.recurring_expense_id)
+      .map((log: GenerationLogRow) => log.recurring_expense_id)
       .filter((id): id is string => id !== null);
     const transactionIds = logs
-      .map((log) => log.generated_transaction_id)
+      .map((log: GenerationLogRow) => log.generated_transaction_id)
       .filter((id): id is string => id !== null);
 
     type ExpenseLookupRow = {
@@ -368,7 +378,7 @@ export class RecurringExpenseService {
     const expenseMap = new Map(expenses.map((item) => [item.id, item]));
     const transactionMap = new Map(transactions.map((item) => [item.id, item]));
 
-    return logs.map((log) => {
+    return logs.map((log: GenerationLogRow) => {
       const expense = log.recurring_expense_id
         ? expenseMap.get(log.recurring_expense_id)
         : null;
