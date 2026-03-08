@@ -2,13 +2,14 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { PageSkeleton } from '@/components/shared/PageSkeleton';
 import { budgetsApi } from '@/lib/api/services/budgets';
 import { categoriesApi } from '@/lib/api/services/categories';
+import { useBudgetOverview } from '@/lib/api/hooks/useBudgets';
 import {
   formatBudgetMonthLabel,
   getBudgetProgressBarColor,
@@ -41,16 +42,15 @@ export default function BudgetPage() {
   const [totalBudgetDraft, setTotalBudgetDraft] = useState('');
   const queryClient = useQueryClient();
 
-  // 获取预算汇总
+  const budgetParams = { year, month, currency: 'CNY' as const };
+
+  // 获取预算总览
   const {
-    data: summary,
-    isLoading: summaryLoading,
-    isFetching: summaryFetching,
+    data: overview,
+    isLoading: overviewLoading,
+    isFetching: overviewFetching,
     error: summaryError
-  } = useQuery({
-    queryKey: ['budget-summary', year, month],
-    queryFn: () => budgetsApi.getSummary({ year, month, currency: 'CNY' })
-  });
+  } = useBudgetOverview(budgetParams);
 
   // 获取分类列表
   const {
@@ -60,16 +60,6 @@ export default function BudgetPage() {
   } = useQuery({
     queryKey: ['categories'],
     queryFn: () => categoriesApi.list()
-  });
-
-  // 获取预算建议（已包含实时计算的当月支出数据）
-  const {
-    data: suggestions = [],
-    isLoading: suggestionsLoading,
-    isFetching: suggestionsFetching
-  } = useQuery({
-    queryKey: ['budget-suggestions', year, month],
-    queryFn: () => budgetsApi.getSuggestions({ year, month })
   });
 
   // 过滤活跃分类
@@ -85,8 +75,10 @@ export default function BudgetPage() {
     }
   }, [summaryError, showToast]);
 
-  const loading = summaryLoading || categoriesLoading || suggestionsLoading;
-  const refreshing = summaryFetching || categoriesFetching || suggestionsFetching;
+  const loading = overviewLoading || categoriesLoading;
+  const refreshing = overviewFetching || categoriesFetching;
+  const summary = overview?.summary;
+  const suggestions = overview?.suggestions || [];
   const totalBudget = summary?.total_budget || 0;
   const totalSpent = summary?.total_spent || 0;
   const totalRemaining = summary?.total_remaining || 0;
@@ -146,8 +138,7 @@ export default function BudgetPage() {
         amount
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['budget-summary', year, month] });
-      queryClient.invalidateQueries({ queryKey: ['budget-status', year, month] });
+      queryClient.invalidateQueries({ queryKey: ['budgets'] });
       setToastMessage('✅ 总预算已更新');
       setShowToast(true);
       setEditingTotalBudget(false);

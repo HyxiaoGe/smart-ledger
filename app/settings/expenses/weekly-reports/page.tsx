@@ -2,11 +2,15 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
-import { weeklyReportsApi, type WeeklyReport } from '@/lib/api/services/weekly-reports';
+import { type WeeklyReport } from '@/lib/api/services/weekly-reports';
+import {
+  useGenerateWeeklyReport,
+  useLatestWeeklyReport,
+  useWeeklyReports,
+} from '@/lib/api/hooks/useWeeklyReports';
 import { formatWeekRangeLabel, getWeekNumberDescription } from '@/lib/utils/date';
 import { formatCurrencyAmount, formatSignedPercentage } from '@/lib/utils/format';
 import {
@@ -53,35 +57,15 @@ function isDateRangeOverlap(startA: Date, endA: Date, startB: Date, endB: Date) 
 export default function WeeklyReportsPage() {
   const [filter, setFilter] = useState<FilterType>('all');
   const { showToast } = useToast();
-  const queryClient = useQueryClient();
 
   // 获取所有周报告
-  const { data: reports = [], isLoading: reportsLoading } = useQuery({
-    queryKey: ['weekly-reports'],
-    queryFn: () => weeklyReportsApi.list(),
-  });
+  const { data: reports = [], isLoading: reportsLoading } = useWeeklyReports();
 
   // 获取最新周报告
-  const { data: latestReport, isLoading: latestLoading } = useQuery({
-    queryKey: ['weekly-reports', 'latest'],
-    queryFn: () => weeklyReportsApi.getLatest(),
-  });
+  const { data: latestReport, isLoading: latestLoading } = useLatestWeeklyReport();
 
   // 生成周报告 mutation
-  const generateMutation = useMutation({
-    mutationFn: () => weeklyReportsApi.generate(),
-    onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ['weekly-reports'] });
-      if (result.success) {
-        showToast('报告生成成功！', 'success');
-      } else {
-        showToast(result.message, 'info');
-      }
-    },
-    onError: () => {
-      showToast('生成报告失败，请稍后重试', 'error');
-    },
-  });
+  const generateMutation = useGenerateWeeklyReport();
 
   const loading = reportsLoading || latestLoading;
   const generating = generateMutation.isPending;
@@ -117,7 +101,18 @@ export default function WeeklyReportsPage() {
   const trendSource = filter === 'all' ? reports : filteredReports;
 
   function handleGenerateReport() {
-    generateMutation.mutate();
+    generateMutation.mutate(undefined, {
+      onSuccess: (result) => {
+        if (result.success) {
+          showToast('报告生成成功！', 'success');
+        } else {
+          showToast(result.message, 'info');
+        }
+      },
+      onError: () => {
+        showToast('生成报告失败，请稍后重试', 'error');
+      },
+    });
   }
 
   return (

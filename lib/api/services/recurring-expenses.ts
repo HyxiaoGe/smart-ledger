@@ -109,6 +109,27 @@ export interface RecurringGenerationResponse {
   message: string;
 }
 
+export interface RecurringGenerationStats {
+  total: number;
+  success: number;
+  failed: number;
+  date: string;
+}
+
+export interface RecurringManagementOverview {
+  stats: RecurringGenerationStats;
+  history: RecurringGenerationHistory[];
+  pending: Array<{
+    id: string;
+    name: string;
+    amount: number;
+    category: string;
+    frequency: string;
+    next_generate?: string;
+    last_generated?: string;
+  }>;
+}
+
 /**
  * 定期支出 API 服务
  */
@@ -161,6 +182,15 @@ export const recurringExpensesApi = {
    */
   getHistory(limit?: number): Promise<RecurringGenerationHistory[]> {
     const query = limit ? `?limit=${limit}` : '';
-    return apiClient.get<RecurringGenerationHistory[]>(`/api/recurring/history${query}`);
+    return apiClient.get<RecurringGenerationHistory[]>(`/api/recurring-expenses/history${query}`);
+  },
+
+  getStats(): Promise<RecurringGenerationStats> {
+    return apiClient.get<RecurringGenerationStats>('/api/recurring-expenses/stats');
+  },
+
+  getOverview(limit?: number): Promise<RecurringManagementOverview> {
+    const query = limit ? `?limit=${limit}` : '';
+    return apiClient.get<RecurringManagementOverview>(`/api/recurring-expenses/overview${query}`);
   },
 };

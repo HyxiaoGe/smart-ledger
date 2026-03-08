@@ -2,11 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
-import { monthlyReportsApi, type MonthlyReport } from '@/lib/api/services/monthly-reports';
+import { type MonthlyReport } from '@/lib/api/services/monthly-reports';
+import { useGenerateMonthlyReport, useMonthlyReports } from '@/lib/api/hooks/useMonthlyReports';
 import { formatYearMonthLabel } from '@/lib/utils/date';
 import {
   formatCurrencyAmount,
@@ -51,32 +51,31 @@ export default function MonthlyReportsPage() {
   const [generateYear, setGenerateYear] = useState(new Date().getFullYear());
   const [generateMonth, setGenerateMonth] = useState(new Date().getMonth() + 1);
   const { showToast } = useToast();
-  const queryClient = useQueryClient();
 
   const currentYear = new Date().getFullYear();
 
   // 获取所有月报告
-  const { data: reports = [], isLoading: reportsLoading } = useQuery({
-    queryKey: ['monthly-reports'],
-    queryFn: () => monthlyReportsApi.list(),
-  });
+  const { data: reports = [], isLoading: reportsLoading } = useMonthlyReports();
 
   // 生成月报告 mutation
-  const generateMutation = useMutation({
-    mutationFn: ({ year, month }: { year: number; month: number }) =>
-      monthlyReportsApi.generate(year, month),
-    onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ['monthly-reports'] });
-      if (result.success) {
-        showToast(result.message, 'success');
-      } else {
-        showToast(result.message, 'error');
+  const generateMutation = useGenerateMonthlyReport();
+  const handleGenerateMonthlyReport = () => {
+    generateMutation.mutate(
+      { year: generateYear, month: generateMonth },
+      {
+        onSuccess: (result) => {
+          if (result.success) {
+            showToast(result.message, 'success');
+          } else {
+            showToast(result.message, 'error');
+          }
+        },
+        onError: () => {
+          showToast('生成报告失败', 'error');
+        },
       }
-    },
-    onError: () => {
-      showToast('生成报告失败', 'error');
-    },
-  });
+    );
+  };
 
   // 筛选报告
   const filteredReports = reports.filter((report: MonthlyReport) => {
@@ -174,7 +173,7 @@ export default function MonthlyReportsPage() {
                 </select>
               </div>
               <Button
-                onClick={() => generateMutation.mutate({ year: generateYear, month: generateMonth })}
+                onClick={handleGenerateMonthlyReport}
                 disabled={generateMutation.isPending}
                 className="bg-blue-600 hover:bg-blue-700"
               >

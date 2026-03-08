@@ -2,14 +2,13 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PageSkeleton } from '@/components/shared/PageSkeleton';
 import { SettingsBackButton } from '@/components/shared/SettingsBackButton';
 import { SettingsInfoPanel } from '@/components/shared/SettingsInfoPanel';
 import { SettingsPageHeader } from '@/components/shared/SettingsPageHeader';
-import { recurringExpensesApi } from '@/lib/api/services/recurring-expenses';
+import { useRecurringExpenseHistory } from '@/lib/api/hooks/useRecurringExpenses';
 import { formatDateTimePartsZhCN } from '@/lib/utils/date';
 import {
   History,
@@ -23,7 +22,7 @@ import {
 
 interface GenerationLog {
   id: string;
-  recurring_expense_id: string;
+  recurring_expense_id: string | null;
   transaction_id: string | null;
   status: 'success' | 'failed' | 'skipped';
   message: string;
@@ -47,10 +46,8 @@ export default function RecurringHistoryPage() {
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
 
   // 获取生成历史
-  const { data: historyData, isLoading: loading, error: fetchError, refetch } = useQuery({
-    queryKey: ['recurring-history'],
-    queryFn: () => recurringExpensesApi.getHistory(50),
-  });
+  const { data: historyData, isLoading: loading, error: fetchError, refetch } =
+    useRecurringExpenseHistory(50);
 
   // 转换数据格式以匹配 GenerationLog 接口
   const logs = useMemo(() => {

@@ -16,5 +16,8 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
   const result = await generateWeeklyReport(weekStartDate);
 
-  return NextResponse.json({ data: result }, { status: result.success ? 201 : 200 });
+  return NextResponse.json(
+    { success: true, data: result },
+    { status: result.success ? 201 : 200 }
+  );
 });

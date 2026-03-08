@@ -117,6 +117,15 @@ export interface BudgetSuggestion {
   calculatedAt: string;
 }
 
+export interface BudgetOverview {
+  year: number;
+  month: number;
+  currency: string;
+  status: BudgetStatus[];
+  summary: TotalBudgetSummary;
+  suggestions: BudgetSuggestion[];
+}
+
 /**
  * 设置或更新预算
  */
@@ -377,6 +386,27 @@ export async function getTotalBudgetSummary(
     category_budgets_count: categoryStatuses.length,
     over_budget_count: overBudgetCount,
     near_limit_count: nearLimitCount
+  };
+}
+
+export async function getBudgetOverview(
+  year: number,
+  month: number,
+  currency: string = 'CNY'
+): Promise<BudgetOverview> {
+  const [status, summary, suggestions] = await Promise.all([
+    getMonthlyBudgetStatus(year, month),
+    getTotalBudgetSummary(year, month, currency),
+    getBudgetSuggestions(year, month),
+  ]);
+
+  return {
+    year,
+    month,
+    currency,
+    status,
+    summary,
+    suggestions,
   };
 }
 

@@ -88,6 +88,15 @@ export interface BudgetPrediction {
   predicted_overage?: number;
 }
 
+export interface BudgetOverview {
+  year: number;
+  month: number;
+  currency: string;
+  status: BudgetStatus[];
+  summary: TotalBudgetSummary;
+  suggestions: BudgetSuggestion[];
+}
+
 /**
  * 预算 API 服务
  */
@@ -114,6 +123,11 @@ export const budgetsApi = {
   getSuggestions(params?: { year?: number; month?: number }): Promise<BudgetSuggestion[]> {
     const query = buildQueryString(params || {});
     return apiClient.get<BudgetSuggestion[]>(`/api/budgets/suggestions${query}`);
+  },
+
+  getOverview(params?: BudgetQueryParams): Promise<BudgetOverview> {
+    const query = buildQueryString(params || {});
+    return apiClient.get<BudgetOverview>(`/api/budgets/overview${query}`);
   },
 
   /**

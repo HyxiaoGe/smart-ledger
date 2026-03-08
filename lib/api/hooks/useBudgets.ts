@@ -31,10 +31,17 @@ export function useBudgetSummary(params?: BudgetQueryParams) {
 /**
  * 获取预算建议
  */
-export function useBudgetSuggestions() {
+export function useBudgetSuggestions(params?: BudgetQueryParams) {
   return useQuery({
-    queryKey: queryKeys.budgets.suggestions(),
-    queryFn: () => budgetsApi.getSuggestions(),
+    queryKey: queryKeys.budgets.suggestions(params),
+    queryFn: () => budgetsApi.getSuggestions(params),
     staleTime: 30 * 60 * 1000, // 30分钟内不重新获取
+  });
+}
+
+export function useBudgetOverview(params?: BudgetQueryParams) {
+  return useQuery({
+    queryKey: queryKeys.budgets.overview(params),
+    queryFn: () => budgetsApi.getOverview(params),
   });
 }

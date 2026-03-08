@@ -7,5 +7,6 @@ export * from './useAI';
 export * from './useCommonNotes';
 export * from './usePaymentMethods';
 export * from './useBudgets';
+export * from './useMonthlyReports';
 export * from './useRecurringExpenses';
 export * from './useWeeklyReports';

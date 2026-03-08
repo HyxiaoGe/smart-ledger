@@ -10,6 +10,7 @@ import {
   recurringExpensesApi,
   type CreateRecurringExpenseParams,
   type RecurringGenerationResponse,
+  type RecurringManagementOverview,
   type UpdateRecurringExpenseParams,
 } from '../services/recurring-expenses';
 
@@ -37,10 +38,24 @@ export function useRecurringExpense(id: string) {
 /**
  * 获取生成历史
  */
-export function useRecurringExpenseHistory() {
+export function useRecurringExpenseHistory(limit?: number) {
   return useQuery({
-    queryKey: queryKeys.recurringExpenses.history(),
-    queryFn: () => recurringExpensesApi.getHistory(),
+    queryKey: queryKeys.recurringExpenses.history(limit),
+    queryFn: () => recurringExpensesApi.getHistory(limit),
+  });
+}
+
+export function useRecurringExpenseStats() {
+  return useQuery({
+    queryKey: queryKeys.recurringExpenses.stats(),
+    queryFn: () => recurringExpensesApi.getStats(),
+  });
+}
+
+export function useRecurringExpenseOverview(limit?: number) {
+  return useQuery<RecurringManagementOverview>({
+    queryKey: queryKeys.recurringExpenses.overview(limit),
+    queryFn: () => recurringExpensesApi.getOverview(limit),
   });
 }
 
@@ -102,6 +117,8 @@ export function useGenerateRecurringExpenses() {
       queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.recurringExpenses.list() });
       queryClient.invalidateQueries({ queryKey: queryKeys.recurringExpenses.history() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recurringExpenses.stats() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recurringExpenses.overview() });
     },
   });
 }

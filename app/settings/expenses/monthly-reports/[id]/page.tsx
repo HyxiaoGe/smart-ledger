@@ -6,8 +6,10 @@ import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { monthlyReportsApi, type MonthlyReport } from '@/lib/api/services/monthly-reports';
+import { type MonthlyReport } from '@/lib/api/services/monthly-reports';
+import { useMonthlyReport } from '@/lib/api/hooks/useMonthlyReports';
 import { paymentMethodsApi } from '@/lib/api/services/payment-methods';
+import { queryKeys } from '@/lib/api/queryClient';
 import { formatDateTimeToZhCN, formatYearMonthLabel } from '@/lib/utils/date';
 import {
   formatCurrencyAmount,
@@ -108,14 +110,11 @@ export default function MonthlyReportDetailPage() {
   const id = params.id as string;
 
   // 获取报告数据
-  const { data: report, isLoading, error } = useQuery({
-    queryKey: ['monthly-reports', id],
-    queryFn: () => monthlyReportsApi.getById(id),
-  });
+  const { data: report, isLoading, error } = useMonthlyReport(id);
 
   // 获取支付方式列表用于ID到名称的映射
   const { data: paymentMethods } = useQuery({
-    queryKey: ['payment-methods'],
+    queryKey: queryKeys.paymentMethods.list(),
     queryFn: () => paymentMethodsApi.list(),
   });
 

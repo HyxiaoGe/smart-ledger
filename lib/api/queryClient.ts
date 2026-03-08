@@ -77,7 +77,10 @@ export const queryKeys = {
     all: ['budgets'] as const,
     status: (params?: { year?: number; month?: number }) => ['budgets', 'status', params] as const,
     summary: (params?: { year?: number; month?: number }) => ['budgets', 'summary', params] as const,
-    suggestions: () => ['budgets', 'suggestions'] as const,
+    suggestions: (params?: { year?: number; month?: number }) =>
+      ['budgets', 'suggestions', params] as const,
+    overview: (params?: { year?: number; month?: number; currency?: string }) =>
+      ['budgets', 'overview', params] as const,
   },
 
   // 定期支出
@@ -85,7 +88,18 @@ export const queryKeys = {
     all: ['recurring-expenses'] as const,
     list: () => ['recurring-expenses', 'list'] as const,
     detail: (id: string) => ['recurring-expenses', 'detail', id] as const,
-    history: () => ['recurring-expenses', 'history'] as const,
+    history: (limit?: number) => ['recurring-expenses', 'history', limit ?? 20] as const,
+    stats: () => ['recurring-expenses', 'stats'] as const,
+    overview: (limit?: number) => ['recurring-expenses', 'overview', limit ?? 20] as const,
+  },
+
+  // 月报告
+  monthlyReports: {
+    all: ['monthly-reports'] as const,
+    list: (year?: number) => ['monthly-reports', 'list', year ?? 'all'] as const,
+    detail: (id: string) => ['monthly-reports', 'detail', id] as const,
+    byYearMonth: (year: number, month: number) =>
+      ['monthly-reports', 'year-month', year, month] as const,
   },
 
   // 周报告

@@ -12,5 +12,5 @@ export const runtime = 'nodejs';
 // GET - 获取最新周报告
 export const GET = withErrorHandler(async () => {
   const report = await getLatestWeeklyReport();
-  return NextResponse.json({ data: report });
+  return NextResponse.json({ success: true, data: report });
 });

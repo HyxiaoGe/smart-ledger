@@ -3,11 +3,10 @@
 import React from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { weeklyReportsApi } from '@/lib/api/services/weekly-reports';
+import { useWeeklyReport } from '@/lib/api/hooks/useWeeklyReports';
 import { ApiError } from '@/lib/api/client';
 import {
   ChevronLeft,
@@ -79,11 +78,7 @@ export default function WeeklyReportDetailPage() {
   const id = params.id as string;
 
   // 使用 React Query 获取周报告详情
-  const { data: report, isLoading: loading, error: fetchError } = useQuery({
-    queryKey: ['weekly-report', id],
-    queryFn: () => weeklyReportsApi.get(id),
-    enabled: !!id,
-  });
+  const { data: report, isLoading: loading, error: fetchError } = useWeeklyReport(id);
 
   const notFound = fetchError instanceof ApiError && fetchError.status === 404;
 

@@ -23,5 +23,5 @@ export const GET = withErrorHandler(async (
     );
   }
 
-  return NextResponse.json({ data: report });
+  return NextResponse.json({ success: true, data: report });
 });

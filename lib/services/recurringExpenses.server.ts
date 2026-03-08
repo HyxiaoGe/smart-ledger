@@ -46,6 +46,20 @@ export type RecurringGenerationStats = {
   date: string;
 };
 
+export type RecurringManagementOverview = {
+  stats: RecurringGenerationStats;
+  history: RecurringGenerationHistoryItem[];
+  pending: Array<{
+    id: string;
+    name: string;
+    amount: number;
+    category: string;
+    frequency: string;
+    next_generate?: string;
+    last_generated?: string;
+  }>;
+};
+
 export type RecurringGenerationResult = {
   expense_name: string;
   status: 'success' | 'failed' | 'skipped';
@@ -500,6 +514,20 @@ export class RecurringExpenseService {
       success: logs.filter((item: { status: string | null }) => item.status === 'success').length,
       failed: logs.filter((item: { status: string | null }) => item.status === 'failed').length,
       date: formatDateToLocal(today),
+    };
+  }
+
+  async getManagementOverview(limit = 20): Promise<RecurringManagementOverview> {
+    const [stats, history, pending] = await Promise.all([
+      this.getTodayGenerationStats(),
+      this.getGenerationHistory(limit),
+      this.getPendingRecurringExpenses({ includeOverdue: true }),
+    ]);
+
+    return {
+      stats,
+      history,
+      pending,
     };
   }
 
