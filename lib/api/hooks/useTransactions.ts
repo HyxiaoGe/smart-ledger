@@ -93,6 +93,32 @@ export function fetchTransactionRows(params?: TransactionListParams) {
   return transactionsApi.listRows(params);
 }
 
+export async function fetchAllTransactionRows(
+  params?: TransactionListParams,
+  options?: { pageSize?: number }
+) {
+  const pageSize = options?.pageSize ?? 100;
+  const rows: Transaction[] = [];
+  let page = 1;
+
+  while (true) {
+    const currentRows = await fetchTransactionRows({
+      ...params,
+      page,
+      page_size: pageSize,
+    });
+    rows.push(...currentRows);
+
+    if (currentRows.length < pageSize) {
+      break;
+    }
+
+    page += 1;
+  }
+
+  return rows;
+}
+
 export function createMonthlyTransactionRowsQueryOptions(
   month?: string,
   params?: TransactionRowsRangeOverrides,
@@ -160,6 +186,19 @@ export function useTransactionRowsQuery(
   options?: TransactionRowsQueryOptions
 ) {
   return useQuery(createTransactionRowsQueryOptions(params, options));
+}
+
+export function useAllTransactionRowsQuery(
+  params?: TransactionListParams,
+  options?: TransactionRowsQueryOptions & { pageSize?: number }
+) {
+  const { pageSize, ...queryOptions } = options || {};
+
+  return useQuery({
+    queryKey: queryOptions.queryKey ?? ['transactions', 'list', 'all', params, pageSize ?? 100],
+    queryFn: () => fetchAllTransactionRows(params, { pageSize }),
+    ...queryOptions,
+  });
 }
 
 export function usePaginatedTransactionRows(

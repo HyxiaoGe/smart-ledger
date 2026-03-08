@@ -8,7 +8,10 @@ import { ChevronDown, ChevronUp, List, FileText } from 'lucide-react';
 import { EmptyState } from '@/components/EmptyState';
 import Link from 'next/link';
 import { useCategories } from '@/contexts/CategoryContext';
-import { useRouterRefreshOnDataSync } from '@/hooks/useEnhancedDataSync';
+import { useRefetchOnDataSync } from '@/hooks/useEnhancedDataSync';
+import { getExtendedQuickRange, getMonthRangeFromString } from '@/lib/utils/date';
+import { useAllTransactionRowsQuery } from '@/lib/api/hooks/useTransactions';
+import type { TransactionListParams } from '@/lib/api/services/transactions';
 
 interface Transaction {
   id: string;
@@ -44,11 +47,49 @@ export function CollapsibleTransactionList({
   const initRef = useRef(false);
 
   const currentRange = search.get('range') || 'today';
+  const currentMonth = search.get('month') || undefined;
+  const currentStart = search.get('start') || undefined;
+  const currentEnd = search.get('end') || undefined;
   const quickRanges = [
     { key: 'today', label: '今天' },
     { key: 'thisWeek', label: '本周' },
     { key: 'thisMonth', label: '本月' },
   ];
+
+  const queryParams = useMemo<TransactionListParams | undefined>(() => {
+    if (currentStart && currentEnd) {
+      return {
+        start_date: currentStart,
+        end_date: currentEnd,
+      };
+    }
+
+    if (currentMonth) {
+      const { start, end } = getMonthRangeFromString(currentMonth);
+      return {
+        start_date: start,
+        end_date: end,
+      };
+    }
+
+    const resolvedRange = getExtendedQuickRange(
+      (currentRange as Parameters<typeof getExtendedQuickRange>[0]) || 'today'
+    );
+    return {
+      start_date: resolvedRange.start,
+      end_date: resolvedRange.end,
+    };
+  }, [currentEnd, currentMonth, currentRange, currentStart]);
+
+  const {
+    data: queriedTransactions,
+    refetch,
+  } = useAllTransactionRowsQuery(queryParams, {
+    placeholderData: initialTransactions,
+    staleTime: 0,
+  });
+
+  const transactions = queriedTransactions || initialTransactions;
 
   const commonCategories = useMemo(() => {
     return [...categories]
@@ -58,11 +99,11 @@ export function CollapsibleTransactionList({
   }, [categories]);
 
   const filteredTransactions = useMemo(() => {
-    if (!activeCategory) return initialTransactions;
-    return initialTransactions.filter((item) => item.category === activeCategory);
-  }, [initialTransactions, activeCategory]);
+    if (!activeCategory) return transactions;
+    return transactions.filter((item) => item.category === activeCategory);
+  }, [transactions, activeCategory]);
 
-  const displayCount = activeCategory ? filteredTransactions.length : totalCount;
+  const displayCount = activeCategory ? filteredTransactions.length : transactions.length || totalCount;
 
   useEffect(() => {
     if (initRef.current) return;
@@ -82,12 +123,12 @@ export function CollapsibleTransactionList({
   }, [isExpanded]);
 
   useEffect(() => {
-    if (!initialTransactions.length) return;
-    const sorted = [...initialTransactions].sort(
+    if (!transactions.length) return;
+    const sorted = [...transactions].sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
     setDefaultExpandedDates(new Set([sorted[0].date]));
-  }, [initialTransactions]);
+  }, [transactions]);
 
   useEffect(() => {
     if (activeCategory && filteredTransactions.length === 0) {
@@ -104,7 +145,7 @@ export function CollapsibleTransactionList({
     router.push((pathname + '?' + sp.toString()) as any);
   };
 
-  useRouterRefreshOnDataSync(router);
+  useRefetchOnDataSync(refetch);
 
   return (
     <div className={className}>

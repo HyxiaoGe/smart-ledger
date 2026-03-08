@@ -6,8 +6,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { FileText } from 'lucide-react';
 import Link from 'next/link';
-import { useQuery } from '@tanstack/react-query';
-import { paymentMethodsApi, PaymentMethod } from '@/lib/api/services/payment-methods';
+import { usePaymentMethods } from '@/lib/api/hooks/usePaymentMethods';
 import {
   useDeleteTransaction,
   useRestoreTransaction,
@@ -86,14 +85,7 @@ export function TransactionGroupedList({
   }, [expandedDates, expandedCategories, expandedMerchants]);
 
   // 使用 React Query 获取支付方式
-  const { data: paymentMethodsData } = useQuery({
-    queryKey: ['payment-methods'],
-    queryFn: async () => {
-      const response = await paymentMethodsApi.list();
-      return Array.isArray(response) ? response : (response as unknown as { data: PaymentMethod[] }).data || [];
-    }
-  });
-
+  const { data: paymentMethodsData } = usePaymentMethods();
   const paymentMethods = paymentMethodsData || [];
 
   // 更新交易的 mutation
