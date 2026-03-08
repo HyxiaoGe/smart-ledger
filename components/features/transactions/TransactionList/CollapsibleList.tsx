@@ -9,23 +9,11 @@ import { EmptyState } from '@/components/EmptyState';
 import Link from 'next/link';
 import { useCategories } from '@/contexts/CategoryContext';
 import { useRefetchOnDataSync } from '@/hooks/useEnhancedDataSync';
+import type { Transaction } from '@/types/domain/transaction';
 import {
   resolveTransactionListRangeParams,
   useAllTransactionRowsQuery,
 } from '@/lib/api/hooks/useTransactions';
-
-interface Transaction {
-  id: string;
-  type: 'income' | 'expense';
-  category: string;
-  amount: number;
-  currency?: string;
-  note?: string;
-  date: string;
-  merchant?: string;
-  subcategory?: string;
-  product?: string;
-}
 
 interface CollapsibleTransactionListProps {
   initialTransactions: Transaction[];
