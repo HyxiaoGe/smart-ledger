@@ -51,14 +51,16 @@ export function SettingsInfoPanel({
   const toneStyle = TONE_STYLES[tone];
 
   return (
-    <div className={`${className} p-4 rounded-lg border ${toneStyle.wrapper}`.trim()}>
-      <div className="flex items-start gap-3">
-        <div className={`p-1 rounded ${toneStyle.iconWrapper}`}>
-          <Icon className={`h-4 w-4 ${toneStyle.icon}`} />
+    <div
+      className={`${className} rounded-[22px] border p-4 shadow-sm sm:p-5 ${toneStyle.wrapper}`.trim()}
+    >
+      <div className="flex items-start gap-3 sm:gap-4">
+        <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl border border-white/60 shadow-sm ${toneStyle.iconWrapper}`}>
+          <Icon className={`h-4.5 w-4.5 ${toneStyle.icon}`} />
         </div>
         <div className={`text-sm ${toneStyle.title}`}>
-          <p className="font-medium mb-1">{title}</p>
-          <p className={toneStyle.text}>{description}</p>
+          <p className="mb-1 font-semibold tracking-tight">{title}</p>
+          <p className={`leading-6 ${toneStyle.text}`}>{description}</p>
         </div>
       </div>
     </div>

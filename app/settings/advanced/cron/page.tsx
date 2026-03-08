@@ -18,6 +18,7 @@ import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { adminApi } from '@/lib/api/services/admin';
 import { formatDateTimeShortZhCN } from '@/lib/utils/date';
 import { getCronCategoryStyle, getCronStatusStyle } from './utils';
+import { EmptyState } from '@/app/components/EmptyState';
 import {
   Clock,
   CheckCircle2,
@@ -141,12 +142,15 @@ export default function CronManagementPage() {
           className="mb-6"
         />
 
-        <SettingsPageHeader
-          title="定时任务管理"
-          description="查看和管理系统自动化任务"
-          icon={Clock}
-          tone="blue"
-        />
+        <div className="mb-8 rounded-[2rem] border border-slate-200 bg-gradient-to-r from-sky-50 via-white to-blue-50 p-6 shadow-sm dark:border-slate-800 dark:from-sky-950 dark:via-slate-950 dark:to-blue-950">
+          <SettingsPageHeader
+            title="定时任务管理"
+            description="查看系统自动任务的运行节奏、成功率和手动触发入口。"
+            icon={Clock}
+            tone="blue"
+            eyebrow="Automation"
+          />
+        </div>
 
         {/* 统计卡片 */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -218,9 +222,12 @@ export default function CronManagementPage() {
           </CardHeader>
           <CardContent className="p-6">
             {jobs.length === 0 ? (
-              <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                暂无定时任务
-              </div>
+              <EmptyState
+                title="暂无定时任务"
+                description="还没有可展示的自动任务。你可以稍后刷新，或检查后端任务注册状态。"
+                icon={Clock}
+                className="border-dashed shadow-none"
+              />
             ) : (
               <div className="space-y-4">
                 {jobs.map((job) => {

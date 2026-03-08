@@ -129,6 +129,7 @@ export default function WeeklyReportsPage() {
               description="自动生成的周度复盘，适合观察消费节奏和周内波动。"
               icon={Calendar}
               tone="purple"
+              eyebrow="Weekly Review"
             />
             <Button
               onClick={handleGenerateReport}
@@ -154,16 +155,16 @@ export default function WeeklyReportsPage() {
           />
           <Button
             variant="outline"
-            className="rounded-xl border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900"
+            className="rounded-xl border-slate-200 bg-white px-3 py-2 text-xs font-medium shadow-sm dark:border-slate-700 dark:bg-slate-900"
           >
             {filter === 'all' ? '全部周报' : `${filteredReports.length} 条记录`}
           </Button>
         </div>
 
         {/* 快速筛选 */}
-        <div className="flex items-center gap-2 mb-8">
-          <span className="text-sm text-gray-600 dark:text-gray-300">筛选：</span>
-          <div className="flex gap-2">
+        <div className="mb-8 flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white/80 p-3 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
+          <span className="px-1 text-sm text-gray-600 dark:text-gray-300">筛选：</span>
+          <div className="flex flex-wrap gap-2">
             {[
               { value: 'all' as FilterType, label: '全部' },
               { value: 'thisMonth' as FilterType, label: '本月' },
@@ -172,10 +173,10 @@ export default function WeeklyReportsPage() {
               <button
                 key={item.value}
                 onClick={() => setFilter(item.value)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`rounded-xl px-4 py-2 text-sm font-medium transition-colors ${
                   filter === item.value
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    ? 'bg-purple-600 text-white shadow-sm'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
                 }`}
               >
                 {item.label}

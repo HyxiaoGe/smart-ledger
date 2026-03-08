@@ -128,11 +128,12 @@ export default function MonthlyReportsPage() {
             description="把固定支出、可变支出和月度变化放到一张完整账单里回看。"
             icon={BarChart3}
             tone="blue"
+            eyebrow="Monthly Review"
           />
         </div>
 
         {/* 生成报告区域 */}
-        <Card className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border-blue-200 dark:border-blue-800">
+          <Card className="mb-8 border border-blue-200/80 bg-gradient-to-r from-blue-50 via-white to-indigo-50 shadow-sm dark:border-blue-900 dark:from-blue-950 dark:via-slate-950 dark:to-indigo-950">
           <CardHeader>
             <SectionIntro
               eyebrow="Monthly Report"
@@ -142,13 +143,13 @@ export default function MonthlyReportsPage() {
             />
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap items-end gap-4">
+            <div className="flex flex-wrap items-end gap-3 sm:gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">年份</label>
+                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">年份</label>
                 <select
                   value={generateYear}
                   onChange={(e) => setGenerateYear(Number(e.target.value))}
-                  className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                  className="rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-gray-900 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                 >
                   {[currentYear, currentYear - 1, currentYear - 2].map((year) => (
                     <option key={year} value={year}>{year}年</option>
@@ -156,11 +157,11 @@ export default function MonthlyReportsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">月份</label>
+                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">月份</label>
                 <select
                   value={generateMonth}
                   onChange={(e) => setGenerateMonth(Number(e.target.value))}
-                  className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                  className="rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-gray-900 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                 >
                   {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
                     <option key={month} value={month}>{month}月</option>
@@ -170,7 +171,7 @@ export default function MonthlyReportsPage() {
               <Button
                 onClick={handleGenerateMonthlyReport}
                 disabled={generateMutation.isPending}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="rounded-xl bg-blue-600 px-4 shadow-sm hover:bg-blue-700"
               >
                 {generateMutation.isPending ? (
                   <>
@@ -185,7 +186,7 @@ export default function MonthlyReportsPage() {
                 )}
               </Button>
             </div>
-            <p className="mt-3 text-sm text-blue-700 dark:text-blue-300">
+            <p className="mt-4 text-sm leading-6 text-blue-700 dark:text-blue-300">
               月报告包含所有支出（固定支出 + 日常消费），展示完整的月度财务状况
             </p>
           </CardContent>

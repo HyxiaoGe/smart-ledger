@@ -23,6 +23,7 @@ import {
 } from '@/lib/services/functionService';
 import { FUNCTION_CATEGORY_CONFIG, getFunctionCategoryConfig } from './utils';
 import { SettingsInfoPanel } from '@/components/shared/SettingsInfoPanel';
+import { EmptyState } from '@/app/components/EmptyState';
 
 export default function FunctionsManagementPage() {
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['business']);
@@ -53,6 +54,7 @@ export default function FunctionsManagementPage() {
             description="按业务、查询和 AI 分类梳理数据库函数，方便快速理解系统能力。"
             icon={Database}
             tone="purple"
+            eyebrow="Database Layer"
           />
         </div>
 
@@ -136,9 +138,12 @@ export default function FunctionsManagementPage() {
             </CardHeader>
             <CardContent>
               {searchResults.length === 0 ? (
-                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                  未找到匹配的函数
-                </div>
+                <EmptyState
+                  title="未找到匹配的函数"
+                  description="换一个关键词试试，可以按函数名、业务动作或用途描述来搜索。"
+                  icon={Search}
+                  className="border-dashed shadow-none"
+                />
               ) : (
                 <div className="space-y-3">
                   {searchResults.map((func) => (
