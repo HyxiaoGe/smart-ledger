@@ -71,7 +71,8 @@ function LoadingSkeleton() {
 function EmptyState() {
   return (
     <SharedEmptyState
-      icon={<CreditCard className="h-8 w-8 text-slate-400" />}
+      icon={CreditCard}
+      iconClassName="h-8 w-8 text-slate-400"
       title="还没有支付方式"
       description="把常用支付账户整理出来，录入时会更快，也更容易保持账目一致。"
     />

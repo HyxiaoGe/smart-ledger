@@ -338,7 +338,8 @@ export default function RecurringExpensesPage() {
             {recurringExpenses.length === 0 ? (
               <div className="text-center py-16">
                 <EmptyState
-                  icon={<Calendar className="h-10 w-10 text-blue-500" />}
+                  icon={Calendar}
+                  iconClassName="h-10 w-10 text-blue-500"
                   title="还没有设置固定支出"
                   description="把房租、会员、水电这类周期账单配置好，系统就能自动补全你的记账节奏。"
                 />
@@ -414,7 +415,8 @@ export default function RecurringExpensesPage() {
                 </div>
                 {visibleExpenses.length === 0 ? (
                   <EmptyState
-                    icon={<DollarSign className="h-8 w-8 text-slate-400" />}
+                    icon={DollarSign}
+                    iconClassName="h-8 w-8 text-slate-400"
                     title="当前筛选下没有固定支出"
                     description="换个筛选条件看看，或者继续添加新的固定支出规则。"
                   />
