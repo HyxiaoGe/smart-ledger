@@ -381,9 +381,14 @@ export class RecurringExpenseService {
         : Promise.resolve([] as TransactionLookupRow[]),
     ]);
 
-    const expenseMap = new Map(expenses.map((item: ExpenseLookupRow) => [item.id, item]));
-    const transactionMap = new Map(
-      transactions.map((item: TransactionLookupRow) => [item.id, item])
+    const expenseMap = new Map<string, ExpenseLookupRow>(
+      expenses.map((item: ExpenseLookupRow): [string, ExpenseLookupRow] => [item.id, item])
+    );
+    const transactionMap = new Map<string, TransactionLookupRow>(
+      transactions.map((item: TransactionLookupRow): [string, TransactionLookupRow] => [
+        item.id,
+        item
+      ])
     );
 
     return logs.map((log: GenerationLogRow) => {
