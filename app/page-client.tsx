@@ -10,6 +10,7 @@ import { TopExpenses } from '@/components/TopExpenses';
 import { HomeStats } from '@/components/features/statistics/HomeStats';
 import type { PageData } from './home-page-data';
 import { useHomeDashboardController } from '@/hooks/useHomeDashboardController';
+import { ArrowRight, Brain, RefreshCw, WalletCards } from 'lucide-react';
 
 type HomePageClientProps = {
   data: PageData;
@@ -23,66 +24,141 @@ export default function HomePageClient({
   );
 
   return (
-    <div className="space-y-6">
-      {/* 顶部控制栏 */}
-      <div className="flex gap-3 items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="flex gap-2 items-center">
-            <span className="text-sm text-muted-foreground">{data.toolbarView.currencyLabel}</span>
-            <CurrencySelect value={data.currency} />
+    <div className="space-y-8">
+      <section className="relative overflow-hidden rounded-[28px] border border-slate-200/80 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_35%),radial-gradient(circle_at_bottom_right,_rgba(34,197,94,0.14),_transparent_30%),linear-gradient(135deg,_#ffffff_0%,_#f8fafc_100%)] p-6 shadow-sm dark:border-slate-800 dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_35%),radial-gradient(circle_at_bottom_right,_rgba(34,197,94,0.12),_transparent_30%),linear-gradient(135deg,_#020617_0%,_#0f172a_100%)]">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.8fr)]">
+          <div className="space-y-5">
+            <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white/80 px-3 py-1 text-xs font-medium text-sky-700 backdrop-blur dark:border-sky-900 dark:bg-slate-950/60 dark:text-sky-300">
+              <WalletCards className="h-3.5 w-3.5" />
+              今日决策面板
+            </div>
+            <div className="space-y-3">
+              <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+                先看关键变化，再决定下一步
+              </h1>
+              <p className="max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+                首页只保留最值得立即判断的信息：本期支出、变化幅度、主要结构和下一步入口。
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-950">
+                <span className="text-slate-500 dark:text-slate-400">{data.toolbarView.currencyLabel}</span>
+                <CurrencySelect value={data.currency} />
+              </div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-950">
+                <span className="text-slate-500 dark:text-slate-400">{data.toolbarView.rangeLabel}</span>
+                <TabsRangePicker />
+              </div>
+              {isRefreshing && (
+                <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-medium text-sky-700 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-300">
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  {data.toolbarView.refreshingLabel}
+                </div>
+              )}
+            </div>
           </div>
-          {isRefreshing && (
-            <span className="text-xs text-blue-500 animate-pulse">
-              {data.toolbarView.refreshingLabel}
-            </span>
-          )}
-          <div className="flex gap-2 items-center">
-            <span className="text-sm text-muted-foreground">{data.toolbarView.rangeLabel}</span>
-            <TabsRangePicker />
+
+          <div className="rounded-[24px] border border-white/80 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1 text-xs font-medium text-white dark:bg-slate-100 dark:text-slate-900">
+                  <Brain className="h-3.5 w-3.5" />
+                  下一步建议
+                </div>
+                <h2 className="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">
+                  优先关注 Top 支出和日历热区
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                  如果本期变化明显，先看大额支出；如果变化不大，再看热力图确认消费是否集中在某几天。
+                </p>
+              </div>
+              <a
+                href={data.sectionView.aiHintHref}
+                className="inline-flex shrink-0 items-center gap-1 rounded-full border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-sky-400 hover:text-sky-700 dark:border-slate-700 dark:text-slate-300 dark:hover:border-sky-500 dark:hover:text-sky-300"
+              >
+                {data.sectionView.aiHintLinkLabel}
+                <ArrowRight className="h-3.5 w-3.5" />
+              </a>
+            </div>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/70">
+                <div className="text-xs uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
+                  重点 1
+                </div>
+                <p className="mt-2 text-sm font-medium text-slate-900 dark:text-slate-100">
+                  {data.sectionView.topExpensesTitle}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/70">
+                <div className="text-xs uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
+                  重点 2
+                </div>
+                <p className="mt-2 text-sm font-medium text-slate-900 dark:text-slate-100">
+                  {data.sectionView.aiHintText}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
+      </section>
+
+      <HomeStats {...data.statsView} />
+
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.8fr)]">
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                {data.sectionView.chartsTitle}
+              </h2>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                先看整体趋势，再判断分类结构。
+              </p>
+            </div>
+          </div>
+          <ChartSummary {...data.chartSummaryView} />
+        </section>
+
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                {data.sectionView.topExpensesTitle}
+              </h2>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                把最大的单笔和高频商户先看清楚。
+              </p>
+            </div>
+          </div>
+          <Card className="overflow-hidden border-slate-200 shadow-sm dark:border-slate-800">
+            <CardContent className="p-5">
+              <TopExpenses {...data.topExpensesView} />
+            </CardContent>
+          </Card>
+        </section>
       </div>
 
-      {/* 统计卡片 */}
-      <HomeStats
-        {...data.statsView}
-      />
-
-      {/* 图表概览 */}
-      <section className="space-y-2">
-        <h2 className="text-lg font-semibold">{data.sectionView.chartsTitle}</h2>
-        <ChartSummary {...data.chartSummaryView} />
-      </section>
-
-      {/* Top 10 支出 */}
-      <section className="space-y-2">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">{data.sectionView.topExpensesTitle}</h2>
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            {data.sectionView.aiHintText}
-            <a
-              href={data.sectionView.aiHintHref}
-              className="text-blue-600 hover:text-blue-800 underline ml-1"
-            >
-              {data.sectionView.aiHintLinkLabel}
-            </a>
+      <section className="space-y-3">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+              消费节奏
+            </h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              用热力图判断支出是否集中在某几天，再决定要不要下钻看明细。
+            </p>
+          </div>
+          <div className="text-xs text-slate-500 dark:text-slate-400">
+            点击某一天会直接跳到对应日期的记录页
           </div>
         </div>
-        <Card>
-          <CardContent className="pt-4">
-            <TopExpenses {...data.topExpensesView} />
-          </CardContent>
-        </Card>
+        <div className="rounded-[24px] border border-slate-200 bg-white p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <CalendarHeatmap
+            {...data.calendarHeatmapView}
+            onDayClick={handleCalendarDayClick}
+          />
+        </div>
       </section>
-
-      {/* 消费日历热力图 */}
-      <section>
-        <CalendarHeatmap
-          {...data.calendarHeatmapView}
-          onDayClick={handleCalendarDayClick}
-        />
-      </section>
-
     </div>
   );
 }

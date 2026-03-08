@@ -89,7 +89,7 @@ export function CalendarHeatmap({
   const monthName = `${year}年${month}月`;
 
   return (
-    <Card>
+    <Card className="border-0 shadow-none">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base text-muted-foreground">
@@ -108,7 +108,7 @@ export function CalendarHeatmap({
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-2">
         {/* 星期标题 */}
         <div className="grid grid-cols-7 gap-1 mb-1">
           {WEEKDAY_LABELS.map((label) => (
@@ -145,7 +145,7 @@ export function CalendarHeatmap({
                     text-xs font-medium transition-all
                     ${colorClass}
                     ${isToday ? 'ring-2 ring-blue-500 ring-offset-1' : ''}
-                    ${amount > 0 ? 'text-gray-700 dark:text-gray-200' : 'text-gray-400 dark:text-gray-500'}
+                    ${amount > 0 ? 'text-gray-700 dark:text-gray-200 shadow-sm' : 'text-gray-400 dark:text-gray-500'}
                     hover:ring-2 hover:ring-gray-400 hover:ring-offset-1
                   `}
                   onClick={() => item.date && onDayClick?.(item.date)}

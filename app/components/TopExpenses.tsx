@@ -38,43 +38,50 @@ export function TopExpenses({ items, currency }: TopExpensesProps) {
     );
   }
   return (
-    <ul className="divide-y">
+    <ul className="space-y-3">
       {items.map((it, idx) => (
-        <li key={it.id} className="py-2 flex items-start gap-3">
-          <div className="w-6 text-xs text-muted-foreground pt-1">#{idx + 1}</div>
-          <div className="flex-1">
-            <div className="flex items-center justify-between">
-              <CategoryChip category={it.category} />
-              <div className="font-semibold">
-                {formatCurrency(Number(it.amount || 0), it.currency || currency)}
-              </div>
+        <li
+          key={it.id}
+          className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-sky-400 dark:border-slate-800 dark:bg-slate-950"
+        >
+          <div className="flex items-start gap-3">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-slate-200 text-xs font-medium text-slate-500 dark:border-slate-700 dark:text-slate-400">
+              #{idx + 1}
             </div>
-            <div
-              className={`mt-1 flex items-center text-xs text-muted-foreground ${
-                it.merchant || it.note ? 'justify-between' : 'justify-end'
-              }`}
-            >
-              {it.merchant || it.note ? (
-                <div className="flex items-center gap-2 max-w-[70%]">
-                  {it.merchant && (
-                    <div className="flex items-center gap-1 text-blue-600">
-                      <Store className="h-3 w-3" />
-                      <span className="font-medium">{it.merchant}</span>
-                    </div>
-                  )}
-                  {it.note && (
-                    <span className="truncate" title={it.note}>
-                      {it.note}
-                    </span>
-                  )}
+            <div className="flex-1">
+              <div className="flex items-center justify-between gap-3">
+                <CategoryChip category={it.category} />
+                <div className="text-base font-semibold">
+                  {formatCurrency(Number(it.amount || 0), it.currency || currency)}
                 </div>
-              ) : null}
-              <Link
-                href={buildQuickAddHref(it)}
-                className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+              </div>
+              <div
+                className={`mt-3 flex items-center text-xs text-muted-foreground ${
+                  it.merchant || it.note ? 'justify-between' : 'justify-end'
+                }`}
               >
-                再记一笔
-              </Link>
+                {it.merchant || it.note ? (
+                  <div className="flex max-w-[72%] items-center gap-2">
+                    {it.merchant && (
+                      <div className="flex items-center gap-1 text-blue-600">
+                        <Store className="h-3 w-3" />
+                        <span className="font-medium">{it.merchant}</span>
+                      </div>
+                    )}
+                    {it.note && (
+                      <span className="truncate" title={it.note}>
+                        {it.note}
+                      </span>
+                    )}
+                  </div>
+                ) : null}
+                <Link
+                  href={buildQuickAddHref(it)}
+                  className="text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  再记一笔
+                </Link>
+              </div>
             </div>
           </div>
         </li>

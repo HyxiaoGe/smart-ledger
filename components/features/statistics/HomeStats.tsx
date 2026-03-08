@@ -6,7 +6,7 @@ import { useSpring, animated } from '@react-spring/web';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils/helpers';
 import { SUPPORTED_CURRENCIES } from '@/lib/config/config';
-import { TrendingUp, TrendingDown, Minus, Receipt, Calendar } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Receipt, Calendar, ArrowRightLeft } from 'lucide-react';
 import type { HomeStatsProps } from '@/lib/types/transactionViews';
 
 function symbolOf(code: string) {
@@ -97,34 +97,35 @@ export function HomeStats({
   };
 
   return (
-    <div className={cn('grid grid-cols-1 gap-4', showThirdCard ? 'md:grid-cols-3' : 'md:grid-cols-2')}>
+    <div className={cn('grid grid-cols-1 gap-4', showThirdCard ? 'xl:grid-cols-3' : 'xl:grid-cols-2')}>
       {/* 支出总额卡片 */}
-      <Card className="relative overflow-hidden">
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between mb-2">
+      <Card className="relative overflow-hidden border-slate-200 shadow-sm dark:border-slate-800">
+        <CardContent className="p-6">
+          <div className="mb-3 flex items-center justify-between gap-3">
             <span className="text-sm text-muted-foreground">{rangeLabel}支出</span>
             <TrendIndicator />
           </div>
-          <animated.span className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-gray-100">
+          <animated.span className="text-4xl font-semibold tracking-tight text-slate-900 dark:text-gray-100">
             {expenseSpring.value.to((v) => `${sym}${v.toFixed(2)}`)}
           </animated.span>
-          <p className="mt-2 text-xs text-muted-foreground">
+          <div className="mt-4 flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50/70 px-3 py-2 text-xs text-muted-foreground dark:border-slate-800 dark:bg-slate-900/60">
+            <ArrowRightLeft className="h-3.5 w-3.5" />
             较{prevRangeLabel}: {sym}{prevRangeExpense.toFixed(2)}
-          </p>
+          </div>
         </CardContent>
       </Card>
 
       {/* 交易笔数卡片 */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-2 mb-2">
+      <Card className="border-slate-200 shadow-sm dark:border-slate-800">
+        <CardContent className="p-6">
+          <div className="mb-3 flex items-center gap-2">
             <Receipt className="w-4 h-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">交易笔数</span>
           </div>
-          <animated.span className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-gray-100">
+          <animated.span className="text-4xl font-semibold tracking-tight text-slate-900 dark:text-gray-100">
             {countSpring.value.to((v) => `${Math.round(v)} 笔`)}
           </animated.span>
-          <p className="mt-2 text-xs text-muted-foreground">
+          <p className="mt-4 text-xs text-muted-foreground">
             {rangeLabel}的支出记录
           </p>
         </CardContent>
@@ -132,25 +133,25 @@ export function HomeStats({
 
       {/* 日均支出/较昨日卡片 */}
       {showDailyAvgCard && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 mb-2">
+        <Card className="border-slate-200 shadow-sm dark:border-slate-800">
+          <CardContent className="p-6">
+            <div className="mb-3 flex items-center gap-2">
               <Calendar className="w-4 h-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">日均支出</span>
             </div>
-            <animated.span className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-gray-100">
+            <animated.span className="text-4xl font-semibold tracking-tight text-slate-900 dark:text-gray-100">
               {avgSpring.value.to((v) => `${sym}${v.toFixed(2)}`)}
             </animated.span>
-            <p className="mt-2 text-xs text-muted-foreground">
+            <p className="mt-4 text-xs text-muted-foreground">
               {rangeLabel}平均每日消费
             </p>
           </CardContent>
         </Card>
       )}
       {showComparisonCard && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 mb-2">
+        <Card className="border-slate-200 shadow-sm dark:border-slate-800">
+          <CardContent className="p-6">
+            <div className="mb-3 flex items-center gap-2">
               <Calendar className="w-4 h-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">较昨日</span>
             </div>
@@ -162,7 +163,7 @@ export function HomeStats({
             >
               {deltaText}
             </div>
-            <p className="mt-2 text-xs text-muted-foreground">
+            <p className="mt-4 text-xs text-muted-foreground">
               昨日支出 {sym}{prevRangeExpense.toFixed(2)}
             </p>
           </CardContent>
