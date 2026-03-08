@@ -75,14 +75,16 @@ export function DateInput({
         type="button"
         variant="outline"
         onClick={handleButtonClick}
-        className="w-full justify-between text-left font-normal"
+        className="min-h-11 w-full justify-between rounded-xl border-slate-200 bg-white/80 px-3 text-left font-normal shadow-sm hover:border-blue-400 hover:bg-white focus-visible:ring-blue-500/70 dark:border-slate-700 dark:bg-slate-950 dark:hover:border-blue-500 dark:hover:bg-slate-950"
         disabled={disabled}
       >
-        <span className="flex items-center gap-2">
-          <CalendarIcon className="h-4 w-4" />
-          {selected ? format(selected, 'yyyy年MM月dd日', { locale: zhCN }) : placeholder}
+        <span className="flex min-w-0 items-center gap-2">
+          <CalendarIcon className="h-4 w-4 shrink-0" />
+          <span className="truncate">
+            {selected ? format(selected, 'yyyy年MM月dd日', { locale: zhCN }) : placeholder}
+          </span>
         </span>
-        <span className="text-muted-foreground">
+        <span className="shrink-0 text-xs text-muted-foreground">
           {isOpen ? '收起' : '展开'}
         </span>
       </Button>
@@ -99,16 +101,17 @@ export function DateInput({
 
           {/* 日历面板 */}
           <Card
-            className="absolute top-full left-0 mt-1 shadow-lg w-72 sm:w-80 md:w-96"
+            className="absolute left-0 top-full mt-2 w-[min(92vw,22rem)] rounded-2xl border border-slate-200 shadow-xl dark:border-slate-700 sm:w-[22rem]"
             style={{ zIndex: containerZIndex }}
             onClick={handleCardClick}
           >
-            <CardContent className="p-2">
+            <CardContent className="p-3">
               <DatePicker
                 mode="single"
                 selected={selected}
                 onSelect={handleDateSelect}
-                className="mx-auto rdp-enhanced"
+                compact
+                className="mx-auto"
               />
             </CardContent>
           </Card>

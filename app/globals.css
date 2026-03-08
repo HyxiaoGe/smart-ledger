@@ -23,15 +23,27 @@
   --rdp-outline-selected: 2px solid #1d4ed8;
 }
 
+.rdp-compact {
+  --rdp-cell-size: 36px;
+}
+
 /* 增强版日期选择器样式 */
 .rdp-enhanced .rdp-root {
   background: transparent;
+}
+
+.rdp-compact .rdp-root {
+  width: 100%;
 }
 
 .rdp-enhanced .rdp-caption {
   padding: 12px 0 8px 0;
   color: #374151;
   font-weight: 600;
+}
+
+.rdp-compact .rdp-caption {
+  padding: 8px 0 6px 0;
 }
 
 .rdp-enhanced .rdp-caption_label {
@@ -41,6 +53,10 @@
 
 .rdp-enhanced .rdp-nav {
   padding: 0 8px;
+}
+
+.rdp-compact .rdp-nav {
+  padding: 0 4px;
 }
 
 .rdp-enhanced .rdp-nav_button {
@@ -62,6 +78,10 @@
   padding: 0 8px 8px 8px;
 }
 
+.rdp-compact .rdp-head {
+  padding: 0 4px 6px 4px;
+}
+
 .rdp-enhanced .rdp-head_row {
   font-weight: 500;
 }
@@ -73,16 +93,33 @@
   padding: 8px 0;
 }
 
+.rdp-compact .rdp-head_cell {
+  font-size: 11px;
+  padding: 6px 0;
+}
+
 .rdp-enhanced .rdp-body {
   padding: 0 8px 12px 8px;
+}
+
+.rdp-compact .rdp-body {
+  padding: 0 4px 6px 4px;
 }
 
 .rdp-enhanced .rdp-row {
   margin-bottom: 4px;
 }
 
+.rdp-compact .rdp-row {
+  margin-bottom: 2px;
+}
+
 .rdp-enhanced .rdp-cell {
   padding: 2px;
+}
+
+.rdp-compact .rdp-cell {
+  padding: 1px;
 }
 
 .rdp-enhanced .rdp-button {
@@ -95,6 +132,11 @@
   transition: all 0.2s ease;
   background: white;
   color: #374151;
+}
+
+.rdp-compact .rdp-button {
+  border-radius: 10px;
+  font-size: 12px;
 }
 
 .rdp-enhanced .rdp-button:hover:not([disabled]):not(.rdp-selected) {

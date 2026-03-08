@@ -13,7 +13,7 @@ export function DatePicker({ className, compact, locale = zhCN, ...props }: Date
   return (
     <DayPicker
       locale={locale}
-      className={cn(compact ? 'rdp-compact' : undefined, className)}
+      className={cn('rdp-enhanced', compact && 'rdp-compact', className)}
       {...props}
     />
   );
