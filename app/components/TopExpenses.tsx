@@ -3,22 +3,11 @@ import { CategoryChip } from '@/components/CategoryChip';
 import { EmptyState } from '@/components/EmptyState';
 import { formatCurrency } from '@/lib/utils/format';
 import { Store, TrendingUp } from 'lucide-react';
+import type { TopExpenseItem, TopExpensesProps } from '@/lib/types/transactionViews';
 import Link from 'next/link';
 
-type Item = {
-  id: string;
-  category: string;
-  amount: number;
-  date?: string;
-  note?: string;
-  currency?: string;
-  merchant?: string;
-  subcategory?: string;
-  product?: string;
-};
-
-export function TopExpenses({ items, currency }: { items: Item[]; currency: string }) {
-  const buildQuickAddHref = (item: Item) => {
+export function TopExpenses({ items, currency }: TopExpensesProps) {
+  const buildQuickAddHref = (item: TopExpenseItem) => {
     const query: Record<string, string> = { category: item.category };
     const isAggregate = item.id.endsWith('-agg');
     if (!isAggregate) {

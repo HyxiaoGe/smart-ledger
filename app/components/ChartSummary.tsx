@@ -20,6 +20,7 @@ import { formatCurrency } from '@/lib/utils/format';
 import { useCategories } from '@/contexts/CategoryContext';
 import { useMemo } from 'react';
 import { PieChart as PieChartIcon } from 'lucide-react';
+import type { ChartSummaryProps } from '@/lib/types/transactionViews';
 import type { TooltipPayloadItem } from '@/types/ui/chart';
 
 interface CategoryMeta {
@@ -84,12 +85,7 @@ export function ChartSummary({
   pie,
   rangeLabel,
   currency,
-}: {
-  trend: { name: string; expense: number }[];
-  pie: { name: string; value: number }[];
-  rangeLabel: string;
-  currency: string;
-}) {
+}: ChartSummaryProps) {
   const { categories, getCategoryMeta } = useCategories();
 
   // 动态构建分类元数据映射

@@ -4,20 +4,7 @@ import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils/format';
 import { formatDateToLocal } from '@/lib/utils/date';
-
-interface DayData {
-  date: string; // YYYY-MM-DD
-  amount: number;
-  count: number;
-}
-
-interface CalendarHeatmapProps {
-  data: DayData[];
-  year: number;
-  month: number; // 1-12
-  currency: string;
-  onDayClick?: (date: string) => void;
-}
+import type { CalendarDayData, CalendarHeatmapProps } from '@/lib/types/transactionViews';
 
 const WEEKDAY_LABELS = ['日', '一', '二', '三', '四', '五', '六'];
 
@@ -65,7 +52,7 @@ export function CalendarHeatmap({
 
   // 构建日期到数据的映射
   const dayMap = useMemo(() => {
-    const map = new Map<string, DayData>();
+    const map = new Map<string, CalendarDayData>();
     data.forEach((d) => map.set(d.date, d));
     return map;
   }, [data]);

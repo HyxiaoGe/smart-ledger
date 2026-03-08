@@ -94,26 +94,13 @@ export default function HomePageClient({
 
       {/* 统计卡片 */}
       <HomeStats
-        rangeExpense={data.rangeExpense}
-        rangeCount={data.rangeCount}
-        rangeDailyAvg={data.rangeDailyAvg}
-        rangeLabel={data.rangeLabel}
-        prevRangeExpense={data.prevRangeExpense}
-        prevRangeLabel={data.prevRangeLabel}
-        currency={currency}
-        isSingleDay={data.isSingleDay}
-        isToday={data.isToday}
+        {...data.statsView}
       />
 
       {/* 图表概览 */}
       <section className="space-y-2">
         <h2 className="text-lg font-semibold">{`${TEXT.chartsTitle} (${currency})`}</h2>
-        <ChartSummary
-          trend={data.trend}
-          pie={data.pie}
-          rangeLabel={data.rangeLabel}
-          currency={currency}
-        />
+        <ChartSummary {...data.chartSummaryView} />
       </section>
 
       {/* Top 10 支出 */}
@@ -129,7 +116,7 @@ export default function HomePageClient({
         </div>
         <Card>
           <CardContent className="pt-4">
-            <TopExpenses items={data.top10} currency={currency} />
+            <TopExpenses {...data.topExpensesView} />
           </CardContent>
         </Card>
       </section>
@@ -137,10 +124,7 @@ export default function HomePageClient({
       {/* 消费日历热力图 */}
       <section>
         <CalendarHeatmap
-          data={data.calendarData}
-          year={data.calendarYear}
-          month={data.calendarMonth}
-          currency={currency}
+          {...data.calendarHeatmapView}
           onDayClick={handleCalendarDayClick}
         />
       </section>

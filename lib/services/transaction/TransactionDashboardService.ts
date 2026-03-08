@@ -8,10 +8,17 @@ import {
   getMonthStringFromDate,
   parseLocalDate,
 } from '@/lib/utils/date';
+import type {
+  CalendarHeatmapProps,
+  ChartSummaryProps,
+  HomeDashboardViewSlices,
+  HomeStatsProps,
+  TopExpensesProps,
+} from '@/lib/types/transactionViews';
 import type { Currency } from '@/types/domain/transaction';
 import { resolveTransactionRange } from './TransactionRange';
 
-export interface TransactionDashboardResult {
+export interface TransactionDashboardResult extends HomeDashboardViewSlices {
   rangeExpense: number;
   rangeIncome: number;
   rangeCount: number;
@@ -83,6 +90,34 @@ export class TransactionDashboardService {
         calendarYear: now.getFullYear(),
         calendarMonth: now.getMonth() + 1,
         refreshSnapshot: '0:0',
+        currency: params.currency,
+        statsView: buildHomeStatsView({
+          rangeExpense: 0,
+          rangeCount: 0,
+          rangeDailyAvg: 0,
+          rangeLabel: '无效范围',
+          prevRangeExpense: 0,
+          prevRangeLabel: '无数据',
+          currency: params.currency,
+          isSingleDay: false,
+          isToday: false,
+        }),
+        chartSummaryView: {
+          trend: [],
+          pie: [],
+          rangeLabel: '无效范围',
+          currency: params.currency,
+        },
+        topExpensesView: {
+          items: [],
+          currency: params.currency,
+        },
+        calendarHeatmapView: {
+          data: [],
+          year: now.getFullYear(),
+          month: now.getMonth() + 1,
+          currency: params.currency,
+        },
       };
     }
 
@@ -127,6 +162,30 @@ export class TransactionDashboardService {
             : 0;
         const todayStr = formatDateToLocal(new Date());
 
+        const trend = generateTrendData(
+          currentRows,
+          resolved.granularity,
+          resolved.displayStart,
+          resolved.displayEnd
+        );
+        const pie = generatePie(expenseRows);
+        const top10 = generateTop10(expenseRows, params.currency, resolved.isSingleDay);
+        const calendarData = generateCalendarData(calendarRows);
+        const statsView = buildHomeStatsView({
+          rangeExpense,
+          rangeCount,
+          rangeDailyAvg,
+          rangeLabel: resolved.label,
+          prevRangeExpense: prevExpenseRows.reduce(
+            (sum, row) => sum + Number(row.amount || 0),
+            0
+          ),
+          prevRangeLabel: resolved.previousRange.label,
+          currency: params.currency,
+          isSingleDay: resolved.isSingleDay,
+          isToday: resolved.isSingleDay && resolved.displayStart === todayStr,
+        });
+
         return {
           rangeExpense,
           rangeIncome,
@@ -135,26 +194,36 @@ export class TransactionDashboardService {
           rangeLabel: resolved.label,
           rangeRows: currentRows,
           isSingleDay: resolved.isSingleDay,
-          isToday: resolved.isSingleDay && resolved.displayStart === todayStr,
-          prevRangeExpense: prevExpenseRows.reduce(
-            (sum, row) => sum + Number(row.amount || 0),
-            0
-          ),
+          isToday: statsView.isToday ?? false,
+          prevRangeExpense: statsView.prevRangeExpense,
           prevRangeLabel: resolved.previousRange.label,
-          trend: generateTrendData(
-            currentRows,
-            resolved.granularity,
-            resolved.displayStart,
-            resolved.displayEnd
-          ),
-          pie: generatePie(expenseRows),
-          top10: generateTop10(expenseRows, params.currency, resolved.isSingleDay),
-          calendarData: generateCalendarData(calendarRows),
+          trend,
+          pie,
+          top10,
+          calendarData,
           calendarYear: calendarMonth.year,
           calendarMonth: calendarMonth.month,
           refreshSnapshot: buildDashboardRefreshSnapshot({
             rangeExpense,
             rangeCount,
+          }),
+          currency: params.currency,
+          statsView,
+          chartSummaryView: buildChartSummaryView({
+            trend,
+            pie,
+            rangeLabel: resolved.label,
+            currency: params.currency,
+          }),
+          topExpensesView: buildTopExpensesView({
+            items: top10,
+            currency: params.currency,
+          }),
+          calendarHeatmapView: buildCalendarHeatmapView({
+            data: calendarData,
+            year: calendarMonth.year,
+            month: calendarMonth.month,
+            currency: params.currency,
           }),
         };
       },
@@ -191,6 +260,24 @@ function buildDashboardRefreshSnapshot(input: {
   rangeCount: number;
 }) {
   return [input.rangeExpense, input.rangeCount].join(':');
+}
+
+function buildHomeStatsView(input: HomeStatsProps): HomeStatsProps {
+  return input;
+}
+
+function buildChartSummaryView(input: ChartSummaryProps): ChartSummaryProps {
+  return input;
+}
+
+function buildTopExpensesView(input: TopExpensesProps): TopExpensesProps {
+  return input;
+}
+
+function buildCalendarHeatmapView(
+  input: Omit<CalendarHeatmapProps, 'onDayClick'>
+): Omit<CalendarHeatmapProps, 'onDayClick'> {
+  return input;
 }
 
 function getDaysInRange(start: string, end: string): number {

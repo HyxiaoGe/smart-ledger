@@ -7,18 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils/helpers';
 import { SUPPORTED_CURRENCIES } from '@/lib/config/config';
 import { TrendingUp, TrendingDown, Minus, Receipt, Calendar } from 'lucide-react';
-
-interface HomeStatsProps {
-  rangeExpense: number;
-  rangeCount: number;
-  rangeDailyAvg: number;
-  rangeLabel: string;
-  prevRangeExpense: number;
-  prevRangeLabel: string;
-  currency: string;
-  isSingleDay?: boolean;
-  isToday?: boolean;
-}
+import type { HomeStatsProps } from '@/lib/types/transactionViews';
 
 function symbolOf(code: string) {
   const found = SUPPORTED_CURRENCIES.find((item) => item.code === code);
