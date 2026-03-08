@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Brain } from 'lucide-react';
+import { Brain, Sparkles, X } from 'lucide-react';
 import type { AIAnalysisButtonProps } from '@/lib/types/transactionViews';
 import type { AIAnalysisData } from '@/lib/services/transaction/TransactionAnalyticsService';
 
@@ -17,7 +17,7 @@ export function AIAnalysisButton({
     <>
       <Button
         onClick={() => setShowAIPanel(true)}
-        className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg transition-all duration-200 hover:scale-105"
+        className="rounded-xl bg-gradient-to-r from-fuchsia-500 via-violet-500 to-indigo-500 px-5 py-2.5 text-white shadow-lg shadow-fuchsia-500/20 transition-all duration-200 hover:scale-[1.02] hover:from-fuchsia-600 hover:via-violet-600 hover:to-indigo-600"
       >
         <Brain className="h-4 w-4 mr-2" />
         AI财务分析
@@ -56,36 +56,59 @@ function AIAnalysisModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/65 p-4 backdrop-blur-md"
       onClick={onClose} // 点击背景关闭弹窗
     >
       <div
-        className="bg-white dark:bg-gray-900 rounded-xl w-full max-w-6xl max-h-[90vh] overflow-hidden shadow-2xl"
+        className="w-full max-w-6xl overflow-hidden rounded-[2rem] border border-white/60 bg-white/95 shadow-2xl shadow-slate-950/20 dark:border-slate-700 dark:bg-slate-950/95"
         onClick={(e) => e.stopPropagation()} // 阻止点击内容区域时关闭弹窗
       >
         {/* 弹窗头部 */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-              <Brain className="h-6 w-6 text-white" />
+        <div className="border-b border-slate-200/80 bg-gradient-to-r from-fuchsia-50 via-white to-indigo-50 p-6 dark:border-slate-800 dark:from-fuchsia-950/60 dark:via-slate-950 dark:to-indigo-950/60">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-r from-fuchsia-500 via-violet-500 to-indigo-500 shadow-lg shadow-fuchsia-500/20">
+                <Brain className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-fuchsia-200 bg-white/80 px-3 py-1 text-xs font-medium text-fuchsia-700 dark:border-fuchsia-800 dark:bg-slate-900/70 dark:text-fuchsia-300">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  智能复盘模式
+                </div>
+                <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                  智能财务分析
+                </h2>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                  用一屏看清趋势、可优化空间和下一个最值得调整的支出动作。
+                </p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">智能财务分析</h2>
-              <p className="text-sm text-gray-600 dark:text-gray-300">基于AI的个性化消费分析和建议</p>
+            <div className="flex items-center gap-3">
+              <div className="hidden rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 text-right shadow-sm dark:border-slate-800 dark:bg-slate-900/70 md:block">
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                  分析范围
+                </p>
+                <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                  {currentMonth || '当前周期'}
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onClose}
+                className="h-11 w-11 rounded-2xl border border-slate-200 bg-white/80 text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+              >
+                <X className="h-5 w-5" />
+              </Button>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-          >
-            ✕
-          </Button>
         </div>
 
         {/* 弹窗内容区域 */}
-        <div className="p-6 overflow-y-auto bg-gray-50 dark:bg-gray-900" style={{ maxHeight: 'calc(90vh - 100px)' }}>
+        <div
+          className="overflow-y-auto bg-slate-50/90 p-6 dark:bg-slate-950"
+          style={{ maxHeight: 'calc(90vh - 124px)' }}
+        >
           <AIAnalysisPanel
             dateRange={dateRange}
             currentMonth={currentMonth}

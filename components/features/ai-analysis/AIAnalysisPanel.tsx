@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { DeepInsightPanel } from '@/components/features/ai-analysis/DeepInsightPanel';
 import { SpendingPredictionPanel } from '@/components/features/ai-analysis/SpendingPredictionPanel';
 import { QuickFeedback } from '@/components/features/ai-analysis/AIFeedbackModal';
+import { SectionIntro } from '@/components/shared/SectionIntro';
 import { TrendAnalysis } from './AIAnalysisPanel/TrendAnalysis';
 import { OptimizationAdvice } from './AIAnalysisPanel/OptimizationAdvice';
 import {
@@ -174,9 +175,13 @@ export function AIAnalysisPanel({
   return (
     <div className={`space-y-4 ${className}`}>
       {/* 刷新按钮 */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">智能财务分析</h2>
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/90 lg:flex-row lg:items-start lg:justify-between">
+        <SectionIntro
+          title="智能财务分析"
+          eyebrow="AI Insight"
+          description="先看趋势与预算张力，再决定要不要深入读建议和预测。"
+        />
+        <div className="flex items-center gap-2 self-start lg:self-center">
           {/* 刷新状态提示 */}
           <AnimatePresence>
             {refreshStatus !== 'idle' && (
@@ -184,10 +189,12 @@ export function AIAnalysisPanel({
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
-                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                  refreshStatus === 'refreshing' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' :
-                  refreshStatus === 'success' ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' :
-                  'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300'
+                className={`flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-medium ${
+                  refreshStatus === 'refreshing'
+                    ? 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300'
+                    : refreshStatus === 'success'
+                      ? 'border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-950 dark:text-green-300'
+                      : 'border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300'
                 }`}
               >
                 {refreshStatus === 'refreshing' && (
@@ -217,7 +224,7 @@ export function AIAnalysisPanel({
             size="sm"
             onClick={handleRefresh}
             disabled={loading || refreshStatus === 'refreshing'}
-            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors"
+            className="rounded-xl border-slate-200 bg-white px-4 text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
             title="清除缓存并重新分析数据"
           >
             <RefreshCw className="h-4 w-4 mr-1" />
@@ -228,7 +235,7 @@ export function AIAnalysisPanel({
 
       {/* 优化潜力总览 - 顶部醒目展示 */}
       {advice && (
-        <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg p-6 text-white shadow-lg">
+        <div className="rounded-[2rem] bg-gradient-to-r from-fuchsia-500 via-violet-500 to-indigo-500 p-6 text-white shadow-xl shadow-fuchsia-500/20">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-2xl font-bold mb-2">💎 您的财务优化潜力</h3>
@@ -242,24 +249,24 @@ export function AIAnalysisPanel({
             </div>
           </div>
 
-          <div className={isModal ? "grid grid-cols-4 gap-6" : "grid grid-cols-4 gap-4"}>
-            <div className="bg-white/20 rounded-lg p-4 text-center">
+          <div className={isModal ? "grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-6" : "grid grid-cols-2 gap-4 xl:grid-cols-4"}>
+            <div className="rounded-2xl border border-white/15 bg-white/15 p-4 text-center backdrop-blur-sm">
               <div className={isModal ? "text-2xl font-bold" : "text-xl font-bold"}>
                 ¥{advice.suggestions.reduce((sum, s) => sum + s.potential, 0).toFixed(2)}
               </div>
               <div className={isModal ? "text-sm opacity-90" : "text-xs opacity-90"}>月度节省</div>
             </div>
-            <div className="bg-white/20 rounded-lg p-4 text-center">
+            <div className="rounded-2xl border border-white/15 bg-white/15 p-4 text-center backdrop-blur-sm">
               <div className={isModal ? "text-2xl font-bold" : "text-xl font-bold"}>
                 {advice.suggestions.filter(s => s.priority === 'high').length}
               </div>
               <div className={isModal ? "text-sm opacity-90" : "text-xs opacity-90"}>高优先级</div>
             </div>
-            <div className="bg-white/20 rounded-lg p-4 text-center">
+            <div className="rounded-2xl border border-white/15 bg-white/15 p-4 text-center backdrop-blur-sm">
               <div className={isModal ? "text-2xl font-bold" : "text-xl font-bold"}>¥{advice.recommendedBudget.toFixed(2)}</div>
               <div className={isModal ? "text-sm opacity-90" : "text-xs opacity-90"}>建议预算</div>
             </div>
-            <div className="bg-white/20 rounded-lg p-4 text-center">
+            <div className="rounded-2xl border border-white/15 bg-white/15 p-4 text-center backdrop-blur-sm">
               <div className={isModal ? "text-2xl font-bold" : "text-xl font-bold"}>
                 {currentExpense > 0 ? Math.round((advice.suggestions.reduce((sum, s) => sum + s.potential, 0) / currentExpense) * 100) : 0}%
               </div>
@@ -267,7 +274,7 @@ export function AIAnalysisPanel({
             </div>
           </div>
 
-          <div className="bg-white/20 rounded-lg p-3 mt-4">
+          <div className="mt-4 rounded-2xl border border-white/15 bg-white/15 p-3 backdrop-blur-sm">
             <div className="flex items-center justify-between text-sm">
               <span>执行建议后：¥{currentExpense.toFixed(2)} → ¥{(advice.recommendedBudget - advice.suggestedSavings).toFixed(2)}</span>
               <span className="font-bold">立即开始优化</span>
@@ -302,7 +309,7 @@ export function AIAnalysisPanel({
 
       {/* AI智能分析结果 */}
       {aiSummary && (
-        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border-green-200 dark:border-green-800">
+        <Card className="border-green-200 bg-gradient-to-br from-emerald-50 via-white to-green-50 shadow-sm dark:border-green-800 dark:from-emerald-950 dark:via-slate-900 dark:to-green-950">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
               <Brain className="h-5 w-5 text-green-600 dark:text-green-400" />
@@ -339,7 +346,7 @@ export function AIAnalysisPanel({
 
       {/* AI分析反馈 */}
       {aiSummary && (
-        <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border-blue-200 dark:border-blue-800">
+        <Card className="border-blue-200 bg-gradient-to-br from-blue-50 via-white to-indigo-50 shadow-sm dark:border-blue-800 dark:from-blue-950 dark:via-slate-900 dark:to-indigo-950">
           <CardContent className="p-4">
             <QuickFeedback
               featureType="smart_analysis"

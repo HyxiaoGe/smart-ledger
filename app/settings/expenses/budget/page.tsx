@@ -1,12 +1,15 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
-import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { PageSkeleton } from '@/components/shared/PageSkeleton';
+import { SectionIntro } from '@/components/shared/SectionIntro';
+import { SettingsBackButton } from '@/components/shared/SettingsBackButton';
+import { SettingsInfoPanel } from '@/components/shared/SettingsInfoPanel';
+import { SettingsPageHeader } from '@/components/shared/SettingsPageHeader';
 import { budgetsApi } from '@/lib/api/services/budgets';
 import { categoriesApi } from '@/lib/api/services/categories';
 import { useBudgetOverview } from '@/lib/api/hooks/useBudgets';
@@ -17,7 +20,6 @@ import {
 } from '@/lib/utils/budget';
 import type { Category } from '@/types/dto/category.dto';
 import {
-  ChevronLeft,
   TrendingUp,
   AlertCircle,
   CheckCircle2,
@@ -27,7 +29,8 @@ import {
   ChevronUp,
   PiggyBank,
   Pencil,
-  Info
+  Info,
+  Target
 } from 'lucide-react';
 
 export default function BudgetPage() {
@@ -156,36 +159,29 @@ export default function BudgetPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 返回导航 */}
-        <div className="mb-6">
-          <Link href="/settings/expenses">
-            <Button
-              variant="ghost"
-              className="text-gray-600 hover:text-gray-900 dark:text-gray-100"
-            >
-              <ChevronLeft className="h-4 w-4 mr-2" />
-              返回消费配置
-            </Button>
-          </Link>
-        </div>
+        <SettingsBackButton href="/settings/expenses" label="返回消费配置" />
 
-        {/* 页面标题和月份 */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-              月度预算设置
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300">管理您的月度预算，控制支出更轻松</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="px-4 py-2 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
-              <Calendar className="inline h-4 w-4 mr-2 text-blue-600" />
-              <span className="font-semibold text-blue-900 dark:text-blue-100">
-                {formatBudgetMonthLabel(year, month)}
-              </span>
+        <div className="mb-8 rounded-[2rem] border border-slate-200 bg-gradient-to-r from-blue-50 via-white to-cyan-50 p-6 shadow-sm dark:border-slate-800 dark:from-blue-950 dark:via-slate-950 dark:to-cyan-950">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <SettingsPageHeader
+              title="月度预算设置"
+              description="把总预算、节奏余量和分类风险放到同一屏里看，方便你更快做决策。"
+              icon={Target}
+              tone="blue"
+            />
+            <div className="inline-flex items-center gap-3 self-start rounded-2xl border border-blue-200 bg-white/80 px-4 py-3 text-sm font-medium text-blue-900 shadow-sm dark:border-blue-800 dark:bg-slate-900/70 dark:text-blue-100">
+              <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              {formatBudgetMonthLabel(year, month)}
             </div>
           </div>
         </div>
+
+        <SectionIntro
+          eyebrow="Budget Pulse"
+          title="本月预算概览"
+          description="先看总盘子和可支配节奏，再决定要不要调整总预算或分类预算。"
+          className="mb-4"
+        />
 
         {/* 总预算汇总卡片 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
@@ -315,19 +311,22 @@ export default function BudgetPage() {
 
         {/* 预算警告 */}
         {summary && (summary.over_budget_count > 0 || summary.near_limit_count > 0) && (
-          <div className="mb-6 p-4 bg-orange-50 dark:bg-orange-950 border-l-4 border-orange-500 rounded-lg">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-orange-600 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-orange-900">
-                {summary.over_budget_count > 0 && (
-                  <p className="font-semibold">⚠️ {summary.over_budget_count} 个类别预算已超支</p>
-                )}
-                {summary.near_limit_count > 0 && (
-                  <p>⚡ {summary.near_limit_count} 个类别预算接近上限</p>
-                )}
-              </div>
-            </div>
-          </div>
+          <SettingsInfoPanel
+            title="预算风险提醒"
+            description={[
+              summary.over_budget_count > 0
+                ? `${summary.over_budget_count} 个类别预算已超支`
+                : '',
+              summary.near_limit_count > 0
+                ? `${summary.near_limit_count} 个类别预算接近上限`
+                : '',
+            ]
+              .filter(Boolean)
+              .join('，')}
+            icon={AlertCircle}
+            tone="orange"
+            className="mb-6"
+          />
         )}
 
         {/* 智能预算建议 */}
@@ -338,13 +337,12 @@ export default function BudgetPage() {
               onClick={() => setIsSuggestionsExpanded(!isSuggestionsExpanded)}
             >
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 text-purple-900 dark:text-purple-100">
-                  <span>💡</span>
-                  <span>智能预算管理</span>
-                  <span className="text-xs font-normal text-purple-600 dark:text-purple-300">
-                    基于历史消费数据分析 ({suggestions.length} 个类别)
-                  </span>
-                </CardTitle>
+                <SectionIntro
+                  eyebrow="Smart Budget"
+                  title="智能预算管理"
+                  description={`基于历史消费数据，重点关注 ${suggestions.length} 个需要动作的类别。`}
+                  className="mb-0"
+                />
                 {isSuggestionsExpanded ? (
                   <ChevronUp className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                 ) : (
@@ -354,7 +352,7 @@ export default function BudgetPage() {
             </CardHeader>
             {isSuggestionsExpanded && (
               <CardContent className="space-y-3">
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-purple-200/70 bg-white/80 p-3 shadow-sm dark:border-purple-800/70 dark:bg-slate-900/60">
                   {[
                     { value: 'all' as const, label: '全部' },
                     { value: 'over' as const, label: '超支' },
