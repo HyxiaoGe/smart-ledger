@@ -4,6 +4,9 @@ import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { SectionIntro } from '@/components/shared/SectionIntro';
+import { SettingsBackButton } from '@/components/shared/SettingsBackButton';
+import { SettingsPageHeader } from '@/components/shared/SettingsPageHeader';
 import { useToast } from '@/components/ui/toast';
 import { type WeeklyReport } from '@/lib/api/services/weekly-reports';
 import {
@@ -14,7 +17,6 @@ import {
 import { formatWeekRangeLabel, getWeekNumberDescription } from '@/lib/utils/date';
 import { formatCurrencyAmount, formatSignedPercentage } from '@/lib/utils/format';
 import {
-  ChevronLeft,
   TrendingDown,
   TrendingUp,
   Calendar,
@@ -118,35 +120,43 @@ export default function WeeklyReportsPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 返回导航 */}
-        <div className="mb-6">
-          <Link href="/settings/expenses">
-            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 dark:text-gray-100">
-              <ChevronLeft className="h-4 w-4 mr-2" />
-              返回消费配置
+        <SettingsBackButton href="/settings/expenses" label="返回消费配置" />
+
+        <div className="mb-8 rounded-[2rem] border border-slate-200 bg-gradient-to-r from-violet-50 via-white to-fuchsia-50 p-6 shadow-sm dark:border-slate-800 dark:from-violet-950 dark:via-slate-950 dark:to-fuchsia-950">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <SettingsPageHeader
+              title="每周消费报告"
+              description="自动生成的周度复盘，适合观察消费节奏和周内波动。"
+              icon={Calendar}
+              tone="purple"
+            />
+            <Button
+              onClick={handleGenerateReport}
+              disabled={generating}
+              className="rounded-xl bg-purple-600 hover:bg-purple-700"
+            >
+              {generating ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Plus className="h-4 w-4 mr-2" />
+              )}
+              {generating ? '生成中...' : '手动生成报告'}
             </Button>
-          </Link>
+          </div>
         </div>
 
-        {/* 页面标题 */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">每周消费报告</h2>
-            <p className="text-gray-600 dark:text-gray-300">
-              自动生成的周度消费分析，帮助您洞察消费趋势和习惯
-            </p>
-          </div>
+        <div className="mb-8 flex items-center gap-2">
+          <SectionIntro
+            eyebrow="Weekly Review"
+            title="筛选与趋势"
+            description="先切时间范围，再对比最新一周的支出、交易数和环比变化。"
+            className="mb-0 flex-1"
+          />
           <Button
-            onClick={handleGenerateReport}
-            disabled={generating}
-            className="bg-purple-600 hover:bg-purple-700"
+            variant="outline"
+            className="rounded-xl border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900"
           >
-            {generating ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Plus className="h-4 w-4 mr-2" />
-            )}
-            {generating ? '生成中...' : '手动生成报告'}
+            {filter === 'all' ? '全部周报' : `${filteredReports.length} 条记录`}
           </Button>
         </div>
 
@@ -196,7 +206,7 @@ export default function WeeklyReportsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <Card>
+            <Card className="border border-slate-200/70 bg-gradient-to-br from-white via-rose-50 to-orange-50 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:via-rose-950/30 dark:to-orange-950/20">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-300">
@@ -215,7 +225,7 @@ export default function WeeklyReportsPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border border-slate-200/70 bg-gradient-to-br from-white via-sky-50 to-blue-50 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:via-sky-950/30 dark:to-blue-950/20">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-300">

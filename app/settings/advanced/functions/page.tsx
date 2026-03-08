@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { SectionIntro } from '@/components/shared/SectionIntro';
+import { SettingsBackButton } from '@/components/shared/SettingsBackButton';
+import { SettingsPageHeader } from '@/components/shared/SettingsPageHeader';
 import {
-  ChevronLeft,
   Database,
   Search,
   ChevronDown,
@@ -44,32 +45,20 @@ export default function FunctionsManagementPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 返回导航 */}
-        <div className="mb-6">
-          <Link href="/settings/advanced">
-            <Button variant="ghost" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 hover:bg-gray-50 rounded-lg px-3 py-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200">
-              <ChevronLeft className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1" />
-              返回高级配置
-            </Button>
-          </Link>
-        </div>
+        <SettingsBackButton href="/settings/advanced" label="返回高级配置" />
 
-        {/* 页面标题 */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
-              <Database className="h-6 w-6 text-purple-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">数据库函数管理</h2>
-          </div>
-          <p className="text-gray-600 dark:text-gray-400">
-            了解系统的所有业务功能，查看每个函数是做什么的、在哪里使用
-          </p>
+        <div className="mb-8 rounded-[2rem] border border-slate-200 bg-gradient-to-r from-purple-50 via-white to-fuchsia-50 p-6 shadow-sm dark:border-slate-800 dark:from-purple-950 dark:via-slate-950 dark:to-fuchsia-950">
+          <SettingsPageHeader
+            title="数据库函数管理"
+            description="按业务、查询和 AI 分类梳理数据库函数，方便快速理解系统能力。"
+            icon={Database}
+            tone="purple"
+          />
         </div>
 
         {/* 统计卡片 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
+          <Card className="border border-slate-200/70 bg-gradient-to-br from-white via-sky-50 to-blue-50 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:via-sky-950/30 dark:to-blue-950/20">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -84,7 +73,7 @@ export default function FunctionsManagementPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
+          <Card className="border border-slate-200/70 bg-gradient-to-br from-white via-emerald-50 to-green-50 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:via-emerald-950/30 dark:to-green-950/20">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -99,7 +88,7 @@ export default function FunctionsManagementPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
+          <Card className="border border-slate-200/70 bg-gradient-to-br from-white via-violet-50 to-purple-50 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:via-violet-950/30 dark:to-purple-950/20">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -118,6 +107,12 @@ export default function FunctionsManagementPage() {
         {/* 搜索栏 */}
         <Card className="mb-6 border-0 shadow-md bg-white dark:bg-gray-800">
           <CardContent className="pt-6">
+            <SectionIntro
+              eyebrow="Function Search"
+              title="搜索函数"
+              description="按名称、用途或业务含义快速定位数据库函数。"
+              className="mb-4"
+            />
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input

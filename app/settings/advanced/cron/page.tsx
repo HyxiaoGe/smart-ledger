@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { PageSkeleton } from '@/components/shared/PageSkeleton';
+import { SectionIntro } from '@/components/shared/SectionIntro';
 import { SettingsInfoPanel } from '@/components/shared/SettingsInfoPanel';
 import { SettingsPageHeader } from '@/components/shared/SettingsPageHeader';
 import {
@@ -149,7 +150,7 @@ export default function CronManagementPage() {
 
         {/* 统计卡片 */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
+          <Card className="border border-slate-200/70 bg-gradient-to-br from-white via-sky-50 to-blue-50 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:via-sky-950/30 dark:to-blue-950/20">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -163,7 +164,7 @@ export default function CronManagementPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
+          <Card className="border border-slate-200/70 bg-gradient-to-br from-white via-emerald-50 to-green-50 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:via-emerald-950/30 dark:to-green-950/20">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -177,7 +178,7 @@ export default function CronManagementPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
+          <Card className="border border-slate-200/70 bg-gradient-to-br from-white via-violet-50 to-purple-50 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:via-violet-950/30 dark:to-purple-950/20">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -191,7 +192,7 @@ export default function CronManagementPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
+          <Card className="border border-slate-200/70 bg-gradient-to-br from-white via-amber-50 to-orange-50 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:via-amber-950/30 dark:to-orange-950/20">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -209,15 +210,11 @@ export default function CronManagementPage() {
         {/* 任务列表 */}
         <Card className="border-0 shadow-lg mb-6 bg-white dark:bg-gray-800">
           <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-750 border-b dark:border-gray-700">
-            <CardTitle className="flex items-center gap-3 text-gray-900 dark:text-gray-100">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-              </div>
-              <span>定时任务</span>
-              <span className="text-sm text-gray-500 dark:text-gray-400 font-normal">
-                ({jobs.length} 个任务)
-              </span>
-            </CardTitle>
+            <SectionIntro
+              title="定时任务"
+              description={`查看 ${jobs.length} 个自动化任务的执行状态、下次运行和手动触发入口。`}
+              className="mb-0"
+            />
           </CardHeader>
           <CardContent className="p-6">
             {jobs.length === 0 ? (

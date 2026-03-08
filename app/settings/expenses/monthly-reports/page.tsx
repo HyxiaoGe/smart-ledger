@@ -4,6 +4,9 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { SectionIntro } from '@/components/shared/SectionIntro';
+import { SettingsBackButton } from '@/components/shared/SettingsBackButton';
+import { SettingsPageHeader } from '@/components/shared/SettingsPageHeader';
 import { useToast } from '@/components/ui/toast';
 import { type MonthlyReport } from '@/lib/api/services/monthly-reports';
 import { useGenerateMonthlyReport, useMonthlyReports } from '@/lib/api/hooks/useMonthlyReports';
@@ -14,7 +17,6 @@ import {
   formatSignedPercentage,
 } from '@/lib/utils/format';
 import {
-  ChevronLeft,
   TrendingDown,
   TrendingUp,
   Calendar,
@@ -118,33 +120,26 @@ export default function MonthlyReportsPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 返回导航 */}
-        <div className="mb-6">
-          <Link href="/settings/expenses">
-            <Button variant="ghost" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100">
-              <ChevronLeft className="h-4 w-4 mr-2" />
-              返回消费配置
-            </Button>
-          </Link>
-        </div>
+        <SettingsBackButton href="/settings/expenses" label="返回消费配置" />
 
-        {/* 页面标题 */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">月度报告</h2>
-            <p className="text-gray-600 dark:text-gray-300">
-              查看月度消费分析，包含固定支出和日常消费的完整财务状况
-            </p>
-          </div>
+        <div className="mb-8 rounded-[2rem] border border-slate-200 bg-gradient-to-r from-indigo-50 via-white to-blue-50 p-6 shadow-sm dark:border-slate-800 dark:from-indigo-950 dark:via-slate-950 dark:to-blue-950">
+          <SettingsPageHeader
+            title="月度报告"
+            description="把固定支出、可变支出和月度变化放到一张完整账单里回看。"
+            icon={BarChart3}
+            tone="blue"
+          />
         </div>
 
         {/* 生成报告区域 */}
         <Card className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border-blue-200 dark:border-blue-800">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
-              <Plus className="h-5 w-5" />
-              生成月报告
-            </CardTitle>
+            <SectionIntro
+              eyebrow="Monthly Report"
+              title="生成月报告"
+              description="按月份生成完整财务总结，适合复盘整体消费结构。"
+              className="mb-0"
+            />
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap items-end gap-4">
@@ -200,10 +195,11 @@ export default function MonthlyReportsPage() {
         {latestReport && (
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
-                最新月报告概览 - {formatYearMonthLabel(latestReport.year, latestReport.month)}
-              </CardTitle>
+              <SectionIntro
+                title={`最新月报告概览 · ${formatYearMonthLabel(latestReport.year, latestReport.month)}`}
+                description="先看总支出和结构比例，再判断这个月的消费重心是否偏移。"
+                className="mb-0"
+              />
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
