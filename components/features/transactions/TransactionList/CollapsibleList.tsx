@@ -1,20 +1,12 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { TransactionGroupedList } from '@/components/features/transactions/TransactionList/GroupedList';
-import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronUp, List, FileText } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { EmptyState } from '@/components/EmptyState';
 import Link from 'next/link';
-import { useCategories } from '@/contexts/CategoryContext';
-import { useRefetchOnDataSync } from '@/hooks/useEnhancedDataSync';
 import type { Transaction } from '@/types/domain/transaction';
-import { buildTransactionPageHref } from '@/lib/services/transaction/pageParams';
-import {
-  resolveTransactionListRangeParams,
-  useAllTransactionRowsQuery,
-} from '@/lib/api/hooks/useTransactions';
+import { CollapsibleListControls } from './components/CollapsibleListControls';
+import { useCollapsibleTransactionListController } from './useCollapsibleTransactionListController';
 
 interface CollapsibleTransactionListProps {
   initialTransactions: Transaction[];
@@ -27,174 +19,37 @@ export function CollapsibleTransactionList({
   totalCount,
   className
 }: CollapsibleTransactionListProps) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const search = useSearchParams();
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [defaultExpandedDates, setDefaultExpandedDates] = useState<Set<string> | undefined>(undefined);
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const { categories } = useCategories();
-  const initRef = useRef(false);
-
-  const currentRange = search.get('range') || 'today';
-  const currentMonth = search.get('month') || undefined;
-  const currentStart = search.get('start') || undefined;
-  const currentEnd = search.get('end') || undefined;
-  const quickRanges = [
-    { key: 'today', label: '今天' },
-    { key: 'thisWeek', label: '本周' },
-    { key: 'thisMonth', label: '本月' },
-  ];
-
-  const queryParams = useMemo(
-    () =>
-      resolveTransactionListRangeParams({
-        month: currentMonth,
-        range: currentRange,
-        start: currentStart,
-        end: currentEnd,
-      }),
-    [currentEnd, currentMonth, currentRange, currentStart]
-  );
-
   const {
-    data: queriedTransactions,
-    refetch,
-  } = useAllTransactionRowsQuery(queryParams, {
-    initialData: initialTransactions,
-    staleTime: 0,
+    isExpanded,
+    setIsExpanded,
+    defaultExpandedDates,
+    activeCategory,
+    setActiveCategory,
+    currentRange,
+    quickRanges,
+    commonCategories,
+    filteredTransactions,
+    displayCount,
+    updateRange,
+  } = useCollapsibleTransactionListController({
+    initialTransactions,
+    totalCount,
   });
-
-  const transactions = queriedTransactions || initialTransactions;
-
-  const commonCategories = useMemo(() => {
-    return [...categories]
-      .filter((item) => item.is_active && (item.type === 'expense' || item.type === 'both'))
-      .sort((a, b) => (b.usage_count || 0) - (a.usage_count || 0))
-      .slice(0, 6);
-  }, [categories]);
-
-  const filteredTransactions = useMemo(() => {
-    if (!activeCategory) return transactions;
-    return transactions.filter((item) => item.category === activeCategory);
-  }, [transactions, activeCategory]);
-
-  const displayCount = activeCategory ? filteredTransactions.length : transactions.length || totalCount;
-
-  useEffect(() => {
-    if (initRef.current) return;
-    initRef.current = true;
-    if (typeof window === 'undefined') return;
-    const stored = window.localStorage.getItem('records:listExpanded');
-    if (stored === 'true' || stored === 'false') {
-      setIsExpanded(stored === 'true');
-      return;
-    }
-    if (totalCount <= 20) setIsExpanded(true);
-  }, [totalCount]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    window.localStorage.setItem('records:listExpanded', String(isExpanded));
-  }, [isExpanded]);
-
-  useEffect(() => {
-    if (!transactions.length) return;
-    const sorted = [...transactions].sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-    );
-    setDefaultExpandedDates(new Set([sorted[0].date]));
-  }, [transactions]);
-
-  useEffect(() => {
-    if (activeCategory && filteredTransactions.length === 0) {
-      setActiveCategory(null);
-    }
-  }, [activeCategory, filteredTransactions]);
-
-  const updateRange = (rangeKey: string) => {
-    router.push(
-      buildTransactionPageHref(pathname, search?.toString(), {
-        range: rangeKey,
-        start: null,
-        end: null,
-        month: null,
-      }) as any
-    );
-  };
-
-  useRefetchOnDataSync(refetch);
 
   return (
     <div className={className}>
-      {/* 控制按钮 */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <List className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-            账单明细
-          </h3>
-          <span className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
-            共 {displayCount} 笔
-          </span>
-        </div>
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200"
-        >
-          <span className="text-sm">
-            {isExpanded ? '收起明细' : '展开明细'}
-          </span>
-          {isExpanded ? (
-            <ChevronUp className="h-4 w-4" />
-          ) : (
-            <ChevronDown className="h-4 w-4" />
-          )}
-        </Button>
-      </div>
-
-      {/* 快速筛选 */}
-      {totalCount > 0 && (
-        <div className="mb-4 space-y-3">
-          <div className="flex flex-wrap gap-2">
-            {quickRanges.map((item) => (
-              <Button
-                key={item.key}
-                size="sm"
-                variant={currentRange === item.key ? 'default' : 'outline'}
-                onClick={() => updateRange(item.key)}
-              >
-                {item.label}
-              </Button>
-            ))}
-          </div>
-          {commonCategories.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                variant={!activeCategory ? 'default' : 'outline'}
-                onClick={() => setActiveCategory(null)}
-              >
-                全部
-              </Button>
-              {commonCategories.map((item) => (
-                <Button
-                  key={item.key}
-                  size="sm"
-                  variant={activeCategory === item.key ? 'default' : 'outline'}
-                  onClick={() => setActiveCategory(item.key)}
-                >
-                  {item.icon ? `${item.icon} ` : ''}
-                  {item.label}
-                </Button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+      <CollapsibleListControls
+        isExpanded={isExpanded}
+        displayCount={displayCount}
+        totalCount={totalCount}
+        currentRange={currentRange}
+        quickRanges={quickRanges}
+        commonCategories={commonCategories}
+        activeCategory={activeCategory}
+        onToggleExpanded={() => setIsExpanded(!isExpanded)}
+        onSelectRange={updateRange}
+        onSelectCategory={setActiveCategory}
+      />
 
       {/* 交易列表 */}
       {isExpanded && (
