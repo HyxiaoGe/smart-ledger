@@ -679,7 +679,7 @@ export default function AddPage() {
 
                     {showAdvanced && (
                       <div className="mt-5 space-y-4 border-t border-slate-100 pt-5 dark:border-slate-800">
-                        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(180px,0.9fr)_minmax(260px,1.15fr)]">
                           <div>
                             <Label>
                               币种 <span className="text-destructive">*</span>

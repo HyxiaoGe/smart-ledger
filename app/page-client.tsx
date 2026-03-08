@@ -46,7 +46,7 @@ export default function HomePageClient({
                 <span className="text-slate-500 dark:text-slate-400">{data.toolbarView.currencyLabel}</span>
                 <CurrencySelect value={data.currency} />
               </div>
-              <div className="flex w-full flex-col gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm shadow-sm sm:inline-flex sm:w-auto sm:flex-none sm:flex-row sm:items-center sm:rounded-full sm:py-2 dark:border-slate-700 dark:bg-slate-950">
+              <div className="flex w-full flex-col gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm shadow-sm sm:inline-flex sm:w-auto sm:min-w-[350px] sm:flex-none sm:flex-row sm:items-center sm:rounded-full sm:py-2 dark:border-slate-700 dark:bg-slate-950">
                 <span className="text-slate-500 dark:text-slate-400">{data.toolbarView.rangeLabel}</span>
                 <TabsRangePicker className="w-full sm:w-auto" />
               </div>

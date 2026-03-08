@@ -363,7 +363,7 @@ function TabsRangePickerContent({ className, onRangeChange }: TabsRangePickerPro
       <Button
         variant="outline"
         onClick={() => setIsOpen(!isOpen)}
-        className="min-h-10 h-auto w-full max-w-full min-w-0 justify-between rounded-xl px-3 py-2 text-left font-normal shadow-sm sm:h-10 sm:w-auto sm:min-w-[180px] sm:max-w-none sm:py-2 lg:min-w-[220px]"
+        className="min-h-10 h-auto w-full max-w-full min-w-0 justify-between rounded-xl px-3 py-2 text-left font-normal shadow-sm sm:h-10 sm:w-auto sm:min-w-[240px] sm:max-w-none sm:py-2 lg:min-w-[280px]"
       >
         <span className="flex min-w-0 flex-1 items-start gap-2 text-left sm:items-center">
           <CalendarIcon className="mt-0.5 h-4 w-4 shrink-0 sm:mt-0" />
@@ -389,7 +389,7 @@ function TabsRangePickerContent({ className, onRangeChange }: TabsRangePickerPro
           />
 
           {/* 弹出内容 */}
-          <Card className="absolute left-0 top-full z-50 mt-2 w-[min(92vw,24rem)] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800 sm:left-auto sm:right-0">
+          <Card className="absolute left-0 top-full z-50 mt-2 w-[min(92vw,22rem)] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800 sm:left-auto sm:right-0 lg:w-[24rem]">
             <CardContent className="p-0">
               {/* Tab 切换 */}
               <div className="flex border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">

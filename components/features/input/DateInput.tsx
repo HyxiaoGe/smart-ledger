@@ -75,7 +75,7 @@ export function DateInput({
         type="button"
         variant="outline"
         onClick={handleButtonClick}
-        className="min-h-11 h-auto w-full justify-between rounded-xl border-slate-200 bg-white/80 px-3 py-2 text-left font-normal shadow-sm hover:border-blue-400 hover:bg-white focus-visible:ring-blue-500/70 dark:border-slate-700 dark:bg-slate-950 dark:hover:border-blue-500 dark:hover:bg-slate-950 sm:h-11 sm:py-2"
+        className="min-h-11 h-auto w-full justify-between rounded-xl border-slate-200 bg-white/80 px-3 py-2 text-left font-normal shadow-sm hover:border-blue-400 hover:bg-white focus-visible:ring-blue-500/70 dark:border-slate-700 dark:bg-slate-950 dark:hover:border-blue-500 dark:hover:bg-slate-950 sm:h-11 sm:min-w-[240px] sm:py-2"
         disabled={disabled}
       >
         <span className="flex min-w-0 flex-1 items-start gap-2 sm:items-center">
@@ -101,7 +101,7 @@ export function DateInput({
 
           {/* 日历面板 */}
           <Card
-            className="absolute left-0 top-full mt-2 w-[min(92vw,22rem)] rounded-2xl border border-slate-200 shadow-xl dark:border-slate-700 sm:w-[22rem]"
+            className="absolute left-0 top-full mt-2 w-[min(92vw,20rem)] rounded-2xl border border-slate-200 shadow-xl dark:border-slate-700 sm:left-auto sm:right-0 sm:w-[20rem] lg:w-[22rem]"
             style={{ zIndex: containerZIndex }}
             onClick={handleCardClick}
           >
