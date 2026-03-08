@@ -1,5 +1,5 @@
-import { formatMonth } from '@/lib/utils/date';
 import { getTransactionDashboardData } from '@/lib/services/transactions.server';
+import type { HomePageRequestParams } from '@/lib/services/transaction/pageParams';
 
 export type PageData = {
   rangeExpense: number;
@@ -21,23 +21,13 @@ export type PageData = {
   refreshSnapshot: string;
 };
 
-export function resolveMonthLabel(monthParam?: string): string {
-  return monthParam || formatMonth(new Date());
-}
-
-export async function loadPageData(
-  currency: string,
-  monthLabel: string,
-  rangeParam: string,
-  startParam?: string,
-  endParam?: string
-): Promise<PageData> {
+export async function loadPageData(params: HomePageRequestParams): Promise<PageData> {
   const dashboardData = await getTransactionDashboardData({
-    currency,
-    month: monthLabel,
-    range: rangeParam,
-    startDate: startParam,
-    endDate: endParam,
+    currency: params.currency,
+    month: params.monthLabel,
+    range: params.range,
+    startDate: params.start,
+    endDate: params.end,
   });
 
   return {

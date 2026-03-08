@@ -4,6 +4,10 @@ import { TabsRangePicker } from '@/components/shared/TabsRangePicker';
 import { CollapsibleTransactionList } from '@/components/features/transactions/TransactionList/CollapsibleList';
 import { SkeletonBlock, SkeletonGrid } from '@/components/shared/Skeletons';
 import { AIAnalysisButton } from '@/components/features/ai-analysis/AIAnalysisButton';
+import {
+  resolveTransactionRangePageParams,
+  type TransactionPageSearchParams,
+} from '@/lib/services/transaction/pageParams';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,12 +34,9 @@ const CategoryModule = nextDynamic(
 export default async function RecordsPage({
   searchParams
 }: {
-  searchParams?: { month?: string; range?: string; start?: string; end?: string };
+  searchParams?: TransactionPageSearchParams;
 }) {
-  const month = searchParams?.month;
-  const range = (searchParams?.range as string) || 'today';
-  const start = searchParams?.start;
-  const end = searchParams?.end;
+  const { month, range, start, end } = resolveTransactionRangePageParams(searchParams);
 
   const { mainResult, yesterdayData, monthSummary, aiAnalysisData, monthlyBudget } =
     await getTransactionRecordsPageViewData(month, range, start, end);
