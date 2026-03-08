@@ -3,7 +3,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getGenerationHistory } from '@/lib/services/recurringService.server';
+import { recurringExpenseService } from '@/lib/services/recurringExpenses.server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     const limit = parseInt(searchParams.get('limit') || '20');
 
-    const history = await getGenerationHistory(limit);
+    const history = await recurringExpenseService.getGenerationHistory(limit);
 
     return NextResponse.json(history);
   } catch (error) {

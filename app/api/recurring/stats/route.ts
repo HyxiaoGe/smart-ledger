@@ -3,14 +3,14 @@
  */
 
 import { NextResponse } from 'next/server';
-import { getTodayGenerationStats } from '@/lib/services/recurringService.server';
+import { recurringExpenseService } from '@/lib/services/recurringExpenses.server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const stats = await getTodayGenerationStats();
+    const stats = await recurringExpenseService.getTodayGenerationStats();
 
     return NextResponse.json(stats);
   } catch (error) {

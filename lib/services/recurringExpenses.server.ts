@@ -19,6 +19,34 @@ import type {
 // 重新导出类型
 export type { RecurringExpense, FrequencyConfig };
 
+export type RecurringGenerationHistoryItem = {
+  id: string;
+  recurring_expense_id: string | null;
+  generation_date: string;
+  generated_transaction_id: string | null;
+  status: string | null;
+  reason: string | null;
+  created_at: string;
+  recurring_expense: {
+    name: string;
+    amount: number;
+    category: string;
+  } | null;
+  transaction: {
+    id: string;
+    amount: number;
+    note: string | null;
+    date: string;
+  } | null;
+};
+
+export type RecurringGenerationStats = {
+  total: number;
+  success: number;
+  failed: number;
+  date: string;
+};
+
 const HOLIDAY_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 const holidayCache = new Map<number, { map: Map<string, boolean>; fetchedAt: number }>();
 
@@ -214,6 +242,43 @@ export class RecurringExpenseService {
     return repository.findAll();
   }
 
+  async getPendingRecurringExpenses(options?: {
+    includeOverdue?: boolean;
+  }): Promise<
+    Array<{
+      id: string;
+      name: string;
+      amount: number;
+      category: string;
+      frequency: string;
+      next_generate?: string;
+      last_generated?: string;
+    }>
+  > {
+    const repository = getRecurringExpenseRepository();
+    const today = formatDateToLocal(new Date());
+    const expenses = await repository.findPendingGeneration(
+      today,
+      options?.includeOverdue ?? true
+    );
+
+    return expenses
+      .sort((a, b) => {
+        const aTime = a.next_generate ? new Date(a.next_generate).getTime() : Number.POSITIVE_INFINITY;
+        const bTime = b.next_generate ? new Date(b.next_generate).getTime() : Number.POSITIVE_INFINITY;
+        return aTime - bTime;
+      })
+      .map((expense) => ({
+        id: expense.id,
+        name: expense.name,
+        amount: expense.amount,
+        category: expense.category,
+        frequency: expense.frequency,
+        next_generate: expense.next_generate || undefined,
+        last_generated: expense.last_generated || undefined,
+      }));
+  }
+
   /**
    * 更新固定支出
    */
@@ -251,6 +316,116 @@ export class RecurringExpenseService {
   async getRecurringExpenseById(id: string): Promise<RecurringExpense | null> {
     const repository = getRecurringExpenseRepository();
     return repository.findById(id);
+  }
+
+  async getGenerationHistory(limit = 20): Promise<RecurringGenerationHistoryItem[]> {
+    const prisma = getPrismaClient();
+    const logs = await prisma.recurring_generation_logs.findMany({
+      orderBy: { created_at: 'desc' },
+      take: limit,
+    });
+
+    if (logs.length === 0) {
+      return [];
+    }
+
+    const expenseIds = logs
+      .map((log) => log.recurring_expense_id)
+      .filter((id): id is string => id !== null);
+    const transactionIds = logs
+      .map((log) => log.generated_transaction_id)
+      .filter((id): id is string => id !== null);
+
+    type ExpenseLookupRow = {
+      id: string;
+      name: string;
+      amount: unknown;
+      category: string;
+    };
+
+    type TransactionLookupRow = {
+      id: string;
+      amount: unknown;
+      note: string | null;
+      date: Date;
+    };
+
+    const [expenses, transactions] = await Promise.all([
+      expenseIds.length > 0
+        ? prisma.recurring_expenses.findMany({
+            where: { id: { in: expenseIds } },
+            select: { id: true, name: true, amount: true, category: true },
+          })
+        : Promise.resolve([] as ExpenseLookupRow[]),
+      transactionIds.length > 0
+        ? prisma.transactions.findMany({
+            where: { id: { in: transactionIds } },
+            select: { id: true, amount: true, note: true, date: true },
+          })
+        : Promise.resolve([] as TransactionLookupRow[]),
+    ]);
+
+    const expenseMap = new Map(expenses.map((item) => [item.id, item]));
+    const transactionMap = new Map(transactions.map((item) => [item.id, item]));
+
+    return logs.map((log) => {
+      const expense = log.recurring_expense_id
+        ? expenseMap.get(log.recurring_expense_id)
+        : null;
+      const transaction = log.generated_transaction_id
+        ? transactionMap.get(log.generated_transaction_id)
+        : null;
+
+      return {
+        id: log.id,
+        recurring_expense_id: log.recurring_expense_id,
+        generation_date: formatDateToLocal(log.generation_date),
+        generated_transaction_id: log.generated_transaction_id,
+        status: log.status,
+        reason: log.reason,
+        created_at: log.created_at?.toISOString() || new Date().toISOString(),
+        recurring_expense: expense
+          ? {
+              name: expense.name,
+              amount: Number(expense.amount),
+              category: expense.category,
+            }
+          : null,
+        transaction: transaction
+          ? {
+              id: transaction.id,
+              amount: Number(transaction.amount),
+              note: transaction.note,
+              date: formatDateToLocal(transaction.date),
+            }
+          : null,
+      };
+    });
+  }
+
+  async getTodayGenerationStats(): Promise<RecurringGenerationStats> {
+    const prisma = getPrismaClient();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const logs = await prisma.recurring_generation_logs.findMany({
+      where: {
+        generation_date: {
+          gte: today,
+          lt: tomorrow,
+        },
+      },
+      select: { status: true },
+    });
+
+    return {
+      total: logs.length,
+      success: logs.filter((item) => item.status === 'success').length,
+      failed: logs.filter((item) => item.status === 'failed').length,
+      date: formatDateToLocal(today),
+    };
   }
 
   /**
