@@ -20,6 +20,8 @@ jobs:
           echo "Deploy commit: ${GITHUB_SHA}"
 
       - name: Run Docker Deploy
+        env:
+          DEPLOY_ENV_SOURCE: /home/heyanxiao/project/smart-ledger/.env.local
         run: |
           cp /home/heyanxiao/project/smart-ledger/.env.local .
           cp /home/heyanxiao/project/smart-ledger/.env.local .env

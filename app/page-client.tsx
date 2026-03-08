@@ -11,8 +11,7 @@ import { TopExpenses } from '@/components/TopExpenses';
 import { HomeStats } from '@/components/features/statistics/HomeStats';
 import type { PageData } from './home-page-data';
 import { consumeTransactionsDirty, peekTransactionsDirty } from '@/lib/core/EnhancedDataSync';
-import { useAllDataSyncEvents } from '@/hooks/useEnhancedDataSync';
-import { useRefreshQueue } from '@/hooks/useTransactionsSync';
+import { useRefreshQueue, useTransactionRefreshLifecycle } from '@/hooks/useTransactionsSync';
 import { useAutoGenerateRecurring } from '@/hooks/useAutoGenerateRecurring';
 
 const REFRESH_DELAYS_MS = [1500, 3500, 6000];
@@ -47,14 +46,25 @@ export default function HomePageClient({
 
   // 使用全局自动生成Hook
   const { lastResult } = useAutoGenerateRecurring(recurringExpenses);
+  const recurringRefreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 监听自动生成结果，静默刷新数据
   useEffect(() => {
     if (lastResult && typeof lastResult === 'object' && 'generated' in lastResult && (lastResult as any).generated > 0) {
-      setTimeout(() => {
+      if (recurringRefreshTimer.current) {
+        clearTimeout(recurringRefreshTimer.current);
+      }
+      recurringRefreshTimer.current = setTimeout(() => {
         router.refresh();
       }, 1000);
     }
+
+    return () => {
+      if (recurringRefreshTimer.current) {
+        clearTimeout(recurringRefreshTimer.current);
+        recurringRefreshTimer.current = null;
+      }
+    };
   }, [lastResult, router]);
 
   const refreshCallback = useCallback(() => router.refresh(), [router]);
@@ -70,33 +80,11 @@ export default function HomePageClient({
     rangeCount: data.rangeCount,
   });
 
-  useAllDataSyncEvents(
-    useCallback(() => {
-      triggerQueue('event');
-    }, [triggerQueue])
-  );
-
-  useEffect(() => {
-    if (peekTransactionsDirty()) {
-      triggerQueue('mount');
-    }
-
-    return () => {
-      stopQueue();
-    };
-  }, [triggerQueue, stopQueue]);
-
-  // 页面可见性变化时的刷新
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const onVisibility = () => {
-      if (!document.hidden && peekTransactionsDirty()) {
-        triggerQueue('visibility');
-      }
-    };
-    window.addEventListener('visibilitychange', onVisibility);
-    return () => window.removeEventListener('visibilitychange', onVisibility);
-  }, [triggerQueue]);
+  useTransactionRefreshLifecycle({
+    triggerQueue,
+    stopQueue,
+    peekDirty: peekTransactionsDirty,
+  });
 
   // 数据变化检测和自动停止刷新队列
   useEffect(() => {

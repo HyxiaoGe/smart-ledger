@@ -5,6 +5,25 @@ set -euo pipefail
 echo "开始自动部署..."
 echo "部署提交: ${GIT_SHA:-unknown}"
 
+prepare_env_files() {
+  local env_source="${DEPLOY_ENV_SOURCE:-}"
+
+  if [ -f ".env.local" ]; then
+    cp .env.local .env
+    return 0
+  fi
+
+  if [ -n "${env_source}" ] && [ -f "${env_source}" ]; then
+    echo "从 ${env_source} 补充 .env.local"
+    cp "${env_source}" .env.local
+    cp "${env_source}" .env
+    return 0
+  fi
+
+  echo "缺少 .env.local，且未找到可用的 DEPLOY_ENV_SOURCE"
+  return 1
+}
+
 cleanup_stale_container() {
   stale_container_ids="$(docker ps -aq --filter name='^/smart-ledger-app-1$')"
   compose_container_ids="$(docker compose ps -aq app 2>/dev/null || true)"
@@ -64,6 +83,7 @@ prepare_compose_restart() {
 }
 
 # 确保 compose 使用最新环境变量，并清理历史残留容器。
+prepare_env_files
 prepare_compose_restart
 
 if ! docker compose up -d --build --force-recreate; then

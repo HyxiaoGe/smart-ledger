@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useAllDataSyncEvents } from './useEnhancedDataSync';
 
 type UseRefreshQueueParams = {
   delays?: number[];
@@ -93,4 +94,45 @@ export function useRefreshQueue({
     triggerQueue,
     stopQueue
   };
+}
+
+type UseTransactionRefreshLifecycleParams = {
+  triggerQueue: (reason: string) => void;
+  stopQueue: (options?: StopOptions) => void;
+  peekDirty: () => boolean;
+};
+
+export function useTransactionRefreshLifecycle({
+  triggerQueue,
+  stopQueue,
+  peekDirty,
+}: UseTransactionRefreshLifecycleParams) {
+  useAllDataSyncEvents(
+    useCallback(() => {
+      triggerQueue('event');
+    }, [triggerQueue])
+  );
+
+  useEffect(() => {
+    if (peekDirty()) {
+      triggerQueue('mount');
+    }
+
+    return () => {
+      stopQueue();
+    };
+  }, [peekDirty, stopQueue, triggerQueue]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const onVisibility = () => {
+      if (!document.hidden && peekDirty()) {
+        triggerQueue('visibility');
+      }
+    };
+
+    window.addEventListener('visibilitychange', onVisibility);
+    return () => window.removeEventListener('visibilitychange', onVisibility);
+  }, [peekDirty, triggerQueue]);
 }
