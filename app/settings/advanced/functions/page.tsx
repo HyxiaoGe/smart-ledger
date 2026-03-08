@@ -23,7 +23,7 @@ import {
 } from '@/lib/services/functionService';
 import { FUNCTION_CATEGORY_CONFIG, getFunctionCategoryConfig } from './utils';
 import { SettingsInfoPanel } from '@/components/shared/SettingsInfoPanel';
-import { EmptyState } from '@/app/components/EmptyState';
+import { EmptyState } from '../../../components/EmptyState';
 
 export default function FunctionsManagementPage() {
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['business']);

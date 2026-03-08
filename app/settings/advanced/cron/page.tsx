@@ -18,7 +18,7 @@ import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { adminApi } from '@/lib/api/services/admin';
 import { formatDateTimeShortZhCN } from '@/lib/utils/date';
 import { getCronCategoryStyle, getCronStatusStyle } from './utils';
-import { EmptyState } from '@/app/components/EmptyState';
+import { EmptyState } from '../../../components/EmptyState';
 import {
   Clock,
   CheckCircle2,
