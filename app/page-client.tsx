@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useCallback } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import React from 'react';
 import { ChartSummary } from './components/ChartSummary';
 import { CalendarHeatmap } from './components/CalendarHeatmap';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,15 +9,7 @@ import { CurrencySelect } from '@/components/shared/CurrencySelect';
 import { TopExpenses } from '@/components/TopExpenses';
 import { HomeStats } from '@/components/features/statistics/HomeStats';
 import type { PageData } from './home-page-data';
-import { consumeTransactionsDirty, peekTransactionsDirty } from '@/lib/core/EnhancedDataSync';
-import {
-  useRefreshQueue,
-  useStopRefreshQueueOnSnapshotChange,
-  useTransactionRefreshLifecycle,
-} from '@/hooks/useTransactionsSync';
-import { buildSingleDayTransactionPageHref } from '@/lib/services/transaction/pageParams';
-
-const REFRESH_DELAYS_MS = [1500, 3500, 6000];
+import { useHomeDashboardController } from '@/hooks/useHomeDashboardController';
 
 type HomePageClientProps = {
   data: PageData;
@@ -27,33 +18,8 @@ type HomePageClientProps = {
 export default function HomePageClient({
   data,
 }: HomePageClientProps) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const search = useSearchParams();
-
-  const refreshCallback = useCallback(() => router.refresh(), [router]);
-  const { isRefreshing, triggerQueue, stopQueue } = useRefreshQueue({
-    delays: REFRESH_DELAYS_MS,
-    refresh: refreshCallback,
-    peekDirty: peekTransactionsDirty,
-    consumeDirty: consumeTransactionsDirty,
-  });
-
-  useTransactionRefreshLifecycle({
-    triggerQueue,
-    stopQueue,
-    peekDirty: peekTransactionsDirty,
-  });
-  useStopRefreshQueueOnSnapshotChange({
-    refreshSnapshot: data.refreshSnapshot,
-    stopQueue,
-  });
-
-  const handleCalendarDayClick = useCallback(
-    (dateStr: string) => {
-      router.push(buildSingleDayTransactionPageHref(pathname, search?.toString(), dateStr) as any);
-    },
-    [router, pathname, search]
+  const { isRefreshing, handleCalendarDayClick } = useHomeDashboardController(
+    data.refreshSnapshot
   );
 
   return (
