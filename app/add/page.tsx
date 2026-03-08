@@ -403,7 +403,7 @@ export default function AddPage() {
         </div>
       )}
 
-      <section className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.16),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.14),_transparent_28%),linear-gradient(135deg,_#ffffff_0%,_#f8fafc_100%)] p-5 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.12),_transparent_28%),linear-gradient(135deg,_#020617_0%,_#0f172a_100%)]">
+      <section className="relative overflow-visible rounded-3xl border border-slate-200/80 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.16),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.14),_transparent_28%),linear-gradient(135deg,_#ffffff_0%,_#f8fafc_100%)] p-5 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.12),_transparent_28%),linear-gradient(135deg,_#020617_0%,_#0f172a_100%)]">
         <div className="flex flex-col gap-4 sm:gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white/80 px-3 py-1 text-xs font-medium text-sky-700 backdrop-blur dark:border-sky-900 dark:bg-slate-950/60 dark:text-sky-300">
@@ -447,7 +447,7 @@ export default function AddPage() {
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,0.9fr)] xl:gap-6">
         <div className="space-y-5 sm:space-y-6">
-          <Card className="overflow-hidden border-slate-200 shadow-sm dark:border-slate-800">
+          <Card className="overflow-visible border-slate-200 shadow-sm dark:border-slate-800">
             <CardHeader className="border-b border-slate-100 bg-slate-50/70 px-4 pb-4 pt-5 sm:px-6 dark:border-slate-800 dark:bg-slate-900/70">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -679,7 +679,7 @@ export default function AddPage() {
 
                     {showAdvanced && (
                       <div className="mt-5 space-y-4 border-t border-slate-100 pt-5 dark:border-slate-800">
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
                           <div>
                             <Label>
                               币种 <span className="text-destructive">*</span>
@@ -743,7 +743,7 @@ export default function AddPage() {
                           </select>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
                           <div>
                             <Label>商家/品牌</Label>
                             <div className="mt-2">
