@@ -85,7 +85,6 @@ export function CollapsibleTransactionList({
     data: queriedTransactions,
     refetch,
   } = useAllTransactionRowsQuery(queryParams, {
-    placeholderData: initialTransactions,
     staleTime: 0,
   });
 
