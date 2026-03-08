@@ -1,25 +1,13 @@
 "use client";
 // 交易分组列表组件（客户端支持编辑和删除）
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { EmptyState } from '@/components/EmptyState';
-import { ProgressToast } from '@/components/shared/ProgressToast';
 import { FileText } from 'lucide-react';
 import Link from 'next/link';
-import { usePaymentMethods } from '@/lib/api/hooks/usePaymentMethods';
+import { TransactionGroupedListProps } from './types';
+import { useGroupedTransactionListController } from './useGroupedTransactionListController';
 import {
-  useDeleteTransaction,
-  useRestoreTransaction,
-  useUpdateTransaction,
-} from '@/lib/api/hooks';
-import {
-  Transaction,
-  TransactionGroupedListProps,
-  buildHierarchicalData,
-} from './types';
-import {
-  ConfirmDeleteDialog,
   DateGroupRow,
+  GroupedListFeedback,
 } from './components';
 
 export function TransactionGroupedList({
@@ -27,294 +15,60 @@ export function TransactionGroupedList({
   className,
   defaultExpandedDates
 }: TransactionGroupedListProps) {
-  const initRef = useRef(false);
-
-  const [error, setError] = useState<string>('');
-  const [recentlyDeleted, setRecentlyDeleted] = useState<Transaction | null>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState<Partial<Transaction>>({});
-  const [confirmRow, setConfirmRow] = useState<Transaction | null>(null);
-  const [showEditToast, setShowEditToast] = useState(false);
-  const [showDeleteToast, setShowDeleteToast] = useState(false);
-  const [showUndoToast, setShowUndoToast] = useState(false);
-  const [deletedTransactionIds, setDeletedTransactionIds] = useState<Set<string>>(new Set());
-  const [transactionOverrides, setTransactionOverrides] = useState<Record<string, Transaction>>({});
-  const [restoredTransactions, setRestoredTransactions] = useState<Record<string, Transaction>>({});
-
-  // 折叠状态管理
-  const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
-  const [expandedMerchants, setExpandedMerchants] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    if (initRef.current) return;
-    initRef.current = true;
-    if (typeof window === 'undefined') return;
-    const stored = window.localStorage.getItem('records:expanded');
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored) as {
-          dates?: string[];
-          categories?: string[];
-          merchants?: string[];
-        };
-        if (parsed.dates?.length) setExpandedDates(new Set(parsed.dates));
-        if (parsed.categories?.length) setExpandedCategories(new Set(parsed.categories));
-        if (parsed.merchants?.length) setExpandedMerchants(new Set(parsed.merchants));
-        return;
-      } catch {
-        // ignore malformed storage
-      }
-    }
-    if (defaultExpandedDates) {
-      setExpandedDates(new Set(defaultExpandedDates));
-    }
-  }, [defaultExpandedDates]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const payload = JSON.stringify({
-      dates: Array.from(expandedDates),
-      categories: Array.from(expandedCategories),
-      merchants: Array.from(expandedMerchants),
-    });
-    window.localStorage.setItem('records:expanded', payload);
-  }, [expandedDates, expandedCategories, expandedMerchants]);
-
-  useEffect(() => {
-    setDeletedTransactionIds(new Set());
-    setTransactionOverrides({});
-    setRestoredTransactions({});
-  }, [initialTransactions]);
-
-  // 使用 React Query 获取支付方式
-  const { data: paymentMethodsData } = usePaymentMethods();
-  const paymentMethods = paymentMethodsData || [];
-
-  const transactions = useMemo(() => {
-    const merged = initialTransactions
-      .filter((item) => !deletedTransactionIds.has(item.id))
-      .map((item) => transactionOverrides[item.id] || item);
-
-    const missingRestored = Object.values(restoredTransactions).filter(
-      (item) => !merged.some((row) => row.id === item.id)
-    );
-
-    return [...missingRestored, ...merged].sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-    );
-  }, [deletedTransactionIds, initialTransactions, restoredTransactions, transactionOverrides]);
-
-  // 更新交易的 mutation
-  const updateMutation = useUpdateTransaction({
-    onSuccess: (result, variables) => {
-      const updatedTransaction = result || { ...form, type: 'expense' } as unknown as Transaction;
-      setTransactionOverrides((current) => ({
-        ...current,
-        [variables.id]: {
-          ...(transactions.find((item) => item.id === variables.id) || ({} as Transaction)),
-          ...updatedTransaction,
-        },
-      }));
-      setEditingId(null);
-      setForm({});
-      setShowEditToast(true);
-    },
-    onError: (err: unknown) => {
-      const errorMessage = err instanceof Error ? err.message : '更新失败';
-      setError(errorMessage);
-    },
+  const {
+    paymentMethods,
+    transactions,
+    hierarchicalData,
+    sortedDates,
+    loading,
+    error,
+    recentlyDeleted,
+    confirmRow,
+    editingId,
+    form,
+    setForm,
+    showEditToast,
+    setShowEditToast,
+    showDeleteToast,
+    setShowDeleteToast,
+    showUndoToast,
+    setShowUndoToast,
+    expandedDates,
+    expandedCategories,
+    expandedMerchants,
+    handleEdit,
+    saveEdit,
+    cancelEdit,
+    handleDelete,
+    confirmDelete,
+    handleUndo,
+    closeConfirmDialog,
+    toggleDate,
+    toggleCategory,
+    toggleMerchant,
+  } = useGroupedTransactionListController({
+    initialTransactions,
+    defaultExpandedDates,
   });
-
-  // 删除交易的 mutation
-  const deleteMutation = useDeleteTransaction({
-    onSuccess: (_, id) => {
-      const transaction = transactions.find(t => t.id === id);
-      if (transaction) {
-        setRecentlyDeleted(transaction);
-        setDeletedTransactionIds((current) => new Set([...current, id]));
-        setTransactionOverrides((current) => {
-          const next = { ...current };
-          delete next[id];
-          return next;
-        });
-        setRestoredTransactions((current) => {
-          const next = { ...current };
-          delete next[id];
-          return next;
-        });
-        setShowDeleteToast(true);
-      }
-    },
-    onError: (err: unknown) => {
-      const errorMessage = err instanceof Error ? err.message : '删除失败';
-      setError(errorMessage);
-    },
-  });
-
-  // 恢复交易的 mutation
-  const restoreMutation = useRestoreTransaction({
-    onSuccess: (restoredTransaction) => {
-      if (recentlyDeleted) {
-        const restoredRow = restoredTransaction || recentlyDeleted;
-        setDeletedTransactionIds((current) => {
-          const next = new Set(current);
-          next.delete(recentlyDeleted.id);
-          return next;
-        });
-        setRestoredTransactions((current) => ({
-          ...current,
-          [restoredRow.id]: restoredRow,
-        }));
-        setShowUndoToast(true);
-        setRecentlyDeleted(null);
-      }
-    },
-    onError: () => {
-      setError('撤销失败，请重试');
-    },
-  });
-
-  const loading = updateMutation.isPending || deleteMutation.isPending || restoreMutation.isPending;
-
-  // 事件处理函数
-  function handleEdit(transaction: Transaction) {
-    setEditingId(transaction.id);
-    setForm({ ...transaction });
-  }
-
-  function saveEdit() {
-    if (!editingId) return;
-    setError('');
-    const patch = { ...form, type: 'expense' as const };
-    delete (patch as Partial<Transaction> & { id?: string }).id;
-    if (patch.amount !== undefined && !(Number(patch.amount) > 0)) {
-      setError('金额必须大于 0');
-      return;
-    }
-    updateMutation.mutate({ id: editingId, ...patch });
-  }
-
-  function cancelEdit() {
-    setEditingId(null);
-    setForm({});
-  }
-
-  function handleDelete(transaction: Transaction) {
-    setConfirmRow(transaction);
-  }
-
-  function confirmDelete(transaction: Transaction) {
-    setError('');
-    setConfirmRow(null);
-    deleteMutation.mutate(transaction.id);
-  }
-
-  function handleUndo() {
-    if (!recentlyDeleted) return;
-    restoreMutation.mutate(recentlyDeleted.id);
-  }
-
-  // 折叠切换函数
-  const toggleDate = (date: string) => {
-    const newSet = new Set(expandedDates);
-    if (newSet.has(date)) {
-      newSet.delete(date);
-    } else {
-      newSet.add(date);
-    }
-    setExpandedDates(newSet);
-  };
-
-  const toggleCategory = (key: string) => {
-    const newSet = new Set(expandedCategories);
-    if (newSet.has(key)) {
-      newSet.delete(key);
-    } else {
-      newSet.add(key);
-    }
-    setExpandedCategories(newSet);
-  };
-
-  const toggleMerchant = (key: string) => {
-    const newSet = new Set(expandedMerchants);
-    if (newSet.has(key)) {
-      newSet.delete(key);
-    } else {
-      newSet.add(key);
-    }
-    setExpandedMerchants(newSet);
-  };
-
-  // 构建分层数据
-  const hierarchicalData = buildHierarchicalData(transactions);
-  const sortedDates = Object.keys(hierarchicalData).sort((a, b) =>
-    new Date(b).getTime() - new Date(a).getTime()
-  );
 
   return (
     <>
-      {/* Toast 通知 */}
-      {showEditToast && (
-        <ProgressToast
-          message="账单修改成功！"
-          duration={3000}
-          onClose={() => setShowEditToast(false)}
-        />
-      )}
-      {showDeleteToast && (
-        <ProgressToast
-          message="账单删除成功！"
-          duration={3000}
-          onClose={() => setShowDeleteToast(false)}
-        />
-      )}
-      {showUndoToast && (
-        <ProgressToast
-          message="账单已恢复！"
-          duration={3000}
-          onClose={() => setShowUndoToast(false)}
-        />
-      )}
-
       <div className={className}>
-        {/* 错误提示 */}
-        {error && (
-          <div className="mb-4">
-            <Alert variant="destructive">
-              <AlertTitle>操作失败</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          </div>
-        )}
-
-        {/* 撤销提示 */}
-        {recentlyDeleted && (
-          <div className="mb-4">
-            <Alert>
-              <AlertTitle>删除成功</AlertTitle>
-              <AlertDescription className="flex items-center justify-between">
-                <span>已删除一条记录。</span>
-                <button
-                  onClick={handleUndo}
-                  disabled={loading}
-                  className="text-sm underline hover:no-underline disabled:opacity-50"
-                >
-                  撤销
-                </button>
-              </AlertDescription>
-            </Alert>
-          </div>
-        )}
-
-        {/* 删除确认对话框 */}
-        {confirmRow && (
-          <ConfirmDeleteDialog
-            transaction={confirmRow}
-            onConfirm={confirmDelete}
-            onCancel={() => setConfirmRow(null)}
-          />
-        )}
+        <GroupedListFeedback
+          error={error}
+          recentlyDeleted={recentlyDeleted}
+          confirmRow={confirmRow}
+          loading={loading}
+          showEditToast={showEditToast}
+          showDeleteToast={showDeleteToast}
+          showUndoToast={showUndoToast}
+          onCloseEditToast={() => setShowEditToast(false)}
+          onCloseDeleteToast={() => setShowDeleteToast(false)}
+          onCloseUndoToast={() => setShowUndoToast(false)}
+          onUndo={handleUndo}
+          onConfirmDelete={confirmDelete}
+          onCancelDelete={closeConfirmDialog}
+        />
 
         {/* 分层树形展示 */}
         <div className="space-y-6">

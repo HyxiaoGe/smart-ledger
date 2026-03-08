@@ -4,3 +4,4 @@ export { TransactionItem } from './TransactionItem';
 export { MerchantRow } from './MerchantRow';
 export { CategoryGroupRow } from './CategoryGroupRow';
 export { DateGroupRow } from './DateGroupRow';
+export { GroupedListFeedback } from './GroupedListFeedback';
