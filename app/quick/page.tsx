@@ -21,9 +21,9 @@ export default function QuickPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* 页面头部 */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+      <div className="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+        <div className="mx-auto max-w-4xl px-4 py-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <Zap className="h-6 w-6 text-orange-500" />
               <div>
@@ -33,21 +33,21 @@ export default function QuickPage() {
             </div>
 
             {/* 导航按钮 */}
-            <div className="flex items-center gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-end">
               <Link href="/">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="w-full rounded-xl">
                   <Home className="h-4 w-4 mr-1" />
                   首页
                 </Button>
               </Link>
               <Link href="/add">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="w-full rounded-xl">
                   <Plus className="h-4 w-4 mr-1" />
                   详细记账
                 </Button>
               </Link>
               <Link href="/analytics">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="col-span-2 w-full rounded-xl sm:col-span-1">
                   <BarChart3 className="h-4 w-4 mr-1" />
                   数据分析
                 </Button>
@@ -58,8 +58,8 @@ export default function QuickPage() {
       </div>
 
       {/* 主要内容 */}
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="mx-auto max-w-4xl px-4 py-5 sm:py-6">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:gap-6">
           {/* 左侧：快速记账 */}
           <div className="lg:col-span-2">
             <QuickTransaction

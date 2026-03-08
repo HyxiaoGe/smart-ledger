@@ -31,7 +31,7 @@ export default function Navigation() {
   };
 
   return (
-    <nav className="flex items-center gap-2">
+    <nav className="flex items-center gap-1.5 sm:gap-2">
       {navItems.map((item) => {
         const isActive = pathname === item.href || (item.href === '/settings' && pathname.startsWith('/settings'));
 
@@ -42,15 +42,16 @@ export default function Navigation() {
             prefetch={true}
             onClick={() => handleClick(item.href)}
             className={cn(
-              'relative px-4 py-2.5 text-sm font-medium transition-all duration-200 rounded-lg group',
+              'group relative rounded-xl px-2.5 py-2.5 text-sm font-medium transition-all duration-200 sm:px-4',
               isActive
-                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30 scale-105'
-                : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:shadow-sm'
+                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30 sm:scale-105'
+                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800 hover:shadow-sm dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
             )}
+            aria-label={item.label}
           >
             <span className="flex items-center gap-2">
               <item.icon className="w-4 h-4" />
-              <span>{item.label}</span>
+              <span className="hidden sm:inline">{item.label}</span>
             </span>
 
             {/* 悬停效果 */}
@@ -63,7 +64,7 @@ export default function Navigation() {
           </Link>
         );
       })}
-      <div className="ml-2 pl-2 border-l border-gray-200 dark:border-gray-700">
+      <div className="ml-1 pl-1.5 border-l border-gray-200 sm:ml-2 sm:pl-2 dark:border-gray-700">
         <ThemeToggle />
       </div>
     </nav>
