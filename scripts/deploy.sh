@@ -70,6 +70,7 @@ wait_for_service_ready() {
 }
 
 prepare_compose_restart() {
+  prepare_env_files
   docker compose down --remove-orphans || true
   cleanup_stale_container
   docker compose rm -sf app || true
@@ -86,10 +87,12 @@ prepare_compose_restart() {
 prepare_env_files
 prepare_compose_restart
 
+prepare_env_files
 if ! docker compose up -d --build --force-recreate; then
   echo "首次启动失败，重试清理 smart-ledger-app-1 后再次启动..."
   prepare_compose_restart
   sleep 2
+  prepare_env_files
   docker compose up -d --build --force-recreate
 fi
 

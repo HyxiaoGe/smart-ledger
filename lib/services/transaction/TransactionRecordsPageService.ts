@@ -49,6 +49,10 @@ export interface TransactionRecordsMainResult extends TransactionQueryResult {
   totalCount: number;
 }
 
+const DEFAULT_RECORDS_CURRENCY = 'CNY';
+const DEFAULT_MONTHLY_BUDGET = 5000;
+const DEFAULT_RANGE = 'today';
+
 export class TransactionRecordsPageService {
   constructor(
     private readonly queryService: TransactionQueryService,
@@ -62,7 +66,7 @@ export class TransactionRecordsPageService {
     startDate?: string;
     endDate?: string;
   }): Promise<TransactionRecordsPageData> {
-    const range = params.range || 'today';
+    const range = params.range || DEFAULT_RANGE;
 
     const [queryResult, yesterdayData, monthSummary, aiAnalysisData] = await Promise.all([
       this.queryService.listByRange(params.month, range, params.startDate, params.endDate),
@@ -102,60 +106,50 @@ export class TransactionRecordsPageService {
         getCurrentMonthlyBudgetAmount(),
       ]);
 
-      return {
-        ...pageData,
-        monthlyBudget,
-        headerTitle: `账单列表（${pageData.mainResult.monthLabel}）`,
-        summaryView: {
-          items: pageData.mainResult.dailyItems,
-          transactions: pageData.mainResult.expenseTransactions,
-          yesterdayTransactions: pageData.yesterdayData,
-          monthTotalAmount: pageData.monthSummary.monthTotalAmount,
-          monthTotalCount: pageData.monthSummary.monthTotalCount,
-          monthlyBudget,
-          currency: 'CNY',
-          dateRange: pageData.mainResult.monthLabel,
-          rangeType: params.range || 'today',
-        },
-        categoryStatisticsView: {
-          transactions: pageData.mainResult.expenseTransactions,
-          currency: 'CNY',
-        },
-        aiAnalysisView: {
-          dateRange: params.range || 'today',
-          currentMonth: params.month,
-          aiData: pageData.aiAnalysisData,
-        },
-      };
+      return this.buildPageViewData(pageData, params, monthlyBudget);
     } catch {
       const emptyPageData = this.buildEmptyPageData();
-
-      return {
-        ...emptyPageData,
-        monthlyBudget: 5000,
-        headerTitle: `账单列表（${emptyPageData.mainResult.monthLabel}）`,
-        summaryView: {
-          items: emptyPageData.mainResult.dailyItems,
-          transactions: emptyPageData.mainResult.expenseTransactions,
-          yesterdayTransactions: emptyPageData.yesterdayData,
-          monthTotalAmount: emptyPageData.monthSummary.monthTotalAmount,
-          monthTotalCount: emptyPageData.monthSummary.monthTotalCount,
-          monthlyBudget: 5000,
-          currency: 'CNY',
-          dateRange: emptyPageData.mainResult.monthLabel,
-          rangeType: params.range || 'today',
-        },
-        categoryStatisticsView: {
-          transactions: emptyPageData.mainResult.expenseTransactions,
-          currency: 'CNY',
-        },
-        aiAnalysisView: {
-          dateRange: params.range || 'today',
-          currentMonth: params.month,
-          aiData: emptyPageData.aiAnalysisData,
-        },
-      };
+      return this.buildPageViewData(emptyPageData, params, DEFAULT_MONTHLY_BUDGET);
     }
+  }
+
+  private buildPageViewData(
+    pageData: TransactionRecordsPageData,
+    params: {
+      month?: string;
+      range?: string;
+      startDate?: string;
+      endDate?: string;
+    },
+    monthlyBudget: number
+  ): TransactionRecordsPageViewData {
+    const rangeType = params.range || DEFAULT_RANGE;
+
+    return {
+      ...pageData,
+      monthlyBudget,
+      headerTitle: `账单列表（${pageData.mainResult.monthLabel}）`,
+      summaryView: {
+        items: pageData.mainResult.dailyItems,
+        transactions: pageData.mainResult.expenseTransactions,
+        yesterdayTransactions: pageData.yesterdayData,
+        monthTotalAmount: pageData.monthSummary.monthTotalAmount,
+        monthTotalCount: pageData.monthSummary.monthTotalCount,
+        monthlyBudget,
+        currency: DEFAULT_RECORDS_CURRENCY,
+        dateRange: pageData.mainResult.monthLabel,
+        rangeType,
+      },
+      categoryStatisticsView: {
+        transactions: pageData.mainResult.expenseTransactions,
+        currency: DEFAULT_RECORDS_CURRENCY,
+      },
+      aiAnalysisView: {
+        dateRange: rangeType,
+        currentMonth: params.month,
+        aiData: pageData.aiAnalysisData,
+      },
+    };
   }
 
   private buildEmptyPageData(): TransactionRecordsPageData {
