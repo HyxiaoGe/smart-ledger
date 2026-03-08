@@ -43,27 +43,27 @@ export function SmartSuggestionPanel({
   onApplyTransaction
 }: SmartSuggestionPanelProps) {
   return (
-    <div className="lg:col-span-1">
+    <div className="space-y-4">
       {showPanel && (
-        <Card className="sticky top-6">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">智能建议</CardTitle>
-            <p className="text-xs text-muted-foreground">基于最近 30 天的记录</p>
+        <Card className="sticky top-6 overflow-hidden border-slate-200 shadow-sm dark:border-slate-800">
+          <CardHeader className="border-b border-slate-100 bg-slate-50/80 pb-4 dark:border-slate-800 dark:bg-slate-900/70">
+            <CardTitle className="text-lg">智能建议面板</CardTitle>
+            <p className="text-xs text-muted-foreground">常用分类、商户、金额和最近记录集中在这里</p>
           </CardHeader>
-          <CardContent className="space-y-4 text-sm">
+          <CardContent className="space-y-5 p-5 text-sm">
             {/* 常用分类 */}
             <div>
-              <div className="text-xs uppercase tracking-wide text-muted-foreground">常用分类</div>
-              <div className="mt-2 grid grid-cols-2 gap-2">
+              <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">常用分类</div>
+              <div className="mt-3 grid grid-cols-2 gap-2">
                 {commonCategories.map((item) => (
                   <button
                     key={item.key}
                     type="button"
                     onClick={() => onSelectCategory(item.key)}
-                    className={`rounded-md border px-2 py-1 text-xs text-left transition ${
+                    className={`rounded-xl border px-3 py-2 text-xs text-left transition ${
                       selectedCategory === item.key
                         ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-                        : 'border-border hover:border-blue-400'
+                        : 'border-border bg-white hover:border-blue-400 dark:bg-slate-950'
                     }`}
                   >
                     {item.icon ? `${item.icon} ` : ''}
@@ -75,8 +75,8 @@ export function SmartSuggestionPanel({
 
             {/* 常用商户 */}
             <div>
-              <div className="text-xs uppercase tracking-wide text-muted-foreground">常用商户</div>
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">常用商户</div>
+              <div className="mt-3 flex flex-wrap gap-2">
                 {commonMerchants.length === 0 ? (
                   <span className="text-xs text-muted-foreground">暂无</span>
                 ) : (
@@ -85,10 +85,10 @@ export function SmartSuggestionPanel({
                       key={item}
                       type="button"
                       onClick={() => onSelectMerchant(item)}
-                      className={`rounded-full border px-2 py-1 text-xs transition ${
+                      className={`rounded-full border px-3 py-1.5 text-xs transition ${
                         selectedMerchant === item
                           ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-                          : 'border-border hover:border-blue-400'
+                          : 'border-border bg-white hover:border-blue-400 dark:bg-slate-950'
                       }`}
                     >
                       {item}
@@ -100,17 +100,17 @@ export function SmartSuggestionPanel({
 
             {/* 高频金额 */}
             <div>
-              <div className="text-xs uppercase tracking-wide text-muted-foreground">高频金额</div>
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">高频金额</div>
+              <div className="mt-3 flex flex-wrap gap-2">
                 {quickAmounts.map((item) => (
                   <button
                     key={item}
                     type="button"
                     onClick={() => onSelectAmount(item)}
-                    className={`rounded-full border px-2 py-1 text-xs transition ${
+                    className={`rounded-full border px-3 py-1.5 text-xs transition ${
                       Math.abs(currentAmount - item) < 0.001
                         ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-                        : 'border-border hover:border-blue-400'
+                        : 'border-border bg-white hover:border-blue-400 dark:bg-slate-950'
                     }`}
                   >
                     {item}
@@ -121,8 +121,8 @@ export function SmartSuggestionPanel({
 
             {/* 最近记录 */}
             <div>
-              <div className="text-xs uppercase tracking-wide text-muted-foreground">最近记录</div>
-              <div className="mt-2 space-y-2">
+              <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">最近记录</div>
+              <div className="mt-3 space-y-2">
                 {recentTransactions.length === 0 ? (
                   <span className="text-xs text-muted-foreground">暂无</span>
                 ) : (
@@ -131,7 +131,7 @@ export function SmartSuggestionPanel({
                       key={tx.id}
                       type="button"
                       onClick={() => onApplyTransaction(tx)}
-                      className="w-full rounded-md border border-border px-2 py-2 text-left text-xs transition hover:border-blue-400"
+                      className="w-full rounded-xl border border-border bg-white px-3 py-3 text-left text-xs transition hover:border-blue-400 dark:bg-slate-950"
                     >
                       <div className="flex items-center justify-between">
                         <span className="truncate">{tx.note || tx.merchant || '未填写备注'}</span>
@@ -149,11 +149,11 @@ export function SmartSuggestionPanel({
       )}
 
       {/* 智能建议开关 */}
-      <div className="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950">
+      <div className="rounded-2xl border border-blue-200 bg-blue-50/80 p-4 dark:border-blue-900 dark:bg-blue-950/50">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-blue-500"></div>
-            <span className="text-sm text-blue-700 dark:text-blue-400">智能建议</span>
+            <span className="text-sm font-medium text-blue-700 dark:text-blue-300">智能建议</span>
           </div>
           <Button
             variant="ghost"
@@ -164,8 +164,8 @@ export function SmartSuggestionPanel({
             {showPanel ? '隐藏' : '显示'}
           </Button>
         </div>
-        <p className="mt-2 text-xs text-blue-600 dark:text-blue-400">
-          基于最近记录的常用分类、商户与金额建议
+        <p className="mt-2 text-xs leading-5 text-blue-600 dark:text-blue-400">
+          这块更适合辅助输入，不强行打断主表单。用它来快速补分类、商户和金额就够了。
         </p>
       </div>
     </div>

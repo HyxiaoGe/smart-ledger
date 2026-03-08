@@ -12,7 +12,15 @@ import { DateInput } from '@/components/features/input/DateInput';
 import { SmartNoteInput } from '@/components/features/input/SmartNoteInput';
 import { MerchantInput, SubcategorySelect } from '@/components/features/input/MerchantInput';
 import { ProgressToast } from '@/components/shared/ProgressToast';
-import { Clock } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Layers3,
+  ReceiptText,
+  Sparkles,
+  Wallet,
+} from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { formatDateToLocal } from '@/lib/utils/date';
 import { logger } from '@/lib/services/logging';
@@ -384,9 +392,9 @@ export default function AddPage() {
   }, []);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="space-y-6">
       {showToast && (
-        <div className="lg:col-span-3">
+        <div>
           <ProgressToast
             message={toastMessage}
             duration={5000}
@@ -395,264 +403,456 @@ export default function AddPage() {
         </div>
       )}
 
-      {/* 左侧：添加账单表单 */}
-      <div className="lg:col-span-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>添加账单</CardTitle>
-          </CardHeader>
-          <CardContent>
+      <section className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.16),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.14),_transparent_28%),linear-gradient(135deg,_#ffffff_0%,_#f8fafc_100%)] p-6 shadow-sm dark:border-slate-800 dark:bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.12),_transparent_28%),linear-gradient(135deg,_#020617_0%,_#0f172a_100%)]">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div className="space-y-3">
+            <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white/80 px-3 py-1 text-xs font-medium text-sky-700 backdrop-blur dark:border-sky-900 dark:bg-slate-950/60 dark:text-sky-300">
+              <Sparkles className="h-3.5 w-3.5" />
+              先录入核心信息，再补充细节
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+                快速记一笔支出
+              </h1>
+              <p className="max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+                主流程只保留金额、分类、备注和保存。支付方式、商家、子分类这些次级信息放到后面，减少录入负担。
+              </p>
+            </div>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl border border-white/70 bg-white/80 px-4 py-3 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
+              <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                <ReceiptText className="h-3.5 w-3.5" />
+                主录入
+              </div>
+              <p className="mt-2 text-sm font-medium text-slate-900 dark:text-slate-100">金额、分类、备注</p>
+            </div>
+            <div className="rounded-2xl border border-white/70 bg-white/80 px-4 py-3 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
+              <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                <Layers3 className="h-3.5 w-3.5" />
+                快速填充
+              </div>
+              <p className="mt-2 text-sm font-medium text-slate-900 dark:text-slate-100">最近记录与常用金额一键带入</p>
+            </div>
+            <div className="rounded-2xl border border-white/70 bg-white/80 px-4 py-3 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
+              <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                <Wallet className="h-3.5 w-3.5" />
+                进阶信息
+              </div>
+              <p className="mt-2 text-sm font-medium text-slate-900 dark:text-slate-100">支付方式、商家、子分类按需补充</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,0.9fr)]">
+        <div className="space-y-6">
+          <Card className="overflow-hidden border-slate-200 shadow-sm dark:border-slate-800">
+            <CardHeader className="border-b border-slate-100 bg-slate-50/70 pb-4 dark:border-slate-800 dark:bg-slate-900/70">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <CardTitle className="text-xl">账单录入</CardTitle>
+                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                    优先完成必填项，其他信息放到后面补充。
+                  </p>
+                </div>
+                <div className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1 text-xs font-medium text-white dark:bg-slate-100 dark:text-slate-900">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  保存后自动同步首页与记录页
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6 p-6">
             <form onSubmit={onSubmit} className="space-y-4">
-              {recentTransactions.length > 0 && (
-                <div>
-                  <div className="flex items-center justify-between">
-                    <Label>最近记录</Label>
-                    <span className="text-xs text-muted-foreground">点击一键填充</span>
-                  </div>
-                  <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
-                    {recentTransactions.map((tx) => (
-                      <button
-                        key={tx.id}
-                        type="button"
-                        onClick={() => applyRecentTransaction(tx)}
-                        className="min-w-[180px] rounded-md border border-border bg-background px-3 py-2 text-left text-sm shadow-sm transition hover:border-blue-400 hover:shadow"
-                      >
-                        <div className="flex items-center justify-between">
-                          <CategoryChip category={tx.category || 'other'} />
-                          <span className="font-semibold">
-                            {formatThousand(Number(tx.amount || 0))}
-                          </span>
+              <div className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.9fr)]">
+                <div className="space-y-6">
+                  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          金额
+                          <span className="ml-1 text-destructive">*</span>
+                        </Label>
+                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                          支持直接输入数字，失焦后自动格式化。
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-[11px] uppercase tracking-[0.25em] text-slate-400">
+                          当前币种
                         </div>
-                        <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
-                          <Clock className="h-3 w-3" />
-                          <span className="truncate">{tx.note || tx.merchant || '未填写备注'}</span>
+                        <div className="mt-1 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                          {currency}
                         </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {recentLoading && (
-                <div className="text-xs text-muted-foreground">加载最近记录中...</div>
-              )}
-              <div>
-                <Label>
-                  分类 <span className="text-destructive">*</span>
-                </Label>
-                <select
-                  className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  disabled={isSubmitting || categoriesLoading}
-                >
-                  {categories.map((c) => (
-                    <option
-                      className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      key={c.key}
-                      value={c.key}
-                    >
-                      {c.icon ? `${c.icon} ` : ''}
-                      {c.label}
-                    </option>
-                  ))}
-                </select>
-                <div className="mt-2">
-                  <CategoryChip category={category} />
-                </div>
-              </div>
-              <div>
-                <Label>
-                  金额 <span className="text-destructive">*</span>
-                </Label>
-                <ClearableInput
-                  ref={amountInputRef}
-                  placeholder="请输入金额"
-                  value={amountText}
-                  onChange={(e) => {
-                    const raw = e.target.value;
-                    // 允许输入数字、小数点与逗号
-                    if (/^[0-9.,]*$/.test(raw)) setAmountText(raw);
-                  }}
-                  onClear={() => setAmountText('')}
-                  onBlur={() => {
-                    // 只在有有效金额时格式化，空白保持空白
-                    if (amountText.trim() && parsedAmount > 0) {
-                      setAmountText(formatThousand(parsedAmount));
-                    }
-                  }}
-                  className={amountText.trim() && invalidAmount ? 'border-destructive' : undefined}
-                  disabled={isSubmitting}
-                />
-                {amountText.trim() && invalidAmount && (
-                  <p className="mt-1 text-sm text-destructive">金额必须大于 0</p>
-                )}
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <Label>
-                    币种 <span className="text-destructive">*</span>
-                  </Label>
-                  <select
-                    className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
-                    value={currency}
-                    onChange={(e) => setCurrency(e.target.value as Currency)}
-                    disabled={isSubmitting}
-                  >
-                    {SUPPORTED_CURRENCIES.map((c) => (
-                      <option
-                        className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        key={c.code}
-                        value={c.code as string}
-                      >
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <Label>
-                    日期 <span className="text-destructive">*</span>
-                  </Label>
-                  <DateInput
-                    selected={date}
-                    onSelect={setDate}
-                    placeholder="选择日期"
-                    disabled={isSubmitting}
-                  />
-                </div>
-              </div>
-
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowAdvanced((prev) => !prev)}
-                  className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-                >
-                  <span className="font-medium">高级信息</span>
-                  <span className="text-xs text-gray-400 dark:text-gray-500">
-                    （支付方式 / 商家 / 子分类）
-                  </span>
-                </button>
-
-                {showAdvanced && (
-                  <div className="mt-4 space-y-4">
-                    <div>
-                      <Label>支付方式</Label>
-                      <select
-                        className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
-                        value={paymentMethod}
-                        onChange={(e) => setPaymentMethod(e.target.value)}
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <ClearableInput
+                        ref={amountInputRef}
+                        placeholder="例如 23.5"
+                        value={amountText}
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          if (/^[0-9.,]*$/.test(raw)) setAmountText(raw);
+                        }}
+                        onClear={() => setAmountText('')}
+                        onBlur={() => {
+                          if (amountText.trim() && parsedAmount > 0) {
+                            setAmountText(formatThousand(parsedAmount));
+                          }
+                        }}
+                        className={`h-16 text-3xl font-semibold tracking-tight ${
+                          amountText.trim() && invalidAmount ? 'border-destructive' : ''
+                        }`}
                         disabled={isSubmitting}
-                      >
-                        <option
-                          className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          value=""
+                      />
+                      {amountText.trim() && invalidAmount && (
+                        <p className="mt-2 text-sm text-destructive">金额必须大于 0</p>
+                      )}
+                    </div>
+                    <div className="mt-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
+                          高频金额
+                        </span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">点一下直接带入</span>
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {quickAmounts.map((item) => (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => setAmountText(formatThousand(item))}
+                            className={`rounded-full border px-3 py-1.5 text-sm font-medium transition ${
+                              Math.abs(parsedAmount - item) < 0.001
+                                ? 'border-sky-500 bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-300'
+                                : 'border-slate-200 text-slate-700 hover:border-sky-400 hover:text-sky-700 dark:border-slate-700 dark:text-slate-300 dark:hover:border-sky-500 dark:hover:text-sky-300'
+                            }`}
+                          >
+                            {formatThousand(item)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          分类
+                          <span className="ml-1 text-destructive">*</span>
+                        </Label>
+                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                          先从常用分类里选，找不到再展开完整列表。
+                        </p>
+                      </div>
+                      <CategoryChip category={category} />
+                    </div>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {commonCategories.map((item) => (
+                        <button
+                          key={item.key}
+                          type="button"
+                          onClick={() => setCategory(item.key)}
+                          className={`rounded-full border px-3 py-1.5 text-sm font-medium transition ${
+                            category === item.key
+                              ? 'border-sky-500 bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-300'
+                              : 'border-slate-200 text-slate-700 hover:border-sky-400 dark:border-slate-700 dark:text-slate-300'
+                          }`}
                         >
-                          未设置
-                        </option>
-                        {paymentMethods.map((pm) => (
+                          {item.icon ? `${item.icon} ` : ''}
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="mt-4">
+                      <select
+                        className="h-11 w-full rounded-xl border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                        disabled={isSubmitting || categoriesLoading}
+                      >
+                        {categories.map((c) => (
                           <option
                             className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
-                            key={pm.id}
-                            value={pm.id}
+                            key={c.key}
+                            value={c.key}
                           >
-                            {pm.name}
-                            {pm.is_default ? ' (默认)' : ''}
+                            {c.icon ? `${c.icon} ` : ''}
+                            {c.label}
                           </option>
                         ))}
                       </select>
                     </div>
+                  </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+                    <div className="flex items-center justify-between">
                       <div>
-                        <Label>商家/品牌</Label>
-                        <MerchantInput
-                          value={merchant}
-                          onChange={setMerchant}
-                          placeholder="如：瑞幸咖啡、地铁"
-                          disabled={isSubmitting}
-                          category={category}
-                        />
+                        <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">备注</Label>
+                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                          录完金额和分类后，智能备注会更准确。
+                        </p>
                       </div>
-                      <div>
-                        <Label>子分类</Label>
-                        <SubcategorySelect
-                          category={category}
-                          value={subcategory}
-                          onChange={setSubcategory}
-                          disabled={isSubmitting}
-                        />
-                      </div>
+                      <Sparkles className="h-4 w-4 text-sky-500" />
                     </div>
-
-                    <div>
-                      <Label>具体产品/服务</Label>
-                      <ClearableInput
-                        value={product}
-                        onChange={(e) => setProduct(e.target.value)}
-                        onClear={() => setProduct('')}
-                        placeholder="如：生椰拿铁、地铁票"
+                    <div className="mt-4">
+                      <SmartNoteInput
+                        value={note}
+                        onChange={setNote}
+                        placeholder="例如：午饭、咖啡、打车回家"
                         disabled={isSubmitting}
+                        category={category}
+                        amount={parsedAmount}
+                        currency={currency}
+                        onSuggestionSelected={() => {}}
                       />
                     </div>
                   </div>
-                )}
+                </div>
+
+                <div className="space-y-6">
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5 dark:border-slate-800 dark:bg-slate-900/70">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-xs font-medium uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
+                          快速填充
+                        </div>
+                        <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
+                          最近记录一键带回整套字段，适合高频重复消费。
+                        </p>
+                      </div>
+                      <Clock className="h-4 w-4 text-slate-400" />
+                    </div>
+                    {recentTransactions.length > 0 && (
+                      <div className="mt-4 space-y-2">
+                        {recentTransactions.map((tx) => (
+                          <button
+                            key={tx.id}
+                            type="button"
+                            onClick={() => applyRecentTransaction(tx)}
+                            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left shadow-sm transition hover:border-sky-400 hover:shadow dark:border-slate-700 dark:bg-slate-950"
+                          >
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="min-w-0">
+                                <div className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
+                                  {tx.note || tx.merchant || '未填写备注'}
+                                </div>
+                                <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                                  {tx.merchant || '无商家'} · {tx.category || 'other'}
+                                </div>
+                              </div>
+                              <span className="shrink-0 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                                {formatThousand(Number(tx.amount || 0))}
+                              </span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {recentLoading && (
+                      <div className="mt-4 text-xs text-muted-foreground">加载最近记录中...</div>
+                    )}
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+                    <button
+                      type="button"
+                      onClick={() => setShowAdvanced((prev) => !prev)}
+                      className="flex w-full items-center justify-between text-left"
+                    >
+                      <div>
+                        <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                          进阶信息
+                        </div>
+                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                          日期、币种、支付方式、商家、子分类和具体产品。
+                        </p>
+                      </div>
+                      {showAdvanced ? (
+                        <ChevronUp className="h-4 w-4 text-slate-400" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4 text-slate-400" />
+                      )}
+                    </button>
+
+                    {showAdvanced && (
+                      <div className="mt-5 space-y-4 border-t border-slate-100 pt-5 dark:border-slate-800">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                          <div>
+                            <Label>
+                              币种 <span className="text-destructive">*</span>
+                            </Label>
+                            <select
+                              className="mt-2 h-10 w-full rounded-xl border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
+                              value={currency}
+                              onChange={(e) => setCurrency(e.target.value as Currency)}
+                              disabled={isSubmitting}
+                            >
+                              {SUPPORTED_CURRENCIES.map((c) => (
+                                <option
+                                  className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                  key={c.code}
+                                  value={c.code as string}
+                                >
+                                  {c.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <Label>
+                              日期 <span className="text-destructive">*</span>
+                            </Label>
+                            <div className="mt-2">
+                              <DateInput
+                                selected={date}
+                                onSelect={setDate}
+                                placeholder="选择日期"
+                                disabled={isSubmitting}
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label>支付方式</Label>
+                          <select
+                            className="mt-2 h-10 w-full rounded-xl border border-input bg-transparent px-3 text-sm disabled:opacity-50 dark:bg-gray-800 transition-all duration-200 ease-in-out hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm cursor-pointer"
+                            value={paymentMethod}
+                            onChange={(e) => setPaymentMethod(e.target.value)}
+                            disabled={isSubmitting}
+                          >
+                            <option
+                              className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
+                              value=""
+                            >
+                              未设置
+                            </option>
+                            {paymentMethods.map((pm) => (
+                              <option
+                                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                key={pm.id}
+                                value={pm.id}
+                              >
+                                {pm.name}
+                                {pm.is_default ? ' (默认)' : ''}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                          <div>
+                            <Label>商家/品牌</Label>
+                            <div className="mt-2">
+                              <MerchantInput
+                                value={merchant}
+                                onChange={setMerchant}
+                                placeholder="如：瑞幸咖啡、地铁"
+                                disabled={isSubmitting}
+                                category={category}
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <Label>子分类</Label>
+                            <div className="mt-2">
+                              <SubcategorySelect
+                                category={category}
+                                value={subcategory}
+                                onChange={setSubcategory}
+                                disabled={isSubmitting}
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label>具体产品/服务</Label>
+                          <div className="mt-2">
+                            <ClearableInput
+                              value={product}
+                              onChange={(e) => setProduct(e.target.value)}
+                              onClear={() => setProduct('')}
+                              placeholder="如：生椰拿铁、地铁票"
+                              disabled={isSubmitting}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                          保存策略
+                        </div>
+                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                          高频记账时保留表单上下文，减少重复切换。
+                        </p>
+                      </div>
+                    </div>
+                    <label className="mt-4 flex items-start gap-3 rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 dark:border-slate-700 dark:text-slate-300">
+                      <input
+                        type="checkbox"
+                        checked={keepForm}
+                        onChange={(e) => setKeepForm(e.target.checked)}
+                        className="mt-0.5"
+                      />
+                      <span>
+                        保存后保留分类、日期和支付方式，方便继续记下一笔。
+                      </span>
+                    </label>
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <Label>备注</Label>
-                <SmartNoteInput
-                  value={note}
-                  onChange={setNote}
-                  placeholder="选择分类和金额后，智能提示将自动显示"
-                  disabled={isSubmitting}
-                  category={category}
-                  amount={parsedAmount}
-                  currency={currency}
-                  onSuggestionSelected={() => {
-                    // 这里可以添加额外的逻辑，比如统计用户使用建议的偏好
-                  }}
-                />
-              </div>
               {error && <p className="text-red-600 text-sm">{error}</p>}
 
-              <div>
-                <Button type="submit" disabled={isSubmitting} className="w-full">
-                  {isSubmitting ? '保存中...' : '保存账单'}
-                </Button>
-                <label className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-                  <input
-                    type="checkbox"
-                    checked={keepForm}
-                    onChange={(e) => setKeepForm(e.target.checked)}
-                  />
-                  保存后保留分类/日期/支付方式
-                </label>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/70">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                      当前准备保存
+                    </div>
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                      {categories.find((c) => c.key === category)?.label || category} ·{' '}
+                      {parsedAmount > 0 ? `${currency === 'USD' ? '$' : '¥'}${formatThousand(parsedAmount)}` : '未填写金额'}
+                    </p>
+                  </div>
+                  <Button type="submit" disabled={isSubmitting} className="min-w-[180px]">
+                    {isSubmitting ? '保存中...' : '保存账单'}
+                  </Button>
+                </div>
               </div>
             </form>
           </CardContent>
         </Card>
       </div>
 
-      {/* 右侧：智能建议面板 */}
-      <SmartSuggestionPanel
-        showPanel={showAIPrediction}
-        onTogglePanel={() => setShowAIPrediction(!showAIPrediction)}
-        commonCategories={commonCategories}
-        selectedCategory={category}
-        onSelectCategory={setCategory}
-        commonMerchants={commonMerchants}
-        selectedMerchant={merchant}
-        onSelectMerchant={(m) => {
-          setMerchant(m);
-          setShowAdvanced(true);
-        }}
-        quickAmounts={quickAmounts}
-        currentAmount={parsedAmount}
-        onSelectAmount={(amount) => setAmountText(formatThousand(amount))}
-        recentTransactions={recentQuickList}
-        onApplyTransaction={applyRecentTransaction}
-      />
+        <SmartSuggestionPanel
+          showPanel={showAIPrediction}
+          onTogglePanel={() => setShowAIPrediction(!showAIPrediction)}
+          commonCategories={commonCategories}
+          selectedCategory={category}
+          onSelectCategory={setCategory}
+          commonMerchants={commonMerchants}
+          selectedMerchant={merchant}
+          onSelectMerchant={(m) => {
+            setMerchant(m);
+            setShowAdvanced(true);
+          }}
+          quickAmounts={quickAmounts}
+          currentAmount={parsedAmount}
+          onSelectAmount={(amount) => setAmountText(formatThousand(amount))}
+          recentTransactions={recentQuickList}
+          onApplyTransaction={applyRecentTransaction}
+        />
+      </div>
     </div>
   );
 }
