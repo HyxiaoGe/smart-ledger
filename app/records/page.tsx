@@ -1,5 +1,4 @@
 import nextDynamic from 'next/dynamic';
-import { partitionExpenseTransactions } from '@/lib/domain/records';
 import { getTransactionRecordsPageData } from '@/lib/services/transactions.server';
 import { getMonthlyBudgetStatus, getCurrentYearMonth } from '@/lib/services/budgetService.server';
 import { TabsRangePicker } from '@/components/shared/TabsRangePicker';
@@ -46,7 +45,10 @@ export default async function RecordsPage({
     getTransactionRecordsPageData(month, range, start, end).catch(() => ({
       mainResult: {
         rows: [],
-        monthLabel: '全部'
+        monthLabel: '全部',
+        expenseTransactions: [],
+        dailyItems: [],
+        totalCount: 0,
       },
       yesterdayData: [],
       monthSummary: {
@@ -70,8 +72,7 @@ export default async function RecordsPage({
   const monthlyBudget = totalBudgetRecord?.budget_amount || 5000;
 
   const { mainResult, yesterdayData, monthSummary, aiAnalysisData } = recordsPageData;
-  const rows = mainResult.rows;
-  const monthLabel = mainResult.monthLabel;
+  const { rows, monthLabel, dailyItems, expenseTransactions, totalCount } = mainResult;
 
   return (
     <>
@@ -89,33 +90,24 @@ export default async function RecordsPage({
         </div>
 
         {/* 统计面板 - 所有范围都显示 */}
-        {(() => {
-          const { dailyItems: items, expenseTransactions } = partitionExpenseTransactions(
-            rows as any[]
-          );
+        <>
+          <SummaryModule
+            items={dailyItems}
+            transactions={expenseTransactions}
+            yesterdayTransactions={yesterdayData}
+            monthTotalAmount={monthSummary.monthTotalAmount}
+            monthTotalCount={monthSummary.monthTotalCount}
+            monthlyBudget={monthlyBudget}
+            currency={'CNY'}
+            dateRange={monthLabel}
+            rangeType={range}
+          />
 
-          return (
-            <>
-              <SummaryModule
-                items={items}
-                transactions={expenseTransactions}
-                yesterdayTransactions={yesterdayData}
-                monthTotalAmount={monthSummary.monthTotalAmount}
-                monthTotalCount={monthSummary.monthTotalCount}
-                monthlyBudget={monthlyBudget}
-                currency={'CNY'}
-                dateRange={monthLabel}
-                rangeType={range}
-              />
-
-              {/* 分类统计组件 */}
-              <CategoryModule transactions={expenseTransactions} currency={'CNY'} />
-            </>
-          );
-        })()}
+          <CategoryModule transactions={expenseTransactions} currency={'CNY'} />
+        </>
 
         {/* 交易明细列表 - 带收纳功能 */}
-        <CollapsibleTransactionList initialTransactions={rows as any} totalCount={rows.length} />
+        <CollapsibleTransactionList initialTransactions={rows} totalCount={totalCount} />
       </div>
     </>
   );
