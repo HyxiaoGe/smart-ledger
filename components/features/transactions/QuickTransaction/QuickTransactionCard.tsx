@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { motion } from 'framer-motion';
-import { useDailyTransactionRowsQuery } from '@/lib/api/hooks';
+import { useAllDailyTransactionRowsQuery } from '@/lib/api/hooks/useTransactions';
 import type { QuickTransactionCardProps } from './types';
 import { QUICK_ITEMS } from './constants';
 import { getQuickTransactionStats } from './utils';
@@ -25,15 +25,9 @@ export function QuickTransactionCard({ open, onOpenChange, onSuccess }: QuickTra
     data: todayTransactionsData,
     isLoading: loadingCategories,
     refetch: refetchTodayCategories
-  } = useDailyTransactionRowsQuery(
-    new Date(),
-    {
-      page_size: 100,
-    },
-    {
-      enabled: open,
-    }
-  );
+  } = useAllDailyTransactionRowsQuery(new Date(), undefined, {
+    enabled: open,
+  });
 
   // 计算今日已记录的项目
   const todayItems = useMemo(() => {

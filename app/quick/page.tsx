@@ -6,16 +6,11 @@ import { getQuickTransactionStats } from '@/components/features/transactions/Qui
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/components/ui/link';
-import { useDailyTransactionRowsQuery } from '@/lib/api/hooks';
+import { useAllDailyTransactionRowsQuery } from '@/lib/api/hooks/useTransactions';
 import { Zap, Plus, BarChart3, Home } from 'lucide-react';
 
 export default function QuickPage() {
-  const { data: todayTransactions } = useDailyTransactionRowsQuery(
-    new Date(),
-    {
-      page_size: 100,
-    }
-  );
+  const { data: todayTransactions } = useAllDailyTransactionRowsQuery(new Date());
 
   const quickStats = useMemo(
     () => getQuickTransactionStats(todayTransactions || []),

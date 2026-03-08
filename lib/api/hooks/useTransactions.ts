@@ -229,12 +229,90 @@ export function fetchDailyTransactionRows(
   return fetchTransactionRows(buildDailyTransactionRowsParams(date, params));
 }
 
+export function fetchAllDailyTransactionRows(
+  date?: string | Date,
+  params?: TransactionRowsRangeOverrides,
+  options?: { pageSize?: number }
+) {
+  return fetchAllTransactionRows(buildDailyTransactionRowsParams(date, params), options);
+}
+
 export function useDailyTransactionRowsQuery(
   date?: string | Date,
   params?: TransactionRowsRangeOverrides,
   options?: TransactionRowsQueryOptions
 ) {
   return useQuery(createDailyTransactionRowsQueryOptions(date, params, options));
+}
+
+export function useAllDailyTransactionRowsQuery(
+  date?: string | Date,
+  params?: TransactionRowsRangeOverrides,
+  options?: TransactionRowsQueryOptions & { pageSize?: number }
+) {
+  return useAllTransactionRowsQuery(buildDailyTransactionRowsParams(date, params), options);
+}
+
+export function useRecentExpenseTransactions(limit: number = 5) {
+  return useTransactionRowsQuery(
+    {
+      type: 'expense',
+      page_size: limit,
+      sort_by: 'created_at',
+      sort_order: 'desc',
+    },
+    {
+      queryKey: queryKeys.transactions.recent(limit, 'expense'),
+    }
+  );
+}
+
+export function useFrequentExpenseAmounts(
+  currency?: string,
+  options?: { days?: number; limit?: number }
+) {
+  const days = options?.days ?? 30;
+  const limit = options?.limit ?? 5;
+
+  const params = useMemo(() => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - days);
+    return {
+      type: 'expense' as const,
+      currency,
+      start_date: formatDateToLocal(start),
+      end_date: formatDateToLocal(end),
+      page_size: 100,
+      sort_by: 'date' as const,
+      sort_order: 'desc' as const,
+    };
+  }, [currency, days]);
+
+  const query = useTransactionRowsQuery(params, {
+    queryKey: queryKeys.transactions.frequentAmounts(currency),
+  });
+
+  const amounts = useMemo(() => {
+    const counts = new Map<number, number>();
+
+    for (const tx of query.data || []) {
+      const amount = Number(tx.amount || 0);
+      if (!Number.isFinite(amount) || amount <= 0) continue;
+      const rounded = Math.round(amount * 100) / 100;
+      counts.set(rounded, (counts.get(rounded) || 0) + 1);
+    }
+
+    return Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1] || b[0] - a[0])
+      .slice(0, limit)
+      .map(([amount]) => amount);
+  }, [limit, query.data]);
+
+  return {
+    ...query,
+    amounts,
+  };
 }
 
 /**

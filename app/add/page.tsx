@@ -19,10 +19,10 @@ import { logger } from '@/lib/services/logging';
 import { getErrorMessage } from '@/types/common';
 import {
   useCreateTransaction,
+  useFrequentExpenseAmounts,
   usePaymentMethodsWithDefault,
-  useTransactionRowsQuery,
+  useRecentExpenseTransactions,
 } from '@/lib/api/hooks';
-import { queryKeys } from '@/lib/api/queryClient';
 
 import { SmartSuggestionPanel } from './components';
 
@@ -315,17 +315,7 @@ export default function AddPage() {
   );
 
   const { data: recentTransactionsData, isLoading: recentLoading } =
-    useTransactionRowsQuery(
-      {
-        type: 'expense',
-        page_size: 5,
-        sort_by: 'created_at',
-        sort_order: 'desc'
-      },
-      {
-        queryKey: queryKeys.transactions.recent(5, 'expense')
-      }
-    );
+    useRecentExpenseTransactions(5);
 
   const recentTransactions = useMemo(() => {
     return (recentTransactionsData || []) as Transaction[];
@@ -347,45 +337,14 @@ export default function AddPage() {
     return deduplicated;
   }, [recentTransactions]);
 
-  const { data: frequentAmountData } = useTransactionRowsQuery(
-    useMemo(() => {
-      const end = new Date();
-      const start = new Date();
-      start.setDate(start.getDate() - 30);
-      return {
-        type: 'expense' as const,
-        currency,
-        start_date: formatDateToLocal(start),
-        end_date: formatDateToLocal(end),
-        page_size: 100,
-        sort_by: 'date' as const,
-        sort_order: 'desc' as const
-      };
-    }, [currency]),
-    {
-      queryKey: queryKeys.transactions.frequentAmounts(currency)
-    }
-  );
+  const { amounts: frequentAmounts } = useFrequentExpenseAmounts(currency, {
+    days: 30,
+    limit: 5,
+  });
 
   const quickAmounts = useMemo(() => {
-    const rows = (frequentAmountData || []) as Transaction[];
-    if (!rows.length) return fallbackAmounts;
-
-    const counts = new Map<number, number>();
-    for (const tx of rows) {
-      const amount = Number(tx.amount || 0);
-      if (!Number.isFinite(amount) || amount <= 0) continue;
-      const rounded = Math.round(amount * 100) / 100;
-      counts.set(rounded, (counts.get(rounded) || 0) + 1);
-    }
-
-    const sorted = Array.from(counts.entries())
-      .sort((a, b) => b[1] - a[1] || b[0] - a[0])
-      .slice(0, 5)
-      .map(([amount]) => amount);
-
-    return sorted.length ? sorted : fallbackAmounts;
-  }, [frequentAmountData, fallbackAmounts]);
+    return frequentAmounts.length ? frequentAmounts : fallbackAmounts;
+  }, [fallbackAmounts, frequentAmounts]);
 
   useEffect(() => {
     if (!defaultPaymentMethodId || paymentMethod) {
