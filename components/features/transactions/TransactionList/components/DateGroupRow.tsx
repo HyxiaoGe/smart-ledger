@@ -2,6 +2,7 @@
 
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/format';
+import { formatDateToZhCN } from '@/lib/utils/date';
 import type { DateGroup, TransactionRowEditControls } from '../types';
 import { CategoryGroupRow } from './CategoryGroupRow';
 
@@ -49,11 +50,7 @@ export function DateGroupRow({
             <ChevronUp className="h-4 w-4 text-gray-500 dark:text-gray-400" />
           )}
           <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-            {new Date(date + 'T00:00:00').toLocaleDateString('zh-CN', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
+            {formatDateToZhCN(date)}
           </h3>
           <span className="text-sm text-gray-500 dark:text-gray-400">
             共 {totalItems} 笔

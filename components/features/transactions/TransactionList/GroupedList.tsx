@@ -1,13 +1,10 @@
 "use client";
 // 交易分组列表组件（客户端支持编辑和删除）
-import { EmptyState } from '@/components/EmptyState';
-import { FileText } from 'lucide-react';
-import Link from 'next/link';
 import { TransactionGroupedListProps } from './types';
 import { useGroupedTransactionListController } from './useGroupedTransactionListController';
 import {
-  DateGroupRow,
   GroupedListFeedback,
+  GroupedTransactionTree,
 } from './components';
 
 export function TransactionGroupedList({
@@ -17,7 +14,6 @@ export function TransactionGroupedList({
 }: TransactionGroupedListProps) {
   const {
     paymentMethods,
-    transactions,
     hierarchicalData,
     sortedDates,
     loading,
@@ -82,39 +78,17 @@ export function TransactionGroupedList({
           onCancelDelete={closeConfirmDialog}
         />
 
-        {/* 分层树形展示 */}
-        <div className="space-y-6">
-          {sortedDates.map((date) => (
-            <DateGroupRow
-              key={date}
-              dateData={hierarchicalData[date]}
-              date={date}
-              isExpanded={expandedDates.has(date)}
-              onToggle={() => toggleDate(date)}
-              expandedCategories={expandedCategories}
-              onToggleCategory={toggleCategory}
-              expandedMerchants={expandedMerchants}
-              onToggleMerchant={toggleMerchant}
-              rowControls={rowControls}
-            />
-          ))}
-
-          {transactions.length === 0 && (
-            <EmptyState
-              icon={FileText}
-              title="暂无账单记录"
-              description="点击下方按钮开始记录您的第一笔支出"
-              action={
-                <Link
-                  href="/add"
-                  className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-                >
-                  添加账单
-                </Link>
-              }
-            />
-          )}
-        </div>
+        <GroupedTransactionTree
+          hierarchicalData={hierarchicalData}
+          sortedDates={sortedDates}
+          expandedDates={expandedDates}
+          expandedCategories={expandedCategories}
+          expandedMerchants={expandedMerchants}
+          rowControls={rowControls}
+          onToggleDate={toggleDate}
+          onToggleCategory={toggleCategory}
+          onToggleMerchant={toggleMerchant}
+        />
       </div>
     </>
   );
