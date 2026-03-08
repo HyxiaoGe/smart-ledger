@@ -15,7 +15,7 @@ export function PaymentMethodCard({ method, onDelete, onSetDefault }: PaymentMet
 
   return (
     <div
-      className="group relative rounded-xl border-2 border-gray-200 dark:border-gray-700 p-5 hover:border-blue-300 dark:border-blue-700 hover:shadow-lg transition-all duration-200"
+      className="group relative rounded-[1.5rem] border border-slate-200 bg-gradient-to-br from-white to-slate-50 p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-lg dark:border-slate-700 dark:from-slate-900 dark:to-slate-950"
       style={{
         borderLeftColor: method.color || typeConfig.color,
         borderLeftWidth: '4px',
@@ -24,7 +24,7 @@ export function PaymentMethodCard({ method, onDelete, onSetDefault }: PaymentMet
       {/* 默认标记 */}
       {method.is_default && (
         <div className="absolute -top-2 -right-2">
-          <div className="bg-gradient-to-r from-yellow-400 to-amber-500 dark:from-yellow-600 dark:to-amber-700 text-white text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1 shadow-md">
+          <div className="flex items-center gap-1 rounded-full bg-gradient-to-r from-yellow-400 to-amber-500 px-3 py-1 text-xs font-medium text-white shadow-md dark:from-yellow-600 dark:to-amber-700">
             <Star className="h-3 w-3 fill-white" />
             默认
           </div>
@@ -35,7 +35,7 @@ export function PaymentMethodCard({ method, onDelete, onSetDefault }: PaymentMet
         <div className="flex items-center gap-3">
           {/* 图标 */}
           <div
-            className="w-12 h-12 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0"
+            className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl border border-white/70 shadow-sm"
             style={{
               backgroundColor: `${method.color || typeConfig.color}20`,
             }}
@@ -53,7 +53,7 @@ export function PaymentMethodCard({ method, onDelete, onSetDefault }: PaymentMet
                 </span>
               )}
             </h3>
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+            <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
               {typeConfig.label}
             </span>
           </div>

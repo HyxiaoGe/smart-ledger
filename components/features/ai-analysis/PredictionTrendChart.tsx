@@ -194,8 +194,18 @@ export function PredictionTrendChart({
   return (
     <div className={`space-y-6 ${className}`}>
       {/* 主要趋势图 */}
-      <div className="bg-white rounded-lg p-6 border border-gray-200 dark:border-gray-700 dark:border-gray-700">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">支出趋势预测</h3>
+      <div className="rounded-[1.75rem] border border-slate-200 bg-white/90 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/90">
+        <div className="mb-4 flex items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+              Trend Forecast
+            </p>
+            <h3 className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">支出趋势预测</h3>
+          </div>
+          <div className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300">
+            历史 + 预测
+          </div>
+        </div>
         <ResponsiveContainer width="100%" height={300}>
           <AreaChart data={combinedData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -260,8 +270,18 @@ export function PredictionTrendChart({
 
       {/* 分类预测图 */}
       {categoryData.length > 0 && (
-        <div className="bg-white rounded-lg p-6 border border-gray-200 dark:border-gray-700 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">分类支出预测</h3>
+        <div className="rounded-[1.75rem] border border-slate-200 bg-white/90 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/90">
+          <div className="mb-4 flex items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+                Category Mix
+              </p>
+              <h3 className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">分类支出预测</h3>
+            </div>
+            <div className="rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-medium text-violet-700 dark:border-violet-800 dark:bg-violet-950 dark:text-violet-300">
+              分类结构
+            </div>
+          </div>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={categoryData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />

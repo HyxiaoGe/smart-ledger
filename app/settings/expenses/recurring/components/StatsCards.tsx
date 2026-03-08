@@ -54,13 +54,13 @@ export function StatsCards({ expenses, getExpenseGenerationStatus }: StatsCardsP
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
       {/* 本月生成统计卡片 */}
-      <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-blue-600 to-blue-700 text-white">
+      <Card className="relative overflow-hidden border border-blue-400/20 shadow-lg bg-gradient-to-br from-blue-600 via-blue-600 to-cyan-600 text-white">
         <div className="absolute top-0 right-0 -mt-4 -mr-4 opacity-10">
           <Wallet className="h-32 w-32" />
         </div>
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+            <div className="rounded-2xl border border-white/15 bg-white/20 p-2 backdrop-blur-sm">
               <Wallet className="h-6 w-6 text-white" />
             </div>
             <div className="text-right">
@@ -72,7 +72,7 @@ export function StatsCards({ expenses, getExpenseGenerationStatus }: StatsCardsP
         <CardContent className="pt-0">
           <div className="flex items-center justify-between">
             <div className="text-sm text-blue-100">{activeCount} 个活跃项目</div>
-            <div className="text-xs bg-white/20 px-2 py-1 rounded-full backdrop-blur-sm">
+            <div className="rounded-full border border-white/15 bg-white/20 px-2 py-1 text-xs backdrop-blur-sm">
               自动化管理
             </div>
           </div>
@@ -80,13 +80,13 @@ export function StatsCards({ expenses, getExpenseGenerationStatus }: StatsCardsP
       </Card>
 
       {/* 明日自动生成卡片 */}
-      <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-amber-500 to-orange-600 text-white">
+      <Card className="relative overflow-hidden border border-orange-400/20 shadow-lg bg-gradient-to-br from-amber-500 via-orange-500 to-orange-600 text-white">
         <div className="absolute top-0 right-0 -mt-4 -mr-4 opacity-10">
           <Calendar className="h-32 w-32" />
         </div>
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+            <div className="rounded-2xl border border-white/15 bg-white/20 p-2 backdrop-blur-sm">
               <Calendar className="h-6 w-6 text-white" />
             </div>
             <div className="text-right">
@@ -98,7 +98,7 @@ export function StatsCards({ expenses, getExpenseGenerationStatus }: StatsCardsP
         <CardContent className="pt-0">
           <div className="flex items-center justify-between">
             <div className="text-sm text-amber-100">明日自动生成</div>
-            <div className="text-xs bg-white/20 px-2 py-1 rounded-full backdrop-blur-sm">
+            <div className="rounded-full border border-white/15 bg-white/20 px-2 py-1 text-xs backdrop-blur-sm">
               预计
             </div>
           </div>
@@ -106,13 +106,13 @@ export function StatsCards({ expenses, getExpenseGenerationStatus }: StatsCardsP
       </Card>
 
       {/* 已生成记录卡片 */}
-      <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-emerald-500 to-green-600 text-white">
+      <Card className="relative overflow-hidden border border-emerald-400/20 shadow-lg bg-gradient-to-br from-emerald-500 via-green-500 to-green-600 text-white">
         <div className="absolute top-0 right-0 -mt-4 -mr-4 opacity-10">
           <History className="h-32 w-32" />
         </div>
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+            <div className="rounded-2xl border border-white/15 bg-white/20 p-2 backdrop-blur-sm">
               <History className="h-6 w-6 text-white" />
             </div>
             <div className="text-right">
@@ -124,7 +124,7 @@ export function StatsCards({ expenses, getExpenseGenerationStatus }: StatsCardsP
         <CardContent className="pt-0">
           <div className="flex items-center justify-between">
             <div className="text-sm text-emerald-100">今日自动生成记录</div>
-            <div className="text-xs bg-white/20 px-2 py-1 rounded-full backdrop-blur-sm">
+            <div className="rounded-full border border-white/15 bg-white/20 px-2 py-1 text-xs backdrop-blur-sm">
               已完成
             </div>
           </div>
