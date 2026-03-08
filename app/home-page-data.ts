@@ -1,23 +1,5 @@
 import { formatMonth } from '@/lib/utils/date';
-import { recurringExpenseService } from '@/lib/services/recurringExpenses.server';
 import { getTransactionDashboardData } from '@/lib/services/transactions.server';
-
-type RecurringExpense = {
-  id: string;
-  name: string;
-  amount: number;
-  category: string;
-  frequency: string;
-  frequency_config: Record<string, any>;
-  start_date: string;
-  note?: string;
-  currency: string;
-  payment_method?: string;
-  is_active: boolean;
-  last_generated_date?: string;
-  created_at: string;
-  updated_at: string;
-};
 
 export type PageData = {
   rangeExpense: number;
@@ -36,7 +18,6 @@ export type PageData = {
   calendarData: { date: string; amount: number; count: number }[];
   calendarYear: number;
   calendarMonth: number;
-  recurringExpenses: RecurringExpense[];
   refreshSnapshot: string;
 };
 
@@ -51,24 +32,19 @@ export async function loadPageData(
   startParam?: string,
   endParam?: string
 ): Promise<PageData> {
-  const [dashboardData, recurringData] = await Promise.all([
-    getTransactionDashboardData({
-      currency,
-      month: monthLabel,
-      range: rangeParam,
-      startDate: startParam,
-      endDate: endParam,
-    }),
-    loadRecurringExpenses(),
-  ]);
+  const dashboardData = await getTransactionDashboardData({
+    currency,
+    month: monthLabel,
+    range: rangeParam,
+    startDate: startParam,
+    endDate: endParam,
+  });
 
   return {
     ...dashboardData,
-    recurringExpenses: recurringData,
     refreshSnapshot: buildPageDataRefreshSnapshot({
       rangeExpense: dashboardData.rangeExpense,
       rangeCount: dashboardData.rangeCount,
-      recurringCount: recurringData.length,
     }),
   };
 }
@@ -76,37 +52,6 @@ export async function loadPageData(
 export function buildPageDataRefreshSnapshot(input: {
   rangeExpense: number;
   rangeCount: number;
-  recurringCount?: number;
 }) {
-  return [
-    input.rangeExpense,
-    input.rangeCount,
-    input.recurringCount ?? 0,
-  ].join(':');
-}
-
-async function loadRecurringExpenses(): Promise<RecurringExpense[]> {
-  try {
-    const data = await recurringExpenseService.getRecurringExpenses();
-
-    return data.map((item) => ({
-      id: item.id,
-      name: item.name,
-      amount: item.amount,
-      category: item.category,
-      frequency: item.frequency,
-      frequency_config: item.frequency_config,
-      start_date: item.start_date,
-      note: undefined,
-      currency: 'CNY',
-      payment_method: undefined,
-      is_active: item.is_active,
-      last_generated_date: item.last_generated || undefined,
-      created_at: item.created_at,
-      updated_at: item.updated_at,
-    }));
-  } catch (error) {
-    console.error('Failed to load recurring expenses:', error);
-    return [];
-  }
+  return [input.rangeExpense, input.rangeCount].join(':');
 }

@@ -12,7 +12,6 @@ import { HomeStats } from '@/components/features/statistics/HomeStats';
 import type { PageData } from './home-page-data';
 import { consumeTransactionsDirty, peekTransactionsDirty } from '@/lib/core/EnhancedDataSync';
 import { useRefreshQueue, useTransactionRefreshLifecycle } from '@/hooks/useTransactionsSync';
-import { useAutoGenerateRecurring } from '@/hooks/useAutoGenerateRecurring';
 
 const REFRESH_DELAYS_MS = [1500, 3500, 6000];
 
@@ -40,32 +39,6 @@ export default function HomePageClient({
   const router = useRouter();
   const pathname = usePathname();
   const search = useSearchParams();
-
-  // 固定支出（从服务端数据获取，无需客户端请求）
-  const recurringExpenses = data.recurringExpenses || [];
-
-  // 使用全局自动生成Hook
-  const { lastResult } = useAutoGenerateRecurring(recurringExpenses);
-  const recurringRefreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // 监听自动生成结果，静默刷新数据
-  useEffect(() => {
-    if (lastResult && typeof lastResult === 'object' && 'generated' in lastResult && (lastResult as any).generated > 0) {
-      if (recurringRefreshTimer.current) {
-        clearTimeout(recurringRefreshTimer.current);
-      }
-      recurringRefreshTimer.current = setTimeout(() => {
-        router.refresh();
-      }, 1000);
-    }
-
-    return () => {
-      if (recurringRefreshTimer.current) {
-        clearTimeout(recurringRefreshTimer.current);
-        recurringRefreshTimer.current = null;
-      }
-    };
-  }, [lastResult, router]);
 
   const refreshCallback = useCallback(() => router.refresh(), [router]);
   const { isRefreshing, triggerQueue, stopQueue } = useRefreshQueue({
