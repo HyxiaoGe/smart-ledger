@@ -37,6 +37,7 @@ export type PageData = {
   calendarYear: number;
   calendarMonth: number;
   recurringExpenses: RecurringExpense[];
+  refreshSnapshot: string;
 };
 
 export function resolveMonthLabel(monthParam?: string): string {
@@ -64,7 +65,24 @@ export async function loadPageData(
   return {
     ...dashboardData,
     recurringExpenses: recurringData,
+    refreshSnapshot: buildPageDataRefreshSnapshot({
+      rangeExpense: dashboardData.rangeExpense,
+      rangeCount: dashboardData.rangeCount,
+      recurringCount: recurringData.length,
+    }),
   };
+}
+
+export function buildPageDataRefreshSnapshot(input: {
+  rangeExpense: number;
+  rangeCount: number;
+  recurringCount?: number;
+}) {
+  return [
+    input.rangeExpense,
+    input.rangeCount,
+    input.recurringCount ?? 0,
+  ].join(':');
 }
 
 async function loadRecurringExpenses(): Promise<RecurringExpense[]> {

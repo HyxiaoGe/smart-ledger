@@ -75,10 +75,7 @@ export default function HomePageClient({
     consumeDirty: consumeTransactionsDirty,
   });
 
-  const latestSnapshot = useRef({
-    rangeExpense: data.rangeExpense,
-    rangeCount: data.rangeCount,
-  });
+  const latestSnapshot = useRef(data.refreshSnapshot);
 
   useTransactionRefreshLifecycle({
     triggerQueue,
@@ -88,18 +85,11 @@ export default function HomePageClient({
 
   // 数据变化检测和自动停止刷新队列
   useEffect(() => {
-    const snapshot = latestSnapshot.current;
-    const changed =
-      snapshot.rangeExpense !== data.rangeExpense || snapshot.rangeCount !== data.rangeCount;
-
-    if (changed) {
-      latestSnapshot.current = {
-        rangeExpense: data.rangeExpense,
-        rangeCount: data.rangeCount,
-      };
+    if (latestSnapshot.current !== data.refreshSnapshot) {
+      latestSnapshot.current = data.refreshSnapshot;
       stopQueue({ consume: true });
     }
-  }, [data.rangeExpense, data.rangeCount, stopQueue]);
+  }, [data.refreshSnapshot, stopQueue]);
 
   const handleCalendarDayClick = useCallback(
     (dateStr: string) => {
