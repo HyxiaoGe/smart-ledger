@@ -1,6 +1,6 @@
 "use client";
 // 交易分组列表组件（客户端支持编辑和删除）
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { EmptyState } from '@/components/EmptyState';
 import { ProgressToast } from '@/components/shared/ProgressToast';
@@ -27,13 +27,7 @@ export function TransactionGroupedList({
   className,
   defaultExpandedDates
 }: TransactionGroupedListProps) {
-  const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   const initRef = useRef(false);
-
-  // 当 initialTransactions 发生变化时更新本地状态
-  useEffect(() => {
-    setTransactions(initialTransactions);
-  }, [initialTransactions]);
 
   const [error, setError] = useState<string>('');
   const [recentlyDeleted, setRecentlyDeleted] = useState<Transaction | null>(null);
@@ -43,6 +37,9 @@ export function TransactionGroupedList({
   const [showEditToast, setShowEditToast] = useState(false);
   const [showDeleteToast, setShowDeleteToast] = useState(false);
   const [showUndoToast, setShowUndoToast] = useState(false);
+  const [deletedTransactionIds, setDeletedTransactionIds] = useState<Set<string>>(new Set());
+  const [transactionOverrides, setTransactionOverrides] = useState<Record<string, Transaction>>({});
+  const [restoredTransactions, setRestoredTransactions] = useState<Record<string, Transaction>>({});
 
   // 折叠状态管理
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
@@ -84,15 +81,41 @@ export function TransactionGroupedList({
     window.localStorage.setItem('records:expanded', payload);
   }, [expandedDates, expandedCategories, expandedMerchants]);
 
+  useEffect(() => {
+    setDeletedTransactionIds(new Set());
+    setTransactionOverrides({});
+    setRestoredTransactions({});
+  }, [initialTransactions]);
+
   // 使用 React Query 获取支付方式
   const { data: paymentMethodsData } = usePaymentMethods();
   const paymentMethods = paymentMethodsData || [];
+
+  const transactions = useMemo(() => {
+    const merged = initialTransactions
+      .filter((item) => !deletedTransactionIds.has(item.id))
+      .map((item) => transactionOverrides[item.id] || item);
+
+    const missingRestored = Object.values(restoredTransactions).filter(
+      (item) => !merged.some((row) => row.id === item.id)
+    );
+
+    return [...missingRestored, ...merged].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+  }, [deletedTransactionIds, initialTransactions, restoredTransactions, transactionOverrides]);
 
   // 更新交易的 mutation
   const updateMutation = useUpdateTransaction({
     onSuccess: (result, variables) => {
       const updatedTransaction = result || { ...form, type: 'expense' } as unknown as Transaction;
-      setTransactions((ts) => ts.map((t) => (t.id === variables.id ? { ...t, ...updatedTransaction } : t)));
+      setTransactionOverrides((current) => ({
+        ...current,
+        [variables.id]: {
+          ...(transactions.find((item) => item.id === variables.id) || ({} as Transaction)),
+          ...updatedTransaction,
+        },
+      }));
       setEditingId(null);
       setForm({});
       setShowEditToast(true);
@@ -109,7 +132,17 @@ export function TransactionGroupedList({
       const transaction = transactions.find(t => t.id === id);
       if (transaction) {
         setRecentlyDeleted(transaction);
-        setTransactions((ts) => ts.filter((t) => t.id !== id));
+        setDeletedTransactionIds((current) => new Set([...current, id]));
+        setTransactionOverrides((current) => {
+          const next = { ...current };
+          delete next[id];
+          return next;
+        });
+        setRestoredTransactions((current) => {
+          const next = { ...current };
+          delete next[id];
+          return next;
+        });
         setShowDeleteToast(true);
       }
     },
@@ -124,9 +157,15 @@ export function TransactionGroupedList({
     onSuccess: (restoredTransaction) => {
       if (recentlyDeleted) {
         const restoredRow = restoredTransaction || recentlyDeleted;
-        setTransactions((ts) => [restoredRow, ...ts].sort((a, b) =>
-          new Date(b.date).getTime() - new Date(a.date).getTime()
-        ));
+        setDeletedTransactionIds((current) => {
+          const next = new Set(current);
+          next.delete(recentlyDeleted.id);
+          return next;
+        });
+        setRestoredTransactions((current) => ({
+          ...current,
+          [restoredRow.id]: restoredRow,
+        }));
         setShowUndoToast(true);
         setRecentlyDeleted(null);
       }
