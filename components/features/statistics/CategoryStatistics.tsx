@@ -8,10 +8,17 @@ import { Badge } from '@/components/ui/badge';
 import { useCategories } from '@/contexts/CategoryContext';
 import { TrendingUp, BarChart3, ChevronDown, ChevronUp, Store } from 'lucide-react';
 import type { ChartTooltipProps, ChartLegendProps, LegendPayloadItem } from '@/types/ui/chart';
-import type { TransactionRow } from '@/types/domain/transaction';
+
+type CategoryStatisticTransaction = {
+  type?: string | null;
+  category?: string | null;
+  amount: number;
+  merchant?: string | null;
+  subcategory?: string | null;
+};
 
 interface CategoryStatisticsProps {
-  transactions: TransactionRow[];
+  transactions: CategoryStatisticTransaction[];
   currency: string;
 }
 
