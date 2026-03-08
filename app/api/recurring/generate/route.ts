@@ -3,13 +3,13 @@
  */
 
 import { NextResponse } from 'next/server';
-import { manualGenerateRecurring } from '@/lib/services/recurringService.server';
+import { recurringExpenseService } from '@/lib/services/recurringExpenses.server';
 
 export const runtime = 'nodejs';
 
 export async function POST() {
   try {
-    const results = await manualGenerateRecurring();
+    const results = await recurringExpenseService.manualGenerateRecurring();
 
     const successCount = results.filter(r => r.status === 'success').length;
     const failedCount = results.filter(r => r.status === 'failed').length;

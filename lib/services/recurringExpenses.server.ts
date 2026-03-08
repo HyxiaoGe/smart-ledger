@@ -47,6 +47,12 @@ export type RecurringGenerationStats = {
   date: string;
 };
 
+export type RecurringGenerationResult = {
+  expense_name: string;
+  status: 'success' | 'failed' | 'skipped';
+  message: string;
+};
+
 const HOLIDAY_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 const holidayCache = new Map<number, { map: Map<string, boolean>; fetchedAt: number }>();
 
@@ -438,6 +444,26 @@ export class RecurringExpenseService {
     };
   }
 
+  async manualGenerateRecurring(options?: {
+    includeOverdue?: boolean;
+  }): Promise<RecurringGenerationResult[]> {
+    const today = formatDateToLocal(new Date());
+    const includeOverdue = options?.includeOverdue ?? true;
+    const repository = getRecurringExpenseRepository();
+    const pendingExpenses = await repository.findPendingGeneration(today, includeOverdue);
+
+    if (!pendingExpenses || pendingExpenses.length === 0) {
+      return [];
+    }
+
+    const results: RecurringGenerationResult[] = [];
+    for (const expense of pendingExpenses) {
+      results.push(await this.generateExpenseWithDetailedResult(expense, today));
+    }
+
+    return results;
+  }
+
   /**
    * 手动触发生成固定支出
    */
@@ -529,6 +555,92 @@ export class RecurringExpenseService {
 
     // 记录生成日志
     await recurringRepo.logGeneration(expense.id, today, transaction.id, 'success');
+  }
+
+  private async generateExpenseWithDetailedResult(
+    expense: RecurringExpense,
+    today: string
+  ): Promise<RecurringGenerationResult> {
+    const recurringRepo = getRecurringExpenseRepository();
+    const prisma = getPrismaClient();
+
+    try {
+      const hasGenerated = await recurringRepo.hasGeneratedToday(expense.id, today);
+      if (hasGenerated) {
+        return {
+          expense_name: expense.name,
+          status: 'skipped',
+          message: '今日已生成'
+        };
+      }
+
+      if (expense.skip_holidays) {
+        const holiday = await isHolidayDate(today);
+        if (holiday) {
+          const nextGenerate = await this.calculateNextDateSkippingHolidays(
+            expense.frequency,
+            expense.frequency_config,
+            today
+          );
+          await recurringRepo.update(expense.id, {
+            next_generate: nextGenerate
+          });
+          await recurringRepo.logGeneration(expense.id, today, null, 'skipped', 'holiday');
+
+          return {
+            expense_name: expense.name,
+            status: 'skipped',
+            message: '节假日顺延'
+          };
+        }
+      }
+
+      const transaction = await prisma.transactions.create({
+        data: {
+          type: 'expense',
+          category: expense.category,
+          amount: expense.amount,
+          note: expense.name,
+          date: new Date(today),
+          currency: 'CNY',
+          recurring_expense_id: expense.id,
+          is_auto_generated: true
+        }
+      });
+
+      const nextGenerate = this.calculateNextDateAfterGeneration(
+        expense.frequency,
+        expense.frequency_config,
+        today
+      );
+
+      await recurringRepo.update(expense.id, {
+        last_generated: today,
+        next_generate: nextGenerate
+      });
+
+      await recurringRepo.logGeneration(expense.id, today, transaction.id, 'success', '手动触发生成');
+
+      return {
+        expense_name: expense.name,
+        status: 'success',
+        message: `已生成交易 ¥${Number(expense.amount).toFixed(2)}`
+      };
+    } catch (error) {
+      await recurringRepo.logGeneration(
+        expense.id,
+        today,
+        null,
+        'failed',
+        error instanceof Error ? error.message : '未知错误'
+      );
+
+      return {
+        expense_name: expense.name,
+        status: 'failed',
+        message: error instanceof Error ? error.message : '未知错误'
+      };
+    }
   }
 
   /**
