@@ -16,17 +16,9 @@ import {
   useStopRefreshQueueOnSnapshotChange,
   useTransactionRefreshLifecycle,
 } from '@/hooks/useTransactionsSync';
-import { buildTransactionPageHref } from '@/lib/services/transaction/pageParams';
+import { buildSingleDayTransactionPageHref } from '@/lib/services/transaction/pageParams';
 
 const REFRESH_DELAYS_MS = [1500, 3500, 6000];
-
-const TEXT = {
-  currency: '币种',
-  range: '范围',
-  refreshing: '同步最新数据中...',
-  chartsTitle: '图表概览',
-  topTitle: 'Top 10 支出',
-} as const;
 
 type HomePageClientProps = {
   data: PageData;
@@ -59,14 +51,7 @@ export default function HomePageClient({
 
   const handleCalendarDayClick = useCallback(
     (dateStr: string) => {
-      router.push(
-        buildTransactionPageHref(pathname, search?.toString(), {
-          range: 'custom',
-          start: dateStr,
-          end: dateStr,
-          month: null,
-        }) as any
-      );
+      router.push(buildSingleDayTransactionPageHref(pathname, search?.toString(), dateStr) as any);
     },
     [router, pathname, search]
   );
@@ -77,14 +62,16 @@ export default function HomePageClient({
       <div className="flex gap-3 items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex gap-2 items-center">
-            <span className="text-sm text-muted-foreground">{TEXT.currency}</span>
+            <span className="text-sm text-muted-foreground">{data.toolbarView.currencyLabel}</span>
             <CurrencySelect value={data.currency} />
           </div>
           {isRefreshing && (
-            <span className="text-xs text-blue-500 animate-pulse">{TEXT.refreshing}</span>
+            <span className="text-xs text-blue-500 animate-pulse">
+              {data.toolbarView.refreshingLabel}
+            </span>
           )}
           <div className="flex gap-2 items-center">
-            <span className="text-sm text-muted-foreground">{TEXT.range}</span>
+            <span className="text-sm text-muted-foreground">{data.toolbarView.rangeLabel}</span>
             <TabsRangePicker />
           </div>
         </div>
@@ -97,18 +84,21 @@ export default function HomePageClient({
 
       {/* 图表概览 */}
       <section className="space-y-2">
-        <h2 className="text-lg font-semibold">{`${TEXT.chartsTitle} (${data.currency})`}</h2>
+        <h2 className="text-lg font-semibold">{data.sectionView.chartsTitle}</h2>
         <ChartSummary {...data.chartSummaryView} />
       </section>
 
       {/* Top 10 支出 */}
       <section className="space-y-2">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">{`${TEXT.topTitle} (${data.currency})`}</h2>
+          <h2 className="text-lg font-semibold">{data.sectionView.topExpensesTitle}</h2>
           <div className="text-xs text-gray-500 dark:text-gray-400">
-            💡 需要 AI 财务分析？请前往
-            <a href="/records" className="text-blue-600 hover:text-blue-800 underline ml-1">
-              账单列表
+            {data.sectionView.aiHintText}
+            <a
+              href={data.sectionView.aiHintHref}
+              className="text-blue-600 hover:text-blue-800 underline ml-1"
+            >
+              {data.sectionView.aiHintLinkLabel}
             </a>
           </div>
         </div>

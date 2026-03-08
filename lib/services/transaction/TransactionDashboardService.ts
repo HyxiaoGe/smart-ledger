@@ -91,6 +91,8 @@ export class TransactionDashboardService {
         calendarMonth: now.getMonth() + 1,
         refreshSnapshot: '0:0',
         currency: params.currency,
+        toolbarView: buildHomeToolbarView(),
+        sectionView: buildHomeSectionView(params.currency),
         statsView: buildHomeStatsView({
           rangeExpense: 0,
           rangeCount: 0,
@@ -208,6 +210,8 @@ export class TransactionDashboardService {
             rangeCount,
           }),
           currency: params.currency,
+          toolbarView: buildHomeToolbarView(),
+          sectionView: buildHomeSectionView(params.currency),
           statsView,
           chartSummaryView: buildChartSummaryView({
             trend,
@@ -260,6 +264,24 @@ function buildDashboardRefreshSnapshot(input: {
   rangeCount: number;
 }) {
   return [input.rangeExpense, input.rangeCount].join(':');
+}
+
+function buildHomeToolbarView() {
+  return {
+    currencyLabel: '币种',
+    rangeLabel: '范围',
+    refreshingLabel: '同步最新数据中...',
+  };
+}
+
+function buildHomeSectionView(currency: string) {
+  return {
+    chartsTitle: `图表概览 (${currency})`,
+    topExpensesTitle: `Top 10 支出 (${currency})`,
+    aiHintText: '💡 需要 AI 财务分析？请前往',
+    aiHintLinkLabel: '账单列表',
+    aiHintHref: '/records',
+  };
 }
 
 function buildHomeStatsView(input: HomeStatsProps): HomeStatsProps {

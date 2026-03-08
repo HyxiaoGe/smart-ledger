@@ -95,3 +95,16 @@ export function buildTransactionPageHref(
 
   return queryString ? `${pathname}?${queryString}` : pathname;
 }
+
+export function buildSingleDayTransactionPageHref(
+  pathname: string,
+  searchParams: string | undefined,
+  date: string
+) {
+  return buildTransactionPageHref(pathname, searchParams, {
+    range: 'custom',
+    start: date,
+    end: date,
+    month: null,
+  });
+}

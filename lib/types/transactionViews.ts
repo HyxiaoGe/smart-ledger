@@ -110,6 +110,18 @@ export interface CalendarHeatmapProps {
 }
 
 export interface HomeDashboardViewSlices {
+  toolbarView: {
+    currencyLabel: string;
+    rangeLabel: string;
+    refreshingLabel: string;
+  };
+  sectionView: {
+    chartsTitle: string;
+    topExpensesTitle: string;
+    aiHintText: string;
+    aiHintLinkLabel: string;
+    aiHintHref: string;
+  };
   statsView: HomeStatsProps;
   chartSummaryView: ChartSummaryProps;
   topExpensesView: TopExpensesProps;
