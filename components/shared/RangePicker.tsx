@@ -9,6 +9,7 @@ import { CalendarIcon, X } from "lucide-react";
 import { DatePicker } from "@/components/features/input/DatePicker";
 import { ComponentErrorBoundary } from "@/components/layout/ErrorBoundary";
 import { cn } from "@/lib/utils/helpers";
+import { buildTransactionPageHref } from "@/lib/services/transaction/pageParams";
 
 const QUICK_OPTIONS = [
   {
@@ -83,24 +84,14 @@ function RangePickerContent({ className, onRangeChange }: RangePickerProps) {
 
   // 更新 URL 参数
   const updateURL = useCallback((range: { start: Date; end: Date } | null, key: string) => {
-    const sp = new URLSearchParams(search?.toString());
-
-    if (range && key !== 'month') {
-      sp.set('range', key);
-      sp.set('start', format(range.start, 'yyyy-MM-dd'));
-      sp.set('end', format(range.end, 'yyyy-MM-dd'));
-      sp.delete('month'); // 清除月份参数
-    } else if (key === 'month') {
-      sp.set('range', 'month');
-      sp.delete('start');
-      sp.delete('end');
-    } else {
-      sp.delete('range');
-      sp.delete('start');
-      sp.delete('end');
-    }
-
-    router.push(pathname + '?' + sp.toString() as any);
+    router.push(
+      buildTransactionPageHref(pathname, search?.toString(), {
+        range: key === 'month' ? 'month' : key || null,
+        start: range && key !== 'month' ? format(range.start, 'yyyy-MM-dd') : null,
+        end: range && key !== 'month' ? format(range.end, 'yyyy-MM-dd') : null,
+        month: null,
+      }) as any
+    );
   }, [router, pathname, search]);
 
   // 处理快捷选项点击

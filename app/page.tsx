@@ -20,8 +20,6 @@ export default async function HomePage({
     <HomePageClient
       data={pageData}
       currency={pageParams.currency}
-      rangeParam={pageParams.range}
-      monthLabel={pageParams.monthLabel}
     />
   );
 }

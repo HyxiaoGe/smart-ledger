@@ -4,25 +4,24 @@ import React, { Suspense } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import type { Route } from 'next';
 import { SUPPORTED_CURRENCIES } from '@/lib/config/config';
+import { buildTransactionPageHref } from '@/lib/services/transaction/pageParams';
 
 type CurrencySelectProps = {
   value: string;
-  month: string;
-  range: string;
 };
 
-function CurrencySelectContent({ value, month, range }: CurrencySelectProps) {
+function CurrencySelectContent({ value }: CurrencySelectProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const next = event.target.value;
-    const params = new URLSearchParams(searchParams?.toString());
-    params.set('currency', next);
-    if (month) params.set('month', month);
-    if (range) params.set('range', range);
-    router.push(`${pathname}?${params.toString()}` as Route);
+    router.push(
+      buildTransactionPageHref(pathname, searchParams?.toString(), {
+        currency: next,
+      }) as Route
+    );
   };
 
   return (

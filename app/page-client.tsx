@@ -12,6 +12,7 @@ import { HomeStats } from '@/components/features/statistics/HomeStats';
 import type { PageData } from './home-page-data';
 import { consumeTransactionsDirty, peekTransactionsDirty } from '@/lib/core/EnhancedDataSync';
 import { useRefreshQueue, useTransactionRefreshLifecycle } from '@/hooks/useTransactionsSync';
+import { buildTransactionPageHref } from '@/lib/services/transaction/pageParams';
 
 const REFRESH_DELAYS_MS = [1500, 3500, 6000];
 
@@ -26,15 +27,11 @@ const TEXT = {
 type HomePageClientProps = {
   data: PageData;
   currency: string;
-  rangeParam: string;
-  monthLabel: string;
 };
 
 export default function HomePageClient({
   data,
   currency,
-  rangeParam,
-  monthLabel,
 }: HomePageClientProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -66,12 +63,14 @@ export default function HomePageClient({
 
   const handleCalendarDayClick = useCallback(
     (dateStr: string) => {
-      const sp = new URLSearchParams(search?.toString());
-      sp.set('range', 'custom');
-      sp.set('start', dateStr);
-      sp.set('end', dateStr);
-      sp.delete('month');
-      router.push((pathname + '?' + sp.toString()) as any);
+      router.push(
+        buildTransactionPageHref(pathname, search?.toString(), {
+          range: 'custom',
+          start: dateStr,
+          end: dateStr,
+          month: null,
+        }) as any
+      );
     },
     [router, pathname, search]
   );
@@ -83,7 +82,7 @@ export default function HomePageClient({
         <div className="flex items-center gap-4">
           <div className="flex gap-2 items-center">
             <span className="text-sm text-muted-foreground">{TEXT.currency}</span>
-            <CurrencySelect value={currency} month={monthLabel} range={rangeParam} />
+            <CurrencySelect value={currency} />
           </div>
           {isRefreshing && (
             <span className="text-xs text-blue-500 animate-pulse">{TEXT.refreshing}</span>

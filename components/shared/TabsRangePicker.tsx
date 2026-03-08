@@ -10,6 +10,7 @@ import { CalendarIcon, ChevronDown } from "lucide-react";
 import { DatePicker } from "@/components/features/input/DatePicker";
 import { ComponentErrorBoundary } from "@/components/layout/ErrorBoundary";
 import { cn } from "@/lib/utils/helpers";
+import { buildTransactionPageHref } from "@/lib/services/transaction/pageParams";
 import {
   getExtendedQuickRange,
   formatDateToLocal,
@@ -290,19 +291,14 @@ function TabsRangePickerContent({ className, onRangeChange }: TabsRangePickerPro
   // 更新 URL 参数
   const updateURL = useCallback(
     (_range: { start: string; end: string }, key: string) => {
-      const sp = new URLSearchParams(search?.toString());
-
-      sp.set("range", key);
-      if (key === "custom") {
-        sp.set("start", _range.start);
-        sp.set("end", _range.end);
-      } else {
-        sp.delete("start");
-        sp.delete("end");
-      }
-      sp.delete("month"); // 清除旧的月份参数
-
-      router.push((pathname + "?" + sp.toString()) as any);
+      router.push(
+        buildTransactionPageHref(pathname, search?.toString(), {
+          range: key,
+          start: key === "custom" ? _range.start : null,
+          end: key === "custom" ? _range.end : null,
+          month: null,
+        }) as any
+      );
     },
     [router, pathname, search]
   );

@@ -16,6 +16,14 @@ export interface HomePageRequestParams extends TransactionRangePageParams {
   monthLabel: string;
 }
 
+export interface TransactionPageSearchUpdates {
+  currency?: string | null;
+  month?: string | null;
+  range?: string | null;
+  start?: string | null;
+  end?: string | null;
+}
+
 export function getSearchParamString(value?: SearchParamValue): string | undefined {
   if (Array.isArray(value)) {
     return value[0];
@@ -49,4 +57,41 @@ export function resolveHomePageRequestParams(
     currency,
     monthLabel: rangeParams.month || formatMonth(new Date()),
   };
+}
+
+export function updateTransactionPageSearchParams(
+  searchParams?: string,
+  updates?: TransactionPageSearchUpdates
+): URLSearchParams {
+  const params = new URLSearchParams(searchParams);
+
+  if (!updates) {
+    return params;
+  }
+
+  for (const [key, value] of Object.entries(updates)) {
+    if (value === undefined) {
+      continue;
+    }
+
+    if (value === null || value === '') {
+      params.delete(key);
+      continue;
+    }
+
+    params.set(key, value);
+  }
+
+  return params;
+}
+
+export function buildTransactionPageHref(
+  pathname: string,
+  searchParams?: string,
+  updates?: TransactionPageSearchUpdates
+) {
+  const nextParams = updateTransactionPageSearchParams(searchParams, updates);
+  const queryString = nextParams.toString();
+
+  return queryString ? `${pathname}?${queryString}` : pathname;
 }

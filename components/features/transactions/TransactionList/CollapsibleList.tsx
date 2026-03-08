@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { useCategories } from '@/contexts/CategoryContext';
 import { useRefetchOnDataSync } from '@/hooks/useEnhancedDataSync';
 import type { Transaction } from '@/types/domain/transaction';
+import { buildTransactionPageHref } from '@/lib/services/transaction/pageParams';
 import {
   resolveTransactionListRangeParams,
   useAllTransactionRowsQuery,
@@ -112,12 +113,14 @@ export function CollapsibleTransactionList({
   }, [activeCategory, filteredTransactions]);
 
   const updateRange = (rangeKey: string) => {
-    const sp = new URLSearchParams(search?.toString());
-    sp.set('range', rangeKey);
-    sp.delete('start');
-    sp.delete('end');
-    sp.delete('month');
-    router.push((pathname + '?' + sp.toString()) as any);
+    router.push(
+      buildTransactionPageHref(pathname, search?.toString(), {
+        range: rangeKey,
+        start: null,
+        end: null,
+        month: null,
+      }) as any
+    );
   };
 
   useRefetchOnDataSync(refetch);
