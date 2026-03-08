@@ -1,9 +1,11 @@
 import { partitionExpenseTransactions } from '@/lib/domain/records';
 import { getCurrentMonthlyBudgetAmount } from '@/lib/services/budgetService.server';
 import type { Transaction } from '@/types/domain/transaction';
-import type { AIAnalysisButtonProps } from '@/components/features/ai-analysis/AIAnalysisButton';
-import type { MonthlyExpenseSummaryProps } from '@/app/components/MonthlyExpenseSummary';
-import type { CategoryStatisticsProps } from '@/components/features/statistics/CategoryStatistics';
+import type {
+  AIAnalysisButtonProps,
+  CategoryStatisticsProps,
+  MonthlyExpenseSummaryProps,
+} from '@/lib/types/transactionViews';
 import { TransactionAnalyticsService, type AIAnalysisData } from './TransactionAnalyticsService';
 import {
   TransactionQueryService,

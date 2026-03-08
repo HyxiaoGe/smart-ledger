@@ -3,18 +3,7 @@
 import { useMemo } from 'react';
 import { TrendingUp, Calendar, DollarSign, BarChart3, TrendingDown, Minus } from 'lucide-react';
 import { calculateMonthlyExpenseSummaryStats } from '@/lib/utils/recordStatistics';
-
-export interface MonthlyExpenseSummaryProps {
-  items: { date: string; total: number; count: number }[];
-  transactions?: { amount: number; date: string; note?: string }[];
-  yesterdayTransactions?: { amount: number; date: string; note?: string }[];
-  monthTotalAmount?: number;
-  monthTotalCount?: number;
-  monthlyBudget?: number; // 月度预算，从预算设置中获取
-  currency: string;
-  dateRange?: string;
-  rangeType?: string;
-}
+import type { MonthlyExpenseSummaryProps } from '@/lib/types/transactionViews';
 
 export function MonthlyExpenseSummary({ items, transactions = [], yesterdayTransactions = [], monthTotalAmount = 0, monthTotalCount = 0, monthlyBudget = 5000, dateRange, rangeType }: MonthlyExpenseSummaryProps) {
   const statistics = useMemo(() => {

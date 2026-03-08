@@ -3,18 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Brain } from 'lucide-react';
-
-export interface AIAnalysisButtonProps {
-  dateRange?: string;
-  currentMonth?: string;
-  aiData?: {
-    currentMonthFull: any[];
-    lastMonth: any[];
-    currentMonthTop20: any[];
-    currentMonthStr: string;
-    lastMonthStr: string;
-  };
-}
+import type { AIAnalysisButtonProps } from '@/lib/types/transactionViews';
 
 export function AIAnalysisButton({
   dateRange,

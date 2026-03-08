@@ -11,20 +11,11 @@ import {
   calculateCategoryStats,
   calculateMerchantStatsByCategory,
 } from '@/lib/utils/recordStatistics';
+import type {
+  CategoryStatisticsProps,
+  CategoryStatisticTransaction,
+} from '@/lib/types/transactionViews';
 import type { ChartTooltipProps, ChartLegendProps, LegendPayloadItem } from '@/types/ui/chart';
-
-type CategoryStatisticTransaction = {
-  type?: string | null;
-  category?: string | null;
-  amount: number;
-  merchant?: string | null;
-  subcategory?: string | null;
-};
-
-export interface CategoryStatisticsProps {
-  transactions: CategoryStatisticTransaction[];
-  currency: string;
-}
 
 export function CategoryStatistics({ transactions }: CategoryStatisticsProps) {
   const [isExpanded, setIsExpanded] = useState(false);
