@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { CheckCircle2, X } from 'lucide-react';
+import { cn } from '@/lib/utils/helpers';
 
 interface ProgressToastProps {
   message: string;
@@ -36,32 +38,22 @@ export function ProgressToast({ message, duration = 3000, onClose }: ProgressToa
 
   return (
     <div
-      className="fixed top-4 right-4 bg-gray-800 text-white px-6 py-4 rounded-lg shadow-lg min-w-[300px] max-w-md transform transition-all duration-300 ease-in-out z-50"
+      className={cn(
+        'fixed right-4 top-4 z-50 min-w-[320px] max-w-md overflow-hidden rounded-2xl border border-emerald-200 bg-white/95 px-5 py-4 text-slate-900 shadow-2xl backdrop-blur transition-all duration-300 ease-in-out dark:border-emerald-900 dark:bg-slate-950/95 dark:text-slate-100'
+      )}
       style={{
         animation: 'slideIn 0.3s ease-out'
       }}
     >
-      <div className="flex items-center gap-3">
-        <div className="flex-shrink-0">
-          <svg
-            className="w-6 h-6 text-green-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
+      <div className="flex items-start gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300">
+          <CheckCircle2 className="h-5 w-5" />
         </div>
         <div className="flex-1">
-          <p className="font-medium">{message}</p>
-          <div className="mt-2 w-full bg-gray-700 rounded-full h-1">
+          <p className="text-sm font-medium leading-6">{message}</p>
+          <div className="mt-3 h-1.5 w-full rounded-full bg-slate-200 dark:bg-slate-800">
             <div
-              className="bg-green-400 h-1 rounded-full transition-all duration-100 ease-linear"
+              className="h-1.5 rounded-full bg-emerald-500 transition-all duration-100 ease-linear"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -73,16 +65,9 @@ export function ProgressToast({ message, duration = 3000, onClose }: ProgressToa
               onClose?.();
             }, 300);
           }}
-          className="flex-shrink-0 ml-2 text-gray-400 hover:text-white transition-colors"
+          className="flex-shrink-0 text-slate-400 transition-colors hover:text-slate-700 dark:hover:text-slate-200"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+          <X className="h-5 w-5" />
         </button>
       </div>
 

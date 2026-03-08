@@ -11,6 +11,7 @@ import { HomeStats } from '@/components/features/statistics/HomeStats';
 import type { PageData } from './home-page-data';
 import { useHomeDashboardController } from '@/hooks/useHomeDashboardController';
 import { ArrowRight, Brain, RefreshCw, WalletCards } from 'lucide-react';
+import { SectionIntro } from '@/components/shared/SectionIntro';
 
 type HomePageClientProps = {
   data: PageData;
@@ -106,30 +107,20 @@ export default function HomePageClient({
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.8fr)]">
         <section className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                {data.sectionView.chartsTitle}
-              </h2>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                先看整体趋势，再判断分类结构。
-              </p>
-            </div>
-          </div>
+          <SectionIntro
+            eyebrow="概览"
+            title={data.sectionView.chartsTitle}
+            description="先看整体趋势，再判断分类结构。"
+          />
           <ChartSummary {...data.chartSummaryView} />
         </section>
 
         <section className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                {data.sectionView.topExpensesTitle}
-              </h2>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                把最大的单笔和高频商户先看清楚。
-              </p>
-            </div>
-          </div>
+          <SectionIntro
+            eyebrow="重点"
+            title={data.sectionView.topExpensesTitle}
+            description="把最大的单笔和高频商户先看清楚。"
+          />
           <Card className="overflow-hidden border-slate-200 shadow-sm dark:border-slate-800">
             <CardContent className="p-5">
               <TopExpenses {...data.topExpensesView} />
@@ -139,19 +130,17 @@ export default function HomePageClient({
       </div>
 
       <section className="space-y-3">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-              消费节奏
-            </h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              用热力图判断支出是否集中在某几天，再决定要不要下钻看明细。
-            </p>
-          </div>
-          <div className="text-xs text-slate-500 dark:text-slate-400">
-            点击某一天会直接跳到对应日期的记录页
-          </div>
-        </div>
+        <SectionIntro
+          eyebrow="节奏"
+          title="消费节奏"
+          description="用热力图判断支出是否集中在某几天，再决定要不要下钻看明细。"
+          align="between"
+          aside={
+            <div className="text-xs text-slate-500 dark:text-slate-400">
+              点击某一天会直接跳到对应日期的记录页
+            </div>
+          }
+        />
         <div className="rounded-[24px] border border-slate-200 bg-white p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950">
           <CalendarHeatmap
             {...data.calendarHeatmapView}
