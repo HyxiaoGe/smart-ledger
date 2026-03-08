@@ -20,6 +20,27 @@ export interface TransactionRecordsPageData {
 
 export interface TransactionRecordsPageViewData extends TransactionRecordsPageData {
   monthlyBudget: number;
+  headerTitle: string;
+  summaryView: {
+    items: Array<{ date: string; total: number; count: number }>;
+    transactions: Transaction[];
+    yesterdayTransactions: any[];
+    monthTotalAmount: number;
+    monthTotalCount: number;
+    monthlyBudget: number;
+    currency: string;
+    dateRange: string;
+    rangeType: string;
+  };
+  categoryStatisticsView: {
+    transactions: Transaction[];
+    currency: string;
+  };
+  aiAnalysisView: {
+    dateRange: string;
+    currentMonth?: string;
+    aiData: AIAnalysisData;
+  };
 }
 
 export interface TransactionRecordsMainResult extends TransactionQueryResult {
@@ -84,11 +105,55 @@ export class TransactionRecordsPageService {
       return {
         ...pageData,
         monthlyBudget,
+        headerTitle: `账单列表（${pageData.mainResult.monthLabel}）`,
+        summaryView: {
+          items: pageData.mainResult.dailyItems,
+          transactions: pageData.mainResult.expenseTransactions,
+          yesterdayTransactions: pageData.yesterdayData,
+          monthTotalAmount: pageData.monthSummary.monthTotalAmount,
+          monthTotalCount: pageData.monthSummary.monthTotalCount,
+          monthlyBudget,
+          currency: 'CNY',
+          dateRange: pageData.mainResult.monthLabel,
+          rangeType: params.range || 'today',
+        },
+        categoryStatisticsView: {
+          transactions: pageData.mainResult.expenseTransactions,
+          currency: 'CNY',
+        },
+        aiAnalysisView: {
+          dateRange: params.range || 'today',
+          currentMonth: params.month,
+          aiData: pageData.aiAnalysisData,
+        },
       };
     } catch {
+      const emptyPageData = this.buildEmptyPageData();
+
       return {
-        ...this.buildEmptyPageData(),
+        ...emptyPageData,
         monthlyBudget: 5000,
+        headerTitle: `账单列表（${emptyPageData.mainResult.monthLabel}）`,
+        summaryView: {
+          items: emptyPageData.mainResult.dailyItems,
+          transactions: emptyPageData.mainResult.expenseTransactions,
+          yesterdayTransactions: emptyPageData.yesterdayData,
+          monthTotalAmount: emptyPageData.monthSummary.monthTotalAmount,
+          monthTotalCount: emptyPageData.monthSummary.monthTotalCount,
+          monthlyBudget: 5000,
+          currency: 'CNY',
+          dateRange: emptyPageData.mainResult.monthLabel,
+          rangeType: params.range || 'today',
+        },
+        categoryStatisticsView: {
+          transactions: emptyPageData.mainResult.expenseTransactions,
+          currency: 'CNY',
+        },
+        aiAnalysisView: {
+          dateRange: params.range || 'today',
+          currentMonth: params.month,
+          aiData: emptyPageData.aiAnalysisData,
+        },
       };
     }
   }

@@ -38,40 +38,31 @@ export default async function RecordsPage({
 }) {
   const { month, range, start, end } = resolveTransactionRangePageParams(searchParams);
 
-  const { mainResult, yesterdayData, monthSummary, aiAnalysisData, monthlyBudget } =
-    await getTransactionRecordsPageViewData(month, range, start, end);
-  const { rows, monthLabel, dailyItems, expenseTransactions, totalCount } = mainResult;
+  const {
+    mainResult,
+    headerTitle,
+    summaryView,
+    categoryStatisticsView,
+    aiAnalysisView,
+  } = await getTransactionRecordsPageViewData(month, range, start, end);
+  const { rows, totalCount } = mainResult;
 
   return (
     <>
       <div className="container space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold">账单列表（{monthLabel}）</h1>
+          <h1 className="text-xl font-semibold">{headerTitle}</h1>
           <div className="flex items-center gap-4">
             <TabsRangePicker />
-            <AIAnalysisButton
-              dateRange={range}
-              currentMonth={month}
-              aiData={aiAnalysisData}
-            />
+            <AIAnalysisButton {...aiAnalysisView} />
           </div>
         </div>
 
         {/* 统计面板 - 所有范围都显示 */}
         <>
-          <SummaryModule
-            items={dailyItems}
-            transactions={expenseTransactions}
-            yesterdayTransactions={yesterdayData}
-            monthTotalAmount={monthSummary.monthTotalAmount}
-            monthTotalCount={monthSummary.monthTotalCount}
-            monthlyBudget={monthlyBudget}
-            currency={'CNY'}
-            dateRange={monthLabel}
-            rangeType={range}
-          />
+          <SummaryModule {...summaryView} />
 
-          <CategoryModule transactions={expenseTransactions} currency={'CNY'} />
+          <CategoryModule {...categoryStatisticsView} />
         </>
 
         {/* 交易明细列表 - 带收纳功能 */}
