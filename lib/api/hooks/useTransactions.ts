@@ -21,7 +21,12 @@ import {
 } from '../services/transactions';
 import { applyTransactionWriteEffects } from '../transactionWriteEffects';
 import type { Transaction } from '@/types/domain/transaction';
-import { formatDateToLocal, getMonthRangeFromString, parseLocalDate } from '@/lib/utils/date';
+import {
+  formatDateToLocal,
+  getExtendedQuickRange,
+  getMonthRangeFromString,
+  parseLocalDate,
+} from '@/lib/utils/date';
 
 type MutationCallbacks<TData, TVariables> = Pick<
   UseMutationOptions<TData, Error, TVariables>,
@@ -48,6 +53,37 @@ type TransactionRowsRangeOverrides = Omit<
   TransactionListParams,
   'month' | 'range' | 'startDate' | 'endDate' | 'start_date' | 'end_date'
 >;
+
+type TransactionRangeKey = Parameters<typeof getExtendedQuickRange>[0];
+
+export function resolveTransactionListRangeParams(params?: {
+  month?: string;
+  range?: TransactionRangeKey | string;
+  start?: string;
+  end?: string;
+  overrides?: TransactionRowsRangeOverrides;
+}): TransactionListParams | undefined {
+  if (!params) return params;
+
+  const { month, range, start, end, overrides } = params;
+
+  if (start && end) {
+    return {
+      start_date: start,
+      end_date: end,
+      ...overrides,
+    };
+  }
+
+  if (month) {
+    return buildMonthlyTransactionRowsParams(month, overrides);
+  }
+
+  return {
+    ...getExtendedQuickRange((range as TransactionRangeKey) || 'today'),
+    ...overrides,
+  };
+}
 
 export function buildMonthlyTransactionRowsParams(
   month?: string,
@@ -137,12 +173,42 @@ export function fetchMonthlyTransactionRows(
   return fetchTransactionRows(buildMonthlyTransactionRowsParams(month, params));
 }
 
+export function fetchAllMonthlyTransactionRows(
+  month?: string,
+  params?: TransactionRowsRangeOverrides,
+  options?: { pageSize?: number }
+) {
+  return fetchAllTransactionRows(buildMonthlyTransactionRowsParams(month, params), options);
+}
+
 export function useMonthlyTransactionRowsQuery(
   month?: string,
   params?: TransactionRowsRangeOverrides,
   options?: TransactionRowsQueryOptions
 ) {
   return useQuery(createMonthlyTransactionRowsQueryOptions(month, params, options));
+}
+
+export function useAllMonthlyTransactionRowsQuery(
+  month?: string,
+  params?: TransactionRowsRangeOverrides,
+  options?: TransactionRowsQueryOptions & { pageSize?: number }
+) {
+  return useAllTransactionRowsQuery(buildMonthlyTransactionRowsParams(month, params), options);
+}
+
+export function createAllMonthlyTransactionRowsQueryOptions(
+  month?: string,
+  params?: TransactionRowsRangeOverrides,
+  options?: TransactionRowsQueryOptions & { pageSize?: number }
+) {
+  return {
+    queryKey:
+      options?.queryKey ??
+      ['transactions', 'list', 'all', 'month', month ?? 'current', params, options?.pageSize ?? 100],
+    queryFn: () => fetchAllMonthlyTransactionRows(month, params, { pageSize: options?.pageSize }),
+    ...options,
+  };
 }
 
 export function createDailyTransactionRowsQueryOptions(

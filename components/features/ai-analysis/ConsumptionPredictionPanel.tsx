@@ -7,7 +7,7 @@ import { TrendingUp, BarChart, ChevronDown, RefreshCw, Target } from 'lucide-rea
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRefetchOnDataSync } from '@/hooks/useEnhancedDataSync';
 import { useQuery } from '@tanstack/react-query';
-import { fetchMonthlyTransactionRows } from '@/lib/api/hooks/useTransactions';
+import { fetchAllMonthlyTransactionRows } from '@/lib/api/hooks/useTransactions';
 import {
   getCurrentMonthString,
   getRelativeMonthStrings,
@@ -70,22 +70,19 @@ export function ConsumptionPredictionPanel({
       const daysPassed = currentDate.getDate();
       const remainingDays = daysInMonth - daysPassed;
 
-      const currentData = await fetchMonthlyTransactionRows(month, {
+      const currentData = await fetchAllMonthlyTransactionRows(month, {
         type: 'expense',
-        page_size: 1000
       });
 
       // 获取历史数据用于预测
       const [lastMonth, twoMonthsAgo] = getRelativeMonthStrings(month, [-1, -2]);
 
       const [lastMonthData, twoMonthsAgoData] = await Promise.all([
-        fetchMonthlyTransactionRows(lastMonth, {
+        fetchAllMonthlyTransactionRows(lastMonth, {
           type: 'expense',
-          page_size: 1000
         }),
-        fetchMonthlyTransactionRows(twoMonthsAgo, {
+        fetchAllMonthlyTransactionRows(twoMonthsAgo, {
           type: 'expense',
-          page_size: 1000
         })
       ]);
 

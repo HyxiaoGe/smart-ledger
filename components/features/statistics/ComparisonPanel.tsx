@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { useMonthlyTransactionRowsQuery } from '@/lib/api/hooks';
+import { useAllMonthlyTransactionRowsQuery } from '@/lib/api/hooks/useTransactions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Trophy, Users, ChevronDown, RefreshCw, Award, ArrowUp, ArrowDown } from 'lucide-react';
@@ -47,9 +47,7 @@ export function ComparisonPanel({
   const [collapsed, setCollapsed] = useState(false);
 
   const { data: transactionsData, isLoading: loading, refetch } =
-    useMonthlyTransactionRowsQuery(currentMonth, {
-      page_size: 1000,
-    });
+    useAllMonthlyTransactionRowsQuery(currentMonth);
 
   useRefetchOnDataSync(refetch);
 

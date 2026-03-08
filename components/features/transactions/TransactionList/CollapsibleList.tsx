@@ -9,9 +9,10 @@ import { EmptyState } from '@/components/EmptyState';
 import Link from 'next/link';
 import { useCategories } from '@/contexts/CategoryContext';
 import { useRefetchOnDataSync } from '@/hooks/useEnhancedDataSync';
-import { getExtendedQuickRange, getMonthRangeFromString } from '@/lib/utils/date';
-import { useAllTransactionRowsQuery } from '@/lib/api/hooks/useTransactions';
-import type { TransactionListParams } from '@/lib/api/services/transactions';
+import {
+  resolveTransactionListRangeParams,
+  useAllTransactionRowsQuery,
+} from '@/lib/api/hooks/useTransactions';
 
 interface Transaction {
   id: string;
@@ -56,30 +57,16 @@ export function CollapsibleTransactionList({
     { key: 'thisMonth', label: '本月' },
   ];
 
-  const queryParams = useMemo<TransactionListParams | undefined>(() => {
-    if (currentStart && currentEnd) {
-      return {
-        start_date: currentStart,
-        end_date: currentEnd,
-      };
-    }
-
-    if (currentMonth) {
-      const { start, end } = getMonthRangeFromString(currentMonth);
-      return {
-        start_date: start,
-        end_date: end,
-      };
-    }
-
-    const resolvedRange = getExtendedQuickRange(
-      (currentRange as Parameters<typeof getExtendedQuickRange>[0]) || 'today'
-    );
-    return {
-      start_date: resolvedRange.start,
-      end_date: resolvedRange.end,
-    };
-  }, [currentEnd, currentMonth, currentRange, currentStart]);
+  const queryParams = useMemo(
+    () =>
+      resolveTransactionListRangeParams({
+        month: currentMonth,
+        range: currentRange,
+        start: currentStart,
+        end: currentEnd,
+      }),
+    [currentEnd, currentMonth, currentRange, currentStart]
+  );
 
   const {
     data: queriedTransactions,

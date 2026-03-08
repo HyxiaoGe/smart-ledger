@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { useMonthlyTransactionRowsQuery } from '@/lib/api/hooks';
+import { useAllMonthlyTransactionRowsQuery } from '@/lib/api/hooks/useTransactions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Target, TrendingUp, TrendingDown, ChevronDown, RefreshCw, Trophy, Flag } from 'lucide-react';
@@ -49,9 +49,7 @@ export function GoalTrackingPanel({
   const { month } = getMonthRangeFromString(currentMonth);
 
   const { data: transactionsData, isLoading: loading, refetch } =
-    useMonthlyTransactionRowsQuery(currentMonth, {
-      page_size: 1000,
-    });
+    useAllMonthlyTransactionRowsQuery(currentMonth);
 
   useRefetchOnDataSync(refetch);
 
