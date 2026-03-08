@@ -341,10 +341,10 @@ export class RecurringExpenseService {
 
     const expenseIds = logs
       .map((log: GenerationLogRow) => log.recurring_expense_id)
-      .filter((id): id is string => id !== null);
+      .filter((id: string | null): id is string => id !== null);
     const transactionIds = logs
       .map((log: GenerationLogRow) => log.generated_transaction_id)
-      .filter((id): id is string => id !== null);
+      .filter((id: string | null): id is string => id !== null);
 
     type ExpenseLookupRow = {
       id: string;
