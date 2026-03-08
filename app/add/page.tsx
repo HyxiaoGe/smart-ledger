@@ -679,7 +679,7 @@ export default function AddPage() {
 
                     {showAdvanced && (
                       <div className="mt-5 space-y-4 border-t border-slate-100 pt-5 dark:border-slate-800">
-                        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(180px,0.9fr)_minmax(260px,1.15fr)]">
+                        <div className="grid grid-cols-1 gap-4">
                           <div>
                             <Label>
                               币种 <span className="text-destructive">*</span>
@@ -701,7 +701,10 @@ export default function AddPage() {
                               ))}
                             </select>
                           </div>
-                          <div className="sm:min-w-0">
+                        </div>
+
+                        <div>
+                          <div className="max-w-md">
                             <Label>
                               日期 <span className="text-destructive">*</span>
                             </Label>
