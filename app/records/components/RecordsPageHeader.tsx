@@ -26,9 +26,9 @@ export function RecordsPageHeader({ headerView }: RecordsPageHeaderProps) {
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-            <div className="inline-flex w-full items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm sm:w-auto sm:justify-start sm:rounded-full dark:border-slate-700 dark:bg-slate-950">
+            <div className="flex w-full flex-col gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm shadow-sm sm:inline-flex sm:w-auto sm:flex-row sm:items-center sm:justify-start sm:rounded-full sm:py-2 dark:border-slate-700 dark:bg-slate-950">
               <span className="text-slate-500 dark:text-slate-400">时间范围</span>
-              <TabsRangePicker />
+              <TabsRangePicker className="w-full sm:w-auto" />
             </div>
             <Link
               href="/add"

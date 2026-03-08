@@ -701,11 +701,11 @@ export default function AddPage() {
                               ))}
                             </select>
                           </div>
-                          <div>
+                          <div className="sm:min-w-0">
                             <Label>
                               日期 <span className="text-destructive">*</span>
                             </Label>
-                            <div className="mt-2">
+                            <div className="mt-2 min-w-0">
                               <DateInput
                                 selected={date}
                                 onSelect={setDate}

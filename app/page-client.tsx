@@ -41,14 +41,14 @@ export default function HomePageClient({
                 首页只保留最值得立即判断的信息：本期支出、变化幅度、主要结构和下一步入口。
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-950">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+              <div className="flex w-full flex-col gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm shadow-sm sm:inline-flex sm:w-auto sm:flex-row sm:items-center sm:rounded-full sm:py-2 dark:border-slate-700 dark:bg-slate-950">
                 <span className="text-slate-500 dark:text-slate-400">{data.toolbarView.currencyLabel}</span>
                 <CurrencySelect value={data.currency} />
               </div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-950">
+              <div className="flex w-full flex-col gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm shadow-sm sm:inline-flex sm:w-auto sm:flex-row sm:items-center sm:rounded-full sm:py-2 dark:border-slate-700 dark:bg-slate-950">
                 <span className="text-slate-500 dark:text-slate-400">{data.toolbarView.rangeLabel}</span>
-                <TabsRangePicker />
+                <TabsRangePicker className="w-full sm:w-auto" />
               </div>
               {isRefreshing && (
                 <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-medium text-sky-700 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-300">
