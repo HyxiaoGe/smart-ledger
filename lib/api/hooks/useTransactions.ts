@@ -11,6 +11,7 @@ import {
   type UseMutationOptions,
   type UseQueryOptions,
 } from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { queryKeys } from '../queryClient';
 import {
   transactionsApi,
@@ -159,6 +160,67 @@ export function useTransactionRowsQuery(
   options?: TransactionRowsQueryOptions
 ) {
   return useQuery(createTransactionRowsQueryOptions(params, options));
+}
+
+export function usePaginatedTransactionRows(
+  baseParams?: TransactionListParams,
+  options?: TransactionRowsQueryOptions & {
+    pageSize?: number;
+  }
+) {
+  const { pageSize: optionPageSize, ...queryOptions } = options || {};
+  const pageSize = optionPageSize ?? baseParams?.page_size ?? 50;
+  const [page, setPage] = useState(1);
+  const [allRows, setAllRows] = useState<Transaction[]>([]);
+  const baseParamsKey = JSON.stringify(baseParams || {});
+
+  const queryParams = useMemo(
+    () => ({
+      ...baseParams,
+      page,
+      page_size: pageSize,
+    }),
+    [baseParams, page, pageSize]
+  );
+
+  const query = useTransactionRowsQuery(queryParams, queryOptions);
+
+  useEffect(() => {
+    setPage(1);
+    setAllRows([]);
+  }, [baseParamsKey]);
+
+  useEffect(() => {
+    const currentRows = query.data || [];
+    if (page === 1) {
+      setAllRows(currentRows);
+      return;
+    }
+    if (currentRows.length > 0) {
+      setAllRows((prev) => [...prev, ...currentRows]);
+    }
+  }, [query.data, page]);
+
+  const hasMore = (query.data || []).length >= pageSize;
+
+  const loadMore = useCallback(() => {
+    if (query.isFetching || !hasMore) return;
+    setPage((prev) => prev + 1);
+  }, [hasMore, query.isFetching]);
+
+  const reset = useCallback(() => {
+    setPage(1);
+    setAllRows([]);
+  }, []);
+
+  return {
+    ...query,
+    data: allRows,
+    page,
+    hasMore,
+    loadMore,
+    reset,
+  };
 }
 
 /**

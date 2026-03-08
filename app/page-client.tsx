@@ -10,7 +10,8 @@ import { CurrencySelect } from '@/components/shared/CurrencySelect';
 import { TopExpenses } from '@/components/TopExpenses';
 import { HomeStats } from '@/components/features/statistics/HomeStats';
 import type { PageData } from './home-page-data';
-import { enhancedDataSync, consumeTransactionsDirty, peekTransactionsDirty } from '@/lib/core/EnhancedDataSync';
+import { consumeTransactionsDirty, peekTransactionsDirty } from '@/lib/core/EnhancedDataSync';
+import { useAllDataSyncEvents } from '@/hooks/useEnhancedDataSync';
 import { useRefreshQueue } from '@/hooks/useTransactionsSync';
 import { useAutoGenerateRecurring } from '@/hooks/useAutoGenerateRecurring';
 
@@ -69,24 +70,18 @@ export default function HomePageClient({
     rangeCount: data.rangeCount,
   });
 
-  // 交易事件监听和自动刷新
-  useEffect(() => {
-    const handler = () => {
+  useAllDataSyncEvents(
+    useCallback(() => {
       triggerQueue('event');
-    };
+    }, [triggerQueue])
+  );
 
-    const offAdded = enhancedDataSync.onEvent('transaction_added', handler);
-    const offUpdated = enhancedDataSync.onEvent('transaction_updated', handler);
-    const offDeleted = enhancedDataSync.onEvent('transaction_deleted', handler);
-
+  useEffect(() => {
     if (peekTransactionsDirty()) {
       triggerQueue('mount');
     }
 
     return () => {
-      offAdded();
-      offUpdated();
-      offDeleted();
       stopQueue();
     };
   }, [triggerQueue, stopQueue]);

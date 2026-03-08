@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp, List, FileText } from 'lucide-react';
 import { EmptyState } from '@/components/EmptyState';
 import Link from 'next/link';
-import { enhancedDataSync } from '@/lib/core/EnhancedDataSync';
 import { useCategories } from '@/contexts/CategoryContext';
+import { useRouterRefreshOnDataSync } from '@/hooks/useEnhancedDataSync';
 
 interface Transaction {
   id: string;
@@ -104,23 +104,7 @@ export function CollapsibleTransactionList({
     router.push((pathname + '?' + sp.toString()) as any);
   };
 
-  // 监听数据同步事件并刷新页面
-  useEffect(() => {
-    const handleTransactionChange = () => {
-      // 刷新页面以获取最新数据
-      router.refresh();
-    };
-
-    const offAdded = enhancedDataSync.onEvent('transaction_added', handleTransactionChange);
-    const offUpdated = enhancedDataSync.onEvent('transaction_updated', handleTransactionChange);
-    const offDeleted = enhancedDataSync.onEvent('transaction_deleted', handleTransactionChange);
-
-    return () => {
-      offAdded();
-      offUpdated();
-      offDeleted();
-    };
-  }, [router]);
+  useRouterRefreshOnDataSync(router);
 
   return (
     <div className={className}>

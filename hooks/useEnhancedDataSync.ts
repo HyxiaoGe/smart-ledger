@@ -5,7 +5,8 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { enhancedDataSync, SyncEvent, SyncType } from '@/lib/core/EnhancedDataSync';
 
 /**
@@ -72,7 +73,22 @@ export function useAllDataSyncEvents(
 export function useRefetchOnDataSync(
   refetch: () => void | Promise<unknown>
 ): boolean {
-  return useAllDataSyncEvents(() => {
+  const handleRefetch = useCallback(() => {
     void refetch();
-  });
+  }, [refetch]);
+
+  return useAllDataSyncEvents(handleRefetch);
+}
+
+/**
+ * 在交易同步事件后统一触发路由刷新
+ */
+export function useRouterRefreshOnDataSync(
+  router: Pick<AppRouterInstance, 'refresh'>
+): boolean {
+  const handleRefresh = useCallback(() => {
+    router.refresh();
+  }, [router]);
+
+  return useAllDataSyncEvents(handleRefresh);
 }

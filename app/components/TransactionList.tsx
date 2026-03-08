@@ -6,7 +6,7 @@ import { CategoryChip } from '@/components/CategoryChip';
 import { useCategories } from '@/contexts/CategoryContext';
 import { formatCurrency } from '@/lib/utils/format';
 import { EmptyState } from '@/components/EmptyState';
-import { useTransactionRowsQuery } from '@/lib/api/hooks';
+import { usePaginatedTransactionRows } from '@/lib/api/hooks';
 import { FileText } from 'lucide-react';
 import Link from 'next/link';
 
@@ -29,49 +29,30 @@ export function TransactionList({
   start?: string;
   end?: string;
 }) {
-  const [page, setPage] = useState(1);
-  const [allRows, setAllRows] = useState<Row[]>(initialRows);
   const [query, setQuery] = useState('');
   const [view, setView] = useState<'card' | 'table'>('card');
   const { getCategoryLabel } = useCategories();
 
   // 使用 React Query 获取交易列表
   const {
-    data: transactionsData,
+    data: rowsData,
     isLoading: loading,
-    isFetching
-  } = useTransactionRowsQuery(
+    isFetching,
+    hasMore,
+    loadMore,
+  } = usePaginatedTransactionRows(
     {
       start_date: start,
       end_date: end,
       type: 'expense',
-      page,
-      page_size: 50,
     },
     {
       enabled: !!start,
+      pageSize: 50,
     }
   );
 
-  // 当数据变化时更新行列表
-  useEffect(() => {
-    const currentRows = (transactionsData || []) as Row[];
-    if (currentRows.length > 0) {
-      if (page === 1) {
-        setAllRows(currentRows);
-      } else {
-        setAllRows((prev) => [...prev, ...currentRows]);
-      }
-    }
-  }, [transactionsData, page]);
-
-  // 计算是否还有更多数据
-  const hasMore = useMemo(() => {
-    const currentData = transactionsData || [];
-    return currentData.length >= 50;
-  }, [transactionsData]);
-
-  const rows = allRows;
+  const rows = (rowsData || initialRows) as Row[];
   const busy = loading || isFetching;
 
   const filtered = useMemo(() => {
@@ -91,11 +72,11 @@ export function TransactionList({
 
   // 无限滚动加载更多
   const loadMoreRef = useRef<HTMLDivElement>(null);
-  const loadMore = useCallback(() => {
+  const handleLoadMore = useCallback(() => {
     if (!busy && hasMore) {
-      setPage((p) => p + 1);
+      loadMore();
     }
-  }, [busy, hasMore]);
+  }, [busy, hasMore, loadMore]);
 
   // IntersectionObserver 实现无限滚动
   useEffect(() => {
@@ -105,7 +86,7 @@ export function TransactionList({
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          loadMore();
+          handleLoadMore();
         }
       },
       { rootMargin: '100px' }
@@ -113,7 +94,7 @@ export function TransactionList({
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [loadMore]);
+  }, [handleLoadMore]);
 
   function exportCsv() {
     const header = ['日期', '类型', '分类', '金额', '币种', '备注'];
