@@ -4,8 +4,13 @@ import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/EmptyState';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { PageSkeleton } from '@/components/shared/PageSkeleton';
+import { SectionIntro } from '@/components/shared/SectionIntro';
+import { SettingsBackButton } from '@/components/shared/SettingsBackButton';
+import { SettingsInfoPanel } from '@/components/shared/SettingsInfoPanel';
+import { SettingsPageHeader } from '@/components/shared/SettingsPageHeader';
 import { useAutoGenerateRecurring } from '@/hooks/useAutoGenerateRecurring';
 import { Calendar, Plus, DollarSign, History, Zap } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
@@ -196,13 +201,7 @@ export default function RecurringExpensesPage() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-6">
-            <Link href="/settings/expenses">
-              <Button variant="ghost" className="text-gray-600 hover:text-gray-900 dark:text-gray-100">
-                ← 返回消费配置
-              </Button>
-            </Link>
-          </div>
+          <SettingsBackButton href="/settings/expenses" label="返回消费配置" />
           <div className="text-center py-12">
             <div className="text-red-500 mb-4">{error}</div>
             <Button onClick={() => refetch()}>重试</Button>
@@ -215,81 +214,98 @@ export default function RecurringExpensesPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 返回导航 */}
-        <div className="mb-6">
-          <Link href="/settings/expenses">
-            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 dark:text-gray-100">
-              ← 返回消费配置
-            </Button>
-          </Link>
+        <SettingsBackButton href="/settings/expenses" label="返回消费配置" />
+
+        <div className="mb-8 rounded-[2rem] border border-slate-200 bg-gradient-to-r from-amber-50 via-white to-orange-50 p-6 shadow-sm dark:border-slate-800 dark:from-amber-950 dark:via-slate-950 dark:to-orange-950">
+          <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+            <SettingsPageHeader
+              title="固定支出管理"
+              description="把会自动生成的账单、逾期补生成和节假日同步都收在一个工作台里。"
+              icon={Calendar}
+              tone="orange"
+            />
+            <div className="flex flex-wrap gap-3">
+              <Link href="/settings/expenses/recurring/add">
+                <Button className="rounded-xl bg-blue-600 hover:bg-blue-700">
+                  <Plus className="h-4 w-4 mr-2" />
+                  添加固定支出
+                </Button>
+              </Link>
+              <Link href="/settings/expenses/recurring/history">
+                <Button variant="outline" className="rounded-xl group">
+                  <History className="h-4 w-4 mr-2 group-hover:text-blue-600 transition-colors" />
+                  查看历史
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
 
-        {/* 页面标题和操作按钮 */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">固定支出管理</h2>
-            <p className="text-gray-600 dark:text-gray-400">设置和管理您的定期固定支出，系统将自动生成记录</p>
-          </div>
-          <div className="flex gap-3">
-            <Link href="/settings/expenses/recurring/add">
-              <Button className="bg-blue-600 hover:bg-blue-700">
-                <Plus className="h-4 w-4 mr-2" />
-                添加固定支出
-              </Button>
-            </Link>
-            <Link href="/settings/expenses/recurring/history">
-              <Button variant="outline" className="group">
-                <History className="h-4 w-4 mr-2 group-hover:text-blue-600 transition-colors" />
-                查看历史
-              </Button>
-            </Link>
-            <div className="flex items-center gap-2">
-              <select
-                value={holidayYear}
-                onChange={(event) => setHolidayYear(Number(event.target.value))}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg text-sm"
-              >
-                {[0, 1].map((offset) => {
-                  const year = new Date().getFullYear() + offset;
-                  return (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  );
-                })}
-              </select>
-              <Button
-                onClick={() => syncHolidayMutation.mutate(holidayYear)}
-                disabled={syncHolidayMutation.isPending}
-                variant="outline"
-                className="group"
-                title="同步节假日数据，用于节假日跳过生成"
-              >
-                {syncHolidayMutation.isPending ? '同步中...' : '节假日同步'}
-              </Button>
-            </div>
-            <Button
-              onClick={() => handleGenerate(true)}
-              disabled={generateOverdueMutation.isPending}
-              variant="outline"
-              className="group"
-              title="补生成之前到期但未生成的固定支出"
+        <SectionIntro
+          eyebrow="Recurring Ops"
+          title="固定支出工作台"
+          description="先看本月自动生成节奏，再处理同步、补生成和具体项目维护。"
+          className="mb-4"
+        />
+
+        <div className="mb-8 flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 text-sm text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-300">
+            <span>节假日年份</span>
+            <select
+              value={holidayYear}
+              onChange={(event) => setHolidayYear(Number(event.target.value))}
+              className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
             >
-              <Zap className="h-4 w-4 mr-2 group-hover:text-orange-500 transition-colors" />
-              {generateOverdueMutation.isPending ? '补生成中...' : '补生成逾期'}
-            </Button>
-            <Button
-              onClick={() => handleGenerate()}
-              disabled={generateMutation.isPending}
-              variant="outline"
-              className="group"
-              title="手动触发生成今日固定账单（正常情况下每天00:01自动执行）"
-            >
-              <Zap className="h-4 w-4 mr-2 group-hover:text-yellow-500 transition-colors" />
-              {generateMutation.isPending ? '生成中...' : '手动触发生成'}
-            </Button>
+              {[0, 1].map((offset) => {
+                const year = new Date().getFullYear() + offset;
+                return (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                );
+              })}
+            </select>
           </div>
+          <Button
+            onClick={() => syncHolidayMutation.mutate(holidayYear)}
+            disabled={syncHolidayMutation.isPending}
+            variant="outline"
+            className="rounded-xl"
+            title="同步节假日数据，用于节假日跳过生成"
+          >
+            {syncHolidayMutation.isPending ? '同步中...' : '节假日同步'}
+          </Button>
+          <Button
+            onClick={() => handleGenerate(true)}
+            disabled={generateOverdueMutation.isPending}
+            variant="outline"
+            className="rounded-xl"
+            title="补生成之前到期但未生成的固定支出"
+          >
+            <Zap className="h-4 w-4 mr-2 text-orange-500" />
+            {generateOverdueMutation.isPending ? '补生成中...' : '补生成逾期'}
+          </Button>
+          <Button
+            onClick={() => handleGenerate()}
+            disabled={generateMutation.isPending}
+            variant="outline"
+            className="rounded-xl"
+            title="手动触发生成今日固定账单（正常情况下每天00:01自动执行）"
+          >
+            <Zap className="h-4 w-4 mr-2 text-yellow-500" />
+            {generateMutation.isPending ? '生成中...' : '手动触发生成'}
+          </Button>
         </div>
+
+        {recurringExpenses.length > 0 && (
+          <SettingsInfoPanel
+            title="自动生成提醒"
+            description="正常情况下系统会每日自动生成。手动触发适合补账或刚修改完规则后立即校验结果。"
+            icon={Zap}
+            tone="orange"
+            className="mb-6"
+          />
+        )}
 
         {/* 统计概览 */}
         <StatsCards
@@ -321,15 +337,11 @@ export default function RecurringExpensesPage() {
           <CardContent>
             {recurringExpenses.length === 0 ? (
               <div className="text-center py-16">
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 dark:bg-blue-900 rounded-full mb-6">
-                  <Calendar className="h-10 w-10 text-blue-600 dark:text-blue-400" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  还没有设置固定支出
-                </h3>
-                <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
-                  设置固定支出后，系统会自动生成定期账单，让记账更轻松高效
-                </p>
+                <EmptyState
+                  icon={<Calendar className="h-10 w-10 text-blue-500" />}
+                  title="还没有设置固定支出"
+                  description="把房租、会员、水电这类周期账单配置好，系统就能自动补全你的记账节奏。"
+                />
                 <div className="flex flex-col items-center gap-4">
                   <Link href="/settings/expenses/recurring/add">
                     <Button className="bg-blue-600 hover:bg-blue-700 px-6 py-3">
@@ -401,9 +413,11 @@ export default function RecurringExpensesPage() {
                   </div>
                 </div>
                 {visibleExpenses.length === 0 ? (
-                  <div className="text-center py-10 text-gray-500 dark:text-gray-400">
-                    当前筛选下没有固定支出
-                  </div>
+                  <EmptyState
+                    icon={<DollarSign className="h-8 w-8 text-slate-400" />}
+                    title="当前筛选下没有固定支出"
+                    description="换个筛选条件看看，或者继续添加新的固定支出规则。"
+                  />
                 ) : (
                   visibleExpenses.map((expense) => (
                     <RecurringExpenseCard

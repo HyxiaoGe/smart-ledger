@@ -1,13 +1,15 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CreditCard } from 'lucide-react';
+import { EmptyState as SharedEmptyState } from '@/components/EmptyState';
 import { ProgressToast } from '@/components/shared/ProgressToast';
 import { SettingsBackButton } from '@/components/shared/SettingsBackButton';
 import { SettingsPageHeader } from '@/components/shared/SettingsPageHeader';
+import { SectionIntro } from '@/components/shared/SectionIntro';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { paymentMethodsApi, PaymentMethod } from '@/lib/api/services/payment-methods';
 import { SettingsFooterNote } from '@/components/shared/SettingsFooterNote';
@@ -68,17 +70,11 @@ function LoadingSkeleton() {
 // 空状态组件
 function EmptyState() {
   return (
-    <div className="text-center py-16">
-      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 mb-4">
-        <CreditCard className="h-8 w-8 text-gray-400" />
-      </div>
-      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-        还没有支付方式
-      </h3>
-      <p className="text-gray-500 dark:text-gray-400">
-        您常用的支付方式会在这里显示
-      </p>
-    </div>
+    <SharedEmptyState
+      icon={<CreditCard className="h-8 w-8 text-slate-400" />}
+      title="还没有支付方式"
+      description="把常用支付账户整理出来，录入时会更快，也更容易保持账目一致。"
+    />
   );
 }
 
@@ -124,18 +120,40 @@ export default function PaymentMethodsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <SettingsBackButton href="/settings/expenses" label="返回消费配置" />
 
+        <div className="mb-8 rounded-[2rem] border border-slate-200 bg-gradient-to-r from-sky-50 via-white to-blue-50 p-6 shadow-sm dark:border-slate-800 dark:from-sky-950 dark:via-slate-950 dark:to-blue-950">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <SettingsPageHeader
+              title="支付方式管理"
+              description="把默认支付方式和常用账户整理好，录入账单时就不需要反复切换。"
+              icon={CreditCard}
+              tone="blue"
+            />
+            <Button
+              onClick={() => setShowAddDialog(true)}
+              className="rounded-xl bg-blue-600 hover:bg-blue-700"
+            >
+              添加支付方式
+            </Button>
+          </div>
+        </div>
+
+        <SectionIntro
+          eyebrow="Account Setup"
+          title="支付方式概览"
+          description="先确认默认方式，再补齐常用账户。这样录入页会更顺手。"
+          className="mb-4"
+        />
+
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
-          <SettingsPageHeader
-            title="支付方式管理"
-            description="管理您的支付账户，让记账更加便捷准确"
-            icon={CreditCard}
-            tone="blue"
-          />
+          <div className="rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 text-sm text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-300">
+            当前共管理 <span className="font-semibold text-slate-900 dark:text-slate-100">{paymentMethods.length}</span> 个支付方式
+          </div>
           <Button
             onClick={() => setShowAddDialog(true)}
-            className="bg-blue-600 hover:bg-blue-700"
+            variant="outline"
+            className="rounded-xl border-slate-200 bg-white hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800"
           >
-            添加支付方式
+            继续补充
           </Button>
         </div>
 
@@ -145,7 +163,11 @@ export default function PaymentMethodsPage() {
         {/* 支付方式列表 */}
         <Card className="border-0 shadow-md bg-white dark:bg-gray-800">
           <CardHeader>
-            <CardTitle className="text-xl">我的支付方式</CardTitle>
+            <SectionIntro
+              title="我的支付方式"
+              description="这里展示默认方式、最常使用方式和所有可选账户。"
+              className="mb-0"
+            />
           </CardHeader>
           <CardContent>
             {paymentMethods.length === 0 ? (

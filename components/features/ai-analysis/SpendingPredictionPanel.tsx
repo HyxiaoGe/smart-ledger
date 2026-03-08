@@ -7,7 +7,8 @@ import { TrendingUp, TrendingDown, AlertTriangle, Target, RefreshCw, ChevronDown
 import { motion, AnimatePresence } from 'framer-motion';
 import { PredictionTrendChart } from '@/components/features/ai-analysis/PredictionTrendChart';
 import { AIFeedbackTrigger, QuickFeedback } from '@/components/features/ai-analysis/AIFeedbackModal';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { SectionIntro } from '@/components/shared/SectionIntro';
+import { useQuery } from '@tanstack/react-query';
 import { predictApi } from '@/lib/api/services/predict';
 
 interface PredictionData {
@@ -248,11 +249,55 @@ export function SpendingPredictionPanel({
   return (
     <div className={`space-y-4 ${className}`}>
       {/* 参数设置和刷新按钮 */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">智能支出预测</h2>
+      <div className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/90">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+          <SectionIntro
+            title="智能支出预测"
+            eyebrow="Prediction Lab"
+            description="调整预测参数后，先看下月压力，再决定要不要深入读趋势和异常提醒。"
+          />
+          <div className="flex items-center gap-2 self-start">
+            <AnimatePresence>
+              {refreshStatus !== 'idle' && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className={`flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-medium ${
+                    refreshStatus === 'refreshing'
+                      ? 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300'
+                      : refreshStatus === 'success'
+                        ? 'border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-950 dark:text-green-300'
+                        : 'border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300'
+                  }`}
+                >
+                  {refreshStatus === 'refreshing' && (
+                    <>
+                      <RefreshCw className="h-3 w-3 animate-spin" />
+                      <span>预测中...</span>
+                    </>
+                  )}
+                  {refreshStatus === 'success' && <span>已更新</span>}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={loading || refreshStatus === 'refreshing'}
+              className="rounded-xl border-blue-200 bg-white px-4 text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:border-blue-800 dark:bg-slate-900 dark:text-blue-300 dark:hover:bg-blue-950"
+              title="应用新参数并重新生成预测分析"
+            >
+              <RefreshCw className="h-4 w-4 mr-1" />
+              应用参数
+            </Button>
+          </div>
+        </div>
 
         {/* 参数设置 */}
-        <div className="flex items-center gap-4 bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-950/60">
           <div className="flex items-center gap-2">
             <label className="text-sm text-gray-600 dark:text-gray-300">历史数据:</label>
             <select
@@ -302,46 +347,6 @@ export function SpendingPredictionPanel({
               <option value={90}>90% (极高)</option>
             </select>
           </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* 刷新状态提示 */}
-          <AnimatePresence>
-            {refreshStatus !== 'idle' && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                  refreshStatus === 'refreshing' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' :
-                  refreshStatus === 'success' ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' :
-                  'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300'
-                }`}
-              >
-                {refreshStatus === 'refreshing' && (
-                  <>
-                    <RefreshCw className="h-3 w-3 animate-spin" />
-                    <span>预测中...</span>
-                  </>
-                )}
-                {refreshStatus === 'success' && (
-                  <span>已更新</span>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={loading || refreshStatus === 'refreshing'}
-            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-300 transition-colors"
-            title="应用新参数并重新生成预测分析"
-          >
-            <RefreshCw className="h-4 w-4 mr-1" />
-            应用参数
-          </Button>
         </div>
       </div>
 
