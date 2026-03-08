@@ -1,7 +1,7 @@
 import nextDynamic from 'next/dynamic';
 import { CollapsibleTransactionList } from '@/components/features/transactions/TransactionList/CollapsibleList';
 import { SkeletonBlock, SkeletonGrid } from '@/components/shared/Skeletons';
-import type { TransactionRecordsPageViewData } from '@/lib/services/transaction';
+import type { TransactionRecordsPageViewData } from '@/lib/services/transaction/index.server';
 import { RecordsPageHeader } from './RecordsPageHeader';
 
 const SummaryModule = nextDynamic(
