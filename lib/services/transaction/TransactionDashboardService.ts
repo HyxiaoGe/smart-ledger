@@ -38,6 +38,7 @@ export interface TransactionDashboardResult {
   calendarData: { date: string; amount: number; count: number }[];
   calendarYear: number;
   calendarMonth: number;
+  refreshSnapshot: string;
 }
 
 export class TransactionDashboardService {
@@ -81,6 +82,7 @@ export class TransactionDashboardService {
         calendarData: [],
         calendarYear: now.getFullYear(),
         calendarMonth: now.getMonth() + 1,
+        refreshSnapshot: '0:0',
       };
     }
 
@@ -150,6 +152,10 @@ export class TransactionDashboardService {
           calendarData: generateCalendarData(calendarRows),
           calendarYear: calendarMonth.year,
           calendarMonth: calendarMonth.month,
+          refreshSnapshot: buildDashboardRefreshSnapshot({
+            rangeExpense,
+            rangeCount,
+          }),
         };
       },
       { ttl: 60 * 1000 }
@@ -178,6 +184,13 @@ export class TransactionDashboardService {
 
     return result.data;
   }
+}
+
+function buildDashboardRefreshSnapshot(input: {
+  rangeExpense: number;
+  rangeCount: number;
+}) {
+  return [input.rangeExpense, input.rangeCount].join(':');
 }
 
 function getDaysInRange(start: string, end: string): number {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { ChartSummary } from './components/ChartSummary';
 import { CalendarHeatmap } from './components/CalendarHeatmap';
@@ -11,7 +11,11 @@ import { TopExpenses } from '@/components/TopExpenses';
 import { HomeStats } from '@/components/features/statistics/HomeStats';
 import type { PageData } from './home-page-data';
 import { consumeTransactionsDirty, peekTransactionsDirty } from '@/lib/core/EnhancedDataSync';
-import { useRefreshQueue, useTransactionRefreshLifecycle } from '@/hooks/useTransactionsSync';
+import {
+  useRefreshQueue,
+  useStopRefreshQueueOnSnapshotChange,
+  useTransactionRefreshLifecycle,
+} from '@/hooks/useTransactionsSync';
 import { buildTransactionPageHref } from '@/lib/services/transaction/pageParams';
 
 const REFRESH_DELAYS_MS = [1500, 3500, 6000];
@@ -45,21 +49,15 @@ export default function HomePageClient({
     consumeDirty: consumeTransactionsDirty,
   });
 
-  const latestSnapshot = useRef(data.refreshSnapshot);
-
   useTransactionRefreshLifecycle({
     triggerQueue,
     stopQueue,
     peekDirty: peekTransactionsDirty,
   });
-
-  // 数据变化检测和自动停止刷新队列
-  useEffect(() => {
-    if (latestSnapshot.current !== data.refreshSnapshot) {
-      latestSnapshot.current = data.refreshSnapshot;
-      stopQueue({ consume: true });
-    }
-  }, [data.refreshSnapshot, stopQueue]);
+  useStopRefreshQueueOnSnapshotChange({
+    refreshSnapshot: data.refreshSnapshot,
+    stopQueue,
+  });
 
   const handleCalendarDayClick = useCallback(
     (dateStr: string) => {

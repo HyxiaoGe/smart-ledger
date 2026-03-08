@@ -136,3 +136,22 @@ export function useTransactionRefreshLifecycle({
     return () => window.removeEventListener('visibilitychange', onVisibility);
   }, [peekDirty, triggerQueue]);
 }
+
+type UseStopRefreshQueueOnSnapshotChangeParams = {
+  refreshSnapshot: string;
+  stopQueue: (options?: StopOptions) => void;
+};
+
+export function useStopRefreshQueueOnSnapshotChange({
+  refreshSnapshot,
+  stopQueue,
+}: UseStopRefreshQueueOnSnapshotChangeParams) {
+  const latestSnapshot = useRef(refreshSnapshot);
+
+  useEffect(() => {
+    if (latestSnapshot.current !== refreshSnapshot) {
+      latestSnapshot.current = refreshSnapshot;
+      stopQueue({ consume: true });
+    }
+  }, [refreshSnapshot, stopQueue]);
+}

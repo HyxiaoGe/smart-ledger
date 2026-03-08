@@ -22,26 +22,11 @@ export type PageData = {
 };
 
 export async function loadPageData(params: HomePageRequestParams): Promise<PageData> {
-  const dashboardData = await getTransactionDashboardData({
+  return getTransactionDashboardData({
     currency: params.currency,
     month: params.monthLabel,
     range: params.range,
     startDate: params.start,
     endDate: params.end,
   });
-
-  return {
-    ...dashboardData,
-    refreshSnapshot: buildPageDataRefreshSnapshot({
-      rangeExpense: dashboardData.rangeExpense,
-      rangeCount: dashboardData.rangeCount,
-    }),
-  };
-}
-
-export function buildPageDataRefreshSnapshot(input: {
-  rangeExpense: number;
-  rangeCount: number;
-}) {
-  return [input.rangeExpense, input.rangeCount].join(':');
 }
