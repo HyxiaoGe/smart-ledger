@@ -9,6 +9,7 @@ import { queryKeys } from '../queryClient';
 import {
   recurringExpensesApi,
   type CreateRecurringExpenseParams,
+  type RecurringGenerationResponse,
   type UpdateRecurringExpenseParams,
 } from '../services/recurring-expenses';
 
@@ -94,10 +95,12 @@ export function useGenerateRecurringExpenses() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => recurringExpensesApi.generate(),
+    mutationFn: (params?: { includeOverdue?: boolean }): Promise<RecurringGenerationResponse> =>
+      recurringExpensesApi.generate(params),
     onSuccess: () => {
       // 生成后刷新交易列表和定期支出历史
       queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recurringExpenses.list() });
       queryClient.invalidateQueries({ queryKey: queryKeys.recurringExpenses.history() });
     },
   });

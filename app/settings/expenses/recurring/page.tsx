@@ -8,8 +8,14 @@ import { ProgressToast } from '@/components/shared/ProgressToast';
 import { PageSkeleton } from '@/components/shared/PageSkeleton';
 import { useAutoGenerateRecurring } from '@/hooks/useAutoGenerateRecurring';
 import { Calendar, Plus, DollarSign, History, Zap } from 'lucide-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { recurringExpensesApi, RecurringExpense } from '@/lib/api/services/recurring-expenses';
+import {
+  useDeleteRecurringExpense,
+  useGenerateRecurringExpenses,
+  useRecurringExpenses,
+  useUpdateRecurringExpense,
+} from '@/lib/api/hooks/useRecurringExpenses';
 import { holidaysApi } from '@/lib/api/services/holidays';
 import {
   StatsCards,
@@ -19,8 +25,35 @@ import {
   DeleteConfirmDialog,
 } from './components';
 
+function buildGenerationToastMessage(
+  result: Awaited<ReturnType<typeof recurringExpensesApi.generate>>,
+  emptyLabel: string
+): string {
+  const names = Array.from(
+    new Set(
+      result.results
+        .filter((item) => item.status === 'success')
+        .map((item) => item.expense_name)
+        .filter((name): name is string => Boolean(name))
+    )
+  ).slice(0, 3);
+
+  if (result.summary.success > 0) {
+    const detailMessage =
+      names.length > 0
+        ? `：${names.join('、')}${result.summary.success > names.length ? ' 等' : ''}`
+        : '';
+    return `✅ 成功生成 ${result.summary.success} 笔${detailMessage}`;
+  }
+
+  if (result.summary.failed > 0) {
+    return `❌ 生成失败：${result.summary.failed} 个错误`;
+  }
+
+  return emptyLabel;
+}
+
 export default function RecurringExpensesPage() {
-  const queryClient = useQueryClient();
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [confirmDelete, setConfirmDelete] = useState<RecurringExpense | null>(null);
@@ -35,10 +68,7 @@ export default function RecurringExpensesPage() {
     isLoading: loading,
     error: fetchError,
     refetch,
-  } = useQuery({
-    queryKey: ['recurring-expenses'],
-    queryFn: () => recurringExpensesApi.list(),
-  });
+  } = useRecurringExpenses();
 
   const error = fetchError ? '获取固定支出列表失败' : null;
   const recurringExpenses = recurringExpensesData || [];
@@ -70,75 +100,8 @@ export default function RecurringExpensesPage() {
   const { getExpenseGenerationStatus } = useAutoGenerateRecurring(recurringExpenses);
 
   // 生成固定支出 mutation
-  const generateMutation = useMutation({
-    mutationFn: () => recurringExpensesApi.generate(),
-    onSuccess: async (data) => {
-      const count = data.count || 0;
-      if (count > 0) {
-        let detailMessage = '';
-        try {
-          const history = await recurringExpensesApi.getHistory(8);
-          const names = Array.from(
-            new Set(
-              history
-                .filter((item) => item.status !== 'failed')
-                .map((item) => item.recurring_expense?.name)
-                .filter((name): name is string => Boolean(name))
-            )
-          ).slice(0, 3);
-          if (names.length > 0) {
-            detailMessage = `：${names.join('、')}${count > names.length ? ' 等' : ''}`;
-          }
-        } catch (error) {
-          console.error('获取生成明细失败:', error);
-        }
-        setToastMessage(`✅ 成功生成 ${count} 笔${detailMessage}`);
-      } else {
-        setToastMessage('💡 今日无需生成');
-      }
-      setShowToast(true);
-      queryClient.invalidateQueries({ queryKey: ['recurring-expenses'] });
-    },
-    onError: () => {
-      setToastMessage('❌ 生成失败');
-      setShowToast(true);
-    }
-  });
-
-  const generateOverdueMutation = useMutation({
-    mutationFn: () => recurringExpensesApi.generate({ includeOverdue: true }),
-    onSuccess: async (data) => {
-      const count = data.count || 0;
-      if (count > 0) {
-        let detailMessage = '';
-        try {
-          const history = await recurringExpensesApi.getHistory(8);
-          const names = Array.from(
-            new Set(
-              history
-                .filter((item) => item.status !== 'failed')
-                .map((item) => item.recurring_expense?.name)
-                .filter((name): name is string => Boolean(name))
-            )
-          ).slice(0, 3);
-          if (names.length > 0) {
-            detailMessage = `：${names.join('、')}${count > names.length ? ' 等' : ''}`;
-          }
-        } catch (error) {
-          console.error('获取生成明细失败:', error);
-        }
-        setToastMessage(`✅ 已补生成 ${count} 笔${detailMessage}`);
-      } else {
-        setToastMessage('💡 没有需要补生成的固定支出');
-      }
-      setShowToast(true);
-      queryClient.invalidateQueries({ queryKey: ['recurring-expenses'] });
-    },
-    onError: () => {
-      setToastMessage('❌ 补生成失败');
-      setShowToast(true);
-    }
-  });
+  const generateMutation = useGenerateRecurringExpenses();
+  const generateOverdueMutation = useGenerateRecurringExpenses();
 
   const syncHolidayMutation = useMutation({
     mutationFn: (year: number) => holidaysApi.sync(year),
@@ -153,53 +116,76 @@ export default function RecurringExpensesPage() {
   });
 
   // 更新状态 mutation
-  const updateMutation = useMutation({
-    mutationFn: (params: { id: string; is_active: boolean }) =>
-      recurringExpensesApi.update(params.id, { is_active: params.is_active }),
-    onSuccess: (_, variables) => {
-      setToastMessage(variables.is_active ? '✅ 已启用' : '⏸️ 已暂停');
-      setShowToast(true);
-      setConfirmPause(null);
-      queryClient.invalidateQueries({ queryKey: ['recurring-expenses'] });
-    },
-    onError: () => {
-      setToastMessage('❌ 更新状态失败');
-      setShowToast(true);
-    }
-  });
+  const updateMutation = useUpdateRecurringExpense();
+  const deleteMutation = useDeleteRecurringExpense();
 
-  // 删除 mutation
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => recurringExpensesApi.delete(id),
-    onSuccess: () => {
-      setToastMessage('✅ 已删除');
-      setShowToast(true);
-      setConfirmDelete(null);
-      queryClient.invalidateQueries({ queryKey: ['recurring-expenses'] });
-    },
-    onError: () => {
-      setToastMessage('❌ 删除失败');
-      setShowToast(true);
-    }
-  });
+  const handleGenerate = (includeOverdue?: boolean) => {
+    const mutation = includeOverdue ? generateOverdueMutation : generateMutation;
+    mutation.mutate(
+      includeOverdue ? { includeOverdue: true } : undefined,
+      {
+        onSuccess: (data) => {
+          setToastMessage(
+            buildGenerationToastMessage(
+              data,
+              includeOverdue ? '💡 没有需要补生成的固定支出' : '💡 今日无需生成'
+            )
+          );
+          setShowToast(true);
+        },
+        onError: () => {
+          setToastMessage(includeOverdue ? '❌ 补生成失败' : '❌ 生成失败');
+          setShowToast(true);
+        }
+      }
+    );
+  };
+
+  const handleUpdateStatus = (params: { id: string; is_active: boolean }) => {
+    updateMutation.mutate(params, {
+      onSuccess: (_, variables) => {
+        setToastMessage(variables.is_active ? '✅ 已启用' : '⏸️ 已暂停');
+        setShowToast(true);
+        setConfirmPause(null);
+      },
+      onError: () => {
+        setToastMessage('❌ 更新状态失败');
+        setShowToast(true);
+      }
+    });
+  };
+
+  const handleDelete = (id: string) => {
+    deleteMutation.mutate(id, {
+      onSuccess: () => {
+        setToastMessage('✅ 已删除');
+        setShowToast(true);
+        setConfirmDelete(null);
+      },
+      onError: () => {
+        setToastMessage('❌ 删除失败');
+        setShowToast(true);
+      }
+    });
+  };
 
   // 切换启用/禁用状态
   const toggleActiveStatus = (expense: RecurringExpense) => {
     if (expense.is_active) {
       setConfirmPause(expense);
     } else {
-      updateMutation.mutate({ id: expense.id, is_active: true });
+      handleUpdateStatus({ id: expense.id, is_active: true });
     }
   };
 
   // 确认暂停
   const confirmPauseExpense = (expense: RecurringExpense) => {
-    updateMutation.mutate({ id: expense.id, is_active: false });
+    handleUpdateStatus({ id: expense.id, is_active: false });
   };
 
   // 确认删除
   const confirmDeleteExpense = (expense: RecurringExpense) => {
-    deleteMutation.mutate(expense.id);
+    handleDelete(expense.id);
   };
 
   if (loading) {
@@ -283,7 +269,7 @@ export default function RecurringExpensesPage() {
               </Button>
             </div>
             <Button
-              onClick={() => generateOverdueMutation.mutate()}
+              onClick={() => handleGenerate(true)}
               disabled={generateOverdueMutation.isPending}
               variant="outline"
               className="group"
@@ -293,7 +279,7 @@ export default function RecurringExpensesPage() {
               {generateOverdueMutation.isPending ? '补生成中...' : '补生成逾期'}
             </Button>
             <Button
-              onClick={() => generateMutation.mutate()}
+              onClick={() => handleGenerate()}
               disabled={generateMutation.isPending}
               variant="outline"
               className="group"

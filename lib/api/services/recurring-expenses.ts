@@ -86,6 +86,29 @@ export interface RecurringGenerationHistory {
   };
 }
 
+export interface RecurringGenerationResult {
+  expense_name: string;
+  status: 'success' | 'failed' | 'skipped';
+  message: string;
+}
+
+export interface RecurringGenerationSummary {
+  total: number;
+  success: number;
+  failed: number;
+  skipped: number;
+}
+
+export interface RecurringGenerationResponse {
+  success: boolean;
+  results: RecurringGenerationResult[];
+  summary: RecurringGenerationSummary;
+  generated: number;
+  count: number;
+  errors: string[];
+  message: string;
+}
+
 /**
  * 定期支出 API 服务
  */
@@ -128,9 +151,9 @@ export const recurringExpensesApi = {
   /**
    * 手动生成定期支出交易
    */
-  generate(params?: { includeOverdue?: boolean }): Promise<{ count: number }> {
+  generate(params?: { includeOverdue?: boolean }): Promise<RecurringGenerationResponse> {
     const query = params?.includeOverdue ? '?includeOverdue=1' : '';
-    return apiClient.post<{ count: number }>(`/api/recurring-expenses/generate${query}`);
+    return apiClient.post<RecurringGenerationResponse>(`/api/recurring-expenses/generate${query}`);
   },
 
   /**

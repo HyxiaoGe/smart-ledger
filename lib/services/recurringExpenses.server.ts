@@ -4,8 +4,7 @@
  */
 
 import {
-  getRecurringExpenseRepository,
-  getTransactionRepository
+  getRecurringExpenseRepository
 } from '@/lib/infrastructure/repositories/index.server';
 import { getPrismaClient } from '@/lib/clients/db';
 import { formatDateToLocal } from '@/lib/utils/date';
@@ -52,6 +51,59 @@ export type RecurringGenerationResult = {
   status: 'success' | 'failed' | 'skipped';
   message: string;
 };
+
+export type RecurringGenerationSummary = {
+  total: number;
+  success: number;
+  failed: number;
+  skipped: number;
+};
+
+export type RecurringGenerationResponse = {
+  success: boolean;
+  results: RecurringGenerationResult[];
+  summary: RecurringGenerationSummary;
+  generated: number;
+  count: number;
+  errors: string[];
+  message: string;
+};
+
+export function buildRecurringGenerationResponse(
+  results: RecurringGenerationResult[]
+): RecurringGenerationResponse {
+  const summary = results.reduce<RecurringGenerationSummary>(
+    (acc, item) => {
+      acc.total += 1;
+      if (item.status === 'success') acc.success += 1;
+      if (item.status === 'failed') acc.failed += 1;
+      if (item.status === 'skipped') acc.skipped += 1;
+      return acc;
+    },
+    { total: 0, success: 0, failed: 0, skipped: 0 }
+  );
+
+  const errors = results
+    .filter((item: RecurringGenerationResult) => item.status === 'failed')
+    .map((item: RecurringGenerationResult) => item.message);
+
+  return {
+    success: summary.failed === 0,
+    results,
+    summary,
+    generated: summary.success,
+    count: summary.success,
+    errors,
+    message:
+      summary.success > 0
+        ? `成功生成 ${summary.success} 笔固定支出记录${summary.failed > 0 ? `，${summary.failed} 个错误` : ''}`
+        : summary.skipped > 0 && summary.failed === 0
+          ? '今日无需生成'
+          : summary.failed > 0
+            ? `生成失败，${summary.failed} 个错误`
+            : '没有需要生成的固定支出'
+  };
+}
 
 const HOLIDAY_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 const holidayCache = new Map<number, { map: Map<string, boolean>; fetchedAt: number }>();
@@ -477,91 +529,13 @@ export class RecurringExpenseService {
   async generatePendingExpenses(options?: {
     includeOverdue?: boolean;
   }): Promise<{ generated: number; errors: string[] }> {
-    const today = formatDateToLocal(new Date());
-    const errors: string[] = [];
-    let generated = 0;
-    const includeOverdue = options?.includeOverdue ?? false;
-
-    try {
-      const repository = getRecurringExpenseRepository();
-      const pendingExpenses = await repository.findPendingGeneration(today, includeOverdue);
-
-      if (!pendingExpenses || pendingExpenses.length === 0) {
-        return { generated, errors };
-      }
-
-      for (const expense of pendingExpenses) {
-        try {
-          await this.generateTransactionForExpense(expense, today);
-          generated++;
-        } catch (error) {
-          errors.push(`生成固定支出 "${expense.name}" 失败: ${error}`);
-        }
-      }
-    } catch (error) {
-      errors.push('生成过程中发生错误: ' + error);
-    }
-
-    return { generated, errors };
-  }
-
-  /**
-   * 为单个固定支出生成交易记录
-   */
-  private async generateTransactionForExpense(
-    expense: RecurringExpense,
-    today: string
-  ): Promise<void> {
-    const recurringRepo = getRecurringExpenseRepository();
-    const transactionRepo = getTransactionRepository();
-
-    // 检查今天是否已经生成过（避免重复）
-    const hasGenerated = await recurringRepo.hasGeneratedToday(expense.id, today);
-    if (hasGenerated) {
-      return;
-    }
-
-    if (expense.skip_holidays) {
-      const holiday = await isHolidayDate(today);
-      if (holiday) {
-        const nextGenerate = await this.calculateNextDateSkippingHolidays(
-          expense.frequency,
-          expense.frequency_config,
-          today
-        );
-        await recurringRepo.update(expense.id, {
-          next_generate: nextGenerate
-        });
-        await recurringRepo.logGeneration(expense.id, today, null, 'skipped', 'holiday');
-        return;
-      }
-    }
-
-    // 生成交易记录
-    const transaction = await transactionRepo.create({
-      type: 'expense',
-      category: expense.category,
-      amount: expense.amount,
-      note: `[自动生成] ${expense.name}`,
-      date: today,
-      currency: 'CNY'
-    });
-
-    // 计算下次生成时间
-    const nextGenerate = this.calculateNextDateAfterGeneration(
-      expense.frequency,
-      expense.frequency_config,
-      today
+    const response = buildRecurringGenerationResponse(
+      await this.manualGenerateRecurring(options)
     );
-
-    // 更新固定支出的生成时间和下次生成时间
-    await recurringRepo.update(expense.id, {
-      last_generated: today,
-      next_generate: nextGenerate
-    });
-
-    // 记录生成日志
-    await recurringRepo.logGeneration(expense.id, today, transaction.id, 'success');
+    return {
+      generated: response.generated,
+      errors: response.errors
+    };
   }
 
   private async generateExpenseWithDetailedResult(

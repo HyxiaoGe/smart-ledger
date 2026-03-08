@@ -3,28 +3,19 @@
  */
 
 import { NextResponse } from 'next/server';
-import { recurringExpenseService } from '@/lib/services/recurringExpenses.server';
+import {
+  buildRecurringGenerationResponse,
+  recurringExpenseService,
+} from '@/lib/services/recurringExpenses.server';
 
 export const runtime = 'nodejs';
 
 export async function POST() {
   try {
-    const results = await recurringExpenseService.manualGenerateRecurring();
-
-    const successCount = results.filter(r => r.status === 'success').length;
-    const failedCount = results.filter(r => r.status === 'failed').length;
-    const skippedCount = results.filter(r => r.status === 'skipped').length;
-
-    return NextResponse.json({
-      success: true,
-      results,
-      summary: {
-        total: results.length,
-        success: successCount,
-        failed: failedCount,
-        skipped: skippedCount
-      }
-    });
+    const response = buildRecurringGenerationResponse(
+      await recurringExpenseService.manualGenerateRecurring()
+    );
+    return NextResponse.json(response);
   } catch (error) {
     console.error('手动生成固定账单失败:', error);
     return NextResponse.json(
