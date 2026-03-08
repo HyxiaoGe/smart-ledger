@@ -3,42 +3,34 @@
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp, Edit, Store, Trash2 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/format';
-import type { Transaction, MerchantGroup } from '../types';
-import type { PaymentMethod } from '@/lib/api/services/payment-methods';
+import type { MerchantGroup, TransactionRowEditControls } from '../types';
 import { EditForm } from './EditForm';
 import { TransactionItem } from './TransactionItem';
 
 interface MerchantRowProps {
   merchantData: MerchantGroup;
-  merchantKey: string;
   isExpanded: boolean;
   onToggle: () => void;
-  editingId: string | null;
-  form: Partial<Transaction>;
-  setForm: React.Dispatch<React.SetStateAction<Partial<Transaction>>>;
-  onEdit: (transaction: Transaction) => void;
-  onSaveEdit: () => void;
-  onCancelEdit: () => void;
-  onDelete: (transaction: Transaction) => void;
-  loading: boolean;
-  paymentMethods: PaymentMethod[];
+  rowControls: TransactionRowEditControls;
 }
 
 export function MerchantRow({
   merchantData,
-  merchantKey,
   isExpanded,
   onToggle,
-  editingId,
-  form,
-  setForm,
-  onEdit,
-  onSaveEdit,
-  onCancelEdit,
-  onDelete,
-  loading,
-  paymentMethods,
+  rowControls,
 }: MerchantRowProps) {
+  const {
+    editingId,
+    form,
+    setForm,
+    onEdit,
+    onSaveEdit,
+    onCancelEdit,
+    onDelete,
+    loading,
+    paymentMethods,
+  } = rowControls;
   const singleItem = merchantData.items.length === 1;
   const isEditingSingleItem = editingId === merchantData.items[0].id && singleItem;
 

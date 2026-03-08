@@ -51,6 +51,18 @@ export function TransactionGroupedList({
     defaultExpandedDates,
   });
 
+  const rowControls = {
+    editingId,
+    form,
+    setForm,
+    onEdit: handleEdit,
+    onSaveEdit: saveEdit,
+    onCancelEdit: cancelEdit,
+    onDelete: handleDelete,
+    loading,
+    paymentMethods,
+  };
+
   return (
     <>
       <div className={className}>
@@ -83,15 +95,7 @@ export function TransactionGroupedList({
               onToggleCategory={toggleCategory}
               expandedMerchants={expandedMerchants}
               onToggleMerchant={toggleMerchant}
-              editingId={editingId}
-              form={form}
-              setForm={setForm}
-              onEdit={handleEdit}
-              onSaveEdit={saveEdit}
-              onCancelEdit={cancelEdit}
-              onDelete={handleDelete}
-              loading={loading}
-              paymentMethods={paymentMethods}
+              rowControls={rowControls}
             />
           ))}
 

@@ -3,46 +3,27 @@
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { CategoryChip } from '@/components/CategoryChip';
 import { formatCurrency } from '@/lib/utils/format';
-import type { Transaction, CategoryGroup } from '../types';
-import type { PaymentMethod } from '@/lib/api/services/payment-methods';
+import type { CategoryGroup, TransactionRowEditControls } from '../types';
 import { MerchantRow } from './MerchantRow';
 
 interface CategoryGroupRowProps {
   categoryData: CategoryGroup;
   categoryKey: string;
-  date: string;
   isExpanded: boolean;
   onToggle: () => void;
   expandedMerchants: Set<string>;
   onToggleMerchant: (key: string) => void;
-  editingId: string | null;
-  form: Partial<Transaction>;
-  setForm: React.Dispatch<React.SetStateAction<Partial<Transaction>>>;
-  onEdit: (transaction: Transaction) => void;
-  onSaveEdit: () => void;
-  onCancelEdit: () => void;
-  onDelete: (transaction: Transaction) => void;
-  loading: boolean;
-  paymentMethods: PaymentMethod[];
+  rowControls: TransactionRowEditControls;
 }
 
 export function CategoryGroupRow({
   categoryData,
   categoryKey,
-  date,
   isExpanded,
   onToggle,
   expandedMerchants,
   onToggleMerchant,
-  editingId,
-  form,
-  setForm,
-  onEdit,
-  onSaveEdit,
-  onCancelEdit,
-  onDelete,
-  loading,
-  paymentMethods,
+  rowControls,
 }: CategoryGroupRowProps) {
   return (
     <div className="border-t border-gray-100 dark:border-gray-700">
@@ -79,18 +60,9 @@ export function CategoryGroupRow({
                 <MerchantRow
                   key={merchantKey}
                   merchantData={merchantData}
-                  merchantKey={merchantKey}
                   isExpanded={isMerchantExpanded}
                   onToggle={() => onToggleMerchant(merchantKey)}
-                  editingId={editingId}
-                  form={form}
-                  setForm={setForm}
-                  onEdit={onEdit}
-                  onSaveEdit={onSaveEdit}
-                  onCancelEdit={onCancelEdit}
-                  onDelete={onDelete}
-                  loading={loading}
-                  paymentMethods={paymentMethods}
+                  rowControls={rowControls}
                 />
               );
             })}

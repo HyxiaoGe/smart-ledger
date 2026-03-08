@@ -1,3 +1,6 @@
+import type { Dispatch, SetStateAction } from 'react';
+import type { PaymentMethod } from '@/lib/api/services/payment-methods';
+
 // 交易类型定义
 export type Transaction = {
   id: string;
@@ -17,6 +20,18 @@ export interface TransactionGroupedListProps {
   initialTransactions: Transaction[];
   className?: string;
   defaultExpandedDates?: Set<string>;
+}
+
+export interface TransactionRowEditControls {
+  editingId: string | null;
+  form: Partial<Transaction>;
+  setForm: Dispatch<SetStateAction<Partial<Transaction>>>;
+  onEdit: (transaction: Transaction) => void;
+  onSaveEdit: () => void;
+  onCancelEdit: () => void;
+  onDelete: (transaction: Transaction) => void;
+  loading: boolean;
+  paymentMethods: PaymentMethod[];
 }
 
 // 分层数据结构类型
