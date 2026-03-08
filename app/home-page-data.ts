@@ -1,5 +1,5 @@
-import { getPrismaClient } from '@/lib/clients/db';
-import { formatDateToLocal, formatMonth } from '@/lib/utils/date';
+import { formatMonth } from '@/lib/utils/date';
+import { recurringExpenseService } from '@/lib/services/recurringExpenses.server';
 import { getTransactionDashboardData } from '@/lib/services/transactions.server';
 
 type RecurringExpense = {
@@ -87,26 +87,23 @@ export function buildPageDataRefreshSnapshot(input: {
 
 async function loadRecurringExpenses(): Promise<RecurringExpense[]> {
   try {
-    const prisma = getPrismaClient();
-    const data = await prisma.recurring_expenses.findMany({
-      orderBy: { created_at: 'desc' },
-    });
+    const data = await recurringExpenseService.getRecurringExpenses();
 
-    return data.map((item: any) => ({
+    return data.map((item) => ({
       id: item.id,
       name: item.name,
-      amount: Number(item.amount),
+      amount: item.amount,
       category: item.category,
       frequency: item.frequency,
-      frequency_config: item.frequency_config as Record<string, any>,
-      start_date: formatDateToLocal(item.start_date),
+      frequency_config: item.frequency_config,
+      start_date: item.start_date,
       note: undefined,
       currency: 'CNY',
       payment_method: undefined,
-      is_active: item.is_active ?? true,
-      last_generated_date: item.last_generated ? formatDateToLocal(item.last_generated) : undefined,
-      created_at: item.created_at?.toISOString() || new Date().toISOString(),
-      updated_at: item.updated_at?.toISOString() || new Date().toISOString(),
+      is_active: item.is_active,
+      last_generated_date: item.last_generated || undefined,
+      created_at: item.created_at,
+      updated_at: item.updated_at,
     }));
   } catch (error) {
     console.error('Failed to load recurring expenses:', error);
