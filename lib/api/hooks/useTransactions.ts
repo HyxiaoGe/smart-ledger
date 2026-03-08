@@ -21,6 +21,7 @@ import {
 } from '../services/transactions';
 import { applyTransactionWriteEffects } from '../transactionWriteEffects';
 import type { Transaction } from '@/types/domain/transaction';
+import type { Currency } from '@/types/domain/transaction';
 import {
   formatDateToLocal,
   getExtendedQuickRange,
@@ -268,7 +269,7 @@ export function useRecentExpenseTransactions(limit: number = 5) {
 }
 
 export function useFrequentExpenseAmounts(
-  currency?: string,
+  currency?: Currency,
   options?: { days?: number; limit?: number }
 ) {
   const days = options?.days ?? 30;
