@@ -329,13 +329,13 @@ export default function AddPage() {
     return (recentTransactionsData || []) as Transaction[];
   }, [recentTransactionsData]);
 
-  // 去重后的最近记录（基于 category + amount + note/merchant 组合）
+  // 去重后的最近记录（基于 category + amount + currency 组合）
   const recentQuickList = useMemo(() => {
     const seen = new Set<string>();
     const deduplicated: Transaction[] = [];
     for (const tx of recentTransactions) {
-      // 生成去重键：分类 + 金额（保留两位小数）+ 备注或商户
-      const key = `${tx.category}|${Number(tx.amount || 0).toFixed(2)}|${tx.note || tx.merchant || ''}`;
+      // 最近记录用于“快速复用消费模式”，这里按分类 + 金额去重更符合预期
+      const key = `${tx.category}|${Number(tx.amount || 0).toFixed(2)}|${tx.currency || DEFAULT_CURRENCY}`;
       if (!seen.has(key)) {
         seen.add(key);
         deduplicated.push(tx);
