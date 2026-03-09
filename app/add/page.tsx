@@ -33,6 +33,7 @@ import {
 } from '@/lib/api/hooks';
 
 import { SmartSuggestionPanel } from './components';
+import type { RecentQuickTransaction } from './components/SmartSuggestionPanel';
 
 export default function AddPage() {
   const type: TransactionType = 'expense'; // 固定为支出类型
@@ -329,20 +330,23 @@ export default function AddPage() {
     return (recentTransactionsData || []) as Transaction[];
   }, [recentTransactionsData]);
 
-  // 去重后的最近记录（基于 category + amount + currency 组合）
+  // 合并后的最近记录（按 category + amount + currency 聚合，保留最近一条）
   const recentQuickList = useMemo(() => {
-    const seen = new Set<string>();
-    const deduplicated: Transaction[] = [];
+    const grouped = new Map<string, RecentQuickTransaction>();
     for (const tx of recentTransactions) {
-      // 最近记录用于“快速复用消费模式”，这里按分类 + 金额去重更符合预期
       const key = `${tx.category}|${Number(tx.amount || 0).toFixed(2)}|${tx.currency || DEFAULT_CURRENCY}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        deduplicated.push(tx);
-        if (deduplicated.length >= 3) break;
+      const existing = grouped.get(key);
+      if (existing) {
+        existing.duplicateCount += 1;
+        continue;
       }
+      grouped.set(key, {
+        ...tx,
+        duplicateCount: 1,
+      });
     }
-    return deduplicated;
+
+    return Array.from(grouped.values()).slice(0, 3);
   }, [recentTransactions]);
 
   const { amounts: frequentAmounts } = useFrequentExpenseAmounts(currency, {

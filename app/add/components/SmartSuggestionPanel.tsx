@@ -6,6 +6,10 @@ import { formatAmount } from '@/lib/utils/format';
 import type { Transaction } from '@/types/domain/transaction';
 import type { Category } from '@/lib/services/categoryService';
 
+export type RecentQuickTransaction = Transaction & {
+  duplicateCount: number;
+};
+
 interface SmartSuggestionPanelProps {
   // 显示/隐藏状态
   showPanel: boolean;
@@ -23,7 +27,7 @@ interface SmartSuggestionPanelProps {
   currentAmount: number;
   onSelectAmount: (_amount: number) => void;
   // 最近记录
-  recentTransactions: Transaction[];
+  recentTransactions: RecentQuickTransaction[];
   onApplyTransaction: (_tx: Transaction) => void;
 }
 
@@ -138,6 +142,10 @@ export function SmartSuggestionPanel({
                         <span className="font-semibold">
                           {formatAmount(Number(tx.amount || 0))}
                         </span>
+                      </div>
+                      <div className="mt-1 text-[11px] text-muted-foreground">
+                        最近一次
+                        {tx.duplicateCount > 1 ? ` · 共 ${tx.duplicateCount} 次` : ''}
                       </div>
                     </button>
                   ))
