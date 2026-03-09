@@ -629,9 +629,9 @@ export default function AddPage() {
                       </div>
                       <Clock className="h-4 w-4 text-slate-400" />
                     </div>
-                    {recentTransactions.length > 0 && (
+                    {recentQuickList.length > 0 && (
                       <div className="mt-4 space-y-2">
-                        {recentTransactions.map((tx) => (
+                        {recentQuickList.map((tx) => (
                           <button
                             key={tx.id}
                             type="button"
@@ -645,6 +645,10 @@ export default function AddPage() {
                                 </div>
                                 <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                                   {tx.merchant || '无商家'} · {tx.category || 'other'}
+                                </div>
+                                <div className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">
+                                  最近一次
+                                  {tx.duplicateCount > 1 ? ` · 共 ${tx.duplicateCount} 次` : ''}
                                 </div>
                               </div>
                               <span className="shrink-0 text-sm font-semibold text-slate-900 dark:text-slate-100">
