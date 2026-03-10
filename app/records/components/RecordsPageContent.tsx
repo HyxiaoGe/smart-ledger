@@ -4,6 +4,7 @@ import { SkeletonBlock, SkeletonGrid } from '@/components/shared/Skeletons';
 import type { TransactionRecordsPageViewData } from '@/lib/services/transaction/index.server';
 import { RecordsPageHeader } from './RecordsPageHeader';
 import { SectionIntro } from '@/components/shared/SectionIntro';
+import { RecordsPageSyncBridge } from './RecordsPageSyncBridge';
 
 const SummaryModule = nextDynamic(
   () => import('@/components/MonthlyExpenseSummary').then((mod) => mod.MonthlyExpenseSummary),
@@ -37,6 +38,7 @@ export function RecordsPageContent({
 }: RecordsPageContentProps) {
   return (
     <div className="container space-y-8">
+      <RecordsPageSyncBridge />
       <RecordsPageHeader headerView={headerView} />
 
       <section className="space-y-3">
