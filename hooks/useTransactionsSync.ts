@@ -60,12 +60,13 @@ export function useRefreshQueue({
     }, delay);
   }, [clearTimer, delays, refresh, stopQueue]);
 
-  const startQueue = useCallback(() => {
+  const refreshNowAndContinue = useCallback(() => {
     queueActive.current = true;
     refreshIndex.current = 0;
     setIsRefreshing(true);
+    refresh();
     scheduleNext();
-  }, [scheduleNext]);
+  }, [refresh, scheduleNext]);
 
   const triggerQueue = useCallback(
     (reason: string) => {
@@ -78,13 +79,14 @@ export function useRefreshQueue({
         return;
       }
       if (queueActive.current) {
+        refresh();
         refreshIndex.current = 0;
         scheduleNext();
       } else {
-        startQueue();
+        refreshNowAndContinue();
       }
     },
-    [peekDirty, scheduleNext, startQueue]
+    [peekDirty, refresh, refreshNowAndContinue, scheduleNext]
   );
 
   useEffect(() => () => clearTimer(), [clearTimer]);
