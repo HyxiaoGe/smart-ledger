@@ -87,6 +87,8 @@ model ai_performance_stats {
   error_rates          Json?
   created_at           DateTime? @default(now()) @db.Timestamptz(6)
   updated_at           DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@unique([stat_date, ai_provider, feature_type, model_name])
 }
 
 model ai_requests {
@@ -350,6 +352,8 @@ model spending_patterns {
   is_anomaly                 Boolean?
   anomaly_score              Decimal?  @db.Decimal
   created_at                 DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@unique([transaction_id, pattern_type])
 }
 
 model subcategories {
@@ -439,6 +443,8 @@ model transaction_features {
   transaction_count         Int?
   avg_transaction_gap_hours Decimal?  @db.Decimal
   created_at                DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@unique([date])
 }
 
 model transactions {
