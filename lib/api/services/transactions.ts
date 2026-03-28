@@ -40,6 +40,18 @@ export interface CreateTransactionParams {
   product?: string | null;
 }
 
+export interface TransactionEnrichmentPreviewField {
+  key: 'payment_method' | 'merchant' | 'subcategory' | 'product';
+  label: string;
+  value?: string | null;
+  displayValue?: string | null;
+}
+
+export interface TransactionEnrichmentPreviewResponse {
+  enriched: CreateTransactionParams;
+  fields: TransactionEnrichmentPreviewField[];
+}
+
 /**
  * 更新交易参数
  */
@@ -96,6 +108,13 @@ export const transactionsApi = {
    */
   create(data: CreateTransactionParams): Promise<Transaction> {
     return apiClient.post<Transaction>('/api/transactions', data);
+  },
+
+  /**
+   * 预览自动 enrich 结果
+   */
+  previewEnrichment(data: CreateTransactionParams): Promise<TransactionEnrichmentPreviewResponse> {
+    return apiClient.post<TransactionEnrichmentPreviewResponse>('/api/transactions/enrich', data);
   },
 
   /**

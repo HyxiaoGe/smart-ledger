@@ -3,19 +3,22 @@ import type { ITransactionRepository } from '@/lib/domain/repositories/ITransact
 import { InternalError, NotFoundError } from '@/lib/domain/errors/AppError';
 import type { Transaction } from '@/types/domain/transaction';
 import type { CreateTransactionDTO, UpdateTransactionDTO } from '@/types/dto/transaction.dto';
+import type { TransactionEnrichmentService } from './TransactionEnrichmentService';
 
 export class TransactionMutationService {
   constructor(
     private readonly repository: ITransactionRepository,
-    private readonly commonNoteRepository: ICommonNoteRepository
+    private readonly commonNoteRepository: ICommonNoteRepository,
+    private readonly enrichmentService?: TransactionEnrichmentService
   ) {}
 
   async createTransaction(input: CreateTransactionDTO): Promise<Transaction> {
-    const transaction = await this.repository.create(input);
+    const transactionInput = await this.enrichInputSafely(input);
+    const transaction = await this.repository.create(transactionInput);
     await this.syncCommonNote({
-      note: input.note,
-      amount: input.amount,
-      category: input.category,
+      note: transactionInput.note,
+      amount: transactionInput.amount,
+      category: transactionInput.category,
     });
     return transaction;
   }
@@ -64,6 +67,19 @@ export class TransactionMutationService {
       await this.commonNoteRepository.upsert(note, params.amount, params.category);
     } catch (error) {
       console.error('更新常用备注失败:', error);
+    }
+  }
+
+  private async enrichInputSafely(input: CreateTransactionDTO): Promise<CreateTransactionDTO> {
+    if (!this.enrichmentService) {
+      return input;
+    }
+
+    try {
+      return await this.enrichmentService.enrichCreateInput(input);
+    } catch (error) {
+      console.error('交易 enrich 失败，回退原始输入:', error);
+      return input;
     }
   }
 }

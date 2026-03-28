@@ -6,6 +6,8 @@
 
 import {
   getCommonNoteRepository,
+  getCategoryRepository,
+  getPaymentMethodRepository,
   getTransactionRepository,
 } from '@/lib/infrastructure/repositories/index.server';
 import { memoryCache } from '@/lib/infrastructure/cache';
@@ -15,6 +17,7 @@ import { TransactionAnalyticsService } from './TransactionAnalyticsService';
 import { TransactionDashboardService } from './TransactionDashboardService';
 import { TransactionRecordsPageService } from './TransactionRecordsPageService';
 import { TransactionMutationService } from './TransactionMutationService';
+import { TransactionEnrichmentService } from './TransactionEnrichmentService';
 
 // 导出服务类
 export { TransactionQueryService } from './TransactionQueryService';
@@ -23,6 +26,7 @@ export { TransactionAnalyticsService } from './TransactionAnalyticsService';
 export { TransactionDashboardService } from './TransactionDashboardService';
 export { TransactionRecordsPageService } from './TransactionRecordsPageService';
 export { TransactionMutationService } from './TransactionMutationService';
+export { TransactionEnrichmentService } from './TransactionEnrichmentService';
 export type { TransactionDashboardResult } from './TransactionDashboardService';
 export type {
   TransactionRecordsPageData,
@@ -53,6 +57,7 @@ class ServerTransactionServiceFactory {
   private static dashboardService: TransactionDashboardService;
   private static recordsPageService: TransactionRecordsPageService;
   private static mutationService: TransactionMutationService;
+  private static enrichmentService: TransactionEnrichmentService;
 
   static getQueryService(): TransactionQueryService {
     if (!this.queryService) {
@@ -101,10 +106,23 @@ class ServerTransactionServiceFactory {
     if (!this.mutationService) {
       this.mutationService = new TransactionMutationService(
         this.getTransactionRepository(),
-        getCommonNoteRepository()
+        getCommonNoteRepository(),
+        this.getEnrichmentService()
       );
     }
     return this.mutationService;
+  }
+
+  static getEnrichmentService(): TransactionEnrichmentService {
+    if (!this.enrichmentService) {
+      this.enrichmentService = new TransactionEnrichmentService({
+        transactionRepository: this.getTransactionRepository(),
+        commonNoteRepository: getCommonNoteRepository(),
+        categoryRepository: getCategoryRepository(),
+        paymentMethodRepository: getPaymentMethodRepository(),
+      });
+    }
+    return this.enrichmentService;
   }
 
   private static getTransactionRepository() {
@@ -118,6 +136,7 @@ class ServerTransactionServiceFactory {
     this.dashboardService = null as any;
     this.recordsPageService = null as any;
     this.mutationService = null as any;
+    this.enrichmentService = null as any;
   }
 }
 
@@ -129,6 +148,7 @@ export const getDashboardService = () => ServerTransactionServiceFactory.getDash
 export const getRecordsPageService = () =>
   ServerTransactionServiceFactory.getRecordsPageService();
 export const getMutationService = () => ServerTransactionServiceFactory.getMutationService();
+export const getEnrichmentService = () => ServerTransactionServiceFactory.getEnrichmentService();
 export const resetServices = () => ServerTransactionServiceFactory.reset();
 
 // 导出默认实例

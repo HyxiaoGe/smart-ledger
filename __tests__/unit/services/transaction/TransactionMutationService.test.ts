@@ -9,6 +9,7 @@ import type { ITransactionRepository } from '@/lib/domain/repositories/ITransact
 import type { ICommonNoteRepository } from '@/lib/domain/repositories/ICommonNoteRepository';
 import { InternalError, NotFoundError } from '@/lib/domain/errors/AppError';
 import type { Transaction } from '@/types/domain/transaction';
+import type { TransactionEnrichmentService } from '@/lib/services/transaction/TransactionEnrichmentService';
 
 function createMockTransaction(overrides: Partial<Transaction> = {}): Transaction {
   return {
@@ -60,20 +61,41 @@ function createMockCommonNoteRepository(): ICommonNoteRepository {
   };
 }
 
+function createMockEnrichmentService(): TransactionEnrichmentService {
+  return {
+    enrichCreateInput: vi.fn(),
+  } as unknown as TransactionEnrichmentService;
+}
+
 describe('TransactionMutationService', () => {
   let service: TransactionMutationService;
   let mockRepository: ITransactionRepository;
   let mockCommonNoteRepository: ICommonNoteRepository;
+  let mockEnrichmentService: TransactionEnrichmentService;
 
   beforeEach(() => {
     mockRepository = createMockRepository();
     mockCommonNoteRepository = createMockCommonNoteRepository();
-    service = new TransactionMutationService(mockRepository, mockCommonNoteRepository);
+    mockEnrichmentService = createMockEnrichmentService();
+    service = new TransactionMutationService(
+      mockRepository,
+      mockCommonNoteRepository,
+      mockEnrichmentService
+    );
   });
 
   describe('createTransaction', () => {
     it('should create transaction and sync common note when note exists', async () => {
       const transaction = createMockTransaction();
+      vi.mocked(mockEnrichmentService.enrichCreateInput).mockResolvedValue({
+        type: 'expense',
+        category: 'food',
+        amount: 88,
+        note: '午饭',
+        date: '2024-06-15',
+        currency: 'CNY',
+        payment_method: 'pm-wechat',
+      });
       vi.mocked(mockRepository.create).mockResolvedValue(transaction);
       vi.mocked(mockCommonNoteRepository.upsert).mockResolvedValue({
         id: 'note-1',
@@ -94,7 +116,7 @@ describe('TransactionMutationService', () => {
       });
 
       expect(result).toEqual(transaction);
-      expect(mockRepository.create).toHaveBeenCalledWith({
+      expect(mockEnrichmentService.enrichCreateInput).toHaveBeenCalledWith({
         type: 'expense',
         category: 'food',
         amount: 88,
@@ -102,11 +124,28 @@ describe('TransactionMutationService', () => {
         date: '2024-06-15',
         currency: 'CNY',
       });
+      expect(mockRepository.create).toHaveBeenCalledWith({
+        type: 'expense',
+        category: 'food',
+        amount: 88,
+        note: '午饭',
+        date: '2024-06-15',
+        currency: 'CNY',
+        payment_method: 'pm-wechat',
+      });
       expect(mockCommonNoteRepository.upsert).toHaveBeenCalledWith('午饭', 88, 'food');
     });
 
     it('should skip common note sync when note is blank', async () => {
       const transaction = createMockTransaction({ note: '   ' });
+      vi.mocked(mockEnrichmentService.enrichCreateInput).mockResolvedValue({
+        type: 'expense',
+        category: 'food',
+        amount: 88,
+        note: '   ',
+        date: '2024-06-15',
+        currency: 'CNY',
+      });
       vi.mocked(mockRepository.create).mockResolvedValue(transaction);
 
       await service.createTransaction({
@@ -123,6 +162,14 @@ describe('TransactionMutationService', () => {
 
     it('should ignore common note sync failure', async () => {
       const transaction = createMockTransaction();
+      vi.mocked(mockEnrichmentService.enrichCreateInput).mockResolvedValue({
+        type: 'expense',
+        category: 'food',
+        amount: 88,
+        note: '午饭',
+        date: '2024-06-15',
+        currency: 'CNY',
+      });
       vi.mocked(mockRepository.create).mockResolvedValue(transaction);
       vi.mocked(mockCommonNoteRepository.upsert).mockRejectedValue(new Error('sync failed'));
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -137,6 +184,34 @@ describe('TransactionMutationService', () => {
       });
 
       expect(result).toEqual(transaction);
+      expect(consoleErrorSpy).toHaveBeenCalled();
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should fall back to original input when enrichment fails', async () => {
+      const transaction = createMockTransaction();
+      vi.mocked(mockEnrichmentService.enrichCreateInput).mockRejectedValue(new Error('boom'));
+      vi.mocked(mockRepository.create).mockResolvedValue(transaction);
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      await service.createTransaction({
+        type: 'expense',
+        category: 'food',
+        amount: 88,
+        note: '午饭',
+        date: '2024-06-15',
+        currency: 'CNY',
+      });
+
+      expect(mockRepository.create).toHaveBeenCalledWith({
+        type: 'expense',
+        category: 'food',
+        amount: 88,
+        note: '午饭',
+        date: '2024-06-15',
+        currency: 'CNY',
+      });
       expect(consoleErrorSpy).toHaveBeenCalled();
 
       consoleErrorSpy.mockRestore();

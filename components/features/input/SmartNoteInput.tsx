@@ -2,10 +2,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Input } from '@/components/ui/input';
 import { ClearableInput } from '@/components/ui/clearable-input';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
   smartSuggestionsService,
   smartSuggestionsCache,
@@ -60,7 +57,7 @@ type SmartNoteInputProps = {
 const SmartNoteInputComponent = function SmartNoteInput({
   value = '',
   onChange,
-  placeholder = '选择分类和金额后，智能提示将自动显示',
+  placeholder = '可选，输入后会提供更贴近当前账单的建议',
   className = '',
   disabled = false,
   category,
@@ -76,7 +73,6 @@ const SmartNoteInputComponent = function SmartNoteInput({
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const autoTriggeredRef = useRef(false); // 记录是否自动触发过
   const lastParamsRef = useRef<SmartSuggestionParams | null>(null);
 
   // 获取建议类型图标（使用配置）
@@ -166,6 +162,12 @@ const SmartNoteInputComponent = function SmartNoteInput({
         clearTimeout(debounceRef.current);
       }
 
+      if (!nextValue.trim()) {
+        setShowSuggestions(false);
+        setSuggestions([]);
+        return;
+      }
+
       // 防抖获取建议
       debounceRef.current = setTimeout(() => {
         fetchSmartSuggestions(params).catch((err) => {
@@ -173,10 +175,7 @@ const SmartNoteInputComponent = function SmartNoteInput({
         });
       }, 300);
 
-      // 如果用户开始输入，立即显示建议（如果有缓存的话）
-      if (nextValue.trim().length > 0) {
-        setShowSuggestions(true);
-      }
+      setShowSuggestions(true);
     },
     [onChange, category, amount, currency, fetchSmartSuggestions]
   );
@@ -293,34 +292,6 @@ const SmartNoteInputComponent = function SmartNoteInput({
     };
   }, []);
 
-  // 🎯 自动触发智能提示：当类别和金额都有值时
-  useEffect(() => {
-    // 只有当类别和金额都有值时才自动触发
-    if (category && amount && amount > 0 && !autoTriggeredRef.current) {
-      const timeContext = generateTimeContext();
-      const params: SmartSuggestionParams = {
-        category,
-        amount,
-        currency,
-        time_context: timeContext.label,
-        partial_input: value,
-        limit: 8
-      };
-
-      lastParamsRef.current = params;
-      autoTriggeredRef.current = true; // 标记已自动触发
-
-      fetchSmartSuggestions(params).catch((err) => {
-        console.error('获取智能建议失败:', err);
-      });
-    } else if ((!category || !amount || amount <= 0) && autoTriggeredRef.current) {
-      // 如果条件不满足，重置自动触发标记并隐藏建议
-      autoTriggeredRef.current = false;
-      setShowSuggestions(false);
-      setSuggestions([]);
-    }
-  }, [category, amount, currency, value, fetchSmartSuggestions]);
-
   // 定期清理缓存和学习数据发送
   useEffect(() => {
     const cleanup = setInterval(() => {
@@ -359,7 +330,11 @@ const SmartNoteInputComponent = function SmartNoteInput({
       <ClearableInput
         value={value}
         onChange={handleInputChange}
-        onClear={() => onChange?.('')}
+        onClear={() => {
+          onChange?.('');
+          setShowSuggestions(false);
+          setSuggestions([]);
+        }}
         onFocus={handleFocus}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
@@ -367,9 +342,16 @@ const SmartNoteInputComponent = function SmartNoteInput({
         disabled={disabled}
       />
 
+      {!showSuggestions && !disabled && category && amount && amount > 0 && (
+        <div className="mt-2 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+          <Lightbulb className="h-3.5 w-3.5" />
+          聚焦备注输入框时，再显示推荐内容
+        </div>
+      )}
+
       {/* 智能提示面板 */}
       {showSuggestions && !disabled && (
-        <div className="absolute bottom-full left-0 right-0 z-50 mb-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
+        <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
           {/* 错误状态 */}
           {error && (
             <div className="p-3 flex items-center gap-2 text-red-600 text-sm">
