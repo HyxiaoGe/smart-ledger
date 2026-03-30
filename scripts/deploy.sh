@@ -104,6 +104,7 @@ if ! wait_for_service_ready; then
 fi
 
 docker image prune -f
+docker builder prune --filter "until=72h" -f
 
 echo "部署完成！"
 
