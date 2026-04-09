@@ -12,6 +12,7 @@ services:
       - .env.local
     environment:
       APP_GIT_SHA: ${GIT_SHA:-unknown}
+    mem_limit: 256m
     networks:
       - postgres_default
 
